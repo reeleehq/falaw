@@ -14,11 +14,12 @@ both ``on_log`` and ``on_event`` are given, both fire.
 
 from __future__ import annotations
 
-import contextvars
 import time
 import uuid
 from contextlib import contextmanager
 from typing import Any, Callable, Iterator, Mapping, Optional
+
+from ocracy.kit import current_credentials, resolve_credential, using_credentials
 
 from .errors import import_fal_client as _import_fal_client
 from .errors import translate as _translate_error
@@ -30,20 +31,20 @@ from .journal import _default_journal
 # Per-context fal credential (bring-your-own-key support)
 # --------------------------------------------------------------------------- #
 
-#: The fal API key bound for the current execution context, if any. Set via
-#: :func:`using_fal_credentials` so a server handling a per-request
-#: "bring-your-own-key" call can route every nested :func:`call_fal` through
-#: the caller's key — without threading a credential argument through every
+#: The provider id a fal key is bound under, in the fleet's facade kit
+#: (:func:`ocracy.kit.using_credentials`). The binding is a
+#: :class:`contextvars.ContextVar` (rather than an ``os.environ`` mutation), so it is
+#: scoped to the entering context and the tasks it spawns: concurrent requests are
+#: unaffected and no process-wide lock is needed. Because the kit is shared, a server
+#: that binds ``fal`` once reaches every facade that calls fal, not only falaw. This
+#: is the seam reelee's HTTP server uses to forward a BYO key into server-side fal
+#: calls (reelee#159) without threading a credential argument through every
 #: intermediate signature (plan → execute → cached_call_fal → call_fal).
-#:
-#: A :class:`contextvars.ContextVar` (rather than an ``os.environ`` mutation)
-#: keeps the binding naturally scoped to the entering context and the threads
-#: it spawns: concurrent requests on other tasks/threads are unaffected, and
-#: no process-wide lock is needed. This is the seam reelee's HTTP server uses
-#: to forward a BYO key into server-side fal calls (reelee#159).
-_FAL_KEY_VAR: "contextvars.ContextVar[Optional[str]]" = contextvars.ContextVar(
-    "falaw_fal_key", default=None
-)
+FAL_PROVIDER = "fal"
+
+#: The env vars falaw itself reads for a fal key, in order (the pricing and account
+#: probes). :func:`call_fal` reads none: it leaves the env lookup to the fal SDK.
+FAL_KEY_ENVVARS = ("FAL_KEY", "FAL_API_KEY")
 
 
 def current_fal_key() -> Optional[str]:
@@ -53,7 +54,7 @@ def current_fal_key() -> Optional[str]:
     to :func:`call_fal` wins over this context value, which in turn wins over
     the fal SDK's own ``FAL_KEY`` env-var lookup.
     """
-    return _FAL_KEY_VAR.get()
+    return current_credentials().get(FAL_PROVIDER)
 
 
 @contextmanager
@@ -69,18 +70,13 @@ def using_fal_credentials(key: Optional[str]) -> Iterator[None]:
     a caller can pass an optional header value straight through without
     special-casing "no BYO key — fall back to the server/env key".
 
-    Thread/async safe: backed by a :class:`contextvars.ContextVar`, so the
-    binding is visible only within the entering context (and threads/tasks it
-    spawns), never to concurrent requests.
+    Thread/async safe: this is ``ocracy.kit.using_credentials(fal=key)``, backed
+    by a :class:`contextvars.ContextVar`, so the binding is visible only within
+    the entering context (and threads/tasks it spawns), never to concurrent
+    requests.
     """
-    if not key:
+    with using_credentials({FAL_PROVIDER: key}):
         yield
-        return
-    token = _FAL_KEY_VAR.set(key)
-    try:
-        yield
-    finally:
-        _FAL_KEY_VAR.reset(token)
 
 
 def call_fal(
@@ -125,7 +121,7 @@ def call_fal(
     # default. Only when a key is resolved do we route through a dedicated
     # ``SyncClient`` — otherwise we call the module-level ``subscribe`` so the
     # SDK's own env/global resolution is preserved exactly as before.
-    key = api_key or _FAL_KEY_VAR.get()
+    key = resolve_credential(FAL_PROVIDER, api_key=api_key, required=False)
     subscribe = fal_client.subscribe
     if key:
         client_cls = getattr(fal_client, "SyncClient", None)

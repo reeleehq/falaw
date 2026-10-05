@@ -21,6 +21,9 @@ dependencies = [
     # >=0.0.46 for the contained ArtifactStore.iter_blobs/delete_blob that
     # falaw.prune lists and deletes blobs through (falaw#66, lacing#55).
     "lacing>=0.0.46",
+    # ocracy.kit: the fleet's shared credential chain (using_fal_credentials binds
+    # the kit's "fal" provider). Stdlib-only; ocracy itself has no dependencies.
+    "ocracy>=0.1.12",
     # >=0.3.37 for `Files(..., delete_func=)`: the content store deletes
     # blobs from disk instead of moving them to the OS trash (falaw#66).
     "dol>=0.3.37",

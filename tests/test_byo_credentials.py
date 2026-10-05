@@ -109,3 +109,18 @@ def test_nested_contexts_restore_outer_key(monkeypatch):
             assert current_fal_key() == "inner"
         assert current_fal_key() == "outer"
     assert current_fal_key() is None
+
+
+def test_pricing_key_resolution_honours_the_binding(monkeypatch):
+    """The pricing probe resolves explicit > bound > FAL_KEY > FAL_API_KEY."""
+    from falaw.pricing import _resolve_api_key
+
+    monkeypatch.delenv("FAL_KEY", raising=False)
+    monkeypatch.setenv("FAL_API_KEY", "server-key")
+    assert _resolve_api_key(None) == "server-key"
+    with using_fal_credentials("byo"):
+        assert _resolve_api_key(None) == "byo"
+        assert _resolve_api_key("explicit") == "explicit"
+    monkeypatch.delenv("FAL_API_KEY")
+    with pytest.raises(RuntimeError, match="FAL_KEY"):
+        _resolve_api_key(None)

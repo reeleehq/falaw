@@ -22,7 +22,6 @@ Use this *before* a long render to fail fast with a useful message:
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 
 from .errors import _LOCK_PATTERNS
@@ -96,12 +95,19 @@ def health_check(
         probe_url: Endpoint to probe. Default is the storage-auth-token endpoint
             ``fal_client`` uses internally; small, idempotent, requires auth.
         timeout_s: Network timeout.
-        api_key: Optional override of ``FAL_KEY``. Falls back to the env var.
+        api_key: Optional override of ``FAL_KEY``. Falls back to a key bound with
+            :func:`falaw.using_fal_credentials`, then the env var.
 
     Returns:
         :class:`AccountStatus` with ``ok=True`` when the probe succeeded.
     """
-    key = api_key or os.environ.get("FAL_KEY") or os.environ.get("FAL_API_KEY")
+    from ocracy.kit import resolve_credential
+
+    from .core import FAL_KEY_ENVVARS, FAL_PROVIDER
+
+    key = resolve_credential(
+        FAL_PROVIDER, api_key=api_key, env_var=FAL_KEY_ENVVARS, required=False
+    )
     if not key:
         return AccountStatus(
             ok=False,

@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import datetime
 import json
-import os
 import re
 from typing import Callable, Optional
 
@@ -178,20 +177,18 @@ def _default_http_get(
 
 
 def _resolve_api_key(api_key: Optional[str]) -> str:
-    from .core import current_fal_key
+    from ocracy.kit import resolve_credential
 
-    key = (
-        api_key
-        or current_fal_key()
-        or os.environ.get("FAL_KEY")
-        or os.environ.get("FAL_API_KEY")
+    from .core import FAL_KEY_ENVVARS, FAL_PROVIDER
+
+    return resolve_credential(
+        FAL_PROVIDER,
+        api_key=api_key,
+        env_var=FAL_KEY_ENVVARS,
+        error=RuntimeError,
+        hint="Pass api_key=, or set FAL_KEY. The pricing endpoint is free but "
+        "authenticated.",
     )
-    if not key:
-        raise RuntimeError(
-            "No fal API key: pass api_key=, or set FAL_KEY. The pricing "
-            "endpoint is free but authenticated."
-        )
-    return key
 
 
 def fetch_model_prices(

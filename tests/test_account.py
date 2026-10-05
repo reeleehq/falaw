@@ -117,6 +117,36 @@ def test_health_check_with_explicit_key_overrides_env(monkeypatch):
     assert s.ok is True
 
 
+def test_health_check_uses_a_bound_byo_key(monkeypatch):
+    """A key bound with using_fal_credentials reaches the probe (it used to be ignored)."""
+    from falaw import using_fal_credentials
+
+    monkeypatch.delenv("FAL_KEY", raising=False)
+    monkeypatch.delenv("FAL_API_KEY", raising=False)
+    sent = []
+
+    class FakeClient:
+        def __init__(self, *a, **k): pass
+        def __enter__(self): return self
+        def __exit__(self, *exc): return False
+        def post(self, url, headers=None, **k):
+            sent.append(headers["Authorization"])
+            r = MagicMock()
+            r.status_code = 200
+            r.headers = {}
+            r.text = ""
+            r.json.return_value = {}
+            return r
+
+    import httpx
+    monkeypatch.setattr(httpx, "Client", FakeClient)
+
+    with using_fal_credentials("byo-key-123"):
+        s = health_check()
+    assert s.ok is True
+    assert sent == ["Key byo-key-123"]
+
+
 def test_health_check_classifies_403_lock(monkeypatch):
     """End-to-end: bad key → fake locked-403 → AccountStatus(locked=True)."""
     monkeypatch.delenv("FAL_KEY", raising=False)
