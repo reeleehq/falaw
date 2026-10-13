@@ -106,7 +106,7 @@ from falaw import llm_call_cost_usd
 usd, known = llm_call_cost_usd("anthropic", "claude-opus-4-7", response.usage)
 ```
 
-`usage` is the vendor's own (a dict or the SDK object; OpenAI's Responses and Chat Completions shapes both work, cached tokens included). A model the table does not list is priced at the provider's dearest rates with `known=False`: an upper bound, never a free call.
+`usage` is the vendor's own (a dict or the SDK object; OpenAI's Responses and Chat Completions shapes both work, cached tokens included). A model the table does not list is priced at the provider's dearest listed rates with `known=False`: never a free call, but not a ceiling either (an older model can cost more), so a caller that must never under-count refuses when `known` is false.
 
 ### Re-pricing a saved plan
 

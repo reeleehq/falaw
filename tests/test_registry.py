@@ -3,9 +3,20 @@ from falaw.registry import get_model, list_models, list_tools, pick_model
 
 def test_list_models_seeded_categories():
     cats = {m.category for m in list_models()}
-    for expected in ("image", "image_edit", "image_to_video", "text_to_video",
-                     "lipsync", "tts", "voice_clone", "upscale",
-                     "background_removal", "music", "llm", "avatar"):
+    for expected in (
+        "image",
+        "image_edit",
+        "image_to_video",
+        "text_to_video",
+        "lipsync",
+        "tts",
+        "voice_clone",
+        "upscale",
+        "background_removal",
+        "music",
+        "llm",
+        "avatar",
+    ):
         assert expected in cats, f"missing category: {expected}"
 
 
@@ -29,15 +40,23 @@ def test_get_model_alias():
 
 def test_image_tools_registered():
     names = {t.name for t in list_tools(tag="image")}
-    for expected in ("generate_image", "edit_image", "upscale_image",
-                     "remove_background"):
+    for expected in (
+        "generate_image",
+        "edit_image",
+        "upscale_image",
+        "remove_background",
+    ):
         assert expected in names, f"missing tool: {expected}"
 
 
 def test_video_tools_registered():
     names = {t.name for t in list_tools(tag="video")}
-    for expected in ("text_to_video", "image_to_video", "lipsync",
-                     "talking_avatar_from_text"):
+    for expected in (
+        "text_to_video",
+        "image_to_video",
+        "lipsync",
+        "talking_avatar_from_text",
+    ):
         assert expected in names, f"missing tool: {expected}"
 
 

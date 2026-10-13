@@ -14,6 +14,7 @@ def _isolated(tmp_path, monkeypatch):
     monkeypatch.setenv("FALAW_CACHE_DIR", str(tmp_path / "cache"))
     from falaw.events import clear_subscribers
     from falaw.journal import _default_journal
+
     _default_journal.cache_clear()
     clear_subscribers()
     yield

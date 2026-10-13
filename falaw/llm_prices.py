@@ -11,8 +11,10 @@ a private copy of the same numbers and drifted; this is the one home.
 
 The answer is ``(usd, known)``. A model the table does not list is **unknown,
 not free**: it is priced at the dearest rates listed for that provider and
-``known`` is ``False``, an upper bound a spend cap can count and a caller that
-must refuse an unpriced model can test for:
+``known`` is ``False``. The cost is then a *floor on a guess*, not a ceiling: an
+unlisted model can cost more than the dearest listed one (an older, pricier
+model). A spend cap can count it; a caller that must never under-count should
+refuse an unpriced model by testing ``known``:
 
 >>> usd, known = llm_call_cost_usd("anthropic", "claude-from-the-future",
 ...                                {"input_tokens": 1_000_000})
@@ -38,6 +40,7 @@ import json
 import os
 from dataclasses import dataclass
 from functools import lru_cache
+from types import MappingProxyType
 from typing import Any, Mapping, Optional
 
 from .base import data_table_version
@@ -63,6 +66,7 @@ class LlmPriceRates:
     output_usd_per_mtok: float
     cache_read_usd_per_mtok: Optional[float] = None
     cache_write_usd_per_mtok: Optional[float] = None
+    cache_write_1h_usd_per_mtok: Optional[float] = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -95,6 +99,7 @@ def _rates(row: Mapping[str, Any]) -> LlmPriceRates:
         output_usd_per_mtok=float(row["output_usd_per_mtok"]),
         cache_read_usd_per_mtok=opt("cache_read_usd_per_mtok"),
         cache_write_usd_per_mtok=opt("cache_write_usd_per_mtok"),
+        cache_write_1h_usd_per_mtok=opt("cache_write_1h_usd_per_mtok"),
     )
 
 
@@ -118,7 +123,7 @@ def load_llm_prices() -> LlmPriceTable:
             date=row.get("date", ""),
             notes=row.get("notes", ""),
         )
-    return out
+    return MappingProxyType(out)
 
 
 @lru_cache(maxsize=1)
@@ -140,7 +145,7 @@ def get_llm_price(
 ) -> Optional[LlmPrice]:
     """The row for ``model`` (exact id), or ``None`` when the table does not list it."""
     table = load_llm_prices() if prices is None else prices
-    return table.get((provider, (model or "").strip()))
+    return table.get((provider, str(model or "").strip()))
 
 
 def llm_call_cost_usd(
@@ -161,7 +166,8 @@ def llm_call_cost_usd(
       which is billed at the cached rate; reasoning tokens are already in output.
 
     ``known`` is ``False`` when the model is not in the table; the cost is then
-    an upper bound (see the module docstring). ``prices=`` swaps in the caller's
+    priced at the provider's dearest listed rates, which is not a ceiling for a
+    model pricier than any listed (see the module docstring). ``prices=`` swaps in the caller's
     own table, e.g. one reconciled against an invoice.
 
     Raises:
@@ -173,7 +179,7 @@ def llm_call_cost_usd(
             f"known providers: {', '.join(PROVIDERS)}."
         )
     table = load_llm_prices() if prices is None else prices
-    price = table.get((provider, (model or "").strip()))
+    price = table.get((provider, str(model or "").strip()))
     known = price is not None
     rates = price.rates if price else _dearest_rates(provider, table)
     if provider == "anthropic":
@@ -189,6 +195,10 @@ def _anthropic_usd(
     fresh = _count(_get(usage, "input_tokens"))
     cache_read = _count(_get(usage, "cache_read_input_tokens"))
     cache_write = _count(_get(usage, "cache_creation_input_tokens"))
+    write_1h = min(
+        cache_write,
+        _count(_get(_get(usage, "cache_creation"), "ephemeral_1h_input_tokens")),
+    )
     if (
         price
         and price.long_prompt_rates
@@ -197,10 +207,12 @@ def _anthropic_usd(
         rates = price.long_prompt_rates
     cache_read_rate = _or(rates.cache_read_usd_per_mtok, rates.input_usd_per_mtok)
     cache_write_rate = _or(rates.cache_write_usd_per_mtok, rates.input_usd_per_mtok)
+    cache_write_1h_rate = _or(rates.cache_write_1h_usd_per_mtok, cache_write_rate)
     return (
         rates.input_usd_per_mtok * fresh
         + cache_read_rate * cache_read
-        + cache_write_rate * cache_write
+        + cache_write_rate * (cache_write - write_1h)
+        + cache_write_1h_rate * write_1h
         + rates.output_usd_per_mtok * _count(_get(usage, "output_tokens"))
     ) / TOKENS_PER_PRICE_UNIT
 
@@ -209,10 +221,10 @@ def _openai_usd(rates: LlmPriceRates, usage: Any) -> float:
     total_in = _count(_first(usage, "input_tokens", "prompt_tokens"))
     output = _count(_first(usage, "output_tokens", "completion_tokens"))
     details = _first(usage, "input_tokens_details", "prompt_tokens_details")
-    cached = min(total_in, _count(_get(details, "cached_tokens")))
+    cached = _count(_get(details, "cached_tokens"))
     cached_rate = _or(rates.cache_read_usd_per_mtok, rates.input_usd_per_mtok)
     return (
-        rates.input_usd_per_mtok * (total_in - cached)
+        rates.input_usd_per_mtok * max(0, total_in - cached)
         + cached_rate * cached
         + rates.output_usd_per_mtok * output
     ) / TOKENS_PER_PRICE_UNIT
@@ -220,7 +232,13 @@ def _openai_usd(rates: LlmPriceRates, usage: Any) -> float:
 
 def _dearest_rates(provider: str, table: LlmPriceTable) -> LlmPriceRates:
     """Per-column maximum over a provider's rows: the upper bound for an unlisted model."""
-    rows = [p.rates for p in table.values() if p.provider == provider]
+    rows = [
+        r
+        for p in table.values()
+        if p.provider == provider
+        for r in (p.rates, p.long_prompt_rates)
+        if r is not None
+    ]
     if not rows:
         raise ValueError(f"The price table lists no {provider!r} models to bound with.")
 
@@ -233,6 +251,7 @@ def _dearest_rates(provider: str, table: LlmPriceTable) -> LlmPriceRates:
         output_usd_per_mtok=top("output_usd_per_mtok"),
         cache_read_usd_per_mtok=top("cache_read_usd_per_mtok"),
         cache_write_usd_per_mtok=top("cache_write_usd_per_mtok"),
+        cache_write_1h_usd_per_mtok=top("cache_write_1h_usd_per_mtok"),
     )
 
 
@@ -254,12 +273,19 @@ def _first(obj: Any, *keys: str) -> Any:
 
 
 def _count(value: Any) -> int:
-    """A token count: a positive int, else 0 (bools, negatives and junk count as none)."""
-    return (
-        value
-        if isinstance(value, int) and not isinstance(value, bool) and value > 0
-        else 0
-    )
+    """A token count: a positive whole number as an int, else 0.
+
+    Accepts ints, numpy integers, floats and numeric strings (a proxy that
+    round-trips usage through JSON or a DataFrame hands back all of these);
+    bools, negatives and anything unparseable count as none.
+    """
+    if value is None or isinstance(value, bool):
+        return 0
+    try:
+        count = int(value)
+    except (TypeError, ValueError, OverflowError):
+        return 0
+    return max(count, 0)
 
 
 def _or(value: Optional[float], fallback: float) -> float:

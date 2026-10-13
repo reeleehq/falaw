@@ -111,10 +111,76 @@ def test_usage_may_be_an_sdk_object():
 
 @pytest.mark.parametrize(
     "junk",
-    [None, {}, {"input_tokens": -5}, {"input_tokens": True}, {"input_tokens": "9"}],
+    [
+        None,
+        {},
+        {"input_tokens": -5},
+        {"input_tokens": True},
+        {"input_tokens": "abc"},
+        {"input_tokens": float("nan")},
+    ],
 )
 def test_junk_usage_costs_zero_not_an_exception(junk):
     assert llm_call_cost_usd("anthropic", "claude-opus-4-7", junk) == (0.0, True)
+
+
+@pytest.mark.parametrize("count", [1e6, "1000000", 1_000_000.0])
+def test_counts_that_are_not_python_ints_are_still_priced(count):
+    assert llm_call_cost_usd(
+        "anthropic", "claude-opus-4-7", {"input_tokens": count}
+    ) == (5.0, True)
+    assert llm_call_cost_usd("openai", "gpt-4o", {"prompt_tokens": count}) == (
+        2.5,
+        True,
+    )
+
+
+def test_one_hour_cache_writes_cost_twice_the_input_rate():
+    usage = {
+        "cache_creation_input_tokens": M,
+        "cache_creation": {"ephemeral_1h_input_tokens": M},
+    }
+    assert llm_call_cost_usd("anthropic", "claude-opus-4-7", usage) == (10.0, True)
+    half = {
+        "cache_creation_input_tokens": M,
+        "cache_creation": {"ephemeral_1h_input_tokens": M // 2},
+    }
+    assert llm_call_cost_usd("anthropic", "claude-opus-4-7", half) == (8.125, True)
+
+
+def test_unknown_model_bound_covers_long_prompt_rates_of_a_caller_table():
+    rates = falaw.llm_prices.LlmPriceRates
+    table = {
+        ("anthropic", "m"): falaw.LlmPrice(
+            provider="anthropic",
+            model="m",
+            rates=rates(input_usd_per_mtok=1.0, output_usd_per_mtok=1.0),
+            long_prompt_over_tokens=10,
+            long_prompt_rates=rates(
+                input_usd_per_mtok=100.0, output_usd_per_mtok=100.0
+            ),
+        )
+    }
+    usage = {"input_tokens": 11}
+    known = llm_call_cost_usd("anthropic", "m", usage, prices=table)
+    unknown = llm_call_cost_usd("anthropic", "other", usage, prices=table)
+    assert unknown[1] is False and unknown[0] >= known[0]
+
+
+def test_openai_cached_beyond_input_is_not_priced_lower():
+    usage = {"prompt_tokens": 100, "prompt_tokens_details": {"cached_tokens": 1000}}
+    assert llm_call_cost_usd("openai", "gpt-4o", usage)[0] == pytest.approx(
+        1000 * 1.25 / M
+    )
+
+
+def test_loaded_table_is_read_only():
+    with pytest.raises(TypeError):
+        load_llm_prices()[("openai", "x")] = None
+
+
+def test_non_string_model_is_unknown_not_a_crash():
+    assert llm_call_cost_usd("openai", 5, {"input_tokens": 1})[1] is False
 
 
 def test_unknown_provider_is_an_informative_error():

@@ -76,7 +76,8 @@ def test_cached_call_fal_falls_through_on_miss(monkeypatch):
     assert out1["images"][0]["url"] == "http://x/i.png"
     # Second call should hit the cache; replace fake with one that errors.
     monkeypatch.setattr(
-        fal_client, "subscribe",
+        fal_client,
+        "subscribe",
         lambda *a, **kw: (_ for _ in ()).throw(AssertionError("re-call")),
     )
     out2 = cache.cached_call_fal("fal-ai/y", {"prompt": "fresh"})
@@ -88,8 +89,7 @@ def test_cached_call_fal_refresh_bypasses_cache(monkeypatch):
     import fal_client
 
     cache.cache_put("fal-ai/z", {"k": 1}, {"raw": "old"})
-    monkeypatch.setattr(fal_client, "subscribe",
-                         lambda *a, **kw: {"raw": "new"})
+    monkeypatch.setattr(fal_client, "subscribe", lambda *a, **kw: {"raw": "new"})
     out = cache.cached_call_fal("fal-ai/z", {"k": 1}, refresh=True)
     assert out == {"raw": "new"}
     # And the cache is now updated.

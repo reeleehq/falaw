@@ -26,7 +26,9 @@ def test_classify_2xx_is_ok():
 
 
 def test_classify_403_with_lock_pattern_is_locked():
-    s = _classify_response(_response(403, json_body={"detail": "Your account is locked"}))
+    s = _classify_response(
+        _response(403, json_body={"detail": "Your account is locked"})
+    )
     assert s.ok is False
     assert s.locked is True
     assert s.unauthorized is False
@@ -61,23 +63,43 @@ def test_classify_500_is_generic_failure():
 
 
 def test_message_for_user_ok():
-    s = AccountStatus(ok=True, locked=False, unauthorized=False, status_code=200,
-                      detail="", url=None, error=None)
+    s = AccountStatus(
+        ok=True,
+        locked=False,
+        unauthorized=False,
+        status_code=200,
+        detail="",
+        url=None,
+        error=None,
+    )
     assert "healthy" in s.message_for_user().lower()
 
 
 def test_message_for_user_locked_includes_url():
-    s = AccountStatus(ok=False, locked=True, unauthorized=False, status_code=403,
-                      detail="account is locked", url="https://fal.ai/dashboard/billing",
-                      error=None)
+    s = AccountStatus(
+        ok=False,
+        locked=True,
+        unauthorized=False,
+        status_code=403,
+        detail="account is locked",
+        url="https://fal.ai/dashboard/billing",
+        error=None,
+    )
     msg = s.message_for_user()
     assert "locked" in msg.lower()
     assert "fal.ai/dashboard/billing" in msg
 
 
 def test_message_for_user_unauthorized_mentions_FAL_KEY():
-    s = AccountStatus(ok=False, locked=False, unauthorized=True, status_code=401,
-                      detail="bad key", url=None, error=None)
+    s = AccountStatus(
+        ok=False,
+        locked=False,
+        unauthorized=True,
+        status_code=401,
+        detail="bad key",
+        url=None,
+        error=None,
+    )
     msg = s.message_for_user()
     assert "FAL_KEY" in msg
 
@@ -97,9 +119,15 @@ def test_health_check_with_explicit_key_overrides_env(monkeypatch):
     monkeypatch.delenv("FAL_API_KEY", raising=False)
 
     class FakeClient:
-        def __init__(self, *a, **k): pass
-        def __enter__(self): return self
-        def __exit__(self, *exc): return False
+        def __init__(self, *a, **k):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
         def post(self, *a, **k):
             r = MagicMock()
             r.status_code = 200
@@ -111,6 +139,7 @@ def test_health_check_with_explicit_key_overrides_env(monkeypatch):
     # health_check does `import httpx` inside; patching httpx.Client globally
     # is enough because that import binds to the same module object.
     import httpx
+
     monkeypatch.setattr(httpx, "Client", FakeClient)
 
     s = health_check(api_key="fake-key")
@@ -126,9 +155,15 @@ def test_health_check_uses_a_bound_byo_key(monkeypatch):
     sent = []
 
     class FakeClient:
-        def __init__(self, *a, **k): pass
-        def __enter__(self): return self
-        def __exit__(self, *exc): return False
+        def __init__(self, *a, **k):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
         def post(self, url, headers=None, **k):
             sent.append(headers["Authorization"])
             r = MagicMock()
@@ -139,6 +174,7 @@ def test_health_check_uses_a_bound_byo_key(monkeypatch):
             return r
 
     import httpx
+
     monkeypatch.setattr(httpx, "Client", FakeClient)
 
     with using_fal_credentials("byo-key-123"):
@@ -153,9 +189,15 @@ def test_health_check_classifies_403_lock(monkeypatch):
     monkeypatch.delenv("FAL_API_KEY", raising=False)
 
     class FakeClient:
-        def __init__(self, *a, **k): pass
-        def __enter__(self): return self
-        def __exit__(self, *exc): return False
+        def __init__(self, *a, **k):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
         def post(self, *a, **k):
             r = MagicMock()
             r.status_code = 403
@@ -165,6 +207,7 @@ def test_health_check_classifies_403_lock(monkeypatch):
             return r
 
     import httpx
+
     monkeypatch.setattr(httpx, "Client", FakeClient)
 
     s = health_check(api_key="fake-key")

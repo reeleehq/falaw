@@ -20,8 +20,9 @@ from falaw.errors import (
 )
 
 
-def _http_error(status: int, body_text: str = "", headers: dict | None = None,
-                json_body=None):
+def _http_error(
+    status: int, body_text: str = "", headers: dict | None = None, json_body=None
+):
     """Build a fake fal_client.FalClientHTTPError-like exception for translate()."""
     import fal_client  # type: ignore[import-untyped]
 
@@ -49,7 +50,9 @@ def test_hierarchy():
 
 
 def test_translate_403_account_locked():
-    raw = _http_error(403, json_body={"detail": "Your account is locked. Verify email."})
+    raw = _http_error(
+        403, json_body={"detail": "Your account is locked. Verify email."}
+    )
     out = translate(raw, application="fal-ai/test")
     assert isinstance(out, FalAccountLocked)
     assert out.status_code == 403
@@ -80,8 +83,9 @@ def test_translate_402_insufficient_funds():
 
 
 def test_translate_429_rate_limited_with_retry_after():
-    raw = _http_error(429, json_body={"detail": "too many requests"},
-                      headers={"retry-after": "5"})
+    raw = _http_error(
+        429, json_body={"detail": "too many requests"}, headers={"retry-after": "5"}
+    )
     out = translate(raw)
     assert isinstance(out, FalRateLimited)
     assert out.retry_after_s == 5.0
@@ -113,6 +117,7 @@ def test_translate_unknown_exception_returned_unchanged():
 
 def test_translate_timeout():
     import fal_client  # type: ignore[import-untyped]
+
     raw = fal_client.FalClientTimeoutError("timed out")
     out = translate(raw)
     assert isinstance(out, FalTimeout)

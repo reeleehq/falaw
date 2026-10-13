@@ -39,7 +39,9 @@ def _patch_fal(monkeypatch):
     def fake(application, *, arguments, **_kw):
         captured.append({"application": application, "arguments": dict(arguments)})
         if "tts" in application or "speech" in application or "playai" in application:
-            return {"audio": {"url": "http://x/spoken.mp3", "content_type": "audio/mpeg"}}
+            return {
+                "audio": {"url": "http://x/spoken.mp3", "content_type": "audio/mpeg"}
+            }
         if "ai-avatar" in application or "omnihuman" in application:
             return {"video": {"url": "http://x/talking.mp4"}}
         if "lipsync" in application:
@@ -93,15 +95,24 @@ def test_edited_beat_invalidates_outer_cache(monkeypatch):
     from falaw import render_beat
     from falaw.scene import Beat
 
-    sarah = Character(name="Sarah", reference_image_url="http://x/face.png",
-                       voice=Voice(name="Sarah", voice_id="v1"))
+    sarah = Character(
+        name="Sarah",
+        reference_image_url="http://x/face.png",
+        voice=Voice(name="Sarah", voice_id="v1"),
+    )
     b1 = make_beat("Sarah", "Hello.", emotion="calm", index=0)
     first = render_beat(b1, sarah)
     assert first["cache_hit"] is False
 
-    b2 = Beat(id=b1.id, speaker=b1.speaker, line="Hello.",
-              emotion="frantic", action=b1.action,
-              shot_id=b1.shot_id, notes=b1.notes)
+    b2 = Beat(
+        id=b1.id,
+        speaker=b1.speaker,
+        line="Hello.",
+        emotion="frantic",
+        action=b1.action,
+        shot_id=b1.shot_id,
+        notes=b1.notes,
+    )
     second = render_beat(b2, sarah)
     assert second["cache_hit"] is False
     # And re-rendering the same edit *is* a hit.
@@ -113,25 +124,32 @@ def test_render_scene_orchestrates(monkeypatch):
     captured = _patch_fal(monkeypatch)
     from falaw import render_scene
 
-    sarah = Character(name="Sarah",
-                       reference_image_url="http://x/sarah.png",
-                       voice=Voice(name="Sarah", voice_id="v1"))
-    tom = Character(name="Tom",
-                     reference_image_url="http://x/tom.png",
-                     voice=Voice(name="Tom", voice_id="v2"))
+    sarah = Character(
+        name="Sarah",
+        reference_image_url="http://x/sarah.png",
+        voice=Voice(name="Sarah", voice_id="v1"),
+    )
+    tom = Character(
+        name="Tom",
+        reference_image_url="http://x/tom.png",
+        voice=Voice(name="Tom", voice_id="v2"),
+    )
     diner = Environment(name="diner", description="1950s diner")
-    shot = make_shot("two-shot at the booth", framing="medium",
-                     environment="diner", characters=("Sarah", "Tom"), index=0)
+    shot = make_shot(
+        "two-shot at the booth",
+        framing="medium",
+        environment="diner",
+        characters=("Sarah", "Tom"),
+        index=0,
+    )
     scene = Scene(
         title="t",
         characters=(sarah, tom),
         environments=(diner,),
         shots=(shot,),
         beats=(
-            make_beat("Sarah", "Why are you here?",
-                      shot_id=shot.id, index=0),
-            make_beat("Tom", "I came to apologize.",
-                      shot_id=shot.id, index=1),
+            make_beat("Sarah", "Why are you here?", shot_id=shot.id, index=0),
+            make_beat("Tom", "I came to apologize.", shot_id=shot.id, index=1),
         ),
     )
     manifest = render_scene(scene)
@@ -150,8 +168,11 @@ def test_render_scene_skips_empty_beats(monkeypatch):
     _patch_fal(monkeypatch)
     from falaw import render_scene
 
-    a = Character(name="A", reference_image_url="http://x/a.png",
-                   voice=Voice(name="A", voice_id="v"))
+    a = Character(
+        name="A",
+        reference_image_url="http://x/a.png",
+        voice=Voice(name="A", voice_id="v"),
+    )
     scene = Scene(
         title="t",
         characters=(a,),
@@ -171,7 +192,8 @@ def test_render_beat_avatar_model_id_override(monkeypatch):
     from falaw import render_beat
 
     sarah = Character(
-        name="Sarah", description="mid-30s",
+        name="Sarah",
+        description="mid-30s",
         reference_image_url="http://x/face.png",
         voice=Voice(name="Sarah", voice_id="v1"),
     )

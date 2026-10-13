@@ -191,7 +191,11 @@ def test_an_index_record_written_before_validators_existed_is_refetched(fake_ass
     # Rewrite the index entry in the old shape — no etag, no last_modified.
     with open(_url_index_path(url), "w") as f:
         json.dump(
-            {"url": url, "content_hash": ref.content_hash, "bytes_size": ref.bytes_size},
+            {
+                "url": url,
+                "content_hash": ref.content_hash,
+                "bytes_size": ref.bytes_size,
+            },
             f,
         )
     assert remembered_ref(url) == ContentRef(ref.content_hash, ref.bytes_size)
@@ -212,7 +216,9 @@ def test_an_unreachable_origin_falls_back_to_the_stored_bytes(fake_assets):
 
     fake_assets.fail(url)
 
-    with pytest.warns(UserWarning, match="is gone from its origin|could not be re-read"):
+    with pytest.warns(
+        UserWarning, match="is gone from its origin|could not be re-read"
+    ):
         again = content_ref_for_url(url)
 
     assert again == first
@@ -358,7 +364,9 @@ def test_materialize_asset_returns_the_local_copy_when_the_origin_dies(fake_asse
     first = materialize_asset(url)
     fake_assets.fail(url)
 
-    with pytest.warns(UserWarning, match="is gone from its origin|could not be re-read"):
+    with pytest.warns(
+        UserWarning, match="is gone from its origin|could not be re-read"
+    ):
         again = materialize_asset(url)
 
     assert again == first
@@ -441,6 +449,7 @@ def etag_origin():
 
 def test_a_real_conditional_get_replays_the_etag_and_takes_the_304(etag_origin):
     from falaw.content import _http_chunks as real
+
     """The mechanism itself: first read records an ETag, second read gets a 304."""
     first = content_ref_for_url(etag_origin.url, fetcher=real)
     assert etag_origin.requests[0]["If-None-Match"] is None, "nothing to replay yet"
@@ -454,6 +463,7 @@ def test_a_real_conditional_get_replays_the_etag_and_takes_the_304(etag_origin):
 
 def test_a_real_origin_serving_new_bytes_yields_a_new_content_hash(etag_origin):
     from falaw.content import _http_chunks as real
+
     first = content_ref_for_url(etag_origin.url, fetcher=real)
 
     etag_origin.body = IMG_B  # the ETag moves with it
@@ -476,6 +486,7 @@ def test_the_recorded_validators_come_from_the_response_headers(etag_origin):
 
 def test_an_origin_offering_no_validators_is_re_fetched_not_trusted():
     from falaw.content import _http_chunks as real
+
     """No ETag, no Last-Modified — falaw has no way to check, so it re-reads."""
     import http.server
     import threading
@@ -531,7 +542,9 @@ def test_a_transient_failure_does_not_make_stale_bytes_look_current(fake_assets)
         content_ref_for_url(url)
 
 
-def test_a_store_failure_does_not_make_stale_bytes_look_current(fake_assets, monkeypatch):
+def test_a_store_failure_does_not_make_stale_bytes_look_current(
+    fake_assets, monkeypatch
+):
     """The origin was reachable and the new bytes were in hand.
 
     An earlier cut had the store write inside the fallback's `try`, so a full

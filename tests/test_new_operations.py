@@ -36,8 +36,9 @@ def _patch_subscribe(monkeypatch, response_for):
 def test_edit_image(monkeypatch):
     captured = _patch_subscribe(
         monkeypatch,
-        lambda app: {"images": [{"url": "http://x/edited.png",
-                                  "content_type": "image/png"}]},
+        lambda app: {
+            "images": [{"url": "http://x/edited.png", "content_type": "image/png"}]
+        },
     )
     from falaw import edit_image
 
@@ -64,8 +65,9 @@ def test_upscale_image(monkeypatch):
 def test_remove_background(monkeypatch):
     captured = _patch_subscribe(
         monkeypatch,
-        lambda app: {"image": {"url": "http://x/cutout.png",
-                                "content_type": "image/png"}},
+        lambda app: {
+            "image": {"url": "http://x/cutout.png", "content_type": "image/png"}
+        },
     )
     from falaw import remove_background
 
@@ -82,7 +84,9 @@ def test_text_to_video(monkeypatch):
     from falaw import text_to_video
 
     r = text_to_video("a sunset over Lisbon", quality="high")
-    assert captured[0]["application"] == "fal-ai/bytedance/seedance/v1/pro/text-to-video"
+    assert (
+        captured[0]["application"] == "fal-ai/bytedance/seedance/v1/pro/text-to-video"
+    )
     assert r.first.kind == "video"
     assert r.first.duration_s == 5.0
 
@@ -136,7 +140,10 @@ def test_animate_face_image_plus_audio(monkeypatch):
     from falaw import animate_face
 
     r = animate_face("http://x/face.jpg", "http://x/audio.mp3", prompt="warm")
-    assert "avatar" in captured[0]["application"] or "omnihuman" in captured[0]["application"]
+    assert (
+        "avatar" in captured[0]["application"]
+        or "omnihuman" in captured[0]["application"]
+    )
     assert captured[0]["arguments"]["image_url"] == "http://x/face.jpg"
     # ai-avatar requires `prompt`; omnihuman accepts it. We always pass it.
     assert "prompt" in captured[0]["arguments"]
@@ -145,10 +152,12 @@ def test_animate_face_image_plus_audio(monkeypatch):
 
 def test_talking_avatar_from_text_chains_via_animate_face(monkeypatch):
     """Composer should TTS first, then pass the audio URL into animate_face."""
+
     def response_for(app):
         if "tts" in app or "speech" in app:
-            return {"audio": {"url": "http://x/spoken.mp3",
-                              "content_type": "audio/mpeg"}}
+            return {
+                "audio": {"url": "http://x/spoken.mp3", "content_type": "audio/mpeg"}
+            }
         return {"video": {"url": "http://x/talking.mp4"}}
 
     captured = _patch_subscribe(monkeypatch, response_for)
@@ -158,8 +167,10 @@ def test_talking_avatar_from_text_chains_via_animate_face(monkeypatch):
     assert len(captured) == 2, f"expected 2 fal calls, got {len(captured)}"
     assert "tts" in captured[0]["application"] or "speech" in captured[0]["application"]
     # Second call should hit the avatar (image+audio) family, NOT lipsync.
-    assert ("avatar" in captured[1]["application"]
-            or "omnihuman" in captured[1]["application"])
+    assert (
+        "avatar" in captured[1]["application"]
+        or "omnihuman" in captured[1]["application"]
+    )
     assert captured[1]["arguments"]["audio_url"] == "http://x/spoken.mp3"
     assert captured[1]["arguments"]["image_url"] == "http://x/face.jpg"
     assert r.first.kind == "video"

@@ -65,7 +65,9 @@ class FakeFal:
     def responds(self, application: str, response: dict) -> None:
         self.behaviour[application] = response
 
-    def subscribe(self, application, *, arguments, with_logs=True, on_queue_update=None):
+    def subscribe(
+        self, application, *, arguments, with_logs=True, on_queue_update=None
+    ):
         return self.behaviour.get(
             application, {"images": [{"url": f"http://cdn/{application}.png"}]}
         )
