@@ -780,5 +780,139 @@
     "quality_tier": "high",
     "cost_hint": "medium",
     "docs_url": "https://fal.ai/models/fal-ai/minimax/voice-clone"
+  },
+  {
+    "id": "fal-ai/ltx-video",
+    "category": "text_to_video",
+    "description": "LTX Video (preview): cheap open-weights text-to-video, reelee-web's default video model.",
+    "aliases": [
+      "ltx-video"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "very low",
+    "docs_url": "https://fal.ai/models/fal-ai/ltx-video",
+    "cost_estimate": {
+      "kind": "per_call",
+      "amount": 0.02,
+      "currency": "USD",
+      "notes": "fal model page: '$0.02 per video', read 2026-10-13. Flat per video; the schema exposes no length knob.",
+      "source": "docs"
+    },
+    "max_clip_seconds": 5.0,
+    "single_character_recommended": true
+  },
+  {
+    "id": "fal-ai/ltx-video/image-to-video",
+    "category": "image_to_video",
+    "description": "LTX Video (preview) image-to-video; same price as the text endpoint.",
+    "aliases": [
+      "ltx-video-i2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "very low",
+    "docs_url": "https://fal.ai/models/fal-ai/ltx-video/image-to-video",
+    "cost_estimate": {
+      "kind": "per_call",
+      "amount": 0.02,
+      "currency": "USD",
+      "notes": "fal model page: '$0.02 per video', read 2026-10-13. Flat per video.",
+      "source": "docs"
+    },
+    "max_clip_seconds": 5.0,
+    "single_character_recommended": true
+  },
+  {
+    "id": "fal-ai/mochi-v1",
+    "category": "text_to_video",
+    "description": "Mochi 1 preview text-to-video. Deprecated by fal.",
+    "aliases": [
+      "mochi"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "low",
+    "docs_url": "https://fal.ai/models/fal-ai/mochi-v1",
+    "cost_estimate": {
+      "kind": "per_call",
+      "amount": 0.4,
+      "currency": "USD",
+      "notes": "fal model page: '$0.4 per video', read 2026-10-13; endpoint marked deprecated. Default 163 frames at 30 fps (~5.4 s).",
+      "source": "docs"
+    },
+    "max_clip_seconds": 5.4,
+    "single_character_recommended": true
+  },
+  {
+    "id": "fal-ai/kling-video/v1.5/pro/image-to-video",
+    "category": "image_to_video",
+    "description": "Kling 1.5 (pro) image-to-video. Deprecated by fal. reelee-web's bare 'fal-ai/kling-video/v1.5/pro' id resolves here.",
+    "aliases": [
+      "kling-video/v1.5/pro",
+      "fal-ai/kling-video/v1.5/pro"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "medium",
+    "docs_url": "https://fal.ai/models/fal-ai/kling-video/v1.5/pro/image-to-video",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.1,
+      "currency": "USD",
+      "notes": "fal model page: '$0.1 per second', read 2026-10-13; endpoint marked deprecated.",
+      "source": "docs"
+    },
+    "max_clip_seconds": 10.0
+  },
+  {
+    "id": "fal-ai/kling-video/v1.5/pro/text-to-video",
+    "category": "text_to_video",
+    "description": "Kling 1.5 (pro) text-to-video. Deprecated by fal.",
+    "aliases": [],
+    "quality_tier": "unranked",
+    "cost_hint": "medium",
+    "docs_url": "https://fal.ai/models/fal-ai/kling-video/v1.5/pro/text-to-video",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.1,
+      "currency": "USD",
+      "notes": "fal model page: '$0.1 per second', read 2026-10-13; endpoint marked deprecated.",
+      "source": "docs"
+    },
+    "max_clip_seconds": 10.0
+  },
+  {
+    "id": "fal-ai/kling-video/v1.5/standard",
+    "category": "image_to_video",
+    "description": "Kling 1.5 (standard). fal publishes no endpoint metadata or price for it; reelee-web's id.",
+    "aliases": [
+      "kling-video/v1.5/standard"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "low",
+    "docs_url": "https://fal.ai/models/fal-ai/kling-video/v1.5/standard",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.045,
+      "currency": "USD",
+      "notes": "NO published price: fal's pages for v1.5 standard carry none (read 2026-10-13). Uses the published Kling 1.0 standard rate ($0.045 per second, deprecated endpoint) as the nearest tier. Replace when fal publishes one.",
+      "source": "approximate"
+    },
+    "max_clip_seconds": 10.0
+  },
+  {
+    "id": "fal-ai/flux-pro",
+    "category": "image",
+    "description": "FLUX.1 [pro] (original endpoint). Deprecated by fal; fal-ai/flux-pro/new and v1.1 replace it.",
+    "aliases": [
+      "flux-pro"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "low",
+    "docs_url": "https://fal.ai/models/fal-ai/flux-pro",
+    "cost_estimate": {
+      "kind": "per_megapixel",
+      "amount": 0.05,
+      "currency": "USD",
+      "notes": "fal model page: '$0.05 per megapixel', rounded up to the next megapixel, read 2026-10-13; endpoint marked deprecated.",
+      "source": "docs"
+    }
   }
 ]

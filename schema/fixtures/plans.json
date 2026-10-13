@@ -14,7 +14,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -43,7 +43,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 0.0018,
         "expected_duration_s": null,
@@ -73,7 +73,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 0.06,
         "expected_duration_s": null,
@@ -116,7 +116,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -160,7 +160,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -195,7 +195,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": null,
         "expected_duration_s": null,
@@ -226,7 +226,7 @@
             "seconds": 6
           },
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 1.2000000000000002,
         "expected_duration_s": null,
@@ -258,7 +258,7 @@
             "seconds": 5.5
           },
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 1.54,
         "expected_duration_s": null,
@@ -290,7 +290,7 @@
             "seconds": 6
           },
           "table": "falaw/data/models.json",
-          "table_version": "70b26c6bfd7b"
+          "table_version": "06897dfcc04a"
         },
         "estimated_cost_usd": 0.48,
         "expected_duration_s": null,
@@ -329,7 +329,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "70b26c6bfd7b"
+              "table_version": "06897dfcc04a"
             },
             "estimated_cost_usd": 0.015,
             "expected_duration_s": null,
@@ -350,7 +350,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "70b26c6bfd7b"
+              "table_version": "06897dfcc04a"
             },
             "estimated_cost_usd": null,
             "expected_duration_s": null,
@@ -398,7 +398,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "70b26c6bfd7b"
+              "table_version": "06897dfcc04a"
             },
             "estimated_cost_usd": 0.015,
             "expected_duration_s": null,
@@ -421,7 +421,7 @@
                 "seconds": 6
               },
               "table": "falaw/data/models.json",
-              "table_version": "70b26c6bfd7b"
+              "table_version": "06897dfcc04a"
             },
             "estimated_cost_usd": 0.48,
             "expected_duration_s": null,
@@ -457,7 +457,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "70b26c6bfd7b"
+              "table_version": "06897dfcc04a"
             },
             "estimated_cost_usd": 0.0018,
             "expected_duration_s": null,
@@ -479,7 +479,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "70b26c6bfd7b"
+              "table_version": "06897dfcc04a"
             },
             "estimated_cost_usd": 0.0018,
             "expected_duration_s": null,

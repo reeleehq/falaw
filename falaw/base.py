@@ -89,7 +89,7 @@ class ModelRecord:
     category: str
     description: str = ""
     aliases: tuple[str, ...] = ()
-    quality_tier: str = ""  # "fast" | "balanced" | "high" | "ultra"
+    quality_tier: str = ""  # "fast" | "balanced" | "high" | "ultra" | "unranked"
     cost_hint: str = ""  # legacy free-form text; kept for back-compat
     cost_estimate: Optional[CostEstimate] = None  # quantitative; preferred
     docs_url: str = ""

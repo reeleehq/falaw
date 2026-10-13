@@ -570,6 +570,7 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   image                high       fal-ai/flux-pro/v1.1
   image                ultra      fal-ai/flux-pro/v1.1-ultra
   image                ultra      fal-ai/nano-banana-pro
+  image                unranked   fal-ai/flux-pro
   image_edit           balanced   fal-ai/flux-kontext/dev
   image_edit           balanced   fal-ai/omnigen-v2
   image_edit           high       fal-ai/bytedance/seededit/v3/edit-image
@@ -578,6 +579,9 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   image_to_video       balanced   fal-ai/pixverse/v4.5/image-to-video
   image_to_video       high       fal-ai/bytedance/seedance/v1/pro/image-to-video
   image_to_video       ultra      fal-ai/kling-video/v2.1/master/image-to-video
+  image_to_video       unranked   fal-ai/ltx-video/image-to-video
+  image_to_video       unranked   fal-ai/kling-video/v1.5/pro/image-to-video
+  image_to_video       unranked   fal-ai/kling-video/v1.5/standard
   lipsync              balanced   fal-ai/ai-avatar/multi
   lipsync              balanced   fal-ai/kling-video/lipsync/audio-to-video
   lipsync              high       fal-ai/sync-lipsync/v2
@@ -588,6 +592,9 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   music                high       fal-ai/lyria2
   text_to_video        high       fal-ai/bytedance/seedance/v1/pro/text-to-video
   text_to_video        ultra      fal-ai/veo3
+  text_to_video        unranked   fal-ai/ltx-video
+  text_to_video        unranked   fal-ai/mochi-v1
+  text_to_video        unranked   fal-ai/kling-video/v1.5/pro/text-to-video
   training             balanced   fal-ai/flux-lora-portrait-trainer
   training             fast       fal-ai/flux-lora-fast-training
   training             high       fal-ai/flux-pro-trainer
