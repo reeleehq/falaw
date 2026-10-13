@@ -1,4 +1,4 @@
-> built 2026-10-08 06:58 UTC from 5c2ae08 (main) · falaw 0.0.58. Details: build_info.json
+> built 2026-10-13 04:40 UTC from 569f66e (main) · falaw 0.0.59. Details: build_info.json
 
 # index.html.md
 
@@ -399,7 +399,8 @@ Probe the fal storage endpoint and return a typed [`AccountStatus`](_autosummary
   * **probe_url** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Endpoint to probe. Default is the storage-auth-token endpoint
     `fal_client` uses internally; small, idempotent, requires auth.
   * **timeout_s** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Network timeout.
-  * **api_key** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional override of `FAL_KEY`. Falls back to the env var.
+  * **api_key** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional override of `FAL_KEY`. Falls back to a key bound with
+    [`falaw.using_fal_credentials()`](_autosummary/falaw.html.md#falaw.using_fal_credentials), then the env var.
 * **Return type:**
   [`AccountStatus`](_autosummary/falaw.account.html.md#falaw.account.AccountStatus)
 * **Returns:**
@@ -1607,12 +1608,39 @@ See [`falaw.events`](_autosummary/falaw.events.html.md#module-falaw.events) for 
 string-only callback) still works for backward compatibility — when
 both `on_log` and `on_event` are given, both fire.
 
+### Module Attributes
+
+| [`FAL_PROVIDER`](_autosummary/falaw.core.html.md#falaw.core.FAL_PROVIDER)    | The provider id a fal key is bound under, in the fleet's facade kit (`ocracy.kit.using_credentials()`).   |
+|------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| [`FAL_KEY_ENVVARS`](_autosummary/falaw.core.html.md#falaw.core.FAL_KEY_ENVVARS) | The env vars falaw itself reads for a fal key, in order (the pricing and account probes).                 |
+
 ### Functions
 
 | [`call_fal`](_autosummary/falaw.core.html.md#falaw.core.call_fal)(application, arguments, \*[, ...])   | Call a fal model via fal_client.subscribe.                                                                              |
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | [`current_fal_key`](_autosummary/falaw.core.html.md#falaw.core.current_fal_key)()                             | The fal API key bound for the current context, or `None`.                                                               |
 | [`using_fal_credentials`](_autosummary/falaw.core.html.md#falaw.core.using_fal_credentials)(key)                    | Bind `key` as the fal credential for every [`call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_fal) in this context. |
+
+### falaw.core.FAL_KEY_ENVVARS *= ('FAL_KEY', 'FAL_API_KEY')*
+
+The env vars falaw itself reads for a fal key, in order (the pricing and account
+probes). [`call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_fal) reads none: it leaves the env lookup to the fal SDK.
+
+### falaw.core.FAL_PROVIDER *= 'fal'*
+
+The provider id a fal key is bound under, in the fleet’s facade kit
+(`ocracy.kit.using_credentials()`). The binding is a
+[`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar) (rather than an `os.environ` mutation), so it is
+scoped to the entering context, the asyncio tasks it spawns and work run in a copy
+of it (`contextvars.copy_context().run`; a bare thread pool does not copy it):
+concurrent requests are
+unaffected and no process-wide lock is needed. Because the kit is shared, a server
+that binds `fal` once reaches every facade that calls fal, not only falaw. This
+is the seam reelee’s HTTP server uses to forward a BYO key into server-side fal
+calls (reelee#159) without threading a credential argument through every
+intermediate signature (plan → execute → cached_call_fal → call_fal).
+Where `ocracy` is not installed, `falaw._credentials` falls back to a local
+binding with the same semantics (not shared with other facades) and warns once.
 
 ### falaw.core.call_fal(application, arguments, , on_log=None, on_event=None, with_logs=True, journal_errors=True, api_key=None)
 
@@ -1665,9 +1693,11 @@ A falsy `key` is a deliberate no-op (the context is left untouched), so
 a caller can pass an optional header value straight through without
 special-casing “no BYO key — fall back to the server/env key”.
 
-Thread/async safe: backed by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the
-binding is visible only within the entering context (and threads/tasks it
-spawns), never to concurrent requests.
+Thread/async safe: this is `ocracy.kit.using_credentials(fal=key)`, backed
+by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the binding is visible only within
+the entering context (and asyncio tasks or copied contexts it spawns),
+never to concurrent
+requests.
 
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
@@ -5177,9 +5207,11 @@ A falsy `key` is a deliberate no-op (the context is left untouched), so
 a caller can pass an optional header value straight through without
 special-casing “no BYO key — fall back to the server/env key”.
 
-Thread/async safe: backed by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the
-binding is visible only within the entering context (and threads/tasks it
-spawns), never to concurrent requests.
+Thread/async safe: this is `ocracy.kit.using_credentials(fal=key)`, backed
+by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the binding is visible only within
+the entering context (and asyncio tasks or copied contexts it spawns),
+never to concurrent
+requests.
 
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
@@ -9086,37 +9118,37 @@ False
 
 # About this build
 
-This documentation was built on **2026-10-08 06:58 UTC** from commit <a href="https://github.com/thorwhalen/falaw/commit/5c2ae08f7f8238dab8ba5366e5fc52ef170157c2"><code>5c2ae08</code></a> on branch <code>main</code>, for **falaw 0.0.58** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 04:40 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/569f66e852bf6c388d30eda3fe7b15457283aa59"><code>569f66e</code></a> on branch <code>main</code>, for **falaw 0.0.59** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.58) is behind the latest release on PyPI (0.0.59): `pip install falaw` gives newer code than these docs describe.
+- The documented version (0.0.59) is behind the latest release on PyPI (0.0.60): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
-|                     |                                                                                                                                                         |
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/falaw/commit/5c2ae08f7f8238dab8ba5366e5fc52ef170157c2"><code>5c2ae08f7f8238dab8ba5366e5fc52ef170157c2</code></a> |
-| Branch              | <code>main</code>                                                                                                                                       |
-| Tags at this commit | none                                                                                                                                                    |
-| Working tree        | clean                                                                                                                                                   |
-| Remote              | <code>https://github.com/thorwhalen/falaw</code>                                                                                                        |
+|                     |                                                                                                                                                       |
+|---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/569f66e852bf6c388d30eda3fe7b15457283aa59"><code>569f66e852bf6c388d30eda3fe7b15457283aa59</code></a> |
+| Branch              | <code>main</code>                                                                                                                                     |
+| Tags at this commit | none                                                                                                                                                  |
+| Working tree        | clean                                                                                                                                                 |
+| Remote              | <code>https://github.com/reeleehq/falaw</code>                                                                                                        |
 
 ## Continuous integration
 
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
-| Repository   | <code>thorwhalen/falaw</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/falaw/actions/runs/37740407987">37740407987</a>     |
+| Repository   | <code>reeleehq/falaw</code>                                                                |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/38347448883">38347448883</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>5c2ae08f7f8238dab8ba5366e5fc52ef170157c2</code> (in the history of the built commit) |
+| Event commit | <code>569f66e852bf6c388d30eda3fe7b15457283aa59</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.12  |
+| epythet  | 0.2.13  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -9135,14 +9167,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.59/">0.0.59</a>, newer than the documented version (0.0.58).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.60/">0.0.60</a>, newer than the documented version (0.0.59).
 
 ## Reproduce
 
 ```bash
-git clone https://github.com/thorwhalen/falaw && cd falaw
-git checkout 5c2ae08f7f8238dab8ba5366e5fc52ef170157c2
-pip install "epythet==0.2.12"
+git clone https://github.com/reeleehq/falaw && cd falaw
+git checkout 569f66e852bf6c388d30eda3fe7b15457283aa59
+pip install "epythet==0.2.13"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

@@ -30,20 +30,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=c3e19674"></script>
+    <script src="../_static/documentation_options.js?v=6799126d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,8 +55,9 @@
     <link rel="next" title="falaw.corpus" href="falaw.corpus.html" />
     <link rel="prev" title="falaw.content" href="falaw.content.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.58" />
+  <meta name="docsearch:version" content="0.0.59" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -441,6 +442,18 @@ so we get one place to:</p>
 <p>See <a class="reference internal" href="falaw.events.html#module-falaw.events" title="falaw.events"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.events</span></code></a> for the event model. <code class="docutils literal notranslate"><span class="pre">on_log</span></code> (a
 string-only callback) still works for backward compatibility — when
 both <code class="docutils literal notranslate"><span class="pre">on_log</span></code> and <code class="docutils literal notranslate"><span class="pre">on_event</span></code> are given, both fire.</p>
+<p class="rubric">Module Attributes</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.core.FAL_PROVIDER" title="falaw.core.FAL_PROVIDER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FAL_PROVIDER</span></code></a></p></td>
+<td><p>The provider id a fal key is bound under, in the fleet's facade kit (<code class="xref py py-func docutils literal notranslate"><span class="pre">ocracy.kit.using_credentials()</span></code>).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.core.FAL_KEY_ENVVARS" title="falaw.core.FAL_KEY_ENVVARS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FAL_KEY_ENVVARS</span></code></a></p></td>
+<td><p>The env vars falaw itself reads for a fal key, in order (the pricing and account probes).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
@@ -456,6 +469,31 @@ both <code class="docutils literal notranslate"><span class="pre">on_log</span><
 </tbody>
 </table>
 </div>
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.core.FAL_KEY_ENVVARS">
+<span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">FAL_KEY_ENVVARS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('FAL_KEY',</span> <span class="pre">'FAL_API_KEY')</span></span><a class="headerlink" href="#falaw.core.FAL_KEY_ENVVARS" title="Link to this definition">#</a></dt>
+<dd><p>The env vars falaw itself reads for a fal key, in order (the pricing and account
+probes). <a class="reference internal" href="#falaw.core.call_fal" title="falaw.core.call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code></a> reads none: it leaves the env lookup to the fal SDK.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.core.FAL_PROVIDER">
+<span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">FAL_PROVIDER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'fal'</span></span><a class="headerlink" href="#falaw.core.FAL_PROVIDER" title="Link to this definition">#</a></dt>
+<dd><p>The provider id a fal key is bound under, in the fleet’s facade kit
+(<code class="xref py py-func docutils literal notranslate"><span class="pre">ocracy.kit.using_credentials()</span></code>). The binding is a
+<a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">contextvars.ContextVar</span></code></a> (rather than an <code class="docutils literal notranslate"><span class="pre">os.environ</span></code> mutation), so it is
+scoped to the entering context, the asyncio tasks it spawns and work run in a copy
+of it (<code class="docutils literal notranslate"><span class="pre">contextvars.copy_context().run</span></code>; a bare thread pool does not copy it):
+concurrent requests are
+unaffected and no process-wide lock is needed. Because the kit is shared, a server
+that binds <code class="docutils literal notranslate"><span class="pre">fal</span></code> once reaches every facade that calls fal, not only falaw. This
+is the seam reelee’s HTTP server uses to forward a BYO key into server-side fal
+calls (reelee#159) without threading a credential argument through every
+intermediate signature (plan → execute → cached_call_fal → call_fal).
+Where <code class="docutils literal notranslate"><span class="pre">ocracy</span></code> is not installed, <code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw._credentials</span></code> falls back to a local
+binding with the same semantics (not shared with other facades) and warns once.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.core.call_fal">
 <span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">call_fal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/core.html#call_fal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.core.call_fal" title="Link to this definition">#</a></dt>
@@ -463,18 +501,18 @@ both <code class="docutils literal notranslate"><span class="pre">on_log</span><
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>application</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – fal model id (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;fal-ai/flux/dev&quot;</span></code>).</p></li>
-<li><p><strong>arguments</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – Input arguments. Keys depend on the model.</p></li>
-<li><p><strong>on_log</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]]</span>) – Legacy log callback — receives raw log lines as strings.
+<li><p><strong>application</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – fal model id (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;fal-ai/flux/dev&quot;</span></code>).</p></li>
+<li><p><strong>arguments</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – Input arguments. Keys depend on the model.</p></li>
+<li><p><strong>on_log</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]]</span>) – Legacy log callback — receives raw log lines as strings.
 Defaults to no-op (use <code class="docutils literal notranslate"><span class="pre">on_event</span></code> for structured access).</p></li>
-<li><p><strong>on_event</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="falaw.events.html#falaw.events.ProgressEvent" title="falaw.events.ProgressEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]]</span>) – Per-call subscriber for <code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent`s.</span> <span class="pre">Fires</span>
+<li><p><strong>on_event</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="falaw.events.html#falaw.events.ProgressEvent" title="falaw.events.ProgressEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]]</span>) – Per-call subscriber for <code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent`s.</span> <span class="pre">Fires</span>
 <span class="pre">in</span> <span class="pre">addition</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">global</span> <span class="pre">subscribers</span> <span class="pre">registered</span> <span class="pre">via</span>
 <span class="pre">:func:`falaw.events.subscribe</span></code>.</p></li>
-<li><p><strong>with_logs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Pass through to fal_client; when True the model streams logs.</p></li>
-<li><p><strong>journal_errors</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – When True, exceptions are recorded as journal issues
+<li><p><strong>with_logs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Pass through to fal_client; when True the model streams logs.</p></li>
+<li><p><strong>journal_errors</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – When True, exceptions are recorded as journal issues
 before being re-raised. The journal entry includes the application
 id and arguments so future agents can recognize the same trap.</p></li>
-<li><p><strong>api_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Explicit fal key for this call. When <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) the
+<li><p><strong>api_key</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span>) – Explicit fal key for this call. When <code class="docutils literal notranslate"><span class="pre">None</span></code> (default) the
 key bound via <a class="reference internal" href="#falaw.core.using_fal_credentials" title="falaw.core.using_fal_credentials"><code class="xref py py-func docutils literal notranslate"><span class="pre">using_fal_credentials()</span></code></a> is used; when that is
 also unset, the fal SDK’s own <code class="docutils literal notranslate"><span class="pre">FAL_KEY</span></code> env-var lookup applies
 (the historical behaviour). A resolved key is used per-call via a
@@ -483,7 +521,7 @@ global or an env var.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The raw response dict from the model.</p>
@@ -500,7 +538,7 @@ to <a class="reference internal" href="#falaw.core.call_fal" title="falaw.core.c
 the fal SDK’s own <code class="docutils literal notranslate"><span class="pre">FAL_KEY</span></code> env-var lookup.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -516,12 +554,14 @@ intermediate function needing a credential parameter.</p>
 <p>A falsy <code class="docutils literal notranslate"><span class="pre">key</span></code> is a deliberate no-op (the context is left untouched), so
 a caller can pass an optional header value straight through without
 special-casing “no BYO key — fall back to the server/env key”.</p>
-<p>Thread/async safe: backed by a <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">contextvars.ContextVar</span></code></a>, so the
-binding is visible only within the entering context (and threads/tasks it
-spawns), never to concurrent requests.</p>
+<p>Thread/async safe: this is <code class="docutils literal notranslate"><span class="pre">ocracy.kit.using_credentials(fal=key)</span></code>, backed
+by a <a class="reference external" href="https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">contextvars.ContextVar</span></code></a>, so the binding is visible only within
+the entering context (and asyncio tasks or copied contexts it spawns),
+never to concurrent
+requests.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -575,6 +615,8 @@ spawns), never to concurrent requests.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.FAL_KEY_ENVVARS"><code class="docutils literal notranslate"><span class="pre">FAL_KEY_ENVVARS</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.FAL_PROVIDER"><code class="docutils literal notranslate"><span class="pre">FAL_PROVIDER</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.call_fal"><code class="docutils literal notranslate"><span class="pre">call_fal()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.current_fal_key"><code class="docutils literal notranslate"><span class="pre">current_fal_key()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.using_fal_credentials"><code class="docutils literal notranslate"><span class="pre">using_fal_credentials()</span></code></a></li>
@@ -603,8 +645,8 @@ spawns), never to concurrent requests.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -616,7 +658,7 @@ spawns), never to concurrent requests.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

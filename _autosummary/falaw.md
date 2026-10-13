@@ -2944,9 +2944,11 @@ A falsy `key` is a deliberate no-op (the context is left untouched), so
 a caller can pass an optional header value straight through without
 special-casing “no BYO key — fall back to the server/env key”.
 
-Thread/async safe: backed by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the
-binding is visible only within the entering context (and threads/tasks it
-spawns), never to concurrent requests.
+Thread/async safe: this is `ocracy.kit.using_credentials(fal=key)`, backed
+by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the binding is visible only within
+the entering context (and asyncio tasks or copied contexts it spawns),
+never to concurrent
+requests.
 
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]

@@ -30,20 +30,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=c3e19674"></script>
+    <script src="../_static/documentation_options.js?v=6799126d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,8 +55,9 @@
     <link rel="next" title="For AI agents" href="../ai-agents.html" />
     <link rel="prev" title="falaw.session" href="falaw.session.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.58" />
+  <meta name="docsearch:version" content="0.0.59" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -438,7 +439,7 @@ downstream suite that stubs the fal <em>response</em> but not the <em>asset tran
 consequently resolving its made-up URLs for real — one DNS lookup and one
 connection attempt per test.</p>
 <p>Such a suite passes anyway. That is the trap. falaw deliberately degrades a
-failed asset fetch to a URL-only artifact with a <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#UserWarning" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></a> rather
+failed asset fetch to a URL-only artifact with a <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#UserWarning" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></a> rather
 than raising, so an upstream hiccup cannot throw away a render fal has already
 billed for — which means reaching the network is <em>invisible</em> downstream. The
 costs are real all the same: the suite is slower and behaves differently
@@ -484,7 +485,7 @@ treats any <code class="docutils literal notranslate"><span class="pre">Exceptio
 falls back to <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code>. An ordinary-<code class="docutils literal notranslate"><span class="pre">Exception</span></code> refusal is absorbed by
 all three, and the suite stays green with the regression back in place.</p>
 <p>Hence two measures, not one. <a class="reference internal" href="#falaw.testing.OutboundNetworkAttempt" title="falaw.testing.OutboundNetworkAttempt"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutboundNetworkAttempt</span></code></a> derives from
-<a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></a> so it escapes those funnels (<code class="docutils literal notranslate"><span class="pre">execute_isolated</span></code>
+<a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></a> so it escapes those funnels (<code class="docutils literal notranslate"><span class="pre">execute_isolated</span></code>
 deliberately re-raises a non-<code class="docutils literal notranslate"><span class="pre">Exception</span></code>, since a run-level abort is not a
 call failure) — and every attempt is <strong>recorded</strong> anyway, because that only
 covers the funnels <em>inside falaw</em>. A consumer’s own <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">BaseException</span></code>
@@ -610,7 +611,7 @@ failing assertion then names the suite that invented the bytes.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.testing.FakeAssets">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.testing.</span></span><span class="sig-name descname"><span class="pre">FakeAssets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">synthetic_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'falaw-test-asset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fake_non_network_urls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/testing.html#FakeAssets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.testing.FakeAssets" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An in-memory <code class="docutils literal notranslate"><span class="pre">url</span> <span class="pre">-&gt;</span> <span class="pre">bytes</span></code> transport standing in for the network.</p>
 <p>Install it with <a class="reference internal" href="falaw.content.html#falaw.content.using_url_fetcher" title="falaw.content.using_url_fetcher"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.content.using_url_fetcher()</span></code></a> (the
 <a class="reference internal" href="#falaw.testing.fake_assets" title="falaw.testing.fake_assets"><code class="xref py py-func docutils literal notranslate"><span class="pre">fake_assets()</span></code></a> fixture does), after which every falaw entry point that
@@ -653,10 +654,10 @@ not on an exception:</p>
 <dd><p>Yield <code class="docutils literal notranslate"><span class="pre">url</span></code>’s bytes — the <a class="reference internal" href="falaw.content.html#falaw.content.UrlFetcher" title="falaw.content.UrlFetcher"><code class="xref py py-data docutils literal notranslate"><span class="pre">falaw.content.UrlFetcher</span></code></a> to install.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/urllib.error.html#urllib.error.HTTPError" title="(in Python v3.14)"><strong>HTTPError</strong></a> – <code class="docutils literal notranslate"><span class="pre">url</span></code> was marked with <a class="reference internal" href="#falaw.testing.FakeAssets.fail" title="falaw.testing.FakeAssets.fail"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fail()</span></code></a>.</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/urllib.error.html#urllib.error.HTTPError" title="(in Python v3.15)"><strong>HTTPError</strong></a> – <code class="docutils literal notranslate"><span class="pre">url</span></code> was marked with <a class="reference internal" href="#falaw.testing.FakeAssets.fail" title="falaw.testing.FakeAssets.fail"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fail()</span></code></a>.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>]</span></p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -687,7 +688,7 @@ deriving it from the served bytes is the most faithful fake available:
 the same bytes twice does not.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -698,7 +699,7 @@ the same bytes twice does not.</p>
 <dd><p>Make <code class="docutils literal notranslate"><span class="pre">url</span></code> 404, the way an expired fal asset does.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -711,14 +712,14 @@ the same bytes twice does not.</p>
 <code class="xref py py-attr docutils literal notranslate"><span class="pre">fake_non_network_urls</span></code> is set) — see <a class="reference internal" href="#falaw.testing.NON_NETWORK_SCHEMES" title="falaw.testing.NON_NETWORK_SCHEMES"><code class="xref py py-data docutils literal notranslate"><span class="pre">NON_NETWORK_SCHEMES</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.testing.FakeAssets.revalidated">
-<span class="sig-name descname"><span class="pre">revalidated</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.testing.FakeAssets.revalidated" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">revalidated</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.testing.FakeAssets.revalidated" title="Link to this definition">#</a></dt>
 <dd><p>URLs answered with a cheap “unchanged” — no body transferred.</p>
 <p>Separate from <code class="xref py py-attr docutils literal notranslate"><span class="pre">fetched</span></code> because the two are the <em>point</em> of
 falaw#23 and a suite must be able to tell them apart. Without this, “we
@@ -733,7 +734,7 @@ un-fixed code that simply trusted its index.</p>
 <dd><p>Make <code class="docutils literal notranslate"><span class="pre">url</span></code> serve exactly <code class="docutils literal notranslate"><span class="pre">data</span></code>. Returns <code class="docutils literal notranslate"><span class="pre">data</span></code>, for chaining.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -744,7 +745,7 @@ un-fixed code that simply trusted its index.</p>
 <dd><p>The bytes an unpinned <code class="docutils literal notranslate"><span class="pre">url</span></code> serves.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -770,9 +771,9 @@ fetcher unless a test pins them explicitly.</p>
 <dl class="py exception">
 <dt class="sig sig-object py" id="falaw.testing.OutboundNetworkAttempt">
 <span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.testing.</span></span><span class="sig-name descname"><span class="pre">OutboundNetworkAttempt</span></span><a class="reference internal" href="../_modules/falaw/testing.html#OutboundNetworkAttempt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.testing.OutboundNetworkAttempt" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></a></p>
 <p>An offline test tried to talk to a non-local host.</p>
-<p>Derived from <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></a>, not <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a>, on purpose:
+<p>Derived from <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseException</span></code></a>, not <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#Exception" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a>, on purpose:
 the fetch path is a funnel of <code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">Exception</span></code> handlers that turn a
 failed fetch into a degraded-but-successful result (falaw’s URL-only
 artifact fallback is the main one), so anything catchable would be caught.</p>
@@ -799,7 +800,7 @@ process, where this has no reach. ffmpeg is the one that matters.</p>
 broken guard cannot turn this example into real traffic.)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">socket</span>
@@ -828,7 +829,7 @@ assert on what was fetched (<code class="docutils literal notranslate"><span cla
 test marked <code class="docutils literal notranslate"><span class="pre">live_api</span></code>, which gets the real transport.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#falaw.testing.FakeAssets" title="falaw.testing.FakeAssets"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakeAssets</span></code></a>]]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#falaw.testing.FakeAssets" title="falaw.testing.FakeAssets"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakeAssets</span></code></a>]]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -839,7 +840,7 @@ test marked <code class="docutils literal notranslate"><span class="pre">live_ap
 <dd><p>True when resolving <code class="docutils literal notranslate"><span class="pre">url</span></code> would leave this machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">is_network_url</span><span class="p">(</span><span class="s2">"https://fal.media/x.png"</span><span class="p">)</span>
@@ -862,7 +863,7 @@ records synthetic test bytes under real-looking URLs there. Yields the root of
 the throwaway directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -910,7 +911,7 @@ test that means to provoke one can drain it (<code class="docutils literal notra
 instead of failing at teardown. Inert for a test marked <code class="docutils literal notranslate"><span class="pre">live_api</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -923,7 +924,7 @@ instead of failing at teardown. Inert for a test marked <code class="docutils li
 outside a pytest session (a script, a notebook, another test runner).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="#falaw.testing.FakeAssets" title="falaw.testing.FakeAssets"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakeAssets</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference internal" href="#falaw.testing.FakeAssets" title="falaw.testing.FakeAssets"><code class="xref py py-class docutils literal notranslate"><span class="pre">FakeAssets</span></code></a>]</span></p>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">falaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">materialize_asset</span>
@@ -946,7 +947,7 @@ different renders — and the same stub URL hashes the same way on every run,
 which is what lets a test assert on a content hash at all.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a></span></p>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">synthetic_asset_bytes</span><span class="p">(</span><span class="s2">"https://fal.media/x.png"</span><span class="p">)</span>
@@ -1061,8 +1062,8 @@ which is what lets a test assert on a content hash at all.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1074,7 +1075,7 @@ which is what lets a test assert on a content hash at all.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

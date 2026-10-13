@@ -81,7 +81,8 @@ Probe the fal storage endpoint and return a typed [`AccountStatus`](#falaw.accou
   * **probe_url** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – Endpoint to probe. Default is the storage-auth-token endpoint
     `fal_client` uses internally; small, idempotent, requires auth.
   * **timeout_s** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – Network timeout.
-  * **api_key** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional override of `FAL_KEY`. Falls back to the env var.
+  * **api_key** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str) | [`None`](https://docs.python.org/3/builtins/constants.html#None)) – Optional override of `FAL_KEY`. Falls back to a key bound with
+    [`falaw.using_fal_credentials()`](falaw.md#falaw.using_fal_credentials), then the env var.
 * **Return type:**
   [`AccountStatus`](#falaw.account.AccountStatus)
 * **Returns:**

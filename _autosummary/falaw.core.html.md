@@ -13,12 +13,39 @@ See [`falaw.events`](falaw.events.html.md#module-falaw.events) for the event mod
 string-only callback) still works for backward compatibility — when
 both `on_log` and `on_event` are given, both fire.
 
+### Module Attributes
+
+| [`FAL_PROVIDER`](#falaw.core.FAL_PROVIDER)    | The provider id a fal key is bound under, in the fleet's facade kit (`ocracy.kit.using_credentials()`).   |
+|------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| [`FAL_KEY_ENVVARS`](#falaw.core.FAL_KEY_ENVVARS) | The env vars falaw itself reads for a fal key, in order (the pricing and account probes).                 |
+
 ### Functions
 
 | [`call_fal`](#falaw.core.call_fal)(application, arguments, \*[, ...])   | Call a fal model via fal_client.subscribe.                                                                              |
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | [`current_fal_key`](#falaw.core.current_fal_key)()                             | The fal API key bound for the current context, or `None`.                                                               |
 | [`using_fal_credentials`](#falaw.core.using_fal_credentials)(key)                    | Bind `key` as the fal credential for every [`call_fal()`](#falaw.core.call_fal) in this context. |
+
+### falaw.core.FAL_KEY_ENVVARS *= ('FAL_KEY', 'FAL_API_KEY')*
+
+The env vars falaw itself reads for a fal key, in order (the pricing and account
+probes). [`call_fal()`](#falaw.core.call_fal) reads none: it leaves the env lookup to the fal SDK.
+
+### falaw.core.FAL_PROVIDER *= 'fal'*
+
+The provider id a fal key is bound under, in the fleet’s facade kit
+(`ocracy.kit.using_credentials()`). The binding is a
+[`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar) (rather than an `os.environ` mutation), so it is
+scoped to the entering context, the asyncio tasks it spawns and work run in a copy
+of it (`contextvars.copy_context().run`; a bare thread pool does not copy it):
+concurrent requests are
+unaffected and no process-wide lock is needed. Because the kit is shared, a server
+that binds `fal` once reaches every facade that calls fal, not only falaw. This
+is the seam reelee’s HTTP server uses to forward a BYO key into server-side fal
+calls (reelee#159) without threading a credential argument through every
+intermediate signature (plan → execute → cached_call_fal → call_fal).
+Where `ocracy` is not installed, `falaw._credentials` falls back to a local
+binding with the same semantics (not shared with other facades) and warns once.
 
 ### falaw.core.call_fal(application, arguments, , on_log=None, on_event=None, with_logs=True, journal_errors=True, api_key=None)
 
@@ -71,9 +98,11 @@ A falsy `key` is a deliberate no-op (the context is left untouched), so
 a caller can pass an optional header value straight through without
 special-casing “no BYO key — fall back to the server/env key”.
 
-Thread/async safe: backed by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the
-binding is visible only within the entering context (and threads/tasks it
-spawns), never to concurrent requests.
+Thread/async safe: this is `ocracy.kit.using_credentials(fal=key)`, backed
+by a [`contextvars.ContextVar`](https://docs.python.org/3/library/contextvars.html#contextvars.ContextVar), so the binding is visible only within
+the entering context (and asyncio tasks or copied contexts it spawns),
+never to concurrent
+requests.
 
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]

@@ -30,20 +30,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=c3e19674"></script>
+    <script src="../_static/documentation_options.js?v=6799126d"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,8 +55,9 @@
     <link rel="next" title="falaw.plan" href="falaw.plan.html" />
     <link rel="prev" title="falaw.operations.video" href="falaw.operations.video.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.58" />
+  <meta name="docsearch:version" content="0.0.59" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -495,7 +496,7 @@ must be <em>re-planned</em>, not retried, and a caller that cannot tell “block
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.outcomes.</span></span><span class="sig-name descname"><span class="pre">CallOutcome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artifact</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_hit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blocked_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/outcomes.html#CallOutcome"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.outcomes.CallOutcome" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>What happened to one <a class="reference internal" href="falaw.html#falaw.CallPlan" title="falaw.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a>, at its position in the Plan.</p>
 <p><code class="docutils literal notranslate"><span class="pre">index</span></code> is the call’s position in <code class="docutils literal notranslate"><span class="pre">plan.calls</span></code> and is the identity a
 caller retries or re-plans by — a report always carries exactly one outcome
@@ -505,20 +506,20 @@ Plan against anything the caller built alongside it.</p>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.artifact">
-<span class="sig-name descname"><span class="pre">artifact</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Artifact</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.artifact" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">artifact</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Artifact</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.artifact" title="Link to this definition">#</a></dt>
 <dd><p>The materialized artifact. Set if and only if <code class="docutils literal notranslate"><span class="pre">status</span> <span class="pre">==</span> <span class="pre">&quot;succeeded&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.blocked_by">
-<span class="sig-name descname"><span class="pre">blocked_by</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.blocked_by" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">blocked_by</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.blocked_by" title="Link to this definition">#</a></dt>
 <dd><p>Indices of the calls whose non-success blocked this one. <code class="docutils literal notranslate"><span class="pre">()</span></code> when the
 call was blocked for a run-level reason rather than a dependency.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.cache_hit">
-<span class="sig-name descname"><span class="pre">cache_hit</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.cache_hit" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">cache_hit</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.cache_hit" title="Link to this definition">#</a></dt>
 <dd><p>Whether the result came from the cache <strong>as observed at run time</strong>.</p>
 <p>Not the same thing as <a class="reference internal" href="falaw.html#falaw.CallPlan.cache_status" title="falaw.CallPlan.cache_status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">falaw.CallPlan.cache_status</span></code></a>, which is a
 <em>prediction</em> made at plan time and can be wrong in both directions (a
@@ -534,7 +535,7 @@ re-executed). Run-level cost accounting reads this one.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.error">
-<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.14)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.error" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.error" title="Link to this definition">#</a></dt>
 <dd><p>The exception the call raised. Set if and only if <code class="docutils literal notranslate"><span class="pre">status</span> <span class="pre">==</span> <span class="pre">&quot;failed&quot;</span></code>.</p>
 <p>Kept as the exception object rather than a string so the caller can use
 falaw’s typed hierarchy (<a class="reference internal" href="falaw.errors.html#module-falaw.errors" title="falaw.errors"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.errors</span></code></a>) to decide between backing off,
@@ -543,25 +544,25 @@ switching models, and giving up.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.index">
-<span class="sig-name descname"><span class="pre">index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.index" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">index</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.index" title="Link to this definition">#</a></dt>
 <dd><p>Position in <code class="docutils literal notranslate"><span class="pre">plan.calls</span></code>. Stable, and unique within a report.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.ok">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ok</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.ok" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ok</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.ok" title="Link to this definition">#</a></dt>
 <dd><p>Shorthand for <code class="docutils literal notranslate"><span class="pre">status</span> <span class="pre">==</span> <span class="pre">&quot;succeeded&quot;</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.reason">
-<span class="sig-name descname"><span class="pre">reason</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.reason" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reason</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.reason" title="Link to this definition">#</a></dt>
 <dd><p>Human-readable explanation. Required for <code class="docutils literal notranslate"><span class="pre">blocked</span></code>; free otherwise.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.outcomes.CallOutcome.status">
-<span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'succeeded'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'failed'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'blocked'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.status" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">status</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><span class="pre">Literal</span></a><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'succeeded'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'failed'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'blocked'</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.CallOutcome.status" title="Link to this definition">#</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">&quot;succeeded&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;failed&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">&quot;blocked&quot;</span></code>. See the module docstring.</p>
 </dd></dl>
 
@@ -571,13 +572,13 @@ switching models, and giving up.</p>
 <dt class="sig sig-object py" id="falaw.outcomes.CallStatus">
 <span class="sig-prename descclassname"><span class="pre">falaw.outcomes.</span></span><span class="sig-name descname"><span class="pre">CallStatus</span></span><a class="headerlink" href="#falaw.outcomes.CallStatus" title="Link to this definition">#</a></dt>
 <dd><p>What became of one <a class="reference internal" href="falaw.html#falaw.CallPlan" title="falaw.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a> in a run. See the module docstring.</p>
-<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘succeeded’, ‘failed’, ‘blocked’]</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘succeeded’, ‘failed’, ‘blocked’]</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.outcomes.</span></span><span class="sig-name descname"><span class="pre">ExecutionReport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outcomes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/outcomes.html#ExecutionReport"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.outcomes.ExecutionReport" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>The result of running a Plan: one <a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallOutcome</span></code></a> per call, in order.</p>
 <p><code class="docutils literal notranslate"><span class="pre">len(report.outcomes)</span> <span class="pre">==</span> <span class="pre">len(plan.calls)</span></code> <strong>always</strong>, including on a run
 where most calls failed. That invariant is the whole point: a consumer that
@@ -601,20 +602,20 @@ otherwise be short, and a short list is exactly the silent mis-pairing
 this type exists to prevent.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Artifact</span></code>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Artifact</span></code>]</span></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.blocked">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">blocked</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><span class="pre">CallOutcome</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.blocked" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">blocked</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><span class="pre">CallOutcome</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.blocked" title="Link to this definition">#</a></dt>
 <dd><p>Outcomes whose call never ran, in plan order.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.cache_hit_savings_usd">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cache_hit_savings_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.cache_hit_savings_usd" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">cache_hit_savings_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.cache_hit_savings_usd" title="Link to this definition">#</a></dt>
 <dd><p>Estimated USD <em>not</em> spent because a succeeded call was served from cache.</p>
 <p>The run-time counterpart of <a class="reference internal" href="falaw.html#falaw.Plan.cache_hit_savings_usd" title="falaw.Plan.cache_hit_savings_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">falaw.Plan.cache_hit_savings_usd</span></code></a>
 (which is a plan-time prediction).</p>
@@ -622,7 +623,7 @@ this type exists to prevent.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.estimated_spend_usd">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">estimated_spend_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.estimated_spend_usd" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">estimated_spend_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.estimated_spend_usd" title="Link to this definition">#</a></dt>
 <dd><p>succeeded calls that were <strong>not</strong> cache hits.</p>
 <p>Estimated, because it sums <a class="reference internal" href="falaw.html#falaw.CallPlan.estimated_cost_usd" title="falaw.CallPlan.estimated_cost_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">falaw.CallPlan.estimated_cost_usd</span></code></a> —
 falaw does not read fal’s invoice. Two deliberate exclusions:</p>
@@ -643,13 +644,13 @@ estimate for it would be inventing a number. Read
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.failed">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">failed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><span class="pre">CallOutcome</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.failed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">failed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><span class="pre">CallOutcome</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.failed" title="Link to this definition">#</a></dt>
 <dd><p>Outcomes whose call raised, in plan order.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.has_unknown_costs">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">has_unknown_costs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.has_unknown_costs" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">has_unknown_costs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.has_unknown_costs" title="Link to this definition">#</a></dt>
 <dd><p>True when a call that actually billed has no price estimate.</p>
 <p>The run-level twin of <a class="reference internal" href="falaw.html#falaw.Plan.has_unknown_costs" title="falaw.Plan.has_unknown_costs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">falaw.Plan.has_unknown_costs</span></code></a>, and the
 reason <a class="reference internal" href="#falaw.outcomes.ExecutionReport.estimated_spend_usd" title="falaw.outcomes.ExecutionReport.estimated_spend_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimated_spend_usd</span></code></a> must never be read on its own: an
@@ -661,13 +662,13 @@ cannot tell them apart approves the second one.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.is_complete">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_complete</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.is_complete" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_complete</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.is_complete" title="Link to this definition">#</a></dt>
 <dd><p>True when every call succeeded.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.produced">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">produced</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Artifact</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.produced" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">produced</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Artifact</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.produced" title="Link to this definition">#</a></dt>
 <dd><p>The artifacts that were made, in plan order.</p>
 <p><strong>Shorter than the Plan when anything failed</strong> — deliberately named so
 it does not read like something to zip a per-call sequence against. Use
@@ -676,7 +677,7 @@ it does not read like something to zip a per-call sequence against. Use
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.outcomes.ExecutionReport.succeeded">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">succeeded</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><span class="pre">CallOutcome</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.succeeded" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">succeeded</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.outcomes.CallOutcome" title="falaw.outcomes.CallOutcome"><span class="pre">CallOutcome</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.outcomes.ExecutionReport.succeeded" title="Link to this definition">#</a></dt>
 <dd><p>Outcomes that produced an artifact, in plan order.</p>
 </dd></dl>
 
@@ -688,7 +689,7 @@ it does not read like something to zip a per-call sequence against. Use
 objects themselves are not serializable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -795,8 +796,8 @@ objects themselves are not serializable.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -808,7 +809,7 @@ objects themselves are not serializable.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>

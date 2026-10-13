@@ -4,6 +4,13 @@ falaw.core
 .. automodule:: falaw.core
 
    
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      FAL_PROVIDER
+      FAL_KEY_ENVVARS
+   
    .. rubric:: Functions
 
    .. autosummary::

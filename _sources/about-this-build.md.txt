@@ -5,38 +5,38 @@ orphan: true
 
 # About this build
 
-This documentation was built on **2026-10-08 06:58 UTC** from commit <a href="https://github.com/thorwhalen/falaw/commit/5c2ae08f7f8238dab8ba5366e5fc52ef170157c2"><code>5c2ae08</code></a> on branch <code>main</code>, for **falaw 0.0.58** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 04:40 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/569f66e852bf6c388d30eda3fe7b15457283aa59"><code>569f66e</code></a> on branch <code>main</code>, for **falaw 0.0.59** (from <code>pyproject.toml</code>).
 
 :::{warning}
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.58) is behind the latest release on PyPI (0.0.59): `pip install falaw` gives newer code than these docs describe.
+- The documented version (0.0.59) is behind the latest release on PyPI (0.0.60): `pip install falaw` gives newer code than these docs describe.
 :::
 
 ## Source
 
 | | |
 |---|---|
-| Commit | <a href="https://github.com/thorwhalen/falaw/commit/5c2ae08f7f8238dab8ba5366e5fc52ef170157c2"><code>5c2ae08f7f8238dab8ba5366e5fc52ef170157c2</code></a> |
+| Commit | <a href="https://github.com/reeleehq/falaw/commit/569f66e852bf6c388d30eda3fe7b15457283aa59"><code>569f66e852bf6c388d30eda3fe7b15457283aa59</code></a> |
 | Branch | <code>main</code> |
 | Tags at this commit | none |
 | Working tree | clean |
-| Remote | <code>https://github.com/thorwhalen/falaw</code> |
+| Remote | <code>https://github.com/reeleehq/falaw</code> |
 
 ## Continuous integration
 
 | | |
 |---|---|
-| Repository | <code>thorwhalen/falaw</code> |
-| Run | <a href="https://github.com/thorwhalen/falaw/actions/runs/37740407987">37740407987</a> |
+| Repository | <code>reeleehq/falaw</code> |
+| Run | <a href="https://github.com/reeleehq/falaw/actions/runs/38347448883">38347448883</a> |
 | Ref | <code>refs/heads/main</code> |
-| Event commit | <code>5c2ae08f7f8238dab8ba5366e5fc52ef170157c2</code> (in the history of the built commit) |
+| Event commit | <code>569f66e852bf6c388d30eda3fe7b15457283aa59</code> (in the history of the built commit) |
 
 ## Tools
 
 | | |
 |---|---|
-| epythet | 0.2.12 |
+| epythet | 0.2.13 |
 | Sphinx | 9.1.0 |
 | docutils | 0.22.4 |
 | Python | 3.12.15 |
@@ -55,14 +55,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.59/">0.0.59</a>, newer than the documented version (0.0.58).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.60/">0.0.60</a>, newer than the documented version (0.0.59).
 
 ## Reproduce
 
 ```bash
-git clone https://github.com/thorwhalen/falaw && cd falaw
-git checkout 5c2ae08f7f8238dab8ba5366e5fc52ef170157c2
-pip install "epythet==0.2.12"
+git clone https://github.com/reeleehq/falaw && cd falaw
+git checkout 569f66e852bf6c388d30eda3fe7b15457283aa59
+pip install "epythet==0.2.13"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

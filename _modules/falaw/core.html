@@ -27,20 +27,20 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/epythet.css?v=f0eeacdc" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=c3e19674"></script>
+    <script src="../../_static/documentation_options.js?v=6799126d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -408,8 +408,9 @@ window.runMermaid = runMermaid;</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.58" />
+  <meta name="docsearch:version" content="0.0.59" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -726,12 +727,12 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">contextvars</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">._credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_credentials</span><span class="p">,</span> <span class="n">resolve_credential</span><span class="p">,</span> <span class="n">using_credentials</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_fal_client</span> <span class="k">as</span> <span class="n">_import_fal_client</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">translate</span> <span class="k">as</span> <span class="n">_translate_error</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCallback</span><span class="p">,</span> <span class="n">ProgressEvent</span><span class="p">,</span> <span class="n">emit</span>
@@ -742,20 +743,24 @@ window.runMermaid = runMermaid;</script>
 <span class="c1"># Per-context fal credential (bring-your-own-key support)</span>
 <span class="c1"># --------------------------------------------------------------------------- #</span>
 
-<span class="c1">#: The fal API key bound for the current execution context, if any. Set via</span>
-<span class="c1">#: :func:`using_fal_credentials` so a server handling a per-request</span>
-<span class="c1">#: "bring-your-own-key" call can route every nested :func:`call_fal` through</span>
-<span class="c1">#: the caller's key — without threading a credential argument through every</span>
+<span class="c1">#: The provider id a fal key is bound under, in the fleet's facade kit</span>
+<span class="c1">#: (:func:`ocracy.kit.using_credentials`). The binding is a</span>
+<span class="c1">#: :class:`contextvars.ContextVar` (rather than an ``os.environ`` mutation), so it is</span>
+<span class="c1">#: scoped to the entering context, the asyncio tasks it spawns and work run in a copy</span>
+<span class="c1">#: of it (``contextvars.copy_context().run``; a bare thread pool does not copy it):</span>
+<span class="c1">#: concurrent requests are</span>
+<span class="c1">#: unaffected and no process-wide lock is needed. Because the kit is shared, a server</span>
+<span class="c1">#: that binds ``fal`` once reaches every facade that calls fal, not only falaw. This</span>
+<span class="c1">#: is the seam reelee's HTTP server uses to forward a BYO key into server-side fal</span>
+<span class="c1">#: calls (reelee#159) without threading a credential argument through every</span>
 <span class="c1">#: intermediate signature (plan → execute → cached_call_fal → call_fal).</span>
-<span class="c1">#:</span>
-<span class="c1">#: A :class:`contextvars.ContextVar` (rather than an ``os.environ`` mutation)</span>
-<span class="c1">#: keeps the binding naturally scoped to the entering context and the threads</span>
-<span class="c1">#: it spawns: concurrent requests on other tasks/threads are unaffected, and</span>
-<span class="c1">#: no process-wide lock is needed. This is the seam reelee's HTTP server uses</span>
-<span class="c1">#: to forward a BYO key into server-side fal calls (reelee#159).</span>
-<span class="n">_FAL_KEY_VAR</span><span class="p">:</span> <span class="s2">"contextvars.ContextVar[Optional[str]]"</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span>
-    <span class="s2">"falaw_fal_key"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span>
-<span class="p">)</span>
+<span class="c1">#: Where ``ocracy`` is not installed, :mod:`falaw._credentials` falls back to a local</span>
+<span class="c1">#: binding with the same semantics (not shared with other facades) and warns once.</span>
+<span class="n">FAL_PROVIDER</span> <span class="o">=</span> <span class="s2">"fal"</span>
+
+<span class="c1">#: The env vars falaw itself reads for a fal key, in order (the pricing and account</span>
+<span class="c1">#: probes). :func:`call_fal` reads none: it leaves the env lookup to the fal SDK.</span>
+<span class="n">FAL_KEY_ENVVARS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"FAL_KEY"</span><span class="p">,</span> <span class="s2">"FAL_API_KEY"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="current_fal_key">
@@ -767,7 +772,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    to :func:`call_fal` wins over this context value, which in turn wins over</span>
 <span class="sd">    the fal SDK's own ``FAL_KEY`` env-var lookup.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="n">_FAL_KEY_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">current_credentials</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">FAL_PROVIDER</span><span class="p">)</span></div>
 
 
 
@@ -786,18 +791,14 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    a caller can pass an optional header value straight through without</span>
 <span class="sd">    special-casing "no BYO key — fall back to the server/env key".</span>
 
-<span class="sd">    Thread/async safe: backed by a :class:`contextvars.ContextVar`, so the</span>
-<span class="sd">    binding is visible only within the entering context (and threads/tasks it</span>
-<span class="sd">    spawns), never to concurrent requests.</span>
+<span class="sd">    Thread/async safe: this is ``ocracy.kit.using_credentials(fal=key)``, backed</span>
+<span class="sd">    by a :class:`contextvars.ContextVar`, so the binding is visible only within</span>
+<span class="sd">    the entering context (and asyncio tasks or copied contexts it spawns),</span>
+<span class="sd">    never to concurrent</span>
+<span class="sd">    requests.</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
-        <span class="k">yield</span>
-        <span class="k">return</span>
-    <span class="n">token</span> <span class="o">=</span> <span class="n">_FAL_KEY_VAR</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="k">yield</span>
-    <span class="k">finally</span><span class="p">:</span>
-        <span class="n">_FAL_KEY_VAR</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">token</span><span class="p">)</span></div>
+    <span class="k">with</span> <span class="n">using_credentials</span><span class="p">({</span><span class="n">FAL_PROVIDER</span><span class="p">:</span> <span class="n">key</span><span class="p">}):</span>
+        <span class="k">yield</span></div>
 
 
 
@@ -845,7 +846,7 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># default. Only when a key is resolved do we route through a dedicated</span>
     <span class="c1"># ``SyncClient`` — otherwise we call the module-level ``subscribe`` so the</span>
     <span class="c1"># SDK's own env/global resolution is preserved exactly as before.</span>
-    <span class="n">key</span> <span class="o">=</span> <span class="n">api_key</span> <span class="ow">or</span> <span class="n">_FAL_KEY_VAR</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="n">resolve_credential</span><span class="p">(</span><span class="n">FAL_PROVIDER</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">subscribe</span> <span class="o">=</span> <span class="n">fal_client</span><span class="o">.</span><span class="n">subscribe</span>
     <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
         <span class="n">client_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fal_client</span><span class="p">,</span> <span class="s2">"SyncClient"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -940,8 +941,8 @@ window.runMermaid = runMermaid;</script>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -953,7 +954,7 @@ window.runMermaid = runMermaid;</script>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
 </p></div>
       
     </div>
