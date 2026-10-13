@@ -177,7 +177,7 @@ def _default_http_get(
 
 
 def _resolve_api_key(api_key: Optional[str]) -> str:
-    from ocracy.kit import resolve_credential
+    from ._credentials import resolve_credential
 
     from .core import FAL_KEY_ENVVARS, FAL_PROVIDER
 

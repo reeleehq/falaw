@@ -19,8 +19,7 @@ import uuid
 from contextlib import contextmanager
 from typing import Any, Callable, Iterator, Mapping, Optional
 
-from ocracy.kit import current_credentials, resolve_credential, using_credentials
-
+from ._credentials import current_credentials, resolve_credential, using_credentials
 from .errors import import_fal_client as _import_fal_client
 from .errors import translate as _translate_error
 from .events import EventCallback, ProgressEvent, emit
@@ -40,6 +39,8 @@ from .journal import _default_journal
 #: is the seam reelee's HTTP server uses to forward a BYO key into server-side fal
 #: calls (reelee#159) without threading a credential argument through every
 #: intermediate signature (plan → execute → cached_call_fal → call_fal).
+#: Where ``ocracy`` is not installed, :mod:`falaw._credentials` falls back to a local
+#: binding with the same semantics (not shared with other facades) and warns once.
 FAL_PROVIDER = "fal"
 
 #: The env vars falaw itself reads for a fal key, in order (the pricing and account

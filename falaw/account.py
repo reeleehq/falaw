@@ -101,7 +101,7 @@ def health_check(
     Returns:
         :class:`AccountStatus` with ``ok=True`` when the probe succeeded.
     """
-    from ocracy.kit import resolve_credential
+    from ._credentials import resolve_credential
 
     from .core import FAL_KEY_ENVVARS, FAL_PROVIDER
 
