@@ -1,36 +1,36 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-13T15:43:33Z",
+  "built_at": "2026-10-13T16:43:02Z",
   "package": {
     "name": "falaw",
-    "version": "0.0.60",
+    "version": "0.0.61",
     "display_name": "falaw",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "0884b2feca0e7c649041e25d890157c1bcc9ce92",
-    "short_commit": "0884b2f",
+    "commit": "d6e23ff4a898e1e9bd413e39621627a617605b5d",
+    "short_commit": "d6e23ff",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/reeleehq/falaw",
-    "commit_url": "https://github.com/reeleehq/falaw/commit/0884b2feca0e7c649041e25d890157c1bcc9ce92",
+    "commit_url": "https://github.com/reeleehq/falaw/commit/d6e23ff4a898e1e9bd413e39621627a617605b5d",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "reeleehq/falaw",
-    "sha": "0884b2feca0e7c649041e25d890157c1bcc9ce92",
+    "sha": "d6e23ff4a898e1e9bd413e39621627a617605b5d",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "38424188679",
-    "run_url": "https://github.com/reeleehq/falaw/actions/runs/38424188679",
+    "run_id": "38432556247",
+    "run_url": "https://github.com/reeleehq/falaw/actions/runs/38432556247",
     "server_url": "https://github.com"
   },
   "tools": {
-    "epythet": "0.2.16",
+    "epythet": "0.2.17",
     "sphinx": "9.1.0",
     "docutils": "0.22.4",
     "python": "3.12.15"
@@ -55,16 +55,16 @@
     "docs_dir": "docsrc"
   },
   "site": {
-    "modules_documented": 42,
-    "objects_documented": 590
+    "modules_documented": 43,
+    "objects_documented": 606
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.60",
+    "latest": "0.0.61",
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout 0884b2feca0e7c649041e25d890157c1bcc9ce92\npip install \"epythet==0.2.16\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout d6e23ff4a898e1e9bd413e39621627a617605b5d\npip install \"epythet==0.2.17\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,

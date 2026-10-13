@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=4d22d5b7"></script>
+    <script src="_static/documentation_options.js?v=e95a51ae"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.60" />
+  <meta name="docsearch:version" content="0.0.61" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -462,6 +462,15 @@ sums per-call costs and returns a <code class="docutils literal notranslate"><sp
 breakdown. Models without a populated <code class="docutils literal notranslate"><span class="pre">cost_estimate</span></code> appear in the
 rollup’s <code class="docutils literal notranslate"><span class="pre">skipped</span></code> list so audits surface drift.</p>
 </section>
+<section id="pricing-a-direct-anthropic-openai-call">
+<h3>Pricing a direct Anthropic / OpenAI call<a class="headerlink" href="#pricing-a-direct-anthropic-openai-call" title="Link to this heading">#</a></h3>
+<p>falaw prices calls made straight to the model vendor too, from one dated table (<code class="docutils literal notranslate"><span class="pre">falaw/data/first_party_llm_prices.json</span></code>), so an app does not keep its own copy:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">falaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">llm_call_cost_usd</span>
+<span class="n">usd</span><span class="p">,</span> <span class="n">known</span> <span class="o">=</span> <span class="n">llm_call_cost_usd</span><span class="p">(</span><span class="s2">"anthropic"</span><span class="p">,</span> <span class="s2">"claude-opus-4-7"</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">usage</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">usage</span></code> is the vendor’s own (a dict or the SDK object; OpenAI’s Responses and Chat Completions shapes both work, cached tokens included). A model the table does not list is priced at the provider’s dearest listed rates with <code class="docutils literal notranslate"><span class="pre">known=False</span></code>: never a free call, but not a ceiling either (an older model can cost more), so a caller that must never under-count refuses when <code class="docutils literal notranslate"><span class="pre">known</span></code> is false.</p>
+</section>
 <section id="re-pricing-a-saved-plan">
 <h3>Re-pricing a saved plan<a class="headerlink" href="#re-pricing-a-saved-plan" title="Link to this heading">#</a></h3>
 <p>A <code class="docutils literal notranslate"><span class="pre">CallPlan</span></code>’s <code class="docutils literal notranslate"><span class="pre">estimated_cost_usd</span></code> is frozen at plan time — right for a quote, wrong for a gate, because rate tables move (0.0.46 re-quoted every premium LLM call tenfold <em>upward</em>). Every <code class="docutils literal notranslate"><span class="pre">plan_*</span></code> therefore records <strong>how</strong> it priced the call in <code class="docutils literal notranslate"><span class="pre">CallPlan.cost_basis</span></code>: which pricer, which rate table and version, and the quantity hints (<code class="docutils literal notranslate"><span class="pre">duration_s</span></code>, token bounds) that price the call but deliberately never enter <code class="docutils literal notranslate"><span class="pre">arguments</span></code>. <code class="docutils literal notranslate"><span class="pre">reprice_plan(plan)</span></code> reads that back and re-quotes at today’s rates — pure data, no network, no cache peek:</p>
@@ -680,7 +689,7 @@ refuse.</p></li>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-13 15:43 UTC from <a href="https://github.com/reeleehq/falaw/commit/0884b2feca0e7c649041e25d890157c1bcc9ce92">0884b2f</a> (main) · falaw 0.0.60 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-13 16:43 UTC from <a href="https://github.com/reeleehq/falaw/commit/d6e23ff4a898e1e9bd413e39621627a617605b5d">d6e23ff</a> (main) · falaw 0.0.61 · <a href="about-this-build.html">about this build</a></p>
 
                 </article>
               
@@ -727,6 +736,7 @@ refuse.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-surface">Core surface</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structured-progress-events">Structured progress events</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cost-estimation">Cost estimation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pricing-a-direct-anthropic-openai-call">Pricing a direct Anthropic / OpenAI call</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#re-pricing-a-saved-plan">Re-pricing a saved plan</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fan-out-partial-results-bounded-concurrency-per-call-isolation">Fan-out: partial results, bounded concurrency, per-call isolation</a></li>
 </ul>

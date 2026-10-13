@@ -8,6 +8,10 @@
 
    .. autosummary::
    
+      get_llm_price
+      list_llm_prices
+      llm_call_cost_usd
+      llm_prices_table_version
       call_plan_from_dict
       call_plan_to_dict
       plan_dependencies
@@ -117,6 +121,7 @@
 
    .. autosummary::
    
+      LlmPrice
       AccountStatus
       Asset
       Beat
@@ -190,6 +195,7 @@
    errors
    events
    liveness
+   llm_prices
    llm_rates
    llm_rates_refresh
    local

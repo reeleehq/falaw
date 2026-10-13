@@ -24,6 +24,7 @@
 - [falaw.errors](falaw.errors.html.md): Typed exceptions for falaw operations.
 - [falaw.events](falaw.events.html.md): Structured progress events for fal calls.
 - [falaw.liveness](falaw.liveness.html.md): Is a catalogued endpoint still deployed? (falaw#76)
+- [falaw.llm_prices](falaw.llm_prices.html.md): One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).
 - [falaw.llm_rates](falaw.llm_rates.html.md): Per-routed-model LLM rates: the data behind a &#42;ceiling&#42; quote (falaw#50, option A).
 - [falaw.llm_rates_refresh](falaw.llm_rates_refresh.html.md): Refresh proposals for the LLM rate table, never a silent overwrite (falaw#56).
 - [falaw.local](falaw.local.html.md): Local utilities: ffmpeg + PIL glue for stitching fal outputs.

@@ -1,0 +1,32 @@
+falaw.llm\_prices
+=================
+
+.. automodule:: falaw.llm_prices
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      PRICES_FILENAME
+      TOKENS_PER_PRICE_UNIT
+      COST_DECIMALS
+      PROVIDERS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_llm_price
+      list_llm_prices
+      llm_call_cost_usd
+      llm_prices_table_version
+      load_llm_prices
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LlmPrice
+      LlmPriceRates
+   

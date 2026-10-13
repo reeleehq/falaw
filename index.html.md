@@ -98,6 +98,17 @@ sums per-call costs and returns a `CostRollup` with per-line
 breakdown. Models without a populated `cost_estimate` appear in the
 rollup’s `skipped` list so audits surface drift.
 
+### Pricing a direct Anthropic / OpenAI call
+
+falaw prices calls made straight to the model vendor too, from one dated table (`falaw/data/first_party_llm_prices.json`), so an app does not keep its own copy:
+
+```python
+from falaw import llm_call_cost_usd
+usd, known = llm_call_cost_usd("anthropic", "claude-opus-4-7", response.usage)
+```
+
+`usage` is the vendor’s own (a dict or the SDK object; OpenAI’s Responses and Chat Completions shapes both work, cached tokens included). A model the table does not list is priced at the provider’s dearest listed rates with `known=False`: never a free call, but not a ceiling either (an older model can cost more), so a caller that must never under-count refuses when `known` is false.
+
 ### Re-pricing a saved plan
 
 A `CallPlan`’s `estimated_cost_usd` is frozen at plan time — right for a quote, wrong for a gate, because rate tables move (0.0.46 re-quoted every premium LLM call tenfold *upward*). Every `plan_*` therefore records **how** it priced the call in `CallPlan.cost_basis`: which pricer, which rate table and version, and the quantity hints (`duration_s`, token bounds) that price the call but deliberately never enter `arguments`. `reprice_plan(plan)` reads that back and re-quotes at today’s rates — pure data, no network, no cache peek:
