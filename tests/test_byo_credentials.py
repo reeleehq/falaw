@@ -68,8 +68,28 @@ def test_no_context_uses_module_subscribe(monkeypatch):
     """With no bound key and no explicit arg, the module-level subscribe
     runs — preserving the SDK's own env/global key resolution."""
     calls = _install_fake_fal(monkeypatch)
+    # call_fal reads no env var itself, even when one is set: the SDK does.
+    monkeypatch.setenv("FAL_KEY", "env-key")
+    monkeypatch.setenv("FAL_API_KEY", "env-key-2")
     call_fal("fal-ai/flux/dev", {"prompt": "x"})
     assert calls == [("module", None)]
+
+
+def test_a_key_bound_through_the_shared_kit_reaches_falaw(monkeypatch):
+    """With ocracy installed, falaw's binding IS the kit's: one binding, every facade."""
+    pytest.importorskip("ocracy.kit")
+    from ocracy.kit import current_credentials, using_credentials
+
+    from falaw import _credentials
+
+    assert _credentials.SHARED_KIT is True
+    calls = _install_fake_fal(monkeypatch)
+    with using_credentials(fal="kit-key"):
+        assert current_fal_key() == "kit-key"
+        call_fal("fal-ai/flux/dev", {"prompt": "x"})
+    with using_fal_credentials("falaw-key"):
+        assert current_credentials()["fal"] == "falaw-key"
+    assert calls[0][1] == "kit-key"
 
 
 def test_context_key_routes_through_sync_client(monkeypatch):

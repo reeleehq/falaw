@@ -33,7 +33,9 @@ from .journal import _default_journal
 #: The provider id a fal key is bound under, in the fleet's facade kit
 #: (:func:`ocracy.kit.using_credentials`). The binding is a
 #: :class:`contextvars.ContextVar` (rather than an ``os.environ`` mutation), so it is
-#: scoped to the entering context and the tasks it spawns: concurrent requests are
+#: scoped to the entering context, the asyncio tasks it spawns and work run in a copy
+#: of it (``contextvars.copy_context().run``; a bare thread pool does not copy it):
+#: concurrent requests are
 #: unaffected and no process-wide lock is needed. Because the kit is shared, a server
 #: that binds ``fal`` once reaches every facade that calls fal, not only falaw. This
 #: is the seam reelee's HTTP server uses to forward a BYO key into server-side fal
@@ -73,7 +75,8 @@ def using_fal_credentials(key: Optional[str]) -> Iterator[None]:
 
     Thread/async safe: this is ``ocracy.kit.using_credentials(fal=key)``, backed
     by a :class:`contextvars.ContextVar`, so the binding is visible only within
-    the entering context (and threads/tasks it spawns), never to concurrent
+    the entering context (and asyncio tasks or copied contexts it spawns),
+    never to concurrent
     requests.
     """
     with using_credentials({FAL_PROVIDER: key}):

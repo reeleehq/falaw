@@ -26,11 +26,14 @@ try:
     from ocracy.kit import current_credentials, resolve_credential, using_credentials
 
     SHARED_KIT = True
-except ImportError:  # ocracy missing: an env installed without falaw's dependencies
+except ModuleNotFoundError as _missing:  # an env installed without falaw's deps
+    if _missing.name not in ("ocracy", "ocracy.kit"):
+        raise  # ocracy is there but broken: say so, do not mask it
     SHARED_KIT = False
 
     warnings.warn(
-        "falaw: the 'ocracy' package (a declared dependency) is not installed, so "
+        "falaw: the 'ocracy' package (a declared dependency, >=0.1.12 for ocracy.kit) "
+        "is not installed or too old, so "
         "fal keys bound with falaw.using_fal_credentials are not shared with other "
         "facades. falaw itself works; install ocracy>=0.1.12 to share the binding.",
         RuntimeWarning,
