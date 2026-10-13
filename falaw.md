@@ -1,4 +1,4 @@
-> built 2026-10-13 04:40 UTC from 569f66e (main) · falaw 0.0.59. Details: build_info.json
+> built 2026-10-13 15:43 UTC from 0884b2f (main) · falaw 0.0.60. Details: build_info.json
 
 # index.html.md
 
@@ -9118,18 +9118,16 @@ False
 
 # About this build
 
-This documentation was built on **2026-10-13 04:40 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/569f66e852bf6c388d30eda3fe7b15457283aa59"><code>569f66e</code></a> on branch <code>main</code>, for **falaw 0.0.59** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-13 15:43 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/0884b2feca0e7c649041e25d890157c1bcc9ce92"><code>0884b2f</code></a> on branch <code>main</code>, for **falaw 0.0.60** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.59) is behind the latest release on PyPI (0.0.60): `pip install falaw` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/569f66e852bf6c388d30eda3fe7b15457283aa59"><code>569f66e852bf6c388d30eda3fe7b15457283aa59</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/0884b2feca0e7c649041e25d890157c1bcc9ce92"><code>0884b2feca0e7c649041e25d890157c1bcc9ce92</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -9140,15 +9138,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/38347448883">38347448883</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/38424188679">38424188679</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>569f66e852bf6c388d30eda3fe7b15457283aa59</code> (in the history of the built commit) |
+| Event commit | <code>0884b2feca0e7c649041e25d890157c1bcc9ce92</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.13  |
+| epythet  | 0.2.16  |
 | Sphinx   | 9.1.0   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
@@ -9167,14 +9165,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.60/">0.0.60</a>, newer than the documented version (0.0.59).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.60/">0.0.60</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 569f66e852bf6c388d30eda3fe7b15457283aa59
-pip install "epythet==0.2.13"
+git checkout 0884b2feca0e7c649041e25d890157c1bcc9ce92
+pip install "epythet==0.2.16"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
