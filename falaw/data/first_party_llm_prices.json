@@ -1,0 +1,246 @@
+{
+  "version": 1,
+  "currency": "USD",
+  "units": {
+    "input_usd_per_mtok": "USD per 1,000,000 uncached input tokens",
+    "output_usd_per_mtok": "USD per 1,000,000 output tokens",
+    "cache_read_usd_per_mtok": "USD per 1,000,000 input tokens served from the prompt cache",
+    "cache_write_usd_per_mtok": "USD per 1,000,000 input tokens written to the prompt cache (Anthropic only)",
+    "long_prompt": "Rates that replace the row's own once a prompt exceeds over_input_tokens",
+    "cache_write_1h_usd_per_mtok": "USD per 1,000,000 input tokens written to the 1-hour prompt cache (Anthropic only, 2x input)"
+  },
+  "rows": [
+    {
+      "provider": "anthropic",
+      "model": "claude-fable-5-1",
+      "input_usd_per_mtok": 10.0,
+      "output_usd_per_mtok": 50.0,
+      "cache_read_usd_per_mtok": 1.0,
+      "cache_write_usd_per_mtok": 12.5,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 20.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-fable-5",
+      "input_usd_per_mtok": 10.0,
+      "output_usd_per_mtok": 50.0,
+      "cache_read_usd_per_mtok": 1.0,
+      "cache_write_usd_per_mtok": 12.5,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 20.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "input_usd_per_mtok": 4.0,
+      "output_usd_per_mtok": 20.0,
+      "cache_read_usd_per_mtok": 0.4,
+      "cache_write_usd_per_mtok": 5.0,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 8.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-5",
+      "input_usd_per_mtok": 5.0,
+      "output_usd_per_mtok": 25.0,
+      "cache_read_usd_per_mtok": 0.5,
+      "cache_write_usd_per_mtok": 6.25,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 10.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-4-8",
+      "input_usd_per_mtok": 5.0,
+      "output_usd_per_mtok": 25.0,
+      "cache_read_usd_per_mtok": 0.5,
+      "cache_write_usd_per_mtok": 6.25,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 10.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-4-7",
+      "input_usd_per_mtok": 5.0,
+      "output_usd_per_mtok": 25.0,
+      "cache_read_usd_per_mtok": 0.5,
+      "cache_write_usd_per_mtok": 6.25,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 10.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-4-6",
+      "input_usd_per_mtok": 5.0,
+      "output_usd_per_mtok": 25.0,
+      "cache_read_usd_per_mtok": 0.5,
+      "cache_write_usd_per_mtok": 6.25,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 10.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "input_usd_per_mtok": 2.0,
+      "output_usd_per_mtok": 10.0,
+      "cache_read_usd_per_mtok": 0.2,
+      "cache_write_usd_per_mtok": 2.5,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 4.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5",
+      "input_usd_per_mtok": 2.0,
+      "output_usd_per_mtok": 10.0,
+      "cache_read_usd_per_mtok": 0.2,
+      "cache_write_usd_per_mtok": 2.5,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 4.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
+      "input_usd_per_mtok": 3.0,
+      "output_usd_per_mtok": 15.0,
+      "cache_read_usd_per_mtok": 0.3,
+      "cache_write_usd_per_mtok": 3.75,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 6.0
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "input_usd_per_mtok": 0.1,
+      "output_usd_per_mtok": 0.5,
+      "cache_read_usd_per_mtok": 0.01,
+      "cache_write_usd_per_mtok": 0.125,
+      "long_prompt": {
+        "over_input_tokens": 100000,
+        "input_usd_per_mtok": 0.5,
+        "output_usd_per_mtok": 2.5,
+        "cache_read_usd_per_mtok": 0.05,
+        "cache_write_usd_per_mtok": 0.625,
+        "cache_write_1h_usd_per_mtok": 1.0
+      },
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "Over 100K prompt tokens the long_prompt rates apply.",
+      "cache_write_1h_usd_per_mtok": 0.2
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5",
+      "input_usd_per_mtok": 1.0,
+      "output_usd_per_mtok": 5.0,
+      "cache_read_usd_per_mtok": 0.1,
+      "cache_write_usd_per_mtok": 1.25,
+      "source": "Anthropic's Claude API model table (claude-api reference), cached 2026-10-06; carried over from reelee agent.ANTHROPIC_PRICES_USD_PER_MTOK (reelee#561), a superset of foley's table. Cache reads are 0.1x and 5-minute cache writes 1.25x and 1-hour cache writes 2x the input rate, materialized per row.",
+      "date": "2026-10-06",
+      "notes": "",
+      "cache_write_1h_usd_per_mtok": 2.0
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1",
+      "input_usd_per_mtok": 1.25,
+      "output_usd_per_mtok": 10.0,
+      "cache_read_usd_per_mtok": 0.125,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5",
+      "input_usd_per_mtok": 1.25,
+      "output_usd_per_mtok": 10.0,
+      "cache_read_usd_per_mtok": 0.125,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "input_usd_per_mtok": 0.25,
+      "output_usd_per_mtok": 2.0,
+      "cache_read_usd_per_mtok": 0.025,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-nano",
+      "input_usd_per_mtok": 0.05,
+      "output_usd_per_mtok": 0.4,
+      "cache_read_usd_per_mtok": 0.005,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "input_usd_per_mtok": 2.0,
+      "output_usd_per_mtok": 8.0,
+      "cache_read_usd_per_mtok": 0.5,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "input_usd_per_mtok": 0.4,
+      "output_usd_per_mtok": 1.6,
+      "cache_read_usd_per_mtok": 0.1,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o",
+      "input_usd_per_mtok": 2.5,
+      "output_usd_per_mtok": 10.0,
+      "cache_read_usd_per_mtok": 1.25,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": "Exact ids only: dated snapshots can cost more (gpt-4o-2024-05-13 is $5/$15) and need their own row."
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "input_usd_per_mtok": 0.15,
+      "output_usd_per_mtok": 0.6,
+      "cache_read_usd_per_mtok": 0.075,
+      "source": "https://developers.openai.com/api/docs/pricing, standard tier; carried over from reelee chat_relay.OPENAI_PRICES_USD_PER_MTOK. Reasoning tokens are billed as output.",
+      "date": "2026-09-28",
+      "notes": ""
+    }
+  ]
+}

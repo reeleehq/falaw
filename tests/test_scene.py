@@ -48,12 +48,16 @@ def test_make_beat_helper():
 
 
 def test_scene_with_beat_replaces_in_place():
-    scene = Scene(title="t", beats=(make_beat("A", "x", index=0),
-                                     make_beat("B", "y", index=1)))
+    scene = Scene(
+        title="t", beats=(make_beat("A", "x", index=0), make_beat("B", "y", index=1))
+    )
     target = scene.beats[0]
     edited = Beat(
-        id=target.id, speaker=target.speaker, line="EDITED",
-        action=target.action, emotion=target.emotion,
+        id=target.id,
+        speaker=target.speaker,
+        line="EDITED",
+        action=target.action,
+        emotion=target.emotion,
     )
     new = scene.with_beat(edited)
     assert new is not scene
@@ -69,8 +73,7 @@ def test_scene_with_beat_appends_when_id_unknown():
 
 
 def test_scene_with_character_replaces():
-    s = Scene(title="t",
-              characters=(Character(name="A"), Character(name="B")))
+    s = Scene(title="t", characters=(Character(name="A"), Character(name="B")))
     s2 = s.with_character(Character(name="A", description="updated"))
     assert s2.character("A").description == "updated"
     assert len(s2.characters) == 2
@@ -110,18 +113,30 @@ def test_scene_roundtrip_via_dict():
         title="Diner Encounter",
         style="Wes-Anderson pastel",
         characters=(
-            Character(name="Sarah", description="mid-30s",
-                      reference_image_url="http://x/s.png", voice=voice),
+            Character(
+                name="Sarah",
+                description="mid-30s",
+                reference_image_url="http://x/s.png",
+                voice=voice,
+            ),
             Character(name="Tom"),
         ),
-        environments=(Environment(name="diner", description="1950s",
-                                   time_of_day="midnight"),),
-        shots=(make_shot("two-shot at the booth", framing="medium",
-                          environment="diner",
-                          characters=("Sarah", "Tom"), index=0),),
+        environments=(
+            Environment(name="diner", description="1950s", time_of_day="midnight"),
+        ),
+        shots=(
+            make_shot(
+                "two-shot at the booth",
+                framing="medium",
+                environment="diner",
+                characters=("Sarah", "Tom"),
+                index=0,
+            ),
+        ),
         beats=(
-            make_beat("Sarah", "Why are you here?",
-                      shot_id="x", emotion="wary", index=0),
+            make_beat(
+                "Sarah", "Why are you here?", shot_id="x", emotion="wary", index=0
+            ),
             make_beat("Tom", "I came to apologize.", index=1),
         ),
     )

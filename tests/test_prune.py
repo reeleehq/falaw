@@ -459,7 +459,7 @@ def test_a_failed_deletion_is_reported_not_raised(monkeypatch):
 
 
 def test_freed_bytes_counts_what_was_deleted_not_what_was_selected(monkeypatch):
-    """"freed 2.4 GB" while nothing was freed is how a full disk stays full."""
+    """ "freed 2.4 GB" while nothing was freed is how a full disk stays full."""
     _put_blob(b"a" * 1000, age_s=100 * DAY)
     _put_blob(b"b" * 1000, age_s=100 * DAY)
 

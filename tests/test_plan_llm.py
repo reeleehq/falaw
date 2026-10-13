@@ -187,7 +187,9 @@ def test_converter_media_response_without_bytes_keeps_the_url_only():
 
 def test_execute_llm_plan_returns_usable_artifact(monkeypatch):
     _install_fake_fal(monkeypatch, response={"output": '{"tone": "noir"}'})
-    cp = plan_llm_complete("Describe the tone.", output_kind="json", consult_cache=False)
+    cp = plan_llm_complete(
+        "Describe the tone.", output_kind="json", consult_cache=False
+    )
     [art] = execute(Plan(calls=(cp,)), use_cache=False)
     assert art.kind == "json"
     assert art.path is not None

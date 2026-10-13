@@ -76,6 +76,13 @@ from .cost import (
     estimate_call_cost,
     estimate_scene_cost,
 )
+from .llm_prices import (
+    LlmPrice,
+    get_llm_price,
+    list_llm_prices,
+    llm_call_cost_usd,
+    llm_prices_table_version,
+)
 from .llm_rates import (
     LlmRate,
     get_llm_rate,
@@ -191,6 +198,11 @@ from .scene import (
 from .session import Session
 
 __all__ = [
+    "LlmPrice",
+    "get_llm_price",
+    "list_llm_prices",
+    "llm_call_cost_usd",
+    "llm_prices_table_version",
     "AccountStatus",
     "Asset",
     "Beat",

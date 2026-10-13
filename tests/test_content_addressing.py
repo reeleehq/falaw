@@ -350,7 +350,9 @@ def test_stored_bytes_survive_an_expired_url(fal, fake_assets):
     fake_assets.fail("http://cdn/ephemeral.png")  # fal deleted it
     fake_assets.fetched.clear()
 
-    with pytest.warns(UserWarning, match="is gone from its origin|could not be re-read"):
+    with pytest.warns(
+        UserWarning, match="is gone from its origin|could not be re-read"
+    ):
         (again,) = execute_plan(_image_plan())
 
     # `http://cdn/...` is not a fal host, so falaw asks the origin before
@@ -751,7 +753,9 @@ def test_materialize_asset_short_circuits_on_an_existing_local_file(fake_assets)
     fake_assets.fail("http://cdn/clip.mp4")  # expired
     fake_assets.fetched.clear()
 
-    with pytest.warns(UserWarning, match="is gone from its origin|could not be re-read"):
+    with pytest.warns(
+        UserWarning, match="is gone from its origin|could not be re-read"
+    ):
         again = materialize_asset("http://cdn/clip.mp4")
 
     assert again == first

@@ -53,7 +53,9 @@ class TestRefresh:
         self, tmp_path
     ):
         path = _catalogue(tmp_path, [_record("m/a")])
-        http = _stub_http({"m/a": {"unit_price": 0.03, "unit": "image", "currency": "USD"}})
+        http = _stub_http(
+            {"m/a": {"unit_price": 0.03, "unit": "image", "currency": "USD"}}
+        )
 
         summary = refresh_model_prices(
             write=True, api_key="k", http_get=http, models_path=path, today="2026-08-15"
@@ -278,10 +280,16 @@ class TestFetch:
 
     def test_pagination_is_followed(self):
         pages = [
-            {"prices": [{"endpoint_id": "m/a", "unit_price": 0.1, "unit": "image"}],
-             "next_cursor": "c1", "has_more": True},
-            {"prices": [{"endpoint_id": "m/b", "unit_price": 0.2, "unit": "image"}],
-             "next_cursor": None, "has_more": False},
+            {
+                "prices": [{"endpoint_id": "m/a", "unit_price": 0.1, "unit": "image"}],
+                "next_cursor": "c1",
+                "has_more": True,
+            },
+            {
+                "prices": [{"endpoint_id": "m/b", "unit_price": 0.2, "unit": "image"}],
+                "next_cursor": None,
+                "has_more": False,
+            },
         ]
         seen_cursors = []
 
@@ -331,9 +339,7 @@ class TestDisciplineSurvives:
             id="m/v",
             category="video",
             description="",
-            cost_estimate=CostEstimate(
-                kind="per_second", amount=0.35, source="api"
-            ),
+            cost_estimate=CostEstimate(kind="per_second", amount=0.35, source="api"),
         )
         assert estimate_call_cost(record) is None
         assert estimate_call_cost(record, seconds=10) == pytest.approx(3.5)
@@ -342,15 +348,25 @@ class TestDisciplineSurvives:
 class TestPlanSplit:
     def test_known_cost_and_unknown_count_split_the_total(self):
         priced = CallPlan(
-            tool="t", application="m/a", arguments={}, output_kind="image",
+            tool="t",
+            application="m/a",
+            arguments={},
+            output_kind="image",
             estimated_cost_usd=0.25,
         )
         unpriced = CallPlan(
-            tool="t", application="m/b", arguments={}, output_kind="video",
+            tool="t",
+            application="m/b",
+            arguments={},
+            output_kind="video",
         )
         hit = CallPlan(
-            tool="t", application="m/c", arguments={}, output_kind="image",
-            estimated_cost_usd=0.10, cache_status="hit",
+            tool="t",
+            application="m/c",
+            arguments={},
+            output_kind="image",
+            estimated_cost_usd=0.10,
+            cache_status="hit",
         )
         plan = Plan(calls=(priced, unpriced, hit))
 
@@ -361,7 +377,10 @@ class TestPlanSplit:
 
     def test_a_fully_priced_plan_has_no_unknowns(self):
         call = CallPlan(
-            tool="t", application="m/a", arguments={}, output_kind="image",
+            tool="t",
+            application="m/a",
+            arguments={},
+            output_kind="image",
             estimated_cost_usd=0.25,
         )
         plan = Plan(calls=(call,))

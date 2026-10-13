@@ -91,7 +91,9 @@ def test_unknown_per_second_cost_lights_up_plan_has_unknown_costs():
     assert unpriced.total_cost_usd == pytest.approx(0.0)  # NOT evidence of "free"
 
     priced = Plan(
-        calls=(plan_image_to_video("https://e/a.png", model_id=seedance, duration_s=5.0),)
+        calls=(
+            plan_image_to_video("https://e/a.png", model_id=seedance, duration_s=5.0),
+        )
     )
     assert priced.has_unknown_costs is False
     assert priced.total_cost_usd > 0
@@ -154,8 +156,11 @@ def test_estimate_scene_cost_aggregates_per_line(monkeypatch):
     )
     diner = Environment(name="diner", description="1950s diner")
     shot = make_shot(
-        "two-shot at the booth", framing="medium", environment="diner",
-        characters=("Sarah",), index=0,
+        "two-shot at the booth",
+        framing="medium",
+        environment="diner",
+        characters=("Sarah",),
+        index=0,
     )
     scene = Scene(
         title="t",
@@ -201,7 +206,8 @@ def test_estimate_scene_cost_skipped_lists_unpriced_models(monkeypatch):
         ),
     }
     monkeypatch.setattr(
-        cost_mod, "pick_model",
+        cost_mod,
+        "pick_model",
         lambda *, category, quality_tier="balanced": fake_records[category],
     )
 
@@ -235,7 +241,8 @@ def test_estimate_scene_cost_includes_video_when_shots_as_video(monkeypatch):
         ),
     }
     monkeypatch.setattr(
-        cost_mod, "pick_model",
+        cost_mod,
+        "pick_model",
         lambda *, category, quality_tier="balanced": fake_records[category],
     )
 
@@ -273,16 +280,19 @@ def test_estimate_scene_cost_prices_video_when_told_the_clip_length(monkeypatch)
 
     fake_records = {
         "image": ModelRecord(
-            id="img", category="image",
+            id="img",
+            category="image",
             cost_estimate=CostEstimate(kind="per_image", amount=0.01),
         ),
         "image_to_video": ModelRecord(
-            id="i2v", category="image_to_video",
+            id="i2v",
+            category="image_to_video",
             cost_estimate=CostEstimate(kind="per_second", amount=0.50),
         ),
     }
     monkeypatch.setattr(
-        cost_mod, "pick_model",
+        cost_mod,
+        "pick_model",
         lambda *, category, quality_tier="balanced": fake_records[category],
     )
 
@@ -304,7 +314,7 @@ def test_cost_rollup_by_kind_sums_correctly():
         lines=(
             cost_line("shot.image", "s1", 0.04),
             cost_line("shot.image", "s2", 0.04),
-            cost_line("beat.tts",   "b1", 0.10),
+            cost_line("beat.tts", "b1", 0.10),
             cost_line("beat.avatar", "b1", 0.12),
         ),
     )
@@ -318,8 +328,11 @@ def cost_line(kind, item_id, amount):
     from falaw import CostLine
 
     return CostLine(
-        kind=kind, item_id=item_id, model_id="m",
-        amount=amount, currency="USD",
+        kind=kind,
+        item_id=item_id,
+        model_id="m",
+        amount=amount,
+        currency="USD",
     )
 
 

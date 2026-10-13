@@ -50,14 +50,21 @@ def _patch_fal_with_delay(monkeypatch, *, delay_s: float = 0.05):
                 or "speech" in application
                 or "playai" in application
             ):
-                return {"audio": {"url": "http://x/spoken.mp3", "content_type": "audio/mpeg"}}
+                return {
+                    "audio": {
+                        "url": "http://x/spoken.mp3",
+                        "content_type": "audio/mpeg",
+                    }
+                }
             if "ai-avatar" in application or "omnihuman" in application:
                 return {"video": {"url": "http://x/talking.mp4"}}
             if "image-to-video" in application:
                 return {"video": {"url": "http://x/i2v.mp4"}}
             if "voice-clone" in application:
                 return {"audio_url": "http://x/cloned.mp3"}
-            return {"images": [{"url": "http://x/img.png", "content_type": "image/png"}]}
+            return {
+                "images": [{"url": "http://x/img.png", "content_type": "image/png"}]
+            }
         finally:
             with lock:
                 in_flight.pop()
@@ -75,8 +82,11 @@ def _make_scene(n_shots=4, n_beats=4):
     diner = Environment(name="diner", description="1950s diner")
     shots = tuple(
         make_shot(
-            f"shot {i}", framing="medium",
-            environment="diner", characters=("Sarah",), index=i,
+            f"shot {i}",
+            framing="medium",
+            environment="diner",
+            characters=("Sarah",),
+            index=i,
         )
         for i in range(n_shots)
     )

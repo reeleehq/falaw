@@ -304,9 +304,7 @@ def test_plan_text_to_speech_tokens_is_an_estimator_hint_not_an_argument():
     a = plan_text_to_speech(
         text="x", model_id="fal-ai/elevenlabs/tts/multilingual-v2", tokens=1
     )
-    b = plan_text_to_speech(
-        text="x", model_id="fal-ai/elevenlabs/tts/multilingual-v2"
-    )
+    b = plan_text_to_speech(text="x", model_id="fal-ai/elevenlabs/tts/multilingual-v2")
     assert "tokens" not in a.arguments
     assert a.arguments == b.arguments
     assert (a.tool, a.application, a.output_kind) == (

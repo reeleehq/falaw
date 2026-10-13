@@ -63,9 +63,7 @@ def test_conditional_headers_empty_when_no_state():
 def test_diff_against_previous_returns_unified_diff(tmp_path):
     from falaw.refresh import DocSource, _snapshot_path, diff_against_previous
 
-    src = DocSource(
-        name="d", url="http://x", local_path=str(tmp_path / "d.txt")
-    )
+    src = DocSource(name="d", url="http://x", local_path=str(tmp_path / "d.txt"))
     prev = _snapshot_path(src.name)
     os.makedirs(os.path.dirname(prev), exist_ok=True)
     with open(prev, "w") as f:

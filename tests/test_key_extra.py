@@ -34,12 +34,15 @@ def _call(**overrides) -> CallPlan:
 class TestKeyStability:
     def test_empty_key_extra_leaves_every_payload_byte_identical(self):
         """The omit-if-empty rule: no key ever issued changes."""
-        assert cache_key_payload("m/a", {"x": 1}) == cache_key_payload(
-            "m/a", {"x": 1}, key_extra=None
-        ) == cache_key_payload("m/a", {"x": 1}, key_extra={}) == {
-            "app": "m/a",
-            "args": {"x": 1},
-        }
+        assert (
+            cache_key_payload("m/a", {"x": 1})
+            == cache_key_payload("m/a", {"x": 1}, key_extra=None)
+            == cache_key_payload("m/a", {"x": 1}, key_extra={})
+            == {
+                "app": "m/a",
+                "args": {"x": 1},
+            }
+        )
         assert plan_identity_payload("m/a", {"x": 1}, tool="t") == {
             "app": "m/a",
             "args": {"x": 1},
@@ -49,9 +52,7 @@ class TestKeyStability:
     def test_plan_hash_unchanged_without_key_extra_and_changed_with(self):
         without = plan_hash(Plan(calls=(_call(),)))
         again = plan_hash(Plan(calls=(_call(),)))
-        with_extra = plan_hash(
-            Plan(calls=(_call(key_extra={"impl": "2"}),))
-        )
+        with_extra = plan_hash(Plan(calls=(_call(key_extra={"impl": "2"}),)))
 
         assert without == again
         assert with_extra != without
@@ -73,7 +74,9 @@ class _FakeFal:
         self.calls: list = []
         self._lock = threading.Lock()
 
-    def subscribe(self, application, *, arguments, with_logs=True, on_queue_update=None):
+    def subscribe(
+        self, application, *, arguments, with_logs=True, on_queue_update=None
+    ):
         with self._lock:
             self.calls.append((application, dict(arguments)))
         return {"images": [{"url": f"http://x/{len(self.calls)}.png"}]}

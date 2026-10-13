@@ -117,9 +117,7 @@ def test_generate_image_with_refs_merges_extra(monkeypatch):
     captured = _patch_fal(monkeypatch)
     from falaw import generate_image_with_refs
 
-    generate_image_with_refs(
-        "x", ["http://x/ref.png"], extra={"guidance_scale": 3.5}
-    )
+    generate_image_with_refs("x", ["http://x/ref.png"], extra={"guidance_scale": 3.5})
     assert captured[0]["arguments"]["guidance_scale"] == 3.5
 
 

@@ -51,8 +51,11 @@ def test_duration_reaches_only_models_that_take_one():
 
 def test_explicit_model_id_pins_and_extra_threads():
     p = plan_generate_audio(
-        "storm", kind="ambient", model_id="fal-ai/lyria2",
-        extra={"negative_prompt": "voices"}, metadata={"panel_id": "p01"},
+        "storm",
+        kind="ambient",
+        model_id="fal-ai/lyria2",
+        extra={"negative_prompt": "voices"},
+        metadata={"panel_id": "p01"},
     )
     assert p.application == "fal-ai/lyria2"
     assert p.arguments["negative_prompt"] == "voices"
@@ -96,5 +99,9 @@ def test_the_generative_audio_models_are_all_priced():
     clears any budget, the muvid#47 family)."""
     from falaw.registry import get_model
 
-    for mid in ("fal-ai/mmaudio-v2/text-to-audio", "fal-ai/lyria2", "fal-ai/diffrhythm"):
+    for mid in (
+        "fal-ai/mmaudio-v2/text-to-audio",
+        "fal-ai/lyria2",
+        "fal-ai/diffrhythm",
+    ):
         assert get_model(mid).cost_estimate is not None, mid

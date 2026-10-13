@@ -82,10 +82,22 @@ def test_callplan_billable_cost_unknown_estimate_is_zero():
 
 
 def test_plan_total_cost_sums_billable():
-    a = CallPlan(tool="x", application="m1", arguments={}, output_kind="image",
-                 estimated_cost_usd=0.10, cache_status="miss")
-    b = CallPlan(tool="y", application="m2", arguments={}, output_kind="video",
-                 estimated_cost_usd=0.50, cache_status="hit")
+    a = CallPlan(
+        tool="x",
+        application="m1",
+        arguments={},
+        output_kind="image",
+        estimated_cost_usd=0.10,
+        cache_status="miss",
+    )
+    b = CallPlan(
+        tool="y",
+        application="m2",
+        arguments={},
+        output_kind="video",
+        estimated_cost_usd=0.50,
+        cache_status="hit",
+    )
     plan = Plan(calls=(a, b))
     # b is a hit → contributes 0; a is a miss → contributes 0.10
     assert plan.total_cost_usd == pytest.approx(0.10)
@@ -111,10 +123,22 @@ def test_plan_indexing_and_iteration():
 
 
 def test_plan_with_call_replaced():
-    p1 = CallPlan(tool="t1", application="m1", arguments={}, output_kind="image",
-                  estimated_cost_usd=0.10, cache_status="miss")
-    p2 = CallPlan(tool="t2", application="m2", arguments={}, output_kind="image",
-                  estimated_cost_usd=0.20, cache_status="miss")
+    p1 = CallPlan(
+        tool="t1",
+        application="m1",
+        arguments={},
+        output_kind="image",
+        estimated_cost_usd=0.10,
+        cache_status="miss",
+    )
+    p2 = CallPlan(
+        tool="t2",
+        application="m2",
+        arguments={},
+        output_kind="image",
+        estimated_cost_usd=0.20,
+        cache_status="miss",
+    )
     plan = Plan(calls=(p1,))
     new_plan = plan.with_call_replaced(0, p2)
     assert plan.calls == (p1,)  # original unchanged
@@ -122,20 +146,38 @@ def test_plan_with_call_replaced():
 
 
 def test_plan_has_unknown_costs():
-    a = CallPlan(tool="x", application="m1", arguments={}, output_kind="image",
-                 estimated_cost_usd=0.10, cache_status="miss")
+    a = CallPlan(
+        tool="x",
+        application="m1",
+        arguments={},
+        output_kind="image",
+        estimated_cost_usd=0.10,
+        cache_status="miss",
+    )
     plan_known = Plan(calls=(a,))
     assert plan_known.has_unknown_costs is False
 
-    b = CallPlan(tool="y", application="m2", arguments={}, output_kind="video",
-                 estimated_cost_usd=None, cache_status="miss")
+    b = CallPlan(
+        tool="y",
+        application="m2",
+        arguments={},
+        output_kind="video",
+        estimated_cost_usd=None,
+        cache_status="miss",
+    )
     plan_unknown = Plan(calls=(a, b))
     assert plan_unknown.has_unknown_costs is True
 
     # Cache hits with unknown cost don't trigger has_unknown_costs:
     # they're a hit, the call won't bill, so the unknown estimate is moot.
-    c = CallPlan(tool="z", application="m3", arguments={}, output_kind="image",
-                 estimated_cost_usd=None, cache_status="hit")
+    c = CallPlan(
+        tool="z",
+        application="m3",
+        arguments={},
+        output_kind="image",
+        estimated_cost_usd=None,
+        cache_status="hit",
+    )
     plan_hit_only = Plan(calls=(a, c))
     assert plan_hit_only.has_unknown_costs is False
 
@@ -191,14 +233,20 @@ def test_make_call_plan_cache_hit(tmp_path, monkeypatch):
 
 def test_execute_dry_run_yields_synthetic_artifacts():
     p1 = CallPlan(
-        tool="generate_image", application="fal-ai/flux/dev",
-        arguments={"prompt": "tiger"}, output_kind="image",
-        estimated_cost_usd=0.025, cache_status="miss",
+        tool="generate_image",
+        application="fal-ai/flux/dev",
+        arguments={"prompt": "tiger"},
+        output_kind="image",
+        estimated_cost_usd=0.025,
+        cache_status="miss",
     )
     p2 = CallPlan(
-        tool="image_to_video", application="fal-ai/minimax/hailuo-02/pro/image-to-video",
-        arguments={"image_url": "<from p1>"}, output_kind="video",
-        estimated_cost_usd=0.50, cache_status="miss",
+        tool="image_to_video",
+        application="fal-ai/minimax/hailuo-02/pro/image-to-video",
+        arguments={"image_url": "<from p1>"},
+        output_kind="video",
+        estimated_cost_usd=0.50,
+        cache_status="miss",
     )
     plan = Plan(calls=(p1, p2))
 
@@ -215,8 +263,10 @@ def test_execute_dry_run_is_deterministic():
     """Two dry-runs of the same Plan produce Artifacts with the same asset_ids.
     This lets tests assert on Artifact.id without time-coupling."""
     p1 = CallPlan(
-        tool="generate_image", application="fal-ai/flux/dev",
-        arguments={"prompt": "tiger"}, output_kind="image",
+        tool="generate_image",
+        application="fal-ai/flux/dev",
+        arguments={"prompt": "tiger"},
+        output_kind="image",
     )
     plan = Plan(calls=(p1,))
     a1 = execute(plan, dry_run=True)[0]
@@ -225,12 +275,18 @@ def test_execute_dry_run_is_deterministic():
 
 
 def test_execute_real_call_produces_artifact_with_url(monkeypatch):
-    _install_fake_fal(monkeypatch, response={"images": [{"url": "http://x/img.png", "content_type": "image/png"}]})
+    _install_fake_fal(
+        monkeypatch,
+        response={"images": [{"url": "http://x/img.png", "content_type": "image/png"}]},
+    )
 
     p1 = CallPlan(
-        tool="generate_image", application="fal-ai/flux/dev",
-        arguments={"prompt": "x"}, output_kind="image",
-        estimated_cost_usd=0.025, cache_status="miss",
+        tool="generate_image",
+        application="fal-ai/flux/dev",
+        arguments={"prompt": "x"},
+        output_kind="image",
+        estimated_cost_usd=0.025,
+        cache_status="miss",
     )
     artifacts = execute(Plan(calls=(p1,)), use_cache=False)
     assert len(artifacts) == 1
@@ -241,12 +297,24 @@ def test_execute_real_call_produces_artifact_with_url(monkeypatch):
 
 
 def test_execute_video_response_extracts_url_and_duration(monkeypatch):
-    _install_fake_fal(monkeypatch, response={"video": {"url": "http://x/v.mp4", "duration": 8.0, "content_type": "video/mp4"}})
+    _install_fake_fal(
+        monkeypatch,
+        response={
+            "video": {
+                "url": "http://x/v.mp4",
+                "duration": 8.0,
+                "content_type": "video/mp4",
+            }
+        },
+    )
 
     p = CallPlan(
-        tool="image_to_video", application="fal-ai/hailuo",
-        arguments={"image_url": "x"}, output_kind="video",
-        estimated_cost_usd=0.50, cache_status="miss",
+        tool="image_to_video",
+        application="fal-ai/hailuo",
+        arguments={"image_url": "x"},
+        output_kind="video",
+        estimated_cost_usd=0.50,
+        cache_status="miss",
     )
     artifacts = execute(Plan(calls=(p,)), use_cache=False)
     assert artifacts[0].url == "http://x/v.mp4"
@@ -259,6 +327,7 @@ def test_execute_uses_cache_by_default(monkeypatch, tmp_path):
     monkeypatch.setenv("FALAW_CACHE_DIR", str(tmp_path / "cache"))
 
     call_count = [0]
+
     def subscribe(application, *, arguments, with_logs, on_queue_update):
         call_count[0] += 1
         return {"images": [{"url": "http://x/img.png", "content_type": "image/png"}]}
@@ -267,8 +336,10 @@ def test_execute_uses_cache_by_default(monkeypatch, tmp_path):
     monkeypatch.setitem(sys.modules, "fal_client", fake)
 
     p = CallPlan(
-        tool="generate_image", application="fal-ai/flux/dev",
-        arguments={"prompt": "cache-me"}, output_kind="image",
+        tool="generate_image",
+        application="fal-ai/flux/dev",
+        arguments={"prompt": "cache-me"},
+        output_kind="image",
     )
     plan = Plan(calls=(p,))
 
@@ -286,6 +357,7 @@ def test_execute_custom_artifact_converter(monkeypatch):
         from lacing import Artifact
         from lacing.artifact import _now_rt
         from lacing.model import Provenance
+
         return Artifact(
             asset_id="0" * 64,
             kind=call.output_kind,
@@ -295,7 +367,8 @@ def test_execute_custom_artifact_converter(monkeypatch):
             duration_s=None,
             mime=None,
             provenance=Provenance(
-                was_generated_by="test", was_attributed_to="test",
+                was_generated_by="test",
+                was_attributed_to="test",
                 generated_at_time=_now_rt(),
             ),
             cost_usd=None,
@@ -303,10 +376,14 @@ def test_execute_custom_artifact_converter(monkeypatch):
         )
 
     p = CallPlan(
-        tool="weird_op", application="fal-ai/weird",
-        arguments={}, output_kind="binary",
+        tool="weird_op",
+        application="fal-ai/weird",
+        arguments={},
+        output_kind="binary",
     )
-    artifacts = execute(Plan(calls=(p,)), use_cache=False, artifact_converter=my_converter)
+    artifacts = execute(
+        Plan(calls=(p,)), use_cache=False, artifact_converter=my_converter
+    )
     assert artifacts[0].url == "http://x/special.bin"
     assert artifacts[0].bytes_size == 42
 
@@ -326,16 +403,23 @@ def test_placeholder_resolution_in_execute(monkeypatch):
     def subscribe(application, *, arguments, with_logs, on_queue_update):
         captured.append({"app": application, "args": dict(arguments)})
         if "image_to_video" in application or "hailuo" in application:
-            return {"video": {"url": "http://x/v.mp4", "duration": 8.0,
-                              "content_type": "video/mp4"}}
+            return {
+                "video": {
+                    "url": "http://x/v.mp4",
+                    "duration": 8.0,
+                    "content_type": "video/mp4",
+                }
+            }
         return {"images": [{"url": "http://x/img.png", "content_type": "image/png"}]}
 
     fake = types.SimpleNamespace(InProgress=type("IP", (), {}), subscribe=subscribe)
     monkeypatch.setitem(sys.modules, "fal_client", fake)
 
     p1 = CallPlan(
-        tool="generate_image", application="fal-ai/flux/dev",
-        arguments={"prompt": "x"}, output_kind="image",
+        tool="generate_image",
+        application="fal-ai/flux/dev",
+        arguments={"prompt": "x"},
+        output_kind="image",
     )
     p2 = CallPlan(
         tool="image_to_video",
@@ -353,11 +437,14 @@ def test_placeholder_resolution_in_execute(monkeypatch):
 
 def test_placeholder_bad_index_raises(monkeypatch):
     p1 = CallPlan(
-        tool="generate_image", application="fal-ai/flux/dev",
-        arguments={"prompt": "x"}, output_kind="image",
+        tool="generate_image",
+        application="fal-ai/flux/dev",
+        arguments={"prompt": "x"},
+        output_kind="image",
     )
     p2 = CallPlan(
-        tool="t", application="m",
+        tool="t",
+        application="m",
         arguments={"image_url": "<from 5>"},  # only 1 artifact will exist
         output_kind="video",
     )
@@ -374,15 +461,18 @@ def test_placeholder_bad_index_raises(monkeypatch):
 def test_placeholder_in_nested_dict(monkeypatch):
     """Placeholder rewriting recurses into nested dicts too."""
     captured: list[dict] = []
+
     def subscribe(application, *, arguments, with_logs, on_queue_update):
         captured.append(dict(arguments))
         return {"images": [{"url": "http://x/y.png"}]}
+
     fake = types.SimpleNamespace(InProgress=type("IP", (), {}), subscribe=subscribe)
     monkeypatch.setitem(sys.modules, "fal_client", fake)
 
     p1 = CallPlan(tool="t1", application="m1", arguments={}, output_kind="image")
     p2 = CallPlan(
-        tool="t2", application="m2",
+        tool="t2",
+        application="m2",
         arguments={"options": {"reference_image": "<from 0>"}},
         output_kind="image",
     )

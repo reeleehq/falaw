@@ -57,7 +57,9 @@ class FakeFal:
         self.behaviour[app] = error
 
     # -- the fal_client surface --
-    def subscribe(self, application, *, arguments, with_logs=True, on_queue_update=None):
+    def subscribe(
+        self, application, *, arguments, with_logs=True, on_queue_update=None
+    ):
         return self._run(application, arguments, key=None)
 
     def _run(self, application, arguments, *, key):
@@ -102,7 +104,9 @@ def _sync_client_factory(fal: FakeFal):
         def __init__(self, *, key=None):
             self._key = key
 
-        def subscribe(self, application, *, arguments, with_logs=True, on_queue_update=None):
+        def subscribe(
+            self, application, *, arguments, with_logs=True, on_queue_update=None
+        ):
             return fal._run(application, arguments, key=self._key)
 
     return SyncClient
@@ -308,7 +312,9 @@ def test_an_unpriced_call_is_reported_as_unknown_not_as_free(fal):
     assert report.estimated_spend_usd == pytest.approx(0.025)
     assert report.has_unknown_costs is True
     # A fully-priced run says so.
-    assert execute_plan_isolated(Plan(calls=(_image("m/b"),))).has_unknown_costs is False
+    assert (
+        execute_plan_isolated(Plan(calls=(_image("m/b"),))).has_unknown_costs is False
+    )
 
 
 def test_an_unpriced_cache_hit_is_not_an_unknown_cost(fal):
