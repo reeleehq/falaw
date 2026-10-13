@@ -72,3 +72,14 @@ def test_catalogued_only_models_never_become_a_default_pick():
     for category in {m.category for m in falaw.list_models()}:
         for tier in ("fast", "balanced", "high", "ultra"):
             assert falaw.pick_model(category=category, quality_tier=tier).id not in unranked
+
+
+def test_no_alias_names_two_models():
+    from collections import Counter
+
+    import falaw
+
+    names = Counter(
+        n for m in falaw.list_models() for n in (m.id, *m.aliases)
+    )
+    assert {n: c for n, c in names.items() if c > 1} == {}

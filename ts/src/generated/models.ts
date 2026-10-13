@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "06897dfcc04a";
+export const MODELS_TABLE_VERSION = "5b7be5d7b10e";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -810,7 +810,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "source": "docs"
     },
     "max_clip_seconds": 5,
-    "single_character_recommended": true
+    "single_character_recommended": false
   },
   {
     "id": "fal-ai/ltx-video/image-to-video",
@@ -830,7 +830,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "source": "docs"
     },
     "max_clip_seconds": 5,
-    "single_character_recommended": true
+    "single_character_recommended": false
   },
   {
     "id": "fal-ai/mochi-v1",
@@ -850,7 +850,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "source": "docs"
     },
     "max_clip_seconds": 5.4,
-    "single_character_recommended": true
+    "single_character_recommended": false
   },
   {
     "id": "fal-ai/kling-video/v1.5/pro/image-to-video",
@@ -912,9 +912,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
     "id": "fal-ai/flux-pro",
     "category": "image",
     "description": "FLUX.1 [pro] (original endpoint). Deprecated by fal; fal-ai/flux-pro/new and v1.1 replace it.",
-    "aliases": [
-      "flux-pro"
-    ],
+    "aliases": [],
     "quality_tier": "unranked",
     "cost_hint": "low",
     "docs_url": "https://fal.ai/models/fal-ai/flux-pro",

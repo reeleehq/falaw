@@ -799,7 +799,7 @@
       "source": "docs"
     },
     "max_clip_seconds": 5.0,
-    "single_character_recommended": true
+    "single_character_recommended": false
   },
   {
     "id": "fal-ai/ltx-video/image-to-video",
@@ -819,7 +819,7 @@
       "source": "docs"
     },
     "max_clip_seconds": 5.0,
-    "single_character_recommended": true
+    "single_character_recommended": false
   },
   {
     "id": "fal-ai/mochi-v1",
@@ -839,7 +839,7 @@
       "source": "docs"
     },
     "max_clip_seconds": 5.4,
-    "single_character_recommended": true
+    "single_character_recommended": false
   },
   {
     "id": "fal-ai/kling-video/v1.5/pro/image-to-video",
@@ -901,9 +901,7 @@
     "id": "fal-ai/flux-pro",
     "category": "image",
     "description": "FLUX.1 [pro] (original endpoint). Deprecated by fal; fal-ai/flux-pro/new and v1.1 replace it.",
-    "aliases": [
-      "flux-pro"
-    ],
+    "aliases": [],
     "quality_tier": "unranked",
     "cost_hint": "low",
     "docs_url": "https://fal.ai/models/fal-ai/flux-pro",
