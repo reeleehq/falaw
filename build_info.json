@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-13T16:43:02Z",
+  "built_at": "2026-10-14T12:58:17Z",
   "package": {
     "name": "falaw",
-    "version": "0.0.61",
+    "version": "0.0.62",
     "display_name": "falaw",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "d6e23ff4a898e1e9bd413e39621627a617605b5d",
-    "short_commit": "d6e23ff",
+    "commit": "14eff54bf51e10c1d8ae695c1b7d4da3872edbc1",
+    "short_commit": "14eff54",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/reeleehq/falaw",
-    "commit_url": "https://github.com/reeleehq/falaw/commit/d6e23ff4a898e1e9bd413e39621627a617605b5d",
+    "commit_url": "https://github.com/reeleehq/falaw/commit/14eff54bf51e10c1d8ae695c1b7d4da3872edbc1",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "reeleehq/falaw",
-    "sha": "d6e23ff4a898e1e9bd413e39621627a617605b5d",
+    "sha": "14eff54bf51e10c1d8ae695c1b7d4da3872edbc1",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "38432556247",
-    "run_url": "https://github.com/reeleehq/falaw/actions/runs/38432556247",
+    "run_id": "38567699368",
+    "run_url": "https://github.com/reeleehq/falaw/actions/runs/38567699368",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -60,14 +60,16 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.61",
-    "relation": "same",
+    "latest": "0.0.63",
+    "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout d6e23ff4a898e1e9bd413e39621627a617605b5d\npip install \"epythet==0.2.17\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout 14eff54bf51e10c1d8ae695c1b7d4da3872edbc1\npip install \"epythet==0.2.17\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": true,
-    "notes": []
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.62) is behind the latest release on PyPI (0.0.63): `pip install falaw` gives newer code than these docs describe."
+    ]
   }
 }

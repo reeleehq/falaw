@@ -51,7 +51,7 @@
 - [falaw.session](_autosummary/falaw.session.html.md): Session: optional stateful controller over a sequence of falaw operations.
 - [falaw.testing](_autosummary/falaw.testing.html.md): Make a suite that uses falaw genuinely offline — the fake asset transport.
 - [For AI agents](ai-agents.html.md): &#96;falaw&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-13 16:43 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-14 12:58 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
 
 ## Optional
 

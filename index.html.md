@@ -104,6 +104,7 @@ falaw prices calls made straight to the model vendor too, from one dated table (
 
 ```python
 from falaw import llm_call_cost_usd
+
 usd, known = llm_call_cost_usd("anthropic", "claude-opus-4-7", response.usage)
 ```
 
