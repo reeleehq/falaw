@@ -441,14 +441,19 @@ def iter_render_scene(
         return
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
+    from contextvars import copy_context
 
+    # A pool worker does not inherit the submitting thread's context, so a BYO
+    # key bound with ``using_fal_credentials`` would vanish and the calls would
+    # bill the operator's env key. Run each task in its own copy of the context
+    # (one copy per task: a Context cannot be entered by two threads at once).
     with ThreadPoolExecutor(max_workers=concurrency) as ex:
         futures = {}
         for shot in scene.shots:
-            fut = ex.submit(_one_shot, shot)
+            fut = ex.submit(copy_context().run, _one_shot, shot)
             futures[fut] = "shot"
         for beat in scene.beats:
-            fut = ex.submit(_one_beat, beat)
+            fut = ex.submit(copy_context().run, _one_beat, beat)
             futures[fut] = "beat"
         for fut in as_completed(futures):
             yield futures[fut], fut.result()

@@ -169,3 +169,42 @@ def test_iter_render_scene_yields_results_as_completed_under_concurrency(
     # Span between first and last should be small — they ran in parallel.
     span = delivered[-1][1] - delivered[0][1]
     assert span < 0.5
+
+
+def test_render_scene_workers_see_the_bound_byo_key(monkeypatch):
+    """A pool worker must authenticate with the caller's bound key.
+
+    Without ``copy_context().run`` per task the worker sees no bound key, falls
+    back to the module-level ``subscribe`` (the operator's env key) and bills the
+    wrong account. Fake transport only; the key is a made-up marker.
+    """
+    import sys
+    import types
+
+    from falaw import iter_render_scene, using_fal_credentials
+
+    paths: list = []
+    image = {"images": [{"url": "http://x/img.png", "content_type": "image/png"}]}
+
+    def module_subscribe(application, *, arguments, **_kw):
+        paths.append(("module", None))
+        return image
+
+    class SyncClient:
+        def __init__(self, key=None, default_timeout=120.0):
+            self.key = key
+
+        def subscribe(self, application, *, arguments, **_kw):
+            paths.append(("client", self.key))
+            return image
+
+    fake = types.SimpleNamespace(
+        InProgress=type("InProgress", (), {}),
+        subscribe=module_subscribe,
+        SyncClient=SyncClient,
+    )
+    monkeypatch.setitem(sys.modules, "fal_client", fake)
+    scene = _make_scene(n_shots=3, n_beats=0)
+    with using_fal_credentials("byo-test-marker"):
+        list(iter_render_scene(scene, concurrency=3))
+    assert paths == [("client", "byo-test-marker")] * 3

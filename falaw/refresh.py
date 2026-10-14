@@ -27,6 +27,7 @@ import re
 import time
 import urllib.error
 import urllib.request
+from contextvars import copy_context
 from dataclasses import dataclass
 from typing import Optional
 
@@ -339,7 +340,10 @@ def refresh_full_docs(
     changed: list[str] = []
     errors: list[tuple[str, int]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
-        for url, status in pool.map(_fetch_one, urls):
+        # Same context-carrying rule as ``execute_plan``: a bare pool drops
+        # contextvars (e.g. a bound BYO key); one copy per task.
+        results = [pool.submit(copy_context().run, _fetch_one, u) for u in urls]
+        for url, status in (f.result() for f in results):
             if status == 200:
                 changed.append(url)
             elif status != 304:

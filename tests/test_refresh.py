@@ -128,3 +128,24 @@ def test_fetch_if_changed_writes_on_200(monkeypatch, tmp_path):
     assert open(src.local_path).read() == "hello"
     state = r._load_state()
     assert state["u"]["etag"] == '"new"'
+
+
+def test_refresh_full_docs_workers_inherit_the_caller_context(monkeypatch, tmp_path):
+    """The crawl pool carries the caller's contextvars (e.g. a bound BYO key)."""
+    from falaw import current_fal_key, using_fal_credentials
+    from falaw import refresh as r
+
+    (tmp_path / "fal_ai_docs_index.md").write_text("")
+    seen: list = []
+
+    def fake_request(url, *, method="GET", extra_headers=None, timeout=30.0):
+        seen.append(current_fal_key())
+        return 304, {}, b""
+
+    monkeypatch.setattr(r, "_request", fake_request)
+    monkeypatch.setattr(
+        r, "_parse_index", lambda _p: ["https://x/a", "https://x/b", "https://x/c"]
+    )
+    with using_fal_credentials("byo-test-marker"):
+        r.refresh_full_docs(docs_dir=str(tmp_path), force=True, journal=False)
+    assert seen == ["byo-test-marker"] * 3
