@@ -55,7 +55,8 @@ from .canonical import (
 from .cost import (
     DFLT_MEGAPIXELS,
     DFLT_VIDEO_RESOLUTION,
-    RESOLUTION_PIXELS,
+    DFLT_VIDEO_ASPECT,
+    RESOLUTION_SHORT_SIDE,
     estimate_call_cost,
 )
 from .upload import FILE_PREFIX
@@ -169,6 +170,15 @@ PLAN_CASES: tuple[dict, ...] = (
         "tool": "text_to_video",
         "input": {"prompt": "a tiger walks", "model_id": "seedance2-t2v"},
     },
+    {  # the frame follows the aspect ratio: 21:9 bills more pixels than 16:9
+        "tool": "text_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-t2v",
+            "duration_s": 6,
+            "extra": {"aspect_ratio": "21:9", "resolution": "1080p"},
+        },
+    },
     {  # an empty duration is unknown, not zero seconds (free)
         "tool": "text_to_video",
         "input": {
@@ -259,7 +269,14 @@ RESPONSE_CASES: tuple[dict, ...] = (
 #: (including the neighbouring-tier fallback and an unknown tier).
 PICK_MODEL_CASES: tuple[tuple[str, str], ...] = tuple(
     (category, tier)
-    for category in ("image", "image_edit", "image_to_video", "text_to_video", "tts")
+    for category in (
+        "image",
+        "image_edit",
+        "image_to_video",
+        "text_to_video",
+        "reference_to_video",
+        "tts",
+    )
     for tier in (*_TIER_ORDER, "weird")
 )
 
@@ -466,7 +483,8 @@ def _constants() -> dict:
         "content_ref_prefix": CONTENT_REF_PREFIX,
         "default_megapixels": DFLT_MEGAPIXELS,
         "default_video_resolution": DFLT_VIDEO_RESOLUTION,
-        "video_resolution_pixels": dict(RESOLUTION_PIXELS),
+        "video_resolution_short_side": dict(RESOLUTION_SHORT_SIDE),
+        "default_video_aspect": DFLT_VIDEO_ASPECT,
         "output_kinds": list(get_args(OutputKind)),
         "cache_statuses": list(get_args(CacheStatus)),
     }

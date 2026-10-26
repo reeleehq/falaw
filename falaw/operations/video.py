@@ -5,8 +5,36 @@ from __future__ import annotations
 from typing import Optional
 
 from ..core import call_fal
-from ..registry import pick_model, register_tool
+from ..cost import video_call_arguments
+from ..registry import get_model, pick_model, register_tool
 from ..results import Result, parse_response
+
+
+def _with_duration(
+    model: str, arguments: dict, duration_s: Optional[float], extra: Optional[dict]
+) -> tuple[str, dict]:
+    """``(application, wire arguments)``, built exactly as the planners build
+    them so a planned and an eager call with the same inputs share one cache
+    entry: a catalogued alias resolves to its id, and ``duration_s`` is sent as
+    the model spells it. Unlike planning, where ``duration_s`` may merely feed
+    the estimate, an eager call that cannot send it raises: it would otherwise
+    be silently ignored."""
+    try:
+        record = get_model(model)
+    except KeyError:
+        record = None
+    if duration_s is not None and (
+        record is None or "duration" not in record.param_specs
+    ):
+        raise ValueError(
+            f"duration_s is only sent for models whose catalogue record lists a "
+            f"'duration' parameter; {model!r} is not one — put its own spelling in extra."
+        )
+    if record is None:
+        return model, {**arguments, **(extra or {})}
+    return record.id, video_call_arguments(
+        record, arguments, duration_s=duration_s, extra=extra
+    )[0]
 
 
 @register_tool(
@@ -28,6 +56,10 @@ from ..results import Result, parse_response
                 "enum": ["fast", "balanced", "high", "ultra"],
                 "default": "high",
             },
+            "duration_s": {
+                "type": "number",
+                "description": "Seconds; sent for models that list a 'duration' parameter (Seedance).",
+            },
             "model_id": {"type": "string"},
             "extra": {"type": "object"},
         },
@@ -42,12 +74,13 @@ def text_to_video(
     prompt: str,
     *,
     quality: str = "high",
+    duration_s: Optional[float] = None,
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
 ) -> Result:
     """Generate a video from a text prompt."""
     model = model_id or pick_model(category="text_to_video", quality_tier=quality).id
-    arguments = {"prompt": prompt, **(extra or {})}
+    model, arguments = _with_duration(model, {"prompt": prompt}, duration_s, extra)
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
 
@@ -71,6 +104,10 @@ def text_to_video(
                 "enum": ["balanced", "high", "ultra"],
                 "default": "high",
             },
+            "duration_s": {
+                "type": "number",
+                "description": "Seconds; sent for models that list a 'duration' parameter (Seedance).",
+            },
             "model_id": {"type": "string"},
             "extra": {"type": "object"},
         },
@@ -86,13 +123,15 @@ def image_to_video(
     prompt: str = "",
     *,
     quality: str = "high",
+    duration_s: Optional[float] = None,
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
 ) -> Result:
     """Animate a still image into a video."""
     model = model_id or pick_model(category="image_to_video", quality_tier=quality).id
-    arguments: dict = {"image_url": image_url, **(extra or {})}
+    base: dict = {"image_url": image_url}
     if prompt:
-        arguments["prompt"] = prompt
+        base["prompt"] = prompt
+    model, arguments = _with_duration(model, base, duration_s, extra)
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)

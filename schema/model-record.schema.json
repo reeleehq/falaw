@@ -75,6 +75,11 @@
       "title": "Default Negative Prompt",
       "type": "string"
     },
+    "default_pick": {
+      "default": true,
+      "title": "Default Pick",
+      "type": "boolean"
+    },
     "description": {
       "default": "",
       "title": "Description",

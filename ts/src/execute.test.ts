@@ -177,4 +177,10 @@ describe('review-driven edges', () => {
     const call = { ...planImageToVideo({ imageUrl: 'x' }), local_files: [['image_url']] };
     await expect(execute([call], { transport: async () => ({ raw: {} }) as never })).rejects.toThrow(/local files/);
   });
+
+  it('refuses an explicit size outside the model bounds while planning', () => {
+    const bad = { extra: { image_size: { width: 100, height: 100 } }, modelId: 'seedream45' };
+    expect(() => planGenerateImage({ prompt: 'x', ...bad })).toThrow(/total pixels/);
+    expect(() => planGenerateImage({ prompt: 'x', modelId: 'seedream45' })).not.toThrow();
+  });
 });

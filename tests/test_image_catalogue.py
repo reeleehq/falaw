@@ -165,7 +165,8 @@ def test_default_picks_are_stable_under_the_refresh_sort():
     # refresh_model_prices / refresh_models_from_corpus rewrite models.json
     # sorted by (category, tier, id); the default pick must not move.
     ms = sorted(
-        falaw.list_models(category="image"), key=lambda m: (m.quality_tier, m.id)
+        (m for m in falaw.list_models(category="image") if m.default_pick),
+        key=lambda m: (m.quality_tier, m.id),
     )
     for tier in ("fast", "balanced", "high", "ultra"):
         first = next(m for m in ms if m.quality_tier == tier)

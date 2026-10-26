@@ -19,11 +19,10 @@ to work in the meantime.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
-from typing import Any, Callable, Mapping, Optional
+from typing import Any, Callable, Mapping, Optional, Sequence
 
-from ..cost import estimate_call_cost, video_duration_arg, video_price_quantities
+from ..cost import estimate_call_cost, video_call_arguments, video_price_quantities
 from ..llm_rates import LlmRateTable, llm_ceiling_usd
 from ..plan import CallPlan, CostBasis, make_call_plan
 from ..registry import get_model, pick_model
@@ -256,18 +255,6 @@ def plan_composite_character_in_environment(
 # ---------------------------------------------------------------------------
 
 
-def _numeric_seconds(value: Any) -> Optional[float]:
-    """A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk
-    (unknown, so the call stays unpriced rather than free)."""
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
-        return None
-    try:
-        seconds = float(value)
-    except ValueError:
-        return None
-    return seconds if math.isfinite(seconds) else None
-
-
 def _plan_video(
     tool: str,
     category: str,
@@ -280,27 +267,21 @@ def _plan_video(
     metadata: Optional[dict],
     consult_cache: bool,
 ) -> CallPlan:
-    """The planning body shared by the video verbs.
-
-    ``duration_s`` feeds the cost estimate. For a model that records a
-    ``duration`` parameter (Seedance spells it as a string enum) it is also
-    *sent*, so the quote is the duration that bills; elsewhere it stays
-    estimator-only, since models name that argument differently. ``extra``
-    wins over everything and the quote follows what it says.
-    """
+    """The planning body shared by the video verbs (see
+    :func:`video_call_arguments` for the duration rules)."""
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category=category, quality_tier=quality
     )
-    arguments = {**arguments, **(extra or {})}
-    seconds = duration_s
-    if "duration" in record.param_specs:
-        if duration_s is not None and "duration" not in arguments:
-            arguments["duration"] = video_duration_arg(record, duration_s)
-        seconds = _numeric_seconds(arguments.get("duration"))
+    arguments, seconds = video_call_arguments(
+        record, arguments, duration_s=duration_s, extra=extra
+    )
     cost, basis = _catalogue_price(
         record,
         **video_price_quantities(
-            record, seconds=seconds, resolution=arguments.get("resolution")
+            record,
+            seconds=seconds,
+            resolution=arguments.get("resolution"),
+            aspect_ratio=arguments.get("aspect_ratio"),
         ),
     )
     return make_call_plan(
@@ -365,6 +346,50 @@ def plan_text_to_video(
         "text_to_video",
         "text_to_video",
         {"prompt": prompt},
+        quality=quality,
+        model_id=model_id,
+        duration_s=duration_s,
+        extra=extra,
+        metadata=metadata,
+        consult_cache=consult_cache,
+    )
+
+
+def plan_reference_to_video(
+    prompt: str,
+    *,
+    image_urls: Sequence[str] = (),
+    video_urls: Sequence[str] = (),
+    audio_urls: Sequence[str] = (),
+    quality: str = "high",
+    model_id: Optional[str] = None,
+    duration_s: Optional[float] = None,
+    extra: Optional[dict] = None,
+    metadata: Optional[dict] = None,
+    consult_cache: bool = True,
+) -> CallPlan:
+    """Plan a reference-to-video call (Seedance 2.0): a prompt steered by
+    reference images, videos and audio.
+
+    The counts are checked against the model's recorded limits
+    (``model_constraints(id)["max_references"]``) by :func:`make_call_plan`, while
+    planning is free, whatever route (``extra`` included) they arrive by. The
+    quote is the standard rate, a ceiling: fal bills about 0.6x when video
+    references are supplied.
+    """
+    refs = {
+        "image_urls": image_urls,
+        "video_urls": video_urls,
+        "audio_urls": audio_urls,
+    }
+    for name, urls in refs.items():
+        if isinstance(urls, str):
+            raise TypeError(f"{name} must be a list of URLs, not one string")
+    wanted = {name: list(urls) for name, urls in refs.items() if urls}
+    return _plan_video(
+        "reference_to_video",
+        "reference_to_video",
+        {"prompt": prompt, **wanted},
         quality=quality,
         model_id=model_id,
         duration_s=duration_s,

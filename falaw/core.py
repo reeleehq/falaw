@@ -99,6 +99,19 @@ def fal_client_for(api_key: Optional[str] = None) -> Any:
     return client_cls(key=key) if key and client_cls is not None else fal_client
 
 
+def _check_against_catalogue(application: str, arguments: Mapping[str, Any]) -> None:
+    """Refuse, before any network, arguments that break a limit the catalogue
+    states for the model (:mod:`falaw.validation`)."""
+    from .registry import get_model
+    from .validation import check_call_arguments
+
+    try:
+        record = get_model(application)
+    except KeyError:
+        return
+    check_call_arguments(record, arguments)
+
+
 def call_fal(
     application: str,
     arguments: Mapping[str, Any],
@@ -133,6 +146,7 @@ def call_fal(
     Returns:
         The raw response dict from the model.
     """
+    _check_against_catalogue(application, arguments)  # refuse before any network
     # Lazy: `fal_client` is the optional `falaw[fal]` extra, so importing falaw
     # (and planning, pricing, hashing, cache hits) must not need it.
     fal_client = _import_fal_client()

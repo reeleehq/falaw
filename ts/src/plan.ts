@@ -14,6 +14,7 @@ import { CONSTANTS } from './generated/constants';
 import type { CallPlan } from './generated/call-plan';
 import type { ModelRecord } from './generated/model-record';
 import { getModel, pickModel } from './registry';
+import { checkCallArguments } from './validation';
 
 export type { CallPlan };
 export type OutputKind = CallPlan['output_kind'];
@@ -87,10 +88,12 @@ export interface GenerateImageInput {
 /** Plan a text-to-image call (`falaw.plan_generate_image`). */
 export function planGenerateImage(input: GenerateImageInput): CallPlan {
   const record = resolveModel(input.modelId, 'image', input.quality ?? 'balanced');
+  const args = { prompt: input.prompt, image_size: input.imageSize ?? 'landscape_4_3', ...(input.extra ?? {}) };
+  checkCallArguments(record, args);
   return makeCallPlan({
     tool: 'generate_image',
     application: record.id,
-    arguments: { prompt: input.prompt, image_size: input.imageSize ?? 'landscape_4_3', ...(input.extra ?? {}) },
+    arguments: args,
     outputKind: 'image',
     estimatedCostUsd: estimateCallCost(record),
     metadata: input.metadata,
@@ -116,7 +119,13 @@ function planVideo(tool: string, args: Record<string, unknown>, input: VideoInpu
     if (input.durationS != null && !('duration' in merged)) merged.duration = videoDurationArg(record, input.durationS);
     seconds = numericSeconds(merged.duration);
   }
-  const quantities = videoPriceQuantities(record, seconds, merged.resolution as string | undefined);
+  checkCallArguments(record, merged);
+  const quantities = videoPriceQuantities(
+    record,
+    seconds,
+    merged.resolution as string | undefined,
+    merged.aspect_ratio as string | undefined,
+  );
   return makeCallPlan({
     tool,
     application: record.id,
