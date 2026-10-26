@@ -31,6 +31,7 @@
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/epythet.css?v=f0eeacdc" />
   
@@ -40,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=dea2dbc4"></script>
+    <script src="../../_static/documentation_options.js?v=7ada5fdd"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -410,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.62" />
+  <meta name="docsearch:version" content="0.0.63" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -885,10 +886,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    """</span>
     <span class="n">assets</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Asset</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">seen_kinds</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">_KIND_KEYS</span><span class="p">:</span>
             <span class="n">val</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">kind</span> <span class="ow">in</span> <span class="n">seen_kinds</span><span class="p">:</span>  <span class="c1"># Sonilo: audios + audio</span>
                 <span class="k">continue</span>
+            <span class="n">seen_kinds</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">val</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">val</span><span class="p">]:</span>
                 <span class="n">assets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_to_asset</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">kind</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">Result</span><span class="p">(</span>

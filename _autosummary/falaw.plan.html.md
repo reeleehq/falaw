@@ -120,7 +120,7 @@ Whether the cache will short-circuit this call.
 
 alias of [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[‘hit’, ‘miss’, ‘stale’, ‘unknown’]
 
-### *class* falaw.plan.CallPlan(\*, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=<factory>, key_extra=<factory>, cost_basis=None)
+### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -163,7 +163,7 @@ Whether the cache will short-circuit this call. `"hit"` means
 `execute` won’t bill, so [`Plan.total_cost_usd`](#falaw.plan.Plan.total_cost_usd) and
 [`Plan.cache_hit_savings_usd`](#falaw.plan.Plan.cache_hit_savings_usd) reflect that.
 
-#### cost_basis *: [CostBasis](#falaw.plan.CostBasis) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### cost_basis *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[CostBasis](#falaw.plan.CostBasis)]*
 
 How [`estimated_cost_usd`](#falaw.plan.CallPlan.estimated_cost_usd) was computed, or `None` when nothing
 recorded it (falaw#60). Present, the quote can be re-run against today’s
@@ -174,12 +174,12 @@ stale figure off as current. Purely descriptive — it stays out of
 dict entirely when unset, so every plan falaw has ever hashed or persisted
 is unmoved.
 
-#### estimated_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### estimated_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 Predicted cost in USD. `None` when the model has no `cost_estimate`
 populated (callers can distinguish “free” from “unknown”).
 
-#### expected_duration_s *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)] | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### expected_duration_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
 
 `(min, max)` duration the model can produce, or `None` if no
 duration contract is known. Plan-level validators can check that the
@@ -212,7 +212,7 @@ High-level tool name — `"generate_image"`, `"image_to_video"`, etc.
 Distinct from `application` because one tool may dispatch to several
 fal models depending on quality tier.
 
-### *class* falaw.plan.CostBasis(\*, pricer, priced, quantities=<factory>, table='', table_version='')
+### *class* falaw.plan.CostBasis(, pricer, priced, quantities=dict(), table='', table_version='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -447,18 +447,18 @@ the rest of a fan-out; it returns an [`ExecutionReport`](falaw.html.md#falaw.Exe
 outcome per call instead of raising.
 
 * **Parameters:**
-  * **plan** (Plan) – The Plan to execute.
-  * **on_event** (Optional[Callable]) – Optional per-call event subscriber (passed to `call_fal`).
-  * **dry_run** (bool) – When True, no fal calls are made; synthetic Artifacts are
+  * **plan** ([`Plan`](#falaw.plan.Plan)) – The Plan to execute.
+  * **on_event** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)]) – Optional per-call event subscriber (passed to `call_fal`).
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, no fal calls are made; synthetic Artifacts are
     returned with placeholder `asset_id` and `url=None`. Useful
     for exercising downstream composition without an API key.
-  * **use_cache** (bool) – When True (default), executes via `cached_call_fal` so
+  * **use_cache** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True (default), executes via `cached_call_fal` so
     cache hits skip the network. When False, the cache is not touched
     **at all** — neither read nor written. That is the historical
     meaning and it is unchanged: a caller who genuinely wants no cache
     interaction still has it. To re-run a plan and *keep* what the
     re-run paid for, leave `use_cache=True` and pass `refresh`.
-  * **refresh** (bool) – When True, skip the cache **read** and keep the cache
+  * **refresh** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, skip the cache **read** and keep the cache
     **write** — the third mode (falaw#49). Every call executes fresh,
     and every fresh result is stored under the key it would have been
     read from, so the next run (or a downstream consumer) hits it.
@@ -468,7 +468,7 @@ outcome per call instead of raising.
     `force` / “re-verify this” switch: without it, forcing a re-run
     discards the result it just paid for and guarantees the next
     consumer re-bills.
-  * **artifact_converter** (Optional[ResultToArtifact]) – Per-CallPlan converter from raw fal response to
+  * **artifact_converter** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`CallPlan`](#falaw.plan.CallPlan)], Artifact]]) – Per-CallPlan converter from raw fal response to
     `lacing.Artifact`. When `None` (default), a built-in
     converter handles the common shapes (`{images: [{url}]}`,
     `{video: {url}}`, `{audio: {url}}`). Mutually exclusive with
@@ -483,7 +483,7 @@ outcome per call instead of raising.
     [`falaw.content.default_content_store()`](falaw.content.html.md#falaw.content.default_content_store) (a directory store
     rooted in the falaw cache). Point this at an S3-backed store to
     share content — and therefore cache hits — across machines.
-  * **fetch_bytes** (Optional[bool]) – Whether to download each media result so its `asset_id`
+  * **fetch_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – Whether to download each media result so its `asset_id`
     is the SHA-256 of its bytes. Defaults to [`DFLT_FETCH_BYTES`](#falaw.plan.DFLT_FETCH_BYTES)
     (true), overridable process-wide via [`FETCH_BYTES_ENVVAR`](#falaw.plan.FETCH_BYTES_ENVVAR).
     **Opting out forfeits caching for chained calls**: without bytes
@@ -504,7 +504,7 @@ outcome per call instead of raising.
     installed default. (`$FALAW_FETCH_ARTIFACT_BYTES=0` also silences
     the network, but by turning content addressing off — see
     [`FETCH_BYTES_ENVVAR`](#falaw.plan.FETCH_BYTES_ENVVAR).)
-  * **concurrency** (int) – How many calls may be in flight at once. `1`
+  * **concurrency** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – How many calls may be in flight at once. `1`
     ([`DFLT_CONCURRENCY`](#falaw.plan.DFLT_CONCURRENCY)) runs the Plan sequentially, on the
     calling thread, exactly as it always has. Above 1, independent calls
     run on a thread pool bounded by this number — a Plan is I/O-bound
@@ -562,7 +562,7 @@ An upstream artifact with no materialized bytes has no content hash, so its
 key ref falls back to the URL — a guaranteed miss, never a wrong hit.
 
 * **rtype:**
-  list
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
 * **returns:**
   One `lacing.Artifact` per [`CallPlan`](#falaw.plan.CallPlan) in `plan.calls`,
   in the same order.
@@ -582,16 +582,16 @@ with the reason why.
 something per call can zip against `report.outcomes` and stay aligned.
 
 * **Parameters:**
-  **halt_on_failure** (bool) – When True, stop *submitting* work as soon as any call
+  **halt_on_failure** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, stop *submitting* work as soon as any call
   fails; everything not yet started is reported `blocked` with a
   run-level reason. This is what [`execute()`](#falaw.plan.execute) uses, and at
   `concurrency=1` it reproduces the historical sequential
   behaviour exactly. Note that at `concurrency > 1` calls already
-* **Return type:**
-  ExecutionReport
   in flight are **not** cancelled — a fal request cannot be recalled
   once made, and pretending otherwise would discard results that were
   billed anyway.
+* **Return type:**
+  [`ExecutionReport`](falaw.outcomes.html.md#falaw.outcomes.ExecutionReport)
 
 :param All other arguments are as [`execute()`](#falaw.plan.execute).:
 
@@ -682,7 +682,7 @@ the offending call, i.e. after every call before it had been billed.
       *before* the referencing call (including a self-reference) — the
       output would not exist yet, so it can only ever be a bug.
 * **Return type:**
-  [*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[*frozenset*](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[*int*](https://docs.python.org/3/builtins/functions.html#int)], …]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ```pycon
 >>> a = CallPlan(tool="t", application="m", arguments={}, output_kind="image")
@@ -695,9 +695,6 @@ Traceback (most recent call last):
     ...
 ValueError: Placeholder '<from 0>' in call 0 references call 0, which does not run before it. ...
 ```
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.plan.plan_from_dict(d)
 
@@ -737,9 +734,6 @@ new identity-bearing field is an explicit decision about both hashes.
 Two structurally-identical plans hash equal; changing any call’s `app`,
 `args`, or `tool` — or the *order* of calls — changes the hash.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> a = CallPlan(tool="generate_image", application="fal-ai/flux/dev",
 ...              arguments={"prompt": "a tiger"}, output_kind="image")
@@ -763,6 +757,9 @@ made of today’s (all-`"fal"`) calls hashes exactly as it did before:
 >>> plan_hash(Plan(calls=(a,))) == plan_hash(Plan(calls=(comfy,)))
 False
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.plan.plan_to_dict(plan)
 

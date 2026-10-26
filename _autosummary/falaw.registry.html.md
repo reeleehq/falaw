@@ -83,15 +83,15 @@ the category is empty.
 
 Decorator: register the wrapped function as a falaw tool.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)
-
 ```pycon
 >>> @register_tool(name='echo', description='echo back', tags=('demo',))
 ... def _echo(x): return x
 >>> get_tool('echo').name
 'echo'
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)
 
 ### falaw.registry.video_model_constraints()
 

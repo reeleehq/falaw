@@ -14,7 +14,7 @@ Result wrapper: parse fal responses into typed assets, lazy download.
 |-------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | [`Result`](#falaw.results.Result)([assets, raw, application, arguments])  | A fal call result with parsed assets and the original raw response. |
 
-### *class* falaw.results.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=<factory>)
+### *class* falaw.results.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -35,7 +35,7 @@ corrected instead (so the returned path may differ from `to`).
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.results.Result(assets=<factory>, raw=<factory>, application='', arguments=<factory>)
+### *class* falaw.results.Result(assets=list(), raw=dict(), application='', arguments=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 

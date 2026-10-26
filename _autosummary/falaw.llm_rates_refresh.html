@@ -34,6 +34,7 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
@@ -43,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=dea2dbc4"></script>
+    <script src="../_static/documentation_options.js?v=7ada5fdd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.62" />
+  <meta name="docsearch:version" content="0.0.63" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -545,6 +546,11 @@ file is a separate, human step.</p>
 <span class="sig-name descname"><span class="pre">base_per_call_usd</span></span><a class="headerlink" href="#falaw.llm_rates_refresh.AnyLlmDoc.base_per_call_usd" title="Link to this definition">#</a></dt>
 <dd><p>The flat per-request price fal publishes for the
 standard tier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -552,6 +558,11 @@ standard tier.</p>
 <span class="sig-name descname"><span class="pre">premium_multiple</span></span><a class="headerlink" href="#falaw.llm_rates_refresh.AnyLlmDoc.premium_multiple" title="Link to this definition">#</a></dt>
 <dd><p>How many times the base price a premium-tier
 request costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -561,6 +572,11 @@ request costs.</p>
 verbatim (a model here that is not in <code class="docutils literal notranslate"><span class="pre">model_enum</span></code> belongs to a
 different endpoint, e.g. a vision-only variant, and is not a rate
 table row).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#frozenset" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -568,6 +584,11 @@ table row).</p>
 <span class="sig-name descname"><span class="pre">model_enum</span></span><a class="headerlink" href="#falaw.llm_rates_refresh.AnyLlmDoc.model_enum" title="Link to this definition">#</a></dt>
 <dd><p>Every routed-model id the <code class="docutils literal notranslate"><span class="pre">model</span></code> argument accepts, in
 the doc’s own order.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

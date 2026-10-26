@@ -227,7 +227,7 @@ nothing, so `rebillable_entries` counts only the copies whose blob is
 *also* gone.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop copies last written more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop copies last written more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
   * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
@@ -252,7 +252,7 @@ clip. The report says how many entries that applies to *before* you commit;
 read `rebillable_entries`.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop blobs last written more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop blobs last written more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
   * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
@@ -297,7 +297,7 @@ entry re-bills its call on the next run, so `rebillable_entries` always
 equals the candidate count.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries stored more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries stored more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta). Read from the manifest’s own
     `stored_at`, falling back to file mtime.
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.

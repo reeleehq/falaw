@@ -1,4 +1,4 @@
-> built 2026-10-14 12:58 UTC from 14eff54 (main) · falaw 0.0.62. Details: build_info.json
+> built 2026-10-26 11:42 UTC from 722f080 (main) · falaw 0.0.63. Details: build_info.json
 
 # index.html.md
 
@@ -535,9 +535,15 @@ applies to video / TTS where output length matters.
 covers high-res image generation. `per_token` covers
 LLM-style endpoints.
 
+* **Type:**
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'per_call'`, `'per_image'`, `'per_second'`, `'per_token'`, `'per_megapixel'`]
+
 #### amount
 
 USD (or `currency`) per unit defined by `kind`.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 #### currency
 
@@ -545,9 +551,15 @@ ISO 4217 code. `"USD"` is the only supported value
 today; the field exists so we can extend without a schema
 migration.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### notes
 
 Free-form caveats — “rounded up to next second”, etc.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### source
 
@@ -555,7 +567,10 @@ How the estimate was obtained — `"docs"`,
 `"empirical"`, `"approximate"`. Lets us flag stale or
 unverified entries in audits.
 
-### *class* falaw.base.ModelRecord(\*, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=<factory>)
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -566,12 +581,12 @@ One entry in the fal model catalog.
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
 
-#### max_clip_seconds *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 Practical max length of a single generated clip, in seconds (e.g. ~10
 for Seedance). Drives the “this shot is too long, split it” warning.
 
-#### max_prompt_chars *: [int](https://docs.python.org/3/builtins/functions.html#int) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### max_prompt_chars *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[int](https://docs.python.org/3/builtins/functions.html#int)]*
 
 Hard cap on `prompt` length, from the model’s OpenAPI schema. Calls
 over it fail at fal with an HTTP 422 after queueing; falaw raises first.
@@ -605,7 +620,7 @@ Resolutions the model offers, cheap→expensive (e.g. (“720p”, “1080p”))
 
 Hex characters of the digest [`data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version) returns.
 
-### *class* falaw.base.ToolSpec(\*, name, description, func, input_schema=<factory>, output_schema=<factory>, tags=(), examples=(), version='0.0.1')
+### *class* falaw.base.ToolSpec(, name, description, func, input_schema=dict(), output_schema=dict(), tags=(), examples=(), version='0.0.1')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -949,14 +964,14 @@ areas do not claim, so the areas always sum to the whole.
 the production box. `tests.test_prune` pins this against a throwaway
 cache instead.)
 
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-
 ```pycon
 >>> stats = cache_stats()
 >>> sorted(stats["areas"])
 ['assets', 'content', 'manifests', 'other', 'scenes', 'url_index']
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ### falaw.cache.cached_call_fal(application, arguments, , key_arguments=None, refresh=False, on_event=None, backend='fal', key_extra=None)
 
@@ -1554,9 +1569,6 @@ changes the *default*, never an explicit choice.
 
 Nests and restores, so an inner block cannot leak over an outer one:
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]]]
-
 ```pycon
 >>> from lacing import ArtifactStore
 >>> store = ArtifactStore.in_memory()
@@ -1570,15 +1582,15 @@ True
 
 For a ready-made fake with pinned bytes and 404s, see [`falaw.testing`](_autosummary/falaw.testing.html.md#module-falaw.testing).
 
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]]]
+
 ### falaw.content.write_blob_to_file(content_hash, path, , store=None)
 
 Materialize the blob for `content_hash` as a **copy** at `path`.
 
 Writes via a temporary file and an atomic rename, so a concurrent reader
 never sees a partial file.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ## Why a copy and not a hard link
 
@@ -1601,6 +1613,9 @@ Returns `path`.
 
 * **raises KeyError:**
   the store holds no blob for `content_hash`.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 
 # _autosummary/falaw.core.html.md
@@ -2206,9 +2221,15 @@ One step in the lifecycle of a fal call.
 
 Lifecycle stage. See `EventKind`.
 
+* **Type:**
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`]
+
 #### application
 
 fal model id (e.g. `"fal-ai/flux/dev"`).
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### call_id
 
@@ -2216,10 +2237,16 @@ A short hex string that uniquely identifies the call.
 All events for one `call_fal` invocation share the same
 `call_id`.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### message
 
 Free-form text. For `"log"` events this is the log
 line; for `"error"` it’s `repr(exc)`; otherwise empty.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### pct
 
@@ -2227,9 +2254,15 @@ Optional progress percentage in [0.0, 100.0]. fal’s
 current API doesn’t surface this; included for forward
 compatibility.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### elapsed_s
 
 Seconds since the call started.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 ### falaw.events.clear_subscribers()
 
@@ -2528,7 +2561,7 @@ the cache root) and for `other`. It is deliberately not the cache root:
 a caller reaching for `rmtree(usage.area(...).path)` would then destroy
 the content store along with it.
 
-### *class* falaw.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=<factory>)
+### *class* falaw.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -2604,7 +2637,7 @@ caller retries or re-plans by — a report always carries exactly one outcome
 per call, in plan order, so `index` is also the safe key for zipping a
 Plan against anything the caller built alongside it.
 
-#### artifact *: Artifact | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### artifact *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[Artifact]*
 
 The materialized artifact. Set if and only if `status == "succeeded"`.
 
@@ -2626,7 +2659,7 @@ re-executed). Run-level cost accounting reads this one.
 
 The call this outcome is about — enough to retry it verbatim.
 
-#### error *: [BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### error *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]*
 
 The exception the call raised. Set if and only if `status == "failed"`.
 
@@ -2650,7 +2683,7 @@ Human-readable explanation. Required for `blocked`; free otherwise.
 
 `"succeeded"` / `"failed"` / `"blocked"`. See the module docstring.
 
-### *class* falaw.CallPlan(\*, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=<factory>, key_extra=<factory>, cost_basis=None)
+### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -2693,7 +2726,7 @@ Whether the cache will short-circuit this call. `"hit"` means
 `execute` won’t bill, so [`Plan.total_cost_usd`](_autosummary/falaw.html.md#falaw.Plan.total_cost_usd) and
 [`Plan.cache_hit_savings_usd`](_autosummary/falaw.html.md#falaw.Plan.cache_hit_savings_usd) reflect that.
 
-#### cost_basis *: [CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### cost_basis *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)]*
 
 How [`estimated_cost_usd`](_autosummary/falaw.html.md#falaw.CallPlan.estimated_cost_usd) was computed, or `None` when nothing
 recorded it (falaw#60). Present, the quote can be re-run against today’s
@@ -2704,12 +2737,12 @@ stale figure off as current. Purely descriptive — it stays out of
 dict entirely when unset, so every plan falaw has ever hashed or persisted
 is unmoved.
 
-#### estimated_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### estimated_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 Predicted cost in USD. `None` when the model has no `cost_estimate`
 populated (callers can distinguish “free” from “unknown”).
 
-#### expected_duration_s *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)] | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### expected_duration_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
 
 `(min, max)` duration the model can produce, or `None` if no
 duration contract is known. Plan-level validators can check that the
@@ -2760,7 +2793,7 @@ has nothing to compare against.
 The re-priced call — the same call with today’s
 `estimated_cost_usd` and a basis stamped with today’s table version.
 
-#### *property* delta_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### *property* delta_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 `new - old`, or `None` when either side is unknown.
 
@@ -2772,11 +2805,11 @@ number that says it did.
 
 Position in the original [`falaw.Plan`](_autosummary/falaw.html.md#falaw.Plan).
 
-#### new_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### new_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 What today’s rates say, `None` for unknown or no-basis.
 
-#### old_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### old_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 What the persisted plan said, `None` if it said unknown.
 
@@ -2804,7 +2837,7 @@ A content-addressed handle on some bytes falaw has materialized.
 `lacing.Artifact.asset_id` is contractually required to hold, and the
 value that goes into a downstream cache key in place of a URL.
 
-### *class* falaw.CostBasis(\*, pricer, priced, quantities=<factory>, table='', table_version='')
+### *class* falaw.CostBasis(, pricer, priced, quantities=dict(), table='', table_version='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -2877,9 +2910,15 @@ applies to video / TTS where output length matters.
 covers high-res image generation. `per_token` covers
 LLM-style endpoints.
 
+* **Type:**
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'per_call'`, `'per_image'`, `'per_second'`, `'per_token'`, `'per_megapixel'`]
+
 #### amount
 
 USD (or `currency`) per unit defined by `kind`.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 #### currency
 
@@ -2887,15 +2926,24 @@ ISO 4217 code. `"USD"` is the only supported value
 today; the field exists so we can extend without a schema
 migration.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### notes
 
 Free-form caveats — “rounded up to next second”, etc.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### source
 
 How the estimate was obtained — `"docs"`,
 `"empirical"`, `"approximate"`. Lets us flag stale or
 unverified entries in audits.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### *class* falaw.CostLine(, kind, item_id, model_id, amount, currency, note='')
 
@@ -3171,15 +3219,24 @@ What one routed model costs, on every basis the table knows.
 The `model` argument value this row prices, e.g.
 `"anthropic/claude-sonnet-4.5"`.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### tier
 
 fal’s billing tier for the router — `"standard"` or
 `"premium"`. Informational; `per_call_usd` is already
 materialized, so no multiplier arithmetic happens in code.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### per_call_usd
 
 What fal bills per request when this model is routed.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 #### input_usd_per_mtok
 
@@ -3187,22 +3244,37 @@ Upstream list price per
 `TOKENS_PER_RATE_UNIT` prompt tokens, or `None` when no
 upstream rate is published for this id — unknown, never zero.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### output_usd_per_mtok
 
 The same for completion tokens.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### source
 
 Where these numbers came from.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### date
 
 ISO date they were read on. Rates move; a quote is only as
 fresh as its row.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### notes
 
 Free-form caveats.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### *property* has_token_rates *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -3242,7 +3314,7 @@ Field semantics, honest by construction:
   `"rate_table:per_call"`, `"registry:<kind>"` (the fallback for a
   model the table does not price), or `"unknown"`.
 
-### *class* falaw.ModelRecord(\*, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=<factory>)
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3253,12 +3325,12 @@ One entry in the fal model catalog.
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
 
-#### max_clip_seconds *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 Practical max length of a single generated clip, in seconds (e.g. ~10
 for Seedance). Drives the “this shot is too long, split it” warning.
 
-#### max_prompt_chars *: [int](https://docs.python.org/3/builtins/functions.html#int) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### max_prompt_chars *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[int](https://docs.python.org/3/builtins/functions.html#int)]*
 
 Hard cap on `prompt` length, from the model’s OpenAPI schema. Calls
 over it fail at fal with an HTTP 422 after queueing; falaw raises first.
@@ -3361,7 +3433,7 @@ rate (or the reverse). Give your `Pricer` the same `table` string the
 basis carries — [`falaw.llm_rates.CUSTOM_LLM_RATES_TABLE`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.CUSTOM_LLM_RATES_TABLE) for anything
 a `plan_*` priced with `llm_rates=`.
 
-#### quote *: [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)], [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)]*
+#### quote *: [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)], [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]]*
 
 Price `basis` in USD, or return `None` for *unknown*. May raise; a
 raise is reported as `"unknown"` with the exception text as the reason,
@@ -3385,9 +3457,15 @@ One step in the lifecycle of a fal call.
 
 Lifecycle stage. See `EventKind`.
 
+* **Type:**
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`]
+
 #### application
 
 fal model id (e.g. `"fal-ai/flux/dev"`).
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### call_id
 
@@ -3395,10 +3473,16 @@ A short hex string that uniquely identifies the call.
 All events for one `call_fal` invocation share the same
 `call_id`.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### message
 
 Free-form text. For `"log"` events this is the log
 line; for `"error"` it’s `repr(exc)`; otherwise empty.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### pct
 
@@ -3406,9 +3490,15 @@ Optional progress percentage in [0.0, 100.0]. fal’s
 current API doesn’t surface this; included for forward
 compatibility.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### elapsed_s
 
 Seconds since the call started.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 ### *class* falaw.PruneCandidate(key, path, bytes, last_modified=None)
 
@@ -3514,7 +3604,7 @@ judgement, one made at re-quote time.
 * **Type:**
   Calls today’s rates cannot price
 
-### *class* falaw.Result(assets=<factory>, raw=<factory>, application='', arguments=<factory>)
+### *class* falaw.Result(assets=list(), raw=dict(), application='', arguments=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3536,7 +3626,7 @@ Return a new Scene with `beat` replacing any existing beat with the same id.
 * **Return type:**
   [`Scene`](_autosummary/falaw.scene.html.md#falaw.scene.Scene)
 
-### *class* falaw.Session(output_dir=<factory>, journal=<factory>, history=<factory>)
+### *class* falaw.Session(output_dir=getcwd(), journal=\_default_journal(), history=list())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3559,7 +3649,7 @@ Beats anchor to a Shot via `shot_id`. The Shot itself has its own
 rendered output (still or short clip used as the anchor for beat
 lipsync renders).
 
-### *class* falaw.ToolSpec(\*, name, description, func, input_schema=<factory>, output_schema=<factory>, tags=(), examples=(), version='0.0.1')
+### *class* falaw.ToolSpec(, name, description, func, input_schema=dict(), output_schema=dict(), tags=(), examples=(), version='0.0.1')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3667,14 +3757,14 @@ areas do not claim, so the areas always sum to the whole.
 the production box. `tests.test_prune` pins this against a throwaway
 cache instead.)
 
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-
 ```pycon
 >>> stats = cache_stats()
 >>> sorted(stats["areas"])
 ['assets', 'content', 'manifests', 'other', 'scenes', 'url_index']
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ### falaw.cache_usage()
 
@@ -3807,13 +3897,13 @@ A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a call pri
 hint that was never supplied is recorded as absent rather than as `null`
 — the same thing the estimator saw.
 
-* **Return type:**
-  [`CostBasis`](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)
-
 ```pycon
 >>> catalogue_cost_basis("fal-ai/flux/dev", seconds=None).quantities
 {}
 ```
+
+* **Return type:**
+  [`CostBasis`](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)
 
 ### falaw.check_model_liveness(ids=None, , status_of=None)
 
@@ -4067,18 +4157,18 @@ the rest of a fan-out; it returns an [`ExecutionReport`](_autosummary/falaw.html
 outcome per call instead of raising.
 
 * **Parameters:**
-  * **plan** (Plan) – The Plan to execute.
-  * **on_event** (Optional[Callable]) – Optional per-call event subscriber (passed to `call_fal`).
-  * **dry_run** (bool) – When True, no fal calls are made; synthetic Artifacts are
+  * **plan** ([`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan)) – The Plan to execute.
+  * **on_event** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)]) – Optional per-call event subscriber (passed to `call_fal`).
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, no fal calls are made; synthetic Artifacts are
     returned with placeholder `asset_id` and `url=None`. Useful
     for exercising downstream composition without an API key.
-  * **use_cache** (bool) – When True (default), executes via `cached_call_fal` so
+  * **use_cache** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True (default), executes via `cached_call_fal` so
     cache hits skip the network. When False, the cache is not touched
     **at all** — neither read nor written. That is the historical
     meaning and it is unchanged: a caller who genuinely wants no cache
     interaction still has it. To re-run a plan and *keep* what the
     re-run paid for, leave `use_cache=True` and pass `refresh`.
-  * **refresh** (bool) – When True, skip the cache **read** and keep the cache
+  * **refresh** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, skip the cache **read** and keep the cache
     **write** — the third mode (falaw#49). Every call executes fresh,
     and every fresh result is stored under the key it would have been
     read from, so the next run (or a downstream consumer) hits it.
@@ -4088,7 +4178,7 @@ outcome per call instead of raising.
     `force` / “re-verify this” switch: without it, forcing a re-run
     discards the result it just paid for and guarantees the next
     consumer re-bills.
-  * **artifact_converter** (Optional[ResultToArtifact]) – Per-CallPlan converter from raw fal response to
+  * **artifact_converter** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)], Artifact]]) – Per-CallPlan converter from raw fal response to
     `lacing.Artifact`. When `None` (default), a built-in
     converter handles the common shapes (`{images: [{url}]}`,
     `{video: {url}}`, `{audio: {url}}`). Mutually exclusive with
@@ -4103,7 +4193,7 @@ outcome per call instead of raising.
     [`falaw.content.default_content_store()`](_autosummary/falaw.content.html.md#falaw.content.default_content_store) (a directory store
     rooted in the falaw cache). Point this at an S3-backed store to
     share content — and therefore cache hits — across machines.
-  * **fetch_bytes** (Optional[bool]) – Whether to download each media result so its `asset_id`
+  * **fetch_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – Whether to download each media result so its `asset_id`
     is the SHA-256 of its bytes. Defaults to `DFLT_FETCH_BYTES`
     (true), overridable process-wide via `FETCH_BYTES_ENVVAR`.
     **Opting out forfeits caching for chained calls**: without bytes
@@ -4124,7 +4214,7 @@ outcome per call instead of raising.
     installed default. (`$FALAW_FETCH_ARTIFACT_BYTES=0` also silences
     the network, but by turning content addressing off — see
     `FETCH_BYTES_ENVVAR`.)
-  * **concurrency** (int) – How many calls may be in flight at once. `1`
+  * **concurrency** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – How many calls may be in flight at once. `1`
     (`DFLT_CONCURRENCY`) runs the Plan sequentially, on the
     calling thread, exactly as it always has. Above 1, independent calls
     run on a thread pool bounded by this number — a Plan is I/O-bound
@@ -4182,7 +4272,7 @@ An upstream artifact with no materialized bytes has no content hash, so its
 key ref falls back to the URL — a guaranteed miss, never a wrong hit.
 
 * **rtype:**
-  list
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
 * **returns:**
   One `lacing.Artifact` per [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) in `plan.calls`,
   in the same order.
@@ -4202,16 +4292,16 @@ with the reason why.
 something per call can zip against `report.outcomes` and stay aligned.
 
 * **Parameters:**
-  **halt_on_failure** (bool) – When True, stop *submitting* work as soon as any call
+  **halt_on_failure** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, stop *submitting* work as soon as any call
   fails; everything not yet started is reported `blocked` with a
   run-level reason. This is what `execute()` uses, and at
   `concurrency=1` it reproduces the historical sequential
   behaviour exactly. Note that at `concurrency > 1` calls already
-* **Return type:**
-  ExecutionReport
   in flight are **not** cancelled — a fal request cannot be recalled
   once made, and pretending otherwise would discard results that were
   billed anyway.
+* **Return type:**
+  [`ExecutionReport`](_autosummary/falaw.outcomes.html.md#falaw.outcomes.ExecutionReport)
 
 :param All other arguments are as `execute()`.:
 
@@ -4691,7 +4781,7 @@ the offending call, i.e. after every call before it had been billed.
       *before* the referencing call (including a self-reference) — the
       output would not exist yet, so it can only ever be a bug.
 * **Return type:**
-  [*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[*frozenset*](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[*int*](https://docs.python.org/3/builtins/functions.html#int)], …]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ```pycon
 >>> a = CallPlan(tool="t", application="m", arguments={}, output_kind="image")
@@ -4704,9 +4794,6 @@ Traceback (most recent call last):
     ...
 ValueError: Placeholder '<from 0>' in call 0 references call 0, which does not run before it. ...
 ```
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.plan_edit_image(image_url, prompt, , quality='balanced', model_id=None, extra=None, metadata=None, consult_cache=True)
 
@@ -4740,9 +4827,9 @@ same cache entry. Pure data; no network at plan time.
 
 `kind` selects the default model (see `GENERATE_AUDIO_DEFAULTS`
 for why these are explicit ids). `duration_s` reaches the model as its
-integer `duration` argument where the model takes one (mmaudio does)
-AND feeds the cost estimate; for models with no duration argument it is
-estimator-only.
+duration argument where the model takes one (see
+`resolve_generate_audio()`) AND feeds the cost estimate; for models
+with no duration argument it is estimator-only.
 
 * **Return type:**
   [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)
@@ -4795,9 +4882,6 @@ new identity-bearing field is an explicit decision about both hashes.
 Two structurally-identical plans hash equal; changing any call’s `app`,
 `args`, or `tool` — or the *order* of calls — changes the hash.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> a = CallPlan(tool="generate_image", application="fal-ai/flux/dev",
 ...              arguments={"prompt": "a tiger"}, output_kind="image")
@@ -4821,6 +4905,9 @@ made of today’s (all-`"fal"`) calls hashes exactly as it did before:
 >>> plan_hash(Plan(calls=(a,))) == plan_hash(Plan(calls=(comfy,)))
 False
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.plan_image_to_video(image_url, prompt='', , quality='high', model_id=None, duration_s=None, extra=None, metadata=None, consult_cache=True)
 
@@ -4935,7 +5022,7 @@ nothing, so `rebillable_entries` counts only the copies whose blob is
 *also* gone.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop copies last written more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop copies last written more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
   * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
@@ -4960,7 +5047,7 @@ clip. The report says how many entries that applies to *before* you commit;
 read `rebillable_entries`.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop blobs last written more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop blobs last written more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
   * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
@@ -5005,7 +5092,7 @@ entry re-bills its call on the next run, so `rebillable_entries` always
 equals the candidate count.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries stored more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries stored more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta). Read from the manifest’s own
     `stored_at`, falling back to file mtime.
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
@@ -5087,15 +5174,15 @@ Return the saved per-source refresh state (etags, last fetch times).
 
 Decorator: register the wrapped function as a falaw tool.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)
-
 ```pycon
 >>> @register_tool(name='echo', description='echo back', tags=('demo',))
 ... def _echo(x): return x
 >>> get_tool('echo').name
 'echo'
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)
 
 ### falaw.remove_background(image_url, , quality='high', model_id=None, extra=None)
 
@@ -5301,9 +5388,6 @@ changes the *default*, never an explicit choice.
 
 Nests and restores, so an inner block cannot leak over an outer one:
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]]]
-
 ```pycon
 >>> from lacing import ArtifactStore
 >>> store = ArtifactStore.in_memory()
@@ -5316,6 +5400,9 @@ True
 ```
 
 For a ready-made fake with pinned bytes and 404s, see [`falaw.testing`](_autosummary/falaw.testing.html.md#module-falaw.testing).
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]]]
 
 ### falaw.video_model_constraints()
 
@@ -5424,7 +5511,7 @@ a process-wide sequence number breaking same-tick ties, so
 ['note', 'issue']
 ```
 
-### *class* falaw.journal.JournalEntry(\*, id, timestamp, kind, text, tags=(), suggestion='', context=<factory>)
+### *class* falaw.journal.JournalEntry(, id, timestamp, kind, text, tags=(), suggestion='', context=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -5745,15 +5832,24 @@ What one routed model costs, on every basis the table knows.
 The `model` argument value this row prices, e.g.
 `"anthropic/claude-sonnet-4.5"`.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### tier
 
 fal’s billing tier for the router — `"standard"` or
 `"premium"`. Informational; `per_call_usd` is already
 materialized, so no multiplier arithmetic happens in code.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### per_call_usd
 
 What fal bills per request when this model is routed.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 #### input_usd_per_mtok
 
@@ -5761,22 +5857,37 @@ Upstream list price per
 [`TOKENS_PER_RATE_UNIT`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.TOKENS_PER_RATE_UNIT) prompt tokens, or `None` when no
 upstream rate is published for this id — unknown, never zero.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### output_usd_per_mtok
 
 The same for completion tokens.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### source
 
 Where these numbers came from.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### date
 
 ISO date they were read on. Rates move; a quote is only as
 fresh as its row.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### notes
 
 Free-form caveats.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### *property* has_token_rates *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -6028,10 +6139,16 @@ The pricing-relevant facts parsed out of fal’s any-llm doc.
 The flat per-request price fal publishes for the
 standard tier.
 
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
 #### premium_multiple
 
 How many times the base price a premium-tier
 request costs.
+
+* **Type:**
+  [`int`](https://docs.python.org/3/builtins/functions.html#int)
 
 #### premium_models
 
@@ -6040,10 +6157,16 @@ verbatim (a model here that is not in `model_enum` belongs to a
 different endpoint, e.g. a vision-only variant, and is not a rate
 table row).
 
+* **Type:**
+  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 #### model_enum
 
 Every routed-model id the `model` argument accepts, in
 the doc’s own order.
+
+* **Type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.llm_rates_refresh.OPENROUTER_MODELS_URL *= 'https://openrouter.ai/api/v1/models'*
 
@@ -6749,7 +6872,7 @@ caller retries or re-plans by — a report always carries exactly one outcome
 per call, in plan order, so `index` is also the safe key for zipping a
 Plan against anything the caller built alongside it.
 
-#### artifact *: Artifact | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### artifact *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[Artifact]*
 
 The materialized artifact. Set if and only if `status == "succeeded"`.
 
@@ -6771,7 +6894,7 @@ re-executed). Run-level cost accounting reads this one.
 
 The call this outcome is about — enough to retry it verbatim.
 
-#### error *: [BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### error *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]*
 
 The exception the call raised. Set if and only if `status == "failed"`.
 
@@ -7025,7 +7148,7 @@ Whether the cache will short-circuit this call.
 
 alias of [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[‘hit’, ‘miss’, ‘stale’, ‘unknown’]
 
-### *class* falaw.plan.CallPlan(\*, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=<factory>, key_extra=<factory>, cost_basis=None)
+### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -7068,7 +7191,7 @@ Whether the cache will short-circuit this call. `"hit"` means
 `execute` won’t bill, so [`Plan.total_cost_usd`](_autosummary/falaw.plan.html.md#falaw.plan.Plan.total_cost_usd) and
 [`Plan.cache_hit_savings_usd`](_autosummary/falaw.plan.html.md#falaw.plan.Plan.cache_hit_savings_usd) reflect that.
 
-#### cost_basis *: [CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### cost_basis *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)]*
 
 How [`estimated_cost_usd`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan.estimated_cost_usd) was computed, or `None` when nothing
 recorded it (falaw#60). Present, the quote can be re-run against today’s
@@ -7079,12 +7202,12 @@ stale figure off as current. Purely descriptive — it stays out of
 dict entirely when unset, so every plan falaw has ever hashed or persisted
 is unmoved.
 
-#### estimated_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### estimated_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 Predicted cost in USD. `None` when the model has no `cost_estimate`
 populated (callers can distinguish “free” from “unknown”).
 
-#### expected_duration_s *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)] | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### expected_duration_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
 
 `(min, max)` duration the model can produce, or `None` if no
 duration contract is known. Plan-level validators can check that the
@@ -7117,7 +7240,7 @@ High-level tool name — `"generate_image"`, `"image_to_video"`, etc.
 Distinct from `application` because one tool may dispatch to several
 fal models depending on quality tier.
 
-### *class* falaw.plan.CostBasis(\*, pricer, priced, quantities=<factory>, table='', table_version='')
+### *class* falaw.plan.CostBasis(, pricer, priced, quantities=dict(), table='', table_version='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -7352,18 +7475,18 @@ the rest of a fan-out; it returns an [`ExecutionReport`](_autosummary/falaw.html
 outcome per call instead of raising.
 
 * **Parameters:**
-  * **plan** (Plan) – The Plan to execute.
-  * **on_event** (Optional[Callable]) – Optional per-call event subscriber (passed to `call_fal`).
-  * **dry_run** (bool) – When True, no fal calls are made; synthetic Artifacts are
+  * **plan** ([`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan)) – The Plan to execute.
+  * **on_event** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)]) – Optional per-call event subscriber (passed to `call_fal`).
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, no fal calls are made; synthetic Artifacts are
     returned with placeholder `asset_id` and `url=None`. Useful
     for exercising downstream composition without an API key.
-  * **use_cache** (bool) – When True (default), executes via `cached_call_fal` so
+  * **use_cache** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True (default), executes via `cached_call_fal` so
     cache hits skip the network. When False, the cache is not touched
     **at all** — neither read nor written. That is the historical
     meaning and it is unchanged: a caller who genuinely wants no cache
     interaction still has it. To re-run a plan and *keep* what the
     re-run paid for, leave `use_cache=True` and pass `refresh`.
-  * **refresh** (bool) – When True, skip the cache **read** and keep the cache
+  * **refresh** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, skip the cache **read** and keep the cache
     **write** — the third mode (falaw#49). Every call executes fresh,
     and every fresh result is stored under the key it would have been
     read from, so the next run (or a downstream consumer) hits it.
@@ -7373,7 +7496,7 @@ outcome per call instead of raising.
     `force` / “re-verify this” switch: without it, forcing a re-run
     discards the result it just paid for and guarantees the next
     consumer re-bills.
-  * **artifact_converter** (Optional[ResultToArtifact]) – Per-CallPlan converter from raw fal response to
+  * **artifact_converter** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)], Artifact]]) – Per-CallPlan converter from raw fal response to
     `lacing.Artifact`. When `None` (default), a built-in
     converter handles the common shapes (`{images: [{url}]}`,
     `{video: {url}}`, `{audio: {url}}`). Mutually exclusive with
@@ -7388,7 +7511,7 @@ outcome per call instead of raising.
     [`falaw.content.default_content_store()`](_autosummary/falaw.content.html.md#falaw.content.default_content_store) (a directory store
     rooted in the falaw cache). Point this at an S3-backed store to
     share content — and therefore cache hits — across machines.
-  * **fetch_bytes** (Optional[bool]) – Whether to download each media result so its `asset_id`
+  * **fetch_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]) – Whether to download each media result so its `asset_id`
     is the SHA-256 of its bytes. Defaults to [`DFLT_FETCH_BYTES`](_autosummary/falaw.plan.html.md#falaw.plan.DFLT_FETCH_BYTES)
     (true), overridable process-wide via [`FETCH_BYTES_ENVVAR`](_autosummary/falaw.plan.html.md#falaw.plan.FETCH_BYTES_ENVVAR).
     **Opting out forfeits caching for chained calls**: without bytes
@@ -7409,7 +7532,7 @@ outcome per call instead of raising.
     installed default. (`$FALAW_FETCH_ARTIFACT_BYTES=0` also silences
     the network, but by turning content addressing off — see
     [`FETCH_BYTES_ENVVAR`](_autosummary/falaw.plan.html.md#falaw.plan.FETCH_BYTES_ENVVAR).)
-  * **concurrency** (int) – How many calls may be in flight at once. `1`
+  * **concurrency** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – How many calls may be in flight at once. `1`
     ([`DFLT_CONCURRENCY`](_autosummary/falaw.plan.html.md#falaw.plan.DFLT_CONCURRENCY)) runs the Plan sequentially, on the
     calling thread, exactly as it always has. Above 1, independent calls
     run on a thread pool bounded by this number — a Plan is I/O-bound
@@ -7467,7 +7590,7 @@ An upstream artifact with no materialized bytes has no content hash, so its
 key ref falls back to the URL — a guaranteed miss, never a wrong hit.
 
 * **rtype:**
-  list
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
 * **returns:**
   One `lacing.Artifact` per [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan) in `plan.calls`,
   in the same order.
@@ -7487,16 +7610,16 @@ with the reason why.
 something per call can zip against `report.outcomes` and stay aligned.
 
 * **Parameters:**
-  **halt_on_failure** (bool) – When True, stop *submitting* work as soon as any call
+  **halt_on_failure** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, stop *submitting* work as soon as any call
   fails; everything not yet started is reported `blocked` with a
   run-level reason. This is what [`execute()`](_autosummary/falaw.plan.html.md#falaw.plan.execute) uses, and at
   `concurrency=1` it reproduces the historical sequential
   behaviour exactly. Note that at `concurrency > 1` calls already
-* **Return type:**
-  ExecutionReport
   in flight are **not** cancelled — a fal request cannot be recalled
   once made, and pretending otherwise would discard results that were
   billed anyway.
+* **Return type:**
+  [`ExecutionReport`](_autosummary/falaw.outcomes.html.md#falaw.outcomes.ExecutionReport)
 
 :param All other arguments are as [`execute()`](_autosummary/falaw.plan.html.md#falaw.plan.execute).:
 
@@ -7587,7 +7710,7 @@ the offending call, i.e. after every call before it had been billed.
       *before* the referencing call (including a self-reference) — the
       output would not exist yet, so it can only ever be a bug.
 * **Return type:**
-  [*tuple*](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[*frozenset*](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[*int*](https://docs.python.org/3/builtins/functions.html#int)], …]
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ```pycon
 >>> a = CallPlan(tool="t", application="m", arguments={}, output_kind="image")
@@ -7600,9 +7723,6 @@ Traceback (most recent call last):
     ...
 ValueError: Placeholder '<from 0>' in call 0 references call 0, which does not run before it. ...
 ```
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.plan.plan_from_dict(d)
 
@@ -7642,9 +7762,6 @@ new identity-bearing field is an explicit decision about both hashes.
 Two structurally-identical plans hash equal; changing any call’s `app`,
 `args`, or `tool` — or the *order* of calls — changes the hash.
 
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
-
 ```pycon
 >>> a = CallPlan(tool="generate_image", application="fal-ai/flux/dev",
 ...              arguments={"prompt": "a tiger"}, output_kind="image")
@@ -7668,6 +7785,9 @@ made of today’s (all-`"fal"`) calls hashes exactly as it did before:
 >>> plan_hash(Plan(calls=(a,))) == plan_hash(Plan(calls=(comfy,)))
 False
 ```
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.plan.plan_to_dict(plan)
 
@@ -8000,7 +8120,7 @@ nothing, so `rebillable_entries` counts only the copies whose blob is
 *also* gone.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop copies last written more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop copies last written more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
   * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
@@ -8025,7 +8145,7 @@ clip. The report says how many entries that applies to *before* you commit;
 read `rebillable_entries`.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop blobs last written more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop blobs last written more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
   * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
@@ -8070,7 +8190,7 @@ entry re-bills its call on the next run, so `rebillable_entries` always
 equals the candidate count.
 
 * **Parameters:**
-  * **older_than** (`Union`[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries stored more than this ago — seconds, or a
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries stored more than this ago — seconds, or a
     [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta). Read from the manifest’s own
     `stored_at`, falling back to file mtime.
   * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
@@ -8264,15 +8384,15 @@ the category is empty.
 
 Decorator: register the wrapped function as a falaw tool.
 
-* **Return type:**
-  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)
-
 ```pycon
 >>> @register_tool(name='echo', description='echo back', tags=('demo',))
 ... def _echo(x): return x
 >>> get_tool('echo').name
 'echo'
 ```
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)
 
 ### falaw.registry.video_model_constraints()
 
@@ -8372,7 +8492,7 @@ has nothing to compare against.
 The re-priced call — the same call with today’s
 `estimated_cost_usd` and a basis stamped with today’s table version.
 
-#### *property* delta_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### *property* delta_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 `new - old`, or `None` when either side is unknown.
 
@@ -8384,11 +8504,11 @@ number that says it did.
 
 Position in the original [`falaw.Plan`](_autosummary/falaw.html.md#falaw.Plan).
 
-#### new_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### new_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 What today’s rates say, `None` for unknown or no-basis.
 
-#### old_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### old_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 What the persisted plan said, `None` if it said unknown.
 
@@ -8431,7 +8551,7 @@ rate (or the reverse). Give your `Pricer` the same `table` string the
 basis carries — [`falaw.llm_rates.CUSTOM_LLM_RATES_TABLE`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.CUSTOM_LLM_RATES_TABLE) for anything
 a `plan_*` priced with `llm_rates=`.
 
-#### quote *: [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)], [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)]*
+#### quote *: [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[CostBasis](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)], [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]]*
 
 Price `basis` in USD, or return `None` for *unknown*. May raise; a
 raise is reported as `"unknown"` with the exception text as the reason,
@@ -8515,13 +8635,13 @@ A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a call pri
 hint that was never supplied is recorded as absent rather than as `null`
 — the same thing the estimator saw.
 
-* **Return type:**
-  [`CostBasis`](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)
-
 ```pycon
 >>> catalogue_cost_basis("fal-ai/flux/dev", seconds=None).quantities
 {}
 ```
+
+* **Return type:**
+  [`CostBasis`](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis)
 
 ### falaw.reprice.llm_cost_basis(routed_model, , input_tokens=None, max_output_tokens=None, custom_rates=False)
 
@@ -8609,7 +8729,7 @@ Result wrapper: parse fal responses into typed assets, lazy download.
 |-------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
 | [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)([assets, raw, application, arguments])  | A fal call result with parsed assets and the original raw response. |
 
-### *class* falaw.results.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=<factory>)
+### *class* falaw.results.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -8630,7 +8750,7 @@ corrected instead (so the returned path may differ from `to`).
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.results.Result(assets=<factory>, raw=<factory>, application='', arguments=<factory>)
+### *class* falaw.results.Result(assets=list(), raw=dict(), application='', arguments=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -8867,7 +8987,7 @@ binding that future-you (or another agent) can read.
 | [`Session`](_autosummary/falaw.session.html.md#falaw.session.Session)([output_dir, journal, history])   | A working session for a sequence of falaw operations.   |
 |--------------------------------------------------------------------------------------------|---------------------------------------------------------|
 
-### *class* falaw.session.Session(output_dir=<factory>, journal=<factory>, history=<factory>)
+### *class* falaw.session.Session(output_dir=getcwd(), journal=\_default_journal(), history=list())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -9190,9 +9310,6 @@ process, where this has no reach. ffmpeg is the one that matters.
 (`.invalid` is reserved by RFC 2606 and can never resolve, so even a
 broken guard cannot turn this example into real traffic.)
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)]
-
 ```pycon
 >>> import socket
 >>> with blocked_outbound_network() as attempts:
@@ -9203,6 +9320,9 @@ broken guard cannot turn this example into real traffic.)
 >>> attempts
 ["a DNS lookup for 'nowhere.invalid'"]
 ```
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)]
 
 ### falaw.testing.fake_assets(request)
 
@@ -9226,15 +9346,15 @@ test marked `live_api`, which gets the real transport.
 
 True when resolving `url` would leave this machine.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> is_network_url("https://fal.media/x.png")
 True
 >>> is_network_url("file:///tmp/rendered.mp4"), is_network_url("/tmp/x.mp4")
 (False, False)
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### falaw.testing.isolated_falaw_cache(tmp_path, monkeypatch)
 
@@ -9292,9 +9412,6 @@ Install a [`FakeAssets`](_autosummary/falaw.testing.html.md#falaw.testing.FakeAs
 The pytest-free core of [`fake_assets()`](_autosummary/falaw.testing.html.md#falaw.testing.fake_assets), for a caller driving falaw
 outside a pytest session (a script, a notebook, another test runner).
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`FakeAssets`](_autosummary/falaw.testing.html.md#falaw.testing.FakeAssets)]
-
 ```pycon
 >>> from falaw import materialize_asset
 >>> with serving_fake_assets() as assets:
@@ -9305,6 +9422,9 @@ outside a pytest session (a script, a notebook, another test runner).
 b'pinned'
 ```
 
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`FakeAssets`](_autosummary/falaw.testing.html.md#falaw.testing.FakeAssets)]
+
 ### falaw.testing.synthetic_asset_bytes(url, , prefix='falaw-test-asset')
 
 Deterministic stand-in bytes for a URL nothing has pinned.
@@ -9312,9 +9432,6 @@ Deterministic stand-in bytes for a URL nothing has pinned.
 Derived from the URL, so two different stub URLs behave like two genuinely
 different renders — and the same stub URL hashes the same way on every run,
 which is what lets a test assert on a content hash at all.
-
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ```pycon
 >>> synthetic_asset_bytes("https://fal.media/x.png")
@@ -9325,6 +9442,9 @@ b'falaw-test-asset::https://fal.media/x.png'
 False
 ```
 
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
+
 
 # about-this-build.html.md
 
@@ -9332,18 +9452,18 @@ False
 
 # About this build
 
-This documentation was built on **2026-10-14 12:58 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/14eff54bf51e10c1d8ae695c1b7d4da3872edbc1"><code>14eff54</code></a> on branch <code>main</code>, for **falaw 0.0.62** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 11:42 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/722f08080618f5be65885b379803e0ac98a9efb2"><code>722f080</code></a> on branch <code>main</code>, for **falaw 0.0.63** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.62) is behind the latest release on PyPI (0.0.63): `pip install falaw` gives newer code than these docs describe.
+- The documented version (0.0.63) is behind the latest release on PyPI (0.0.64): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/14eff54bf51e10c1d8ae695c1b7d4da3872edbc1"><code>14eff54bf51e10c1d8ae695c1b7d4da3872edbc1</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/722f08080618f5be65885b379803e0ac98a9efb2"><code>722f08080618f5be65885b379803e0ac98a9efb2</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -9354,16 +9474,16 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/38567699368">38567699368</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40316863462">40316863462</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>14eff54bf51e10c1d8ae695c1b7d4da3872edbc1</code> (in the history of the built commit) |
+| Event commit | <code>722f08080618f5be65885b379803e0ac98a9efb2</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.17  |
-| Sphinx   | 9.1.0   |
+| epythet  | 0.2.22  |
+| Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.15 |
 
@@ -9381,14 +9501,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.63/">0.0.63</a>, newer than the documented version (0.0.62).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.64/">0.0.64</a>, newer than the documented version (0.0.63).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 14eff54bf51e10c1d8ae695c1b7d4da3872edbc1
-pip install "epythet==0.2.17"
+git checkout 722f08080618f5be65885b379803e0ac98a9efb2
+pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

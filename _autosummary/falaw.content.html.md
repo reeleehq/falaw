@@ -333,9 +333,6 @@ changes the *default*, never an explicit choice.
 
 Nests and restores, so an inner block cannot leak over an outer one:
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]]]
-
 ```pycon
 >>> from lacing import ArtifactStore
 >>> store = ArtifactStore.in_memory()
@@ -349,15 +346,15 @@ True
 
 For a ready-made fake with pinned bytes and 404s, see [`falaw.testing`](falaw.testing.html.md#module-falaw.testing).
 
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)[[`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)]]]
+
 ### falaw.content.write_blob_to_file(content_hash, path, , store=None)
 
 Materialize the blob for `content_hash` as a **copy** at `path`.
 
 Writes via a temporary file and an atomic rename, so a concurrent reader
 never sees a partial file.
-
-* **Return type:**
-  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ## Why a copy and not a hard link
 
@@ -380,3 +377,6 @@ Returns `path`.
 
 * **raises KeyError:**
   the store holds no blob for `content_hash`.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)

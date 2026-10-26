@@ -113,15 +113,24 @@ What one routed model costs, on every basis the table knows.
 The `model` argument value this row prices, e.g.
 `"anthropic/claude-sonnet-4.5"`.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### tier
 
 fal’s billing tier for the router — `"standard"` or
 `"premium"`. Informational; `per_call_usd` is already
 materialized, so no multiplier arithmetic happens in code.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### per_call_usd
 
 What fal bills per request when this model is routed.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 #### input_usd_per_mtok
 
@@ -129,22 +138,37 @@ Upstream list price per
 [`TOKENS_PER_RATE_UNIT`](#falaw.llm_rates.TOKENS_PER_RATE_UNIT) prompt tokens, or `None` when no
 upstream rate is published for this id — unknown, never zero.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### output_usd_per_mtok
 
 The same for completion tokens.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### source
 
 Where these numbers came from.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### date
 
 ISO date they were read on. Rates move; a quote is only as
 fresh as its row.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### notes
 
 Free-form caveats.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### *property* has_token_rates *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 

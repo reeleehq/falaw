@@ -34,6 +34,7 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
@@ -43,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=dea2dbc4"></script>
+    <script src="../_static/documentation_options.js?v=7ada5fdd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.62" />
+  <meta name="docsearch:version" content="0.0.63" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -578,6 +579,11 @@ row’s <code class="docutils literal notranslate"><span class="pre">date</span>
 <span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.model" title="Link to this definition">#</a></dt>
 <dd><p>The <code class="docutils literal notranslate"><span class="pre">model</span></code> argument value this row prices, e.g.
 <code class="docutils literal notranslate"><span class="pre">&quot;anthropic/claude-sonnet-4.5&quot;</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -586,12 +592,22 @@ row’s <code class="docutils literal notranslate"><span class="pre">date</span>
 <dd><p>fal’s billing tier for the router — <code class="docutils literal notranslate"><span class="pre">&quot;standard&quot;</span></code> or
 <code class="docutils literal notranslate"><span class="pre">&quot;premium&quot;</span></code>. Informational; <code class="docutils literal notranslate"><span class="pre">per_call_usd</span></code> is already
 materialized, so no multiplier arithmetic happens in code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.llm_rates.LlmRate.per_call_usd">
 <span class="sig-name descname"><span class="pre">per_call_usd</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.per_call_usd" title="Link to this definition">#</a></dt>
 <dd><p>What fal bills per request when this model is routed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -600,18 +616,33 @@ materialized, so no multiplier arithmetic happens in code.</p>
 <dd><p>Upstream list price per
 <a class="reference internal" href="#falaw.llm_rates.TOKENS_PER_RATE_UNIT" title="falaw.llm_rates.TOKENS_PER_RATE_UNIT"><code class="xref py py-data docutils literal notranslate"><span class="pre">TOKENS_PER_RATE_UNIT</span></code></a> prompt tokens, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when no
 upstream rate is published for this id — unknown, never zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.llm_rates.LlmRate.output_usd_per_mtok">
 <span class="sig-name descname"><span class="pre">output_usd_per_mtok</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.output_usd_per_mtok" title="Link to this definition">#</a></dt>
 <dd><p>The same for completion tokens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.llm_rates.LlmRate.source">
 <span class="sig-name descname"><span class="pre">source</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.source" title="Link to this definition">#</a></dt>
 <dd><p>Where these numbers came from.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -619,12 +650,22 @@ upstream rate is published for this id — unknown, never zero.</p>
 <span class="sig-name descname"><span class="pre">date</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.date" title="Link to this definition">#</a></dt>
 <dd><p>ISO date they were read on. Rates move; a quote is only as
 fresh as its row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.llm_rates.LlmRate.notes">
 <span class="sig-name descname"><span class="pre">notes</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.notes" title="Link to this definition">#</a></dt>
 <dd><p>Free-form caveats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">

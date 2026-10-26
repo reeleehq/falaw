@@ -37,9 +37,15 @@ applies to video / TTS where output length matters.
 covers high-res image generation. `per_token` covers
 LLM-style endpoints.
 
+* **Type:**
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'per_call'`, `'per_image'`, `'per_second'`, `'per_token'`, `'per_megapixel'`]
+
 #### amount
 
 USD (or `currency`) per unit defined by `kind`.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 #### currency
 
@@ -47,9 +53,15 @@ ISO 4217 code. `"USD"` is the only supported value
 today; the field exists so we can extend without a schema
 migration.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### notes
 
 Free-form caveats — “rounded up to next second”, etc.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### source
 
@@ -57,7 +69,10 @@ How the estimate was obtained — `"docs"`,
 `"empirical"`, `"approximate"`. Lets us flag stale or
 unverified entries in audits.
 
-### *class* falaw.base.ModelRecord(\*, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=<factory>)
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -68,12 +83,12 @@ One entry in the fal model catalog.
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
 
-#### max_clip_seconds *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 Practical max length of a single generated clip, in seconds (e.g. ~10
 for Seedance). Drives the “this shot is too long, split it” warning.
 
-#### max_prompt_chars *: [int](https://docs.python.org/3/builtins/functions.html#int) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### max_prompt_chars *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[int](https://docs.python.org/3/builtins/functions.html#int)]*
 
 Hard cap on `prompt` length, from the model’s OpenAPI schema. Calls
 over it fail at fal with an HTTP 422 after queueing; falaw raises first.
@@ -107,7 +122,7 @@ Resolutions the model offers, cheap→expensive (e.g. (“720p”, “1080p”))
 
 Hex characters of the digest [`data_table_version()`](#falaw.base.data_table_version) returns.
 
-### *class* falaw.base.ToolSpec(\*, name, description, func, input_schema=<factory>, output_schema=<factory>, tags=(), examples=(), version='0.0.1')
+### *class* falaw.base.ToolSpec(, name, description, func, input_schema=dict(), output_schema=dict(), tags=(), examples=(), version='0.0.1')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 

@@ -31,6 +31,7 @@
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../../_static/epythet.css?v=f0eeacdc" />
   
@@ -40,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=dea2dbc4"></script>
+    <script src="../../../_static/documentation_options.js?v=7ada5fdd"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -410,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.62" />
+  <meta name="docsearch:version" content="0.0.63" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -732,7 +733,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..cost</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_call_cost</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..llm_rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmRateTable</span><span class="p">,</span> <span class="n">llm_ceiling_usd</span>
@@ -1168,11 +1170,103 @@ window.runMermaid = runMermaid;</script>
 <span class="c1">#: bare prompt would make a structurally valid call that runs, bills, and</span>
 <span class="c1">#: produces nothing the caller asked for (the exact failure class working</span>
 <span class="c1">#: rule 10 names). Overridable per call via ``model_id``.</span>
+<span class="c1">#:</span>
+<span class="c1">#: SFX and ambient default to Stable Audio 3 small-SFX, not MMAudio: MMAudio's</span>
+<span class="c1">#: weights are CC BY-NC 4.0 whatever fal's ``license_type`` says, so sound it</span>
+<span class="c1">#: made may not be used commercially (falaw#88). MMAudio stays reachable via</span>
+<span class="c1">#: ``model_id=``.</span>
 <span class="n">GENERATE_AUDIO_DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"ambient"</span><span class="p">:</span> <span class="s2">"fal-ai/mmaudio-v2/text-to-audio"</span><span class="p">,</span>
-    <span class="s2">"sfx"</span><span class="p">:</span> <span class="s2">"fal-ai/mmaudio-v2/text-to-audio"</span><span class="p">,</span>
+    <span class="s2">"ambient"</span><span class="p">:</span> <span class="s2">"fal-ai/stable-audio-3/small/sfx/text-to-audio"</span><span class="p">,</span>
+    <span class="s2">"sfx"</span><span class="p">:</span> <span class="s2">"fal-ai/stable-audio-3/small/sfx/text-to-audio"</span><span class="p">,</span>
     <span class="s2">"music"</span><span class="p">:</span> <span class="s2">"fal-ai/lyria2"</span><span class="p">,</span>
 <span class="p">}</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_AudioArgs</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""How one audio endpoint spells its inputs (they differ per vendor)."""</span>
+
+    <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"prompt"</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># None: the endpoint takes no duration</span>
+    <span class="n">cast</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span>
+    <span class="n">default_duration_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""Used when the caller gives none. fal's own default (often 30 s) is long</span>
+<span class="sd">    for an effect and makes a per-second quote unknowable."""</span>
+    <span class="n">defaults</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Arguments pinned so the output matches the recorded prompt and quote."""</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""Argument counting the samples billed per call, when the endpoint bills</span>
+<span class="sd">    per sample (Mirelo returns two unless told otherwise)."""</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_whole_seconds</span><span class="p">(</span><span class="n">seconds</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">seconds</span><span class="p">))))</span>
+
+
+<span class="c1">#: Stable Audio 3 expands prompts by default, so the audio would no longer</span>
+<span class="c1">#: match the prompt falaw caches and journals.</span>
+<span class="n">_SA3</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">duration</span><span class="o">=</span><span class="s2">"duration"</span><span class="p">,</span>
+    <span class="n">default_duration_s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">"enable_prompt_expansion"</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+<span class="p">)</span>
+
+<span class="c1">#: Endpoints whose input names or duration type differ from the default</span>
+<span class="c1">#: (``prompt``, no duration). An id absent here takes ``prompt`` only.</span>
+<span class="c1">#: The eventual home of this is an argument-spelling field on ``ModelRecord``</span>
+<span class="c1">#: (falaw#16).</span>
+<span class="n">_AUDIO_ARGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"fal-ai/mmaudio-v2/text-to-audio"</span><span class="p">:</span> <span class="n">_AudioArgs</span><span class="p">(</span>
+        <span class="n">duration</span><span class="o">=</span><span class="s2">"duration"</span><span class="p">,</span> <span class="n">cast</span><span class="o">=</span><span class="n">_whole_seconds</span><span class="p">,</span> <span class="n">default_duration_s</span><span class="o">=</span><span class="mi">8</span>
+    <span class="p">),</span>
+    <span class="s2">"fal-ai/stable-audio-3/small/sfx/text-to-audio"</span><span class="p">:</span> <span class="n">_AudioArgs</span><span class="p">(</span><span class="o">**</span><span class="n">_SA3</span><span class="p">),</span>
+    <span class="s2">"fal-ai/stable-audio-3/medium/text-to-audio"</span><span class="p">:</span> <span class="n">_AudioArgs</span><span class="p">(</span><span class="o">**</span><span class="n">_SA3</span><span class="p">),</span>
+    <span class="s2">"mirelo-ai/sfx2.0/text-to-audio"</span><span class="p">:</span> <span class="n">_AudioArgs</span><span class="p">(</span>
+        <span class="n">duration</span><span class="o">=</span><span class="s2">"duration"</span><span class="p">,</span>
+        <span class="n">default_duration_s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">"num_samples"</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+        <span class="n">samples</span><span class="o">=</span><span class="s2">"num_samples"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"sonilo/v1.1/text-to-sound-effects"</span><span class="p">:</span> <span class="n">_AudioArgs</span><span class="p">(</span>
+        <span class="n">duration</span><span class="o">=</span><span class="s2">"duration"</span><span class="p">,</span> <span class="n">default_duration_s</span><span class="o">=</span><span class="mi">8</span>
+    <span class="p">),</span>
+    <span class="s2">"fal-ai/elevenlabs/sound-effects/v2"</span><span class="p">:</span> <span class="n">_AudioArgs</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="o">=</span><span class="s2">"text"</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="s2">"duration_seconds"</span><span class="p">,</span> <span class="n">default_duration_s</span><span class="o">=</span><span class="mi">8</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_generate_audio</span><span class="p">(</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"ambient"</span><span class="p">,</span>
+    <span class="n">duration_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``(application, arguments, billed_seconds)`` for a generate_audio call.</span>
+
+<span class="sd">    The one place planned and eager :func:`falaw.generate_audio` agree on the</span>
+<span class="sd">    model and the argument shape (so identical inputs share a cache entry).</span>
+<span class="sd">    ``duration_s`` is forwarded only to endpoints that take one; ``billed_seconds``</span>
+<span class="sd">    is what the quote is computed on (seconds x samples for per-sample endpoints).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"unknown kind </span><span class="si">{</span><span class="n">kind</span><span class="si">!r}</span><span class="s2">; expected one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="n">application</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">[</span><span class="n">kind</span><span class="p">]</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">_AUDIO_ARGS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">_AudioArgs</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">duration_s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">duration_s</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">default_duration_s</span>
+    <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">spec</span><span class="o">.</span><span class="n">prompt</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span> <span class="o">**</span><span class="n">spec</span><span class="o">.</span><span class="n">defaults</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">duration_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="o">.</span><span class="n">duration</span><span class="p">:</span>
+        <span class="n">arguments</span><span class="p">[</span><span class="n">spec</span><span class="o">.</span><span class="n">duration</span><span class="p">]</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">duration_s</span><span class="p">)</span>
+    <span class="n">arguments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra</span> <span class="ow">or</span> <span class="p">{})</span>
+    <span class="n">billed</span> <span class="o">=</span> <span class="n">duration_s</span>
+    <span class="k">if</span> <span class="n">billed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">spec</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span>
+        <span class="n">billed</span> <span class="o">=</span> <span class="n">billed</span> <span class="o">*</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">billed</span>
 
 
 <div class="viewcode-block" id="plan_generate_audio">
@@ -1198,21 +1292,14 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    ``kind`` selects the default model (see :data:`GENERATE_AUDIO_DEFAULTS`</span>
 <span class="sd">    for why these are explicit ids). ``duration_s`` reaches the model as its</span>
-<span class="sd">    integer ``duration`` argument where the model takes one (mmaudio does)</span>
-<span class="sd">    AND feeds the cost estimate; for models with no duration argument it is</span>
-<span class="sd">    estimator-only.</span>
+<span class="sd">    duration argument where the model takes one (see</span>
+<span class="sd">    :func:`resolve_generate_audio`) AND feeds the cost estimate; for models</span>
+<span class="sd">    with no duration argument it is estimator-only.</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">kind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">"unknown kind </span><span class="si">{</span><span class="n">kind</span><span class="si">!r}</span><span class="s2">; expected one of </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
-        <span class="p">)</span>
-    <span class="n">application</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">[</span><span class="n">kind</span><span class="p">]</span>
+    <span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">duration_s</span> <span class="o">=</span> <span class="n">resolve_generate_audio</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">duration_s</span><span class="o">=</span><span class="n">duration_s</span><span class="p">,</span> <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra</span>
+    <span class="p">)</span>
     <span class="n">record</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="n">application</span><span class="p">)</span>
-    <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt</span><span class="p">}</span>
-    <span class="k">if</span> <span class="n">duration_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">application</span> <span class="o">==</span> <span class="n">GENERATE_AUDIO_DEFAULTS</span><span class="p">[</span><span class="s2">"ambient"</span><span class="p">]:</span>
-        <span class="n">arguments</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">duration_s</span><span class="p">))))</span>
-    <span class="k">if</span> <span class="n">extra</span><span class="p">:</span>
-        <span class="n">arguments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
     <span class="n">cost</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">_catalogue_price</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">duration_s</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">make_call_plan</span><span class="p">(</span>
         <span class="n">tool</span><span class="o">=</span><span class="s2">"generate_audio"</span><span class="p">,</span>

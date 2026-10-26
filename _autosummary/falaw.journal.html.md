@@ -51,6 +51,6 @@ a process-wide sequence number breaking same-tick ties, so
 ['note', 'issue']
 ```
 
-### *class* falaw.journal.JournalEntry(\*, id, timestamp, kind, text, tags=(), suggestion='', context=<factory>)
+### *class* falaw.journal.JournalEntry(, id, timestamp, kind, text, tags=(), suggestion='', context=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)

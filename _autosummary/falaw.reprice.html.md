@@ -85,7 +85,7 @@ has nothing to compare against.
 The re-priced call — the same call with today’s
 `estimated_cost_usd` and a basis stamped with today’s table version.
 
-#### *property* delta_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### *property* delta_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 `new - old`, or `None` when either side is unknown.
 
@@ -97,11 +97,11 @@ number that says it did.
 
 Position in the original [`falaw.Plan`](falaw.html.md#falaw.Plan).
 
-#### new_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### new_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 What today’s rates say, `None` for unknown or no-basis.
 
-#### old_cost_usd *: [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### old_cost_usd *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
 What the persisted plan said, `None` if it said unknown.
 
@@ -144,7 +144,7 @@ rate (or the reverse). Give your `Pricer` the same `table` string the
 basis carries — [`falaw.llm_rates.CUSTOM_LLM_RATES_TABLE`](falaw.llm_rates.html.md#falaw.llm_rates.CUSTOM_LLM_RATES_TABLE) for anything
 a `plan_*` priced with `llm_rates=`.
 
-#### quote *: [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[CostBasis](falaw.plan.html.md#falaw.plan.CostBasis)], [float](https://docs.python.org/3/builtins/functions.html#float) | [None](https://docs.python.org/3/builtins/constants.html#None)]*
+#### quote *: [Callable](https://docs.python.org/3/library/typing.html#typing.Callable)[[[CostBasis](falaw.plan.html.md#falaw.plan.CostBasis)], [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]]*
 
 Price `basis` in USD, or return `None` for *unknown*. May raise; a
 raise is reported as `"unknown"` with the exception text as the reason,
@@ -228,13 +228,13 @@ A [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis) for a call priced from `mod
 hint that was never supplied is recorded as absent rather than as `null`
 — the same thing the estimator saw.
 
-* **Return type:**
-  [`CostBasis`](falaw.plan.html.md#falaw.plan.CostBasis)
-
 ```pycon
 >>> catalogue_cost_basis("fal-ai/flux/dev", seconds=None).quantities
 {}
 ```
+
+* **Return type:**
+  [`CostBasis`](falaw.plan.html.md#falaw.plan.CostBasis)
 
 ### falaw.reprice.llm_cost_basis(routed_model, , input_tokens=None, max_output_tokens=None, custom_rates=False)
 

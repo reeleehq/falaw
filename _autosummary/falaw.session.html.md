@@ -11,7 +11,7 @@ binding that future-you (or another agent) can read.
 | [`Session`](#falaw.session.Session)([output_dir, journal, history])   | A working session for a sequence of falaw operations.   |
 |--------------------------------------------------------------------------------------------|---------------------------------------------------------|
 
-### *class* falaw.session.Session(output_dir=<factory>, journal=<factory>, history=<factory>)
+### *class* falaw.session.Session(output_dir=getcwd(), journal=\_default_journal(), history=list())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 

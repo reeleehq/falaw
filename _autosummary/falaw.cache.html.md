@@ -111,14 +111,14 @@ areas do not claim, so the areas always sum to the whole.
 the production box. `tests.test_prune` pins this against a throwaway
 cache instead.)
 
-* **Return type:**
-  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
-
 ```pycon
 >>> stats = cache_stats()
 >>> sorted(stats["areas"])
 ['assets', 'content', 'manifests', 'other', 'scenes', 'url_index']
 ```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ### falaw.cache.cached_call_fal(application, arguments, , key_arguments=None, refresh=False, on_event=None, backend='fal', key_extra=None)
 

@@ -34,6 +34,7 @@
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
@@ -43,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=dea2dbc4"></script>
+    <script src="../_static/documentation_options.js?v=7ada5fdd"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.62" />
+  <meta name="docsearch:version" content="0.0.63" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1015,7 +1016,7 @@ the content store along with it.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.Asset">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">Asset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/results.html#Asset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.Asset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">Asset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/results.html#Asset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.Asset" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A single piece of generated media.</p>
 <p>Holds the URL plus minimal typed metadata. <code class="code docutils literal notranslate"><span class="pre">download</span></code> materializes it.</p>
@@ -1110,7 +1111,7 @@ Plan against anything the caller built alongside it.</p>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallOutcome.artifact">
-<span class="sig-name descname"><span class="pre">artifact</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Artifact</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallOutcome.artifact" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">artifact</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Artifact</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallOutcome.artifact" title="Link to this definition">#</a></dt>
 <dd><p>The materialized artifact. Set if and only if <code class="docutils literal notranslate"><span class="pre">status</span> <span class="pre">==</span> <span class="pre">&quot;succeeded&quot;</span></code>.</p>
 </dd></dl>
 
@@ -1139,7 +1140,7 @@ re-executed). Run-level cost accounting reads this one.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallOutcome.error">
-<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><span class="pre">BaseException</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallOutcome.error" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">error</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#BaseException" title="(in Python v3.15)"><span class="pre">BaseException</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallOutcome.error" title="Link to this definition">#</a></dt>
 <dd><p>The exception the call raised. Set if and only if <code class="docutils literal notranslate"><span class="pre">status</span> <span class="pre">==</span> <span class="pre">&quot;failed&quot;</span></code>.</p>
 <p>Kept as the exception object rather than a string so the caller can use
 falaw’s typed hierarchy (<a class="reference internal" href="falaw.errors.html#module-falaw.errors" title="falaw.errors"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.errors</span></code></a>) to decide between backing off,
@@ -1174,7 +1175,7 @@ switching models, and giving up.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.CallPlan">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">CallPlan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_cost_usd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#CallPlan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.CallPlan" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">CallPlan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fal'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_cost_usd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_basis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#CallPlan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.CallPlan" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A single planned fal call. Pure data — no API contact yet.</p>
 <p><code class="docutils literal notranslate"><span class="pre">application</span></code> and <code class="docutils literal notranslate"><span class="pre">arguments</span></code> are the <em>exact</em> tuple
@@ -1226,7 +1227,7 @@ check unknown status explicitly.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallPlan.cost_basis">
-<span class="sig-name descname"><span class="pre">cost_basis</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="falaw.plan.html#falaw.plan.CostBasis" title="falaw.plan.CostBasis"><span class="pre">CostBasis</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallPlan.cost_basis" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">cost_basis</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="falaw.plan.html#falaw.plan.CostBasis" title="falaw.plan.CostBasis"><span class="pre">CostBasis</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallPlan.cost_basis" title="Link to this definition">#</a></dt>
 <dd><p>How <a class="reference internal" href="#falaw.CallPlan.estimated_cost_usd" title="falaw.CallPlan.estimated_cost_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimated_cost_usd</span></code></a> was computed, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when nothing
 recorded it (falaw#60). Present, the quote can be re-run against today’s
 rate table by <a class="reference internal" href="#falaw.reprice_plan" title="falaw.reprice_plan"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.reprice_plan()</span></code></a>; absent, that function reports the
@@ -1239,14 +1240,14 @@ is unmoved.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallPlan.estimated_cost_usd">
-<span class="sig-name descname"><span class="pre">estimated_cost_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallPlan.estimated_cost_usd" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">estimated_cost_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallPlan.estimated_cost_usd" title="Link to this definition">#</a></dt>
 <dd><p>Predicted cost in USD. <code class="docutils literal notranslate"><span class="pre">None</span></code> when the model has no <code class="docutils literal notranslate"><span class="pre">cost_estimate</span></code>
 populated (callers can distinguish “free” from “unknown”).</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallPlan.expected_duration_s">
-<span class="sig-name descname"><span class="pre">expected_duration_s</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallPlan.expected_duration_s" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">expected_duration_s</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallPlan.expected_duration_s" title="Link to this definition">#</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">(min,</span> <span class="pre">max)</span></code> duration the model can produce, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if no
 duration contract is known. Plan-level validators can check that the
 requested duration fits this range and raise <a class="reference internal" href="#falaw.FalDurationOutOfRange" title="falaw.FalDurationOutOfRange"><code class="xref py py-class docutils literal notranslate"><span class="pre">FalDurationOutOfRange</span></code></a>
@@ -1314,7 +1315,7 @@ has nothing to compare against.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.CallRepricing.delta_usd">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">delta_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallRepricing.delta_usd" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">delta_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallRepricing.delta_usd" title="Link to this definition">#</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">new</span> <span class="pre">-</span> <span class="pre">old</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when either side is unknown.</p>
 <p><code class="docutils literal notranslate"><span class="pre">None</span></code> rather than <code class="docutils literal notranslate"><span class="pre">0.0</span></code>: a call that lost or gained its price did
 not move by zero, and a caller summing deltas must not be handed a
@@ -1329,13 +1330,13 @@ number that says it did.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallRepricing.new_cost_usd">
-<span class="sig-name descname"><span class="pre">new_cost_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallRepricing.new_cost_usd" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">new_cost_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallRepricing.new_cost_usd" title="Link to this definition">#</a></dt>
 <dd><p>What today’s rates say, <code class="docutils literal notranslate"><span class="pre">None</span></code> for unknown or no-basis.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CallRepricing.old_cost_usd">
-<span class="sig-name descname"><span class="pre">old_cost_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.CallRepricing.old_cost_usd" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">old_cost_usd</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.CallRepricing.old_cost_usd" title="Link to this definition">#</a></dt>
 <dd><p>What the persisted plan said, <code class="docutils literal notranslate"><span class="pre">None</span></code> if it said unknown.</p>
 </dd></dl>
 
@@ -1376,7 +1377,7 @@ value that goes into a downstream cache key in place of a URL.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.CostBasis">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">CostBasis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pricer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priced</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#CostBasis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.CostBasis" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">CostBasis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">pricer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">priced</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantities</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#CostBasis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.CostBasis" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>How a <a class="reference internal" href="#falaw.CallPlan.estimated_cost_usd" title="falaw.CallPlan.estimated_cost_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CallPlan.estimated_cost_usd</span></code></a> was arrived at (falaw#60).</p>
 <p>A frozen quote goes stale the moment the rate table moves — 0.0.46 moved
@@ -1461,12 +1462,22 @@ applies to video / TTS where output length matters.
 <code class="docutils literal notranslate"><span class="pre">per_image</span></code> covers batch image gen. <code class="docutils literal notranslate"><span class="pre">per_megapixel</span></code>
 covers high-res image generation. <code class="docutils literal notranslate"><span class="pre">per_token</span></code> covers
 LLM-style endpoints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'per_call'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'per_image'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'per_second'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'per_token'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'per_megapixel'</span></span></code></span>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CostEstimate.amount">
 <span class="sig-name descname"><span class="pre">amount</span></span><a class="headerlink" href="#falaw.CostEstimate.amount" title="Link to this definition">#</a></dt>
 <dd><p>USD (or <code class="docutils literal notranslate"><span class="pre">currency</span></code>) per unit defined by <code class="docutils literal notranslate"><span class="pre">kind</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1475,12 +1486,22 @@ LLM-style endpoints.</p>
 <dd><p>ISO 4217 code. <code class="docutils literal notranslate"><span class="pre">&quot;USD&quot;</span></code> is the only supported value
 today; the field exists so we can extend without a schema
 migration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.CostEstimate.notes">
 <span class="sig-name descname"><span class="pre">notes</span></span><a class="headerlink" href="#falaw.CostEstimate.notes" title="Link to this definition">#</a></dt>
 <dd><p>Free-form caveats — “rounded up to next second”, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1489,6 +1510,11 @@ migration.</p>
 <dd><p>How the estimate was obtained — <code class="docutils literal notranslate"><span class="pre">&quot;docs&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;empirical&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;approximate&quot;</span></code>. Lets us flag stale or
 unverified entries in audits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1839,6 +1865,11 @@ else <code class="docutils literal notranslate"><span class="pre">None</span></c
 <span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#falaw.LlmRate.model" title="Link to this definition">#</a></dt>
 <dd><p>The <code class="docutils literal notranslate"><span class="pre">model</span></code> argument value this row prices, e.g.
 <code class="docutils literal notranslate"><span class="pre">&quot;anthropic/claude-sonnet-4.5&quot;</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1847,12 +1878,22 @@ else <code class="docutils literal notranslate"><span class="pre">None</span></c
 <dd><p>fal’s billing tier for the router — <code class="docutils literal notranslate"><span class="pre">&quot;standard&quot;</span></code> or
 <code class="docutils literal notranslate"><span class="pre">&quot;premium&quot;</span></code>. Informational; <code class="docutils literal notranslate"><span class="pre">per_call_usd</span></code> is already
 materialized, so no multiplier arithmetic happens in code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.LlmRate.per_call_usd">
 <span class="sig-name descname"><span class="pre">per_call_usd</span></span><a class="headerlink" href="#falaw.LlmRate.per_call_usd" title="Link to this definition">#</a></dt>
 <dd><p>What fal bills per request when this model is routed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1861,18 +1902,33 @@ materialized, so no multiplier arithmetic happens in code.</p>
 <dd><p>Upstream list price per
 <code class="xref py py-data docutils literal notranslate"><span class="pre">TOKENS_PER_RATE_UNIT</span></code> prompt tokens, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when no
 upstream rate is published for this id — unknown, never zero.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.LlmRate.output_usd_per_mtok">
 <span class="sig-name descname"><span class="pre">output_usd_per_mtok</span></span><a class="headerlink" href="#falaw.LlmRate.output_usd_per_mtok" title="Link to this definition">#</a></dt>
 <dd><p>The same for completion tokens.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.LlmRate.source">
 <span class="sig-name descname"><span class="pre">source</span></span><a class="headerlink" href="#falaw.LlmRate.source" title="Link to this definition">#</a></dt>
 <dd><p>Where these numbers came from.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -1880,12 +1936,22 @@ upstream rate is published for this id — unknown, never zero.</p>
 <span class="sig-name descname"><span class="pre">date</span></span><a class="headerlink" href="#falaw.LlmRate.date" title="Link to this definition">#</a></dt>
 <dd><p>ISO date they were read on. Rates move; a quote is only as
 fresh as its row.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.LlmRate.notes">
 <span class="sig-name descname"><span class="pre">notes</span></span><a class="headerlink" href="#falaw.LlmRate.notes" title="Link to this definition">#</a></dt>
 <dd><p>Free-form caveats.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">
@@ -1934,7 +2000,7 @@ model the table does not price), or <code class="docutils literal notranslate"><
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.ModelRecord">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">ModelRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality_tier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clip_seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_character_recommended</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_resolutions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_negative_prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_prompt_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'image_size'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_specs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/base.html#ModelRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.ModelRecord" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">ModelRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality_tier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clip_seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_character_recommended</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_resolutions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_negative_prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_prompt_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'image_size'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_specs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/base.html#ModelRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.ModelRecord" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One entry in the fal model catalog.</p>
 <dl class="field-list simple">
@@ -1948,14 +2014,14 @@ plastic-skin look). Empty when none.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.ModelRecord.max_clip_seconds">
-<span class="sig-name descname"><span class="pre">max_clip_seconds</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.ModelRecord.max_clip_seconds" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">max_clip_seconds</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.ModelRecord.max_clip_seconds" title="Link to this definition">#</a></dt>
 <dd><p>Practical max length of a single generated clip, in seconds (e.g. ~10
 for Seedance). Drives the “this shot is too long, split it” warning.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.ModelRecord.max_prompt_chars">
-<span class="sig-name descname"><span class="pre">max_prompt_chars</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a></span><a class="headerlink" href="#falaw.ModelRecord.max_prompt_chars" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">max_prompt_chars</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.ModelRecord.max_prompt_chars" title="Link to this definition">#</a></dt>
 <dd><p>Hard cap on <code class="docutils literal notranslate"><span class="pre">prompt</span></code> length, from the model’s OpenAPI schema. Calls
 over it fail at fal with an HTTP 422 after queueing; falaw raises first.</p>
 </dd></dl>
@@ -2083,7 +2149,7 @@ a <code class="docutils literal notranslate"><span class="pre">plan_*</span></co
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.Pricer.quote">
-<span class="sig-name descname"><span class="pre">quote</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="falaw.plan.html#falaw.plan.CostBasis" title="falaw.plan.CostBasis"><span class="pre">CostBasis</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><span class="pre">None</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.Pricer.quote" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">quote</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="falaw.plan.html#falaw.plan.CostBasis" title="falaw.plan.CostBasis"><span class="pre">CostBasis</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.Pricer.quote" title="Link to this definition">#</a></dt>
 <dd><p>Price <code class="docutils literal notranslate"><span class="pre">basis</span></code> in USD, or return <code class="docutils literal notranslate"><span class="pre">None</span></code> for <em>unknown</em>. May raise; a
 raise is reported as <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code> with the exception text as the reason,
 so one unpriceable row never aborts a whole plan’s re-quote.</p>
@@ -2114,12 +2180,22 @@ so one unpriceable row never aborts a whole plan’s re-quote.</p>
 <dt class="sig sig-object py" id="falaw.ProgressEvent.kind">
 <span class="sig-name descname"><span class="pre">kind</span></span><a class="headerlink" href="#falaw.ProgressEvent.kind" title="Link to this definition">#</a></dt>
 <dd><p>Lifecycle stage. See <code class="xref py py-data docutils literal notranslate"><span class="pre">EventKind</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'queued'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'progress'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'log'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'done'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'error'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'cache_hit'</span></span></code></span>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.ProgressEvent.application">
 <span class="sig-name descname"><span class="pre">application</span></span><a class="headerlink" href="#falaw.ProgressEvent.application" title="Link to this definition">#</a></dt>
 <dd><p>fal model id (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;fal-ai/flux/dev&quot;</span></code>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2128,6 +2204,11 @@ so one unpriceable row never aborts a whole plan’s re-quote.</p>
 <dd><p>A short hex string that uniquely identifies the call.
 All events for one <code class="docutils literal notranslate"><span class="pre">call_fal</span></code> invocation share the same
 <code class="docutils literal notranslate"><span class="pre">call_id</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2135,6 +2216,11 @@ All events for one <code class="docutils literal notranslate"><span class="pre">
 <span class="sig-name descname"><span class="pre">message</span></span><a class="headerlink" href="#falaw.ProgressEvent.message" title="Link to this definition">#</a></dt>
 <dd><p>Free-form text. For <code class="docutils literal notranslate"><span class="pre">&quot;log&quot;</span></code> events this is the log
 line; for <code class="docutils literal notranslate"><span class="pre">&quot;error&quot;</span></code> it’s <code class="docutils literal notranslate"><span class="pre">repr(exc)</span></code>; otherwise empty.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2143,12 +2229,22 @@ line; for <code class="docutils literal notranslate"><span class="pre">&quot;err
 <dd><p>Optional progress percentage in [0.0, 100.0]. fal’s
 current API doesn’t surface this; included for forward
 compatibility.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="falaw.ProgressEvent.elapsed_s">
 <span class="sig-name descname"><span class="pre">elapsed_s</span></span><a class="headerlink" href="#falaw.ProgressEvent.elapsed_s" title="Link to this definition">#</a></dt>
 <dd><p>Seconds since the call started.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -2280,7 +2376,7 @@ judgement, one made at re-quote time.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.Result">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">Result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">assets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/results.html#Result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.Result" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">Result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">assets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">list()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/results.html#Result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.Result" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A fal call result with parsed assets and the original raw response.</p>
 <p>The raw response is kept so callers can inspect provider-specific fields
@@ -2311,7 +2407,7 @@ judgement, one made at re-quote time.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.Session">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/session.html#Session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.Session" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">Session</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">getcwd()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">journal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">_default_journal()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">list()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/session.html#Session"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.Session" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A working session for a sequence of falaw operations.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
@@ -2338,7 +2434,7 @@ lipsync renders).</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.ToolSpec">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">ToolSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">examples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0.0.1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/base.html#ToolSpec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.ToolSpec" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">ToolSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">examples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'0.0.1'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/base.html#ToolSpec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.ToolSpec" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Single source of truth for a tool exposed by falaw.</p>
 <p>A ToolSpec is what the registry stores. Bridges read it to produce
@@ -2470,16 +2566,16 @@ areas do not claim, so the areas always sum to the whole.</p>
 <p>(<code class="docutils literal notranslate"><span class="pre">+SKIP</span></code>ed — it reads the caller’s real cache, a multi-gigabyte walk on
 the production box. <code class="xref py py-mod docutils literal notranslate"><span class="pre">tests.test_prune</span></code> pins this against a throwaway
 cache instead.)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span> <span class="o">=</span> <span class="n">cache_stats</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">stats</span><span class="p">[</span><span class="s2">"areas"</span><span class="p">])</span>
 <span class="go">['assets', 'content', 'manifests', 'other', 'scenes', 'url_index']</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -2539,9 +2635,9 @@ call site already spells it this way.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>application</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – fal model id (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;fal-ai/flux/dev&quot;</span></code>).</p></li>
 <li><p><strong>arguments</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]</span>) – Input arguments. Keys depend on the model.</p></li>
-<li><p><strong>on_log</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]]</span>) – Legacy log callback — receives raw log lines as strings.
+<li><p><strong>on_log</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]]</span>) – Legacy log callback — receives raw log lines as strings.
 Defaults to no-op (use <code class="docutils literal notranslate"><span class="pre">on_event</span></code> for structured access).</p></li>
-<li><p><strong>on_event</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="falaw.events.html#falaw.events.ProgressEvent" title="falaw.events.ProgressEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]]</span>) – Per-call subscriber for <code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent`s.</span> <span class="pre">Fires</span>
+<li><p><strong>on_event</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="falaw.events.html#falaw.events.ProgressEvent" title="falaw.events.ProgressEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent</span></code></a>], <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]]</span>) – Per-call subscriber for <code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent`s.</span> <span class="pre">Fires</span>
 <span class="pre">in</span> <span class="pre">addition</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">global</span> <span class="pre">subscribers</span> <span class="pre">registered</span> <span class="pre">via</span>
 <span class="pre">:func:`falaw.events.subscribe</span></code>.</p></li>
 <li><p><strong>with_logs</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – Pass through to fal_client; when True the model streams logs.</p></li>
@@ -2641,15 +2737,15 @@ image directly. Otherwise we run text-to-image with the description
 <code class="docutils literal notranslate"><span class="pre">seconds</span></code>, <code class="docutils literal notranslate"><span class="pre">megapixels</span></code>, <code class="docutils literal notranslate"><span class="pre">tokens</span></code>); <code class="docutils literal notranslate"><span class="pre">None</span></code> values are dropped, so a
 hint that was never supplied is recorded as absent rather than as <code class="docutils literal notranslate"><span class="pre">null</span></code>
 — the same thing the estimator saw.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">catalogue_cost_basis</span><span class="p">(</span><span class="s2">"fal-ai/flux/dev"</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">quantities</span>
+<span class="go">{}</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.plan.html#falaw.plan.CostBasis" title="falaw.plan.CostBasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">CostBasis</span></code></a></span></p>
 </dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">catalogue_cost_basis</span><span class="p">(</span><span class="s2">"fal-ai/flux/dev"</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">quantities</span>
-<span class="go">{}</span>
-</pre></div>
-</div>
 </dd></dl>
 
 <dl class="py function">
@@ -2671,7 +2767,7 @@ raises rather than report a live model as dead, which would get it deleted.</p>
 <dd><p>Drop all registered subscribers. Mostly for tests.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2944,18 +3040,18 @@ outcome per call instead of raising.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plan</strong> (<span class="sphinx_autodoc_typehints-type">Plan</span>) – The Plan to execute.</p></li>
-<li><p><strong>on_event</strong> (<span class="sphinx_autodoc_typehints-type">Optional[Callable]</span>) – Optional per-call event subscriber (passed to <code class="docutils literal notranslate"><span class="pre">call_fal</span></code>).</p></li>
-<li><p><strong>dry_run</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) – When True, no fal calls are made; synthetic Artifacts are
+<li><p><strong>plan</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.plan.html#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a></span>) – The Plan to execute.</p></li>
+<li><p><strong>on_event</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>]</span>) – Optional per-call event subscriber (passed to <code class="docutils literal notranslate"><span class="pre">call_fal</span></code>).</p></li>
+<li><p><strong>dry_run</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – When True, no fal calls are made; synthetic Artifacts are
 returned with placeholder <code class="docutils literal notranslate"><span class="pre">asset_id</span></code> and <code class="docutils literal notranslate"><span class="pre">url=None</span></code>. Useful
 for exercising downstream composition without an API key.</p></li>
-<li><p><strong>use_cache</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) – When True (default), executes via <code class="docutils literal notranslate"><span class="pre">cached_call_fal</span></code> so
+<li><p><strong>use_cache</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – When True (default), executes via <code class="docutils literal notranslate"><span class="pre">cached_call_fal</span></code> so
 cache hits skip the network. When False, the cache is not touched
 <strong>at all</strong> — neither read nor written. That is the historical
 meaning and it is unchanged: a caller who genuinely wants no cache
 interaction still has it. To re-run a plan and <em>keep</em> what the
 re-run paid for, leave <code class="docutils literal notranslate"><span class="pre">use_cache=True</span></code> and pass <code class="docutils literal notranslate"><span class="pre">refresh</span></code>.</p></li>
-<li><p><strong>refresh</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) – When True, skip the cache <strong>read</strong> and keep the cache
+<li><p><strong>refresh</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – When True, skip the cache <strong>read</strong> and keep the cache
 <strong>write</strong> — the third mode (falaw#49). Every call executes fresh,
 and every fresh result is stored under the key it would have been
 read from, so the next run (or a downstream consumer) hits it.
@@ -2965,7 +3061,7 @@ than silently picking one. This is the mode to reach for behind a
 <code class="docutils literal notranslate"><span class="pre">force</span></code> / “re-verify this” switch: without it, forcing a re-run
 discards the result it just paid for and guarantees the next
 consumer re-bills.</p></li>
-<li><p><strong>artifact_converter</strong> (<span class="sphinx_autodoc_typehints-type">Optional[ResultToArtifact]</span>) – Per-CallPlan converter from raw fal response to
+<li><p><strong>artifact_converter</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference internal" href="falaw.plan.html#falaw.plan.CallPlan" title="falaw.plan.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a>], Artifact]]</span>) – Per-CallPlan converter from raw fal response to
 <code class="xref py py-class docutils literal notranslate"><span class="pre">lacing.Artifact</span></code>. When <code class="docutils literal notranslate"><span class="pre">None</span></code> (default), a built-in
 converter handles the common shapes (<code class="docutils literal notranslate"><span class="pre">{images:</span> <span class="pre">[{url}]}</span></code>,
 <code class="docutils literal notranslate"><span class="pre">{video:</span> <span class="pre">{url}}</span></code>, <code class="docutils literal notranslate"><span class="pre">{audio:</span> <span class="pre">{url}}</span></code>). Mutually exclusive with
@@ -2980,7 +3076,7 @@ are materialized into. Defaults to
 <a class="reference internal" href="falaw.content.html#falaw.content.default_content_store" title="falaw.content.default_content_store"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.content.default_content_store()</span></code></a> (a directory store
 rooted in the falaw cache). Point this at an S3-backed store to
 share content — and therefore cache hits — across machines.</p></li>
-<li><p><strong>fetch_bytes</strong> (<span class="sphinx_autodoc_typehints-type">Optional[bool]</span>) – Whether to download each media result so its <code class="docutils literal notranslate"><span class="pre">asset_id</span></code>
+<li><p><strong>fetch_bytes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]</span>) – Whether to download each media result so its <code class="docutils literal notranslate"><span class="pre">asset_id</span></code>
 is the SHA-256 of its bytes. Defaults to <code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_FETCH_BYTES</span></code>
 (true), overridable process-wide via <code class="xref py py-data docutils literal notranslate"><span class="pre">FETCH_BYTES_ENVVAR</span></code>.
 <strong>Opting out forfeits caching for chained calls</strong>: without bytes
@@ -3001,7 +3097,7 @@ call site to pass this to. Passing it here still wins over any
 installed default. (<code class="docutils literal notranslate"><span class="pre">$FALAW_FETCH_ARTIFACT_BYTES=0</span></code> also silences
 the network, but by turning content addressing off — see
 <code class="xref py py-data docutils literal notranslate"><span class="pre">FETCH_BYTES_ENVVAR</span></code>.)</p></li>
-<li><p><strong>concurrency</strong> (<span class="sphinx_autodoc_typehints-type">int</span>) – How many calls may be in flight at once. <code class="docutils literal notranslate"><span class="pre">1</span></code>
+<li><p><strong>concurrency</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – How many calls may be in flight at once. <code class="docutils literal notranslate"><span class="pre">1</span></code>
 (<code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_CONCURRENCY</span></code>) runs the Plan sequentially, on the
 calling thread, exactly as it always has. Above 1, independent calls
 run on a thread pool bounded by this number — a Plan is I/O-bound
@@ -3065,7 +3161,7 @@ entry is unreachable the moment the upstream genuinely re-runs.</p></li>
 key ref falls back to the URL — a guaranteed miss, never a wrong hit.</p>
 <dl class="field-list simple">
 <dt class="field-odd">rtype<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type">list</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span></p>
 </dd>
 <dt class="field-even">returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>One <code class="xref py py-class docutils literal notranslate"><span class="pre">lacing.Artifact</span></code> per <a class="reference internal" href="#falaw.CallPlan" title="falaw.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a> in <code class="docutils literal notranslate"><span class="pre">plan.calls</span></code>,
@@ -3089,17 +3185,17 @@ with the reason why.</p>
 something per call can zip against <code class="docutils literal notranslate"><span class="pre">report.outcomes</span></code> and stay aligned.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>halt_on_failure</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) – When True, stop <em>submitting</em> work as soon as any call
+<dd class="field-odd"><p><strong>halt_on_failure</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – When True, stop <em>submitting</em> work as soon as any call
 fails; everything not yet started is reported <code class="docutils literal notranslate"><span class="pre">blocked</span></code> with a
 run-level reason. This is what <code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code> uses, and at
 <code class="docutils literal notranslate"><span class="pre">concurrency=1</span></code> it reproduces the historical sequential
-behaviour exactly. Note that at <code class="docutils literal notranslate"><span class="pre">concurrency</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> calls already</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type">ExecutionReport</span>
+behaviour exactly. Note that at <code class="docutils literal notranslate"><span class="pre">concurrency</span> <span class="pre">&gt;</span> <span class="pre">1</span></code> calls already
 in flight are <strong>not</strong> cancelled — a fal request cannot be recalled
 once made, and pretending otherwise would discard results that were
 billed anyway.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.outcomes.html#falaw.outcomes.ExecutionReport" title="falaw.outcomes.ExecutionReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionReport</span></code></a></span></p>
 </dd>
 </dl>
 <p>:param All other arguments are as <code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code>.:</p>
@@ -3667,7 +3763,7 @@ the offending call, i.e. after every call before it had been billed.</p>
     output would not exist yet, so it can only ever be a bug.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#frozenset" title="(in Python v3.15)"><em>frozenset</em></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>], …]</p>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#frozenset" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>]</span></p>
 </dd>
 </dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">CallPlan</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s2">"t"</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="s2">"m"</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="p">{},</span> <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">)</span>
@@ -3681,11 +3777,6 @@ the offending call, i.e. after every call before it had been billed.</p>
 <span class="gr">ValueError</span>: <span class="n">Placeholder '&lt;from 0&gt;' in call 0 references call 0, which does not run before it. ...</span>
 </pre></div>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#frozenset" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>]</span></p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3726,9 +3817,9 @@ a planned call and an eager call with identical inputs collapse to the
 same cache entry. Pure data; no network at plan time.</p>
 <p><code class="docutils literal notranslate"><span class="pre">kind</span></code> selects the default model (see <code class="xref py py-data docutils literal notranslate"><span class="pre">GENERATE_AUDIO_DEFAULTS</span></code>
 for why these are explicit ids). <code class="docutils literal notranslate"><span class="pre">duration_s</span></code> reaches the model as its
-integer <code class="docutils literal notranslate"><span class="pre">duration</span></code> argument where the model takes one (mmaudio does)
-AND feeds the cost estimate; for models with no duration argument it is
-estimator-only.</p>
+duration argument where the model takes one (see
+<code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_generate_audio()</span></code>) AND feeds the cost estimate; for models
+with no duration argument it is estimator-only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.plan.html#falaw.plan.CallPlan" title="falaw.plan.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a></span></p>
@@ -3788,11 +3879,6 @@ cannot represent faithfully raises
 new identity-bearing field is an explicit decision about both hashes.</p>
 <p>Two structurally-identical plans hash equal; changing any call’s <code class="docutils literal notranslate"><span class="pre">app</span></code>,
 <code class="docutils literal notranslate"><span class="pre">args</span></code>, or <code class="docutils literal notranslate"><span class="pre">tool</span></code> — or the <em>order</em> of calls — changes the hash.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">CallPlan</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s2">"generate_image"</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="s2">"fal-ai/flux/dev"</span><span class="p">,</span>
 <span class="gp">... </span>             <span class="n">arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="s2">"a tiger"</span><span class="p">},</span> <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">CallPlan</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s2">"image_to_video"</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="s2">"fal-ai/svd"</span><span class="p">,</span>
@@ -3814,6 +3900,11 @@ made of today’s (all-<code class="docutils literal notranslate"><span class="p
 <span class="go">False</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3944,7 +4035,7 @@ nothing, so <code class="docutils literal notranslate"><span class="pre">rebilla
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – drop copies last written more than this ago — seconds, or a
+<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – drop copies last written more than this ago — seconds, or a
 <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>.</p></li>
 <li><p><strong>max_bytes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – drop oldest-first until the area fits in this budget.</p></li>
 <li><p><strong>dry_run</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – report without deleting. Default, deliberately.</p></li>
@@ -3977,7 +4068,7 @@ read <code class="docutils literal notranslate"><span class="pre">rebillable_ent
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – drop blobs last written more than this ago — seconds, or a
+<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – drop blobs last written more than this ago — seconds, or a
 <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>.</p></li>
 <li><p><strong>max_bytes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – drop oldest-first until the area fits in this budget.</p></li>
 <li><p><strong>dry_run</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – report without deleting. Default, deliberately.</p></li>
@@ -4028,7 +4119,7 @@ equals the candidate count.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>) – drop entries stored more than this ago — seconds, or a
+<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – drop entries stored more than this ago — seconds, or a
 <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>. Read from the manifest’s own
 <code class="docutils literal notranslate"><span class="pre">stored_at</span></code>, falling back to file mtime.</p></li>
 <li><p><strong>max_bytes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – drop oldest-first until the area fits in this budget.</p></li>
@@ -4136,17 +4227,17 @@ touching the file.</p>
 <dt class="sig sig-object py" id="falaw.register_tool">
 <span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">register_tool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">spec_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/registry.html#register_tool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.register_tool" title="Link to this definition">#</a></dt>
 <dd><p>Decorator: register the wrapped function as a falaw tool.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nd">@register_tool</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'echo'</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s1">'echo back'</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">(</span><span class="s1">'demo'</span><span class="p">,))</span>
 <span class="gp">... </span><span class="k">def</span><span class="w"> </span><span class="nf">_echo</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">get_tool</span><span class="p">(</span><span class="s1">'echo'</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
 <span class="go">'echo'</span>
 </pre></div>
 </div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a></span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -4305,7 +4396,7 @@ invoice — see <a class="reference internal" href="#falaw.Pricer" title="falaw.
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="falaw.events.html#falaw.events.ProgressEvent" title="falaw.events.ProgressEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference internal" href="falaw.events.html#falaw.events.ProgressEvent" title="falaw.events.ProgressEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressEvent</span></code></a>], <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -4349,7 +4440,7 @@ invoice — see <a class="reference internal" href="#falaw.Pricer" title="falaw.
 <dd><p>Remove a previously <a class="reference internal" href="#falaw.subscribe" title="falaw.subscribe"><code class="xref py py-func docutils literal notranslate"><span class="pre">subscribe()</span></code></a>’d callback. No-op if absent.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -4383,7 +4474,7 @@ never to concurrent
 requests.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -4403,11 +4494,6 @@ reaches a call falaw makes from a thread you did not create — see
 <p>An explicitly passed <code class="docutils literal notranslate"><span class="pre">fetcher=</span></code> / <code class="docutils literal notranslate"><span class="pre">asset_fetcher=</span></code> still wins: this
 changes the <em>default</em>, never an explicit choice.</p>
 <p>Nests and restores, so an inner block cannot leak over an outer one:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>]]]</span></p>
-</dd>
-</dl>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lacing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArtifactStore</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">store</span> <span class="o">=</span> <span class="n">ArtifactStore</span><span class="o">.</span><span class="n">in_memory</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">before</span> <span class="o">=</span> <span class="n">default_url_fetcher</span><span class="p">()</span>
@@ -4419,6 +4505,11 @@ changes the <em>default</em>, never an explicit choice.</p>
 </pre></div>
 </div>
 <p>For a ready-made fake with pinned bytes and 404s, see <a class="reference internal" href="falaw.testing.html#module-falaw.testing" title="falaw.testing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.testing</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Iterable" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#bytes" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>]]]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

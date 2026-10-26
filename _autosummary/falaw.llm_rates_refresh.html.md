@@ -81,10 +81,16 @@ The pricing-relevant facts parsed out of fal’s any-llm doc.
 The flat per-request price fal publishes for the
 standard tier.
 
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
 #### premium_multiple
 
 How many times the base price a premium-tier
 request costs.
+
+* **Type:**
+  [`int`](https://docs.python.org/3/builtins/functions.html#int)
 
 #### premium_models
 
@@ -93,10 +99,16 @@ verbatim (a model here that is not in `model_enum` belongs to a
 different endpoint, e.g. a vision-only variant, and is not a rate
 table row).
 
+* **Type:**
+  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 #### model_enum
 
 Every routed-model id the `model` argument accepts, in
 the doc’s own order.
+
+* **Type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.llm_rates_refresh.OPENROUTER_MODELS_URL *= 'https://openrouter.ai/api/v1/models'*
 

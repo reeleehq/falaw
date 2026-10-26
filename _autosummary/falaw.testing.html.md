@@ -305,9 +305,6 @@ process, where this has no reach. ffmpeg is the one that matters.
 (`.invalid` is reserved by RFC 2606 and can never resolve, so even a
 broken guard cannot turn this example into real traffic.)
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)]
-
 ```pycon
 >>> import socket
 >>> with blocked_outbound_network() as attempts:
@@ -318,6 +315,9 @@ broken guard cannot turn this example into real traffic.)
 >>> attempts
 ["a DNS lookup for 'nowhere.invalid'"]
 ```
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`list`](https://docs.python.org/3/builtins/stdtypes.html#list)]
 
 ### falaw.testing.fake_assets(request)
 
@@ -341,15 +341,15 @@ test marked `live_api`, which gets the real transport.
 
 True when resolving `url` would leave this machine.
 
-* **Return type:**
-  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
-
 ```pycon
 >>> is_network_url("https://fal.media/x.png")
 True
 >>> is_network_url("file:///tmp/rendered.mp4"), is_network_url("/tmp/x.mp4")
 (False, False)
 ```
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### falaw.testing.isolated_falaw_cache(tmp_path, monkeypatch)
 
@@ -407,9 +407,6 @@ Install a [`FakeAssets`](#falaw.testing.FakeAssets) as falaw’s transport for t
 The pytest-free core of [`fake_assets()`](#falaw.testing.fake_assets), for a caller driving falaw
 outside a pytest session (a script, a notebook, another test runner).
 
-* **Return type:**
-  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`FakeAssets`](#falaw.testing.FakeAssets)]
-
 ```pycon
 >>> from falaw import materialize_asset
 >>> with serving_fake_assets() as assets:
@@ -420,6 +417,9 @@ outside a pytest session (a script, a notebook, another test runner).
 b'pinned'
 ```
 
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`FakeAssets`](#falaw.testing.FakeAssets)]
+
 ### falaw.testing.synthetic_asset_bytes(url, , prefix='falaw-test-asset')
 
 Deterministic stand-in bytes for a URL nothing has pinned.
@@ -427,9 +427,6 @@ Deterministic stand-in bytes for a URL nothing has pinned.
 Derived from the URL, so two different stub URLs behave like two genuinely
 different renders — and the same stub URL hashes the same way on every run,
 which is what lets a test assert on a content hash at all.
-
-* **Return type:**
-  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 ```pycon
 >>> synthetic_asset_bytes("https://fal.media/x.png")
@@ -439,3 +436,6 @@ b'falaw-test-asset::https://fal.media/x.png'
 >>> a == b
 False
 ```
+
+* **Return type:**
+  [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)

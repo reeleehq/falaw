@@ -70,7 +70,7 @@ caller retries or re-plans by — a report always carries exactly one outcome
 per call, in plan order, so `index` is also the safe key for zipping a
 Plan against anything the caller built alongside it.
 
-#### artifact *: Artifact | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### artifact *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[Artifact]*
 
 The materialized artifact. Set if and only if `status == "succeeded"`.
 
@@ -92,7 +92,7 @@ re-executed). Run-level cost accounting reads this one.
 
 The call this outcome is about — enough to retry it verbatim.
 
-#### error *: [BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException) | [None](https://docs.python.org/3/builtins/constants.html#None)*
+#### error *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[BaseException](https://docs.python.org/3/builtins/exceptions.html#BaseException)]*
 
 The exception the call raised. Set if and only if `status == "failed"`.
 

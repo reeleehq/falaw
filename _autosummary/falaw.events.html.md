@@ -45,9 +45,15 @@ One step in the lifecycle of a fal call.
 
 Lifecycle stage. See `EventKind`.
 
+* **Type:**
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`]
+
 #### application
 
 fal model id (e.g. `"fal-ai/flux/dev"`).
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### call_id
 
@@ -55,10 +61,16 @@ A short hex string that uniquely identifies the call.
 All events for one `call_fal` invocation share the same
 `call_id`.
 
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 #### message
 
 Free-form text. For `"log"` events this is the log
 line; for `"error"` it’s `repr(exc)`; otherwise empty.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 #### pct
 
@@ -66,9 +78,15 @@ Optional progress percentage in [0.0, 100.0]. fal’s
 current API doesn’t surface this; included for forward
 compatibility.
 
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
 #### elapsed_s
 
 Seconds since the call started.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
 ### falaw.events.clear_subscribers()
 
