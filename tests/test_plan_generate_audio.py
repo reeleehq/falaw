@@ -23,8 +23,12 @@ def test_the_issue_acceptance_case_plans_costed_with_no_network():
     assert p.tool == "generate_audio"
     assert p.output_kind == "audio"
     assert p.application == "fal-ai/stable-audio-3/small/sfx/text-to-audio"
-    assert p.arguments == {"prompt": "rain on a tin roof", "duration": 12.0}
-    assert p.estimated_cost_usd is not None and p.estimated_cost_usd > 0
+    assert p.arguments == {
+        "prompt": "rain on a tin roof",
+        "duration": 12.0,
+        "enable_prompt_expansion": False,  # the audio must match the recorded prompt
+    }
+    assert p.estimated_cost_usd == pytest.approx(0.0206)
 
 
 def test_kinds_route_to_prompt_driven_models_only():
@@ -148,3 +152,38 @@ def test_extract_first_url_reads_list_shaped_audio():
     raw = {"audio": [{"url": "https://x/a.wav"}, {"url": "https://x/b.wav"}]}
     assert extract_first_url(raw) == "https://x/a.wav"
     assert extract_first_url({"audio": [], "audios": []}) is None
+
+
+def test_no_duration_still_quotes_per_second_models_at_the_duration_sent():
+    p = plan_generate_audio("x", kind="sfx", model_id="mirelo-ai/sfx2.0/text-to-audio")
+    assert p.arguments["duration"] == 10.0  # not fal's 30 s default
+    assert p.estimated_cost_usd == pytest.approx(0.10)
+
+
+def test_extra_sample_count_is_billed():
+    p = plan_generate_audio(
+        "x",
+        kind="sfx",
+        duration_s=2,
+        model_id="mirelo-ai/sfx2.0/text-to-audio",
+        extra={"num_samples": 3},
+    )
+    assert p.estimated_cost_usd == pytest.approx(0.010 * 2 * 3)
+
+
+def test_every_audio_spec_names_a_catalogued_model():
+    from falaw import get_model
+    from falaw.operations._plan import _AUDIO_ARGS
+
+    for model_id in _AUDIO_ARGS:
+        get_model(model_id)
+
+
+def test_sonilo_response_yields_one_asset_not_two():
+    from falaw.results import parse_response
+
+    clip = {"url": "https://x/a.aac"}
+    r = parse_response(
+        {"audio": clip, "audios": [clip]}, application="sonilo", arguments={}
+    )
+    assert len(r.assets) == 1

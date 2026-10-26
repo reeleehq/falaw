@@ -451,52 +451,84 @@ class _AudioArgs:
     prompt: str = "prompt"
     duration: Optional[str] = None  # None: the endpoint takes no duration
     cast: Callable[[float], Any] = float
+    default_duration_s: Optional[float] = None
+    """Used when the caller gives none. fal's own default (often 30 s) is long
+    for an effect and makes a per-second quote unknowable."""
     defaults: Mapping[str, Any] = field(default_factory=dict)
-    """Arguments pinned so the quote matches the bill (Mirelo bills per sample
-    and returns two unless told otherwise)."""
+    """Arguments pinned so the output matches the recorded prompt and quote."""
+    samples: Optional[str] = None
+    """Argument counting the samples billed per call, when the endpoint bills
+    per sample (Mirelo returns two unless told otherwise)."""
 
 
 def _whole_seconds(seconds: float) -> int:
     return max(1, int(round(float(seconds))))
 
 
+#: Stable Audio 3 expands prompts by default, so the audio would no longer
+#: match the prompt falaw caches and journals.
+_SA3 = dict(
+    duration="duration",
+    default_duration_s=10,
+    defaults={"enable_prompt_expansion": False},
+)
+
 #: Endpoints whose input names or duration type differ from the default
 #: (``prompt``, no duration). An id absent here takes ``prompt`` only.
+#: The eventual home of this is an argument-spelling field on ``ModelRecord``
+#: (falaw#16).
 _AUDIO_ARGS = {
     "fal-ai/mmaudio-v2/text-to-audio": _AudioArgs(
-        duration="duration", cast=_whole_seconds
+        duration="duration", cast=_whole_seconds, default_duration_s=8
     ),
-    "fal-ai/stable-audio-3/small/sfx/text-to-audio": _AudioArgs(duration="duration"),
-    "fal-ai/stable-audio-3/medium/text-to-audio": _AudioArgs(duration="duration"),
+    "fal-ai/stable-audio-3/small/sfx/text-to-audio": _AudioArgs(**_SA3),
+    "fal-ai/stable-audio-3/medium/text-to-audio": _AudioArgs(**_SA3),
     "mirelo-ai/sfx2.0/text-to-audio": _AudioArgs(
-        duration="duration", defaults={"num_samples": 1}
+        duration="duration",
+        default_duration_s=10,
+        defaults={"num_samples": 1},
+        samples="num_samples",
     ),
-    "sonilo/v1.1/text-to-sound-effects": _AudioArgs(duration="duration"),
+    "sonilo/v1.1/text-to-sound-effects": _AudioArgs(
+        duration="duration", default_duration_s=8
+    ),
     "fal-ai/elevenlabs/sound-effects/v2": _AudioArgs(
-        prompt="text", duration="duration_seconds"
+        prompt="text", duration="duration_seconds", default_duration_s=8
     ),
 }
 
 
-def generate_audio_arguments(
-    application: str,
+def resolve_generate_audio(
     prompt: str,
     *,
+    kind: str = "ambient",
     duration_s: Optional[float] = None,
+    model_id: Optional[str] = None,
     extra: Optional[dict] = None,
-) -> dict:
-    """The fal request body for a prompt-driven audio endpoint.
+) -> tuple[str, dict, Optional[float]]:
+    """``(application, arguments, billed_seconds)`` for a generate_audio call.
 
-    The one place planned and eager :func:`falaw.generate_audio` agree on an
-    argument shape (so identical inputs share a cache entry). ``duration_s``
-    is forwarded only to endpoints that take one.
+    The one place planned and eager :func:`falaw.generate_audio` agree on the
+    model and the argument shape (so identical inputs share a cache entry).
+    ``duration_s`` is forwarded only to endpoints that take one; ``billed_seconds``
+    is what the quote is computed on (seconds x samples for per-sample endpoints).
     """
+    if kind not in GENERATE_AUDIO_DEFAULTS:
+        raise ValueError(
+            f"unknown kind {kind!r}; expected one of {sorted(GENERATE_AUDIO_DEFAULTS)}"
+        )
+    application = model_id or GENERATE_AUDIO_DEFAULTS[kind]
     spec = _AUDIO_ARGS.get(application, _AudioArgs())
+    if duration_s is None:
+        duration_s = spec.default_duration_s
     arguments: dict = {spec.prompt: prompt, **spec.defaults}
     if duration_s is not None and spec.duration:
         arguments[spec.duration] = spec.cast(duration_s)
     arguments.update(extra or {})
-    return arguments
+    billed = duration_s
+    if billed is not None and spec.samples:
+        billed = billed * arguments.get(spec.samples, 1)
+    return application, arguments, billed
 
 
 def plan_generate_audio(
@@ -521,18 +553,13 @@ def plan_generate_audio(
     ``kind`` selects the default model (see :data:`GENERATE_AUDIO_DEFAULTS`
     for why these are explicit ids). ``duration_s`` reaches the model as its
     duration argument where the model takes one (see
-    :func:`generate_audio_arguments`) AND feeds the cost estimate; for models
+    :func:`resolve_generate_audio`) AND feeds the cost estimate; for models
     with no duration argument it is estimator-only.
     """
-    if kind not in GENERATE_AUDIO_DEFAULTS:
-        raise ValueError(
-            f"unknown kind {kind!r}; expected one of {sorted(GENERATE_AUDIO_DEFAULTS)}"
-        )
-    application = model_id or GENERATE_AUDIO_DEFAULTS[kind]
-    record = get_model(application)
-    arguments = generate_audio_arguments(
-        application, prompt, duration_s=duration_s, extra=extra
+    application, arguments, duration_s = resolve_generate_audio(
+        prompt, kind=kind, duration_s=duration_s, model_id=model_id, extra=extra
     )
+    record = get_model(application)
     cost, basis = _catalogue_price(record, seconds=duration_s)
     return make_call_plan(
         tool="generate_audio",

@@ -148,15 +148,10 @@ def generate_audio(
     """Generate ambient/SFX/music from a prompt. Argument shape mirrors
     :func:`falaw.plan_generate_audio` exactly, so planned and eager calls
     with identical inputs collapse to the same cache entry."""
-    from ._plan import GENERATE_AUDIO_DEFAULTS, generate_audio_arguments
+    from ._plan import resolve_generate_audio
 
-    if kind not in GENERATE_AUDIO_DEFAULTS:
-        raise ValueError(
-            f"unknown kind {kind!r}; expected one of {sorted(GENERATE_AUDIO_DEFAULTS)}"
-        )
-    model = model_id or GENERATE_AUDIO_DEFAULTS[kind]
-    arguments = generate_audio_arguments(
-        model, prompt, duration_s=duration_s, extra=extra
+    model, arguments, _ = resolve_generate_audio(
+        prompt, kind=kind, duration_s=duration_s, model_id=model_id, extra=extra
     )
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
