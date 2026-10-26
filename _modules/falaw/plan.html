@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
+    <script src="../../_static/documentation_options.js?v=6eb1e6b8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.67" />
+  <meta name="docsearch:version" content="0.0.68" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1309,6 +1309,19 @@ window.runMermaid = runMermaid;</script>
 <span class="c1"># --- planning helpers -------------------------------------------------------</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_against_catalogue</span><span class="p">(</span><span class="n">application</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Refuse arguments that break a limit the catalogue states for the model</span>
+<span class="sd">    (:mod:`falaw.validation`); an unlisted model has no stated limits."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_call_arguments</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="n">application</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">check_call_arguments</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="make_call_plan">
 <a class="viewcode-back" href="../../_autosummary/falaw.plan.html#falaw.make_call_plan">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_call_plan</span><span class="p">(</span>
@@ -1363,6 +1376,7 @@ window.runMermaid = runMermaid;</script>
     <span class="c1"># stays pure data, and execute() uploads it on a miss and keys on its bytes</span>
     <span class="c1"># (falaw#92).</span>
     <span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span> <span class="o">=</span> <span class="n">localize_paths</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+    <span class="n">_check_against_catalogue</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
 
     <span class="c1"># Validate before the cache peek: the peek's `except Exception` fallback</span>
     <span class="c1"># (best-effort by design) would otherwise swallow the refusal into a</span>

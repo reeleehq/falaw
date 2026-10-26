@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=86ab457a"></script>
+    <script src="../_static/documentation_options.js?v=6eb1e6b8"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.67" />
+  <meta name="docsearch:version" content="0.0.68" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -374,6 +374,7 @@
 <li class="toctree-l2"><a class="reference internal" href="falaw.schema_export.html">falaw.schema_export</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.session.html">falaw.session</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.testing.html">falaw.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.validation.html">falaw.validation</a></li>
 </ul>
 </details></li>
 </ul>
@@ -704,97 +705,100 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan_image_to_video" title="falaw.plan_image_to_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_image_to_video</span></code></a>(image_url[, prompt, ...])</p></td>
 <td><p>Plan a <a class="reference internal" href="#falaw.image_to_video" title="falaw.image_to_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.image_to_video()</span></code></a> call.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan_text_to_video" title="falaw.plan_text_to_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_text_to_video</span></code></a>(prompt, *[, quality, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan_reference_to_video" title="falaw.plan_reference_to_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_reference_to_video</span></code></a>(prompt, *[, ...])</p></td>
+<td><p>Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan_text_to_video" title="falaw.plan_text_to_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_text_to_video</span></code></a>(prompt, *[, quality, ...])</p></td>
 <td><p>Plan a <a class="reference internal" href="#falaw.text_to_video" title="falaw.text_to_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.text_to_video()</span></code></a> call — the sibling of <a class="reference internal" href="#falaw.plan_image_to_video" title="falaw.plan_image_to_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">plan_image_to_video()</span></code></a> (same duration and cost rules).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan_lipsync" title="falaw.plan_lipsync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_lipsync</span></code></a>(video_url, audio_url, *[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan_lipsync" title="falaw.plan_lipsync"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_lipsync</span></code></a>(video_url, audio_url, *[, ...])</p></td>
 <td><p>Plan a <a class="reference internal" href="#falaw.lipsync" title="falaw.lipsync"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.lipsync()</span></code></a> call (existing video + new audio → re-synced video).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan_llm_complete" title="falaw.plan_llm_complete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_llm_complete</span></code></a>(prompt, *[, system, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan_llm_complete" title="falaw.plan_llm_complete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_llm_complete</span></code></a>(prompt, *[, system, ...])</p></td>
 <td><p>Plan a <a class="reference internal" href="#falaw.llm_complete" title="falaw.llm_complete"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_complete()</span></code></a> call without executing it.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan_generate_audio" title="falaw.plan_generate_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_generate_audio</span></code></a>(prompt, *[, kind, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan_generate_audio" title="falaw.plan_generate_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_generate_audio</span></code></a>(prompt, *[, kind, ...])</p></td>
 <td><p>Plan a <a class="reference internal" href="#falaw.generate_audio" title="falaw.generate_audio"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.generate_audio()</span></code></a> call (prompt → ambient/SFX/music).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan_text_to_speech" title="falaw.plan_text_to_speech"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_text_to_speech</span></code></a>(text, *[, quality, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan_text_to_speech" title="falaw.plan_text_to_speech"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_text_to_speech</span></code></a>(text, *[, quality, ...])</p></td>
 <td><p>Plan a <a class="reference internal" href="#falaw.text_to_speech" title="falaw.text_to_speech"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.text_to_speech()</span></code></a> call (text → audio Artifact).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh_full_docs" title="falaw.refresh_full_docs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_full_docs</span></code></a>(*[, docs_dir, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh_full_docs" title="falaw.refresh_full_docs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_full_docs</span></code></a>(*[, docs_dir, ...])</p></td>
 <td><p>Re-crawl per-page docs and rebuild <code class="docutils literal notranslate"><span class="pre">fal_ai_docs_full.md</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh_llms" title="falaw.refresh_llms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_llms</span></code></a>(*[, docs_dir, journal])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh_llms" title="falaw.refresh_llms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_llms</span></code></a>(*[, docs_dir, journal])</p></td>
 <td><p>Refresh <code class="docutils literal notranslate"><span class="pre">llms.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">llms-full.txt</span></code>; return a summary dict.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh_models_from_corpus" title="falaw.refresh_models_from_corpus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_models_from_corpus</span></code></a>(*[, path, write])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh_models_from_corpus" title="falaw.refresh_models_from_corpus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_models_from_corpus</span></code></a>(*[, path, write])</p></td>
 <td><p>Merge corpus-discovered models into models.json (additive).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh_model_prices" title="falaw.refresh_model_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_model_prices</span></code></a>(*[, write, api_key, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh_model_prices" title="falaw.refresh_model_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_model_prices</span></code></a>(*[, write, api_key, ...])</p></td>
 <td><p>Refresh <code class="docutils literal notranslate"><span class="pre">models.json</span></code> cost estimates from fal's pricing API.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.check_model_liveness" title="falaw.check_model_liveness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_model_liveness</span></code></a>([ids, status_of])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.check_model_liveness" title="falaw.check_model_liveness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_model_liveness</span></code></a>([ids, status_of])</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">{endpoint_id:</span> <span class="pre">is_live}</span></code> for <code class="docutils literal notranslate"><span class="pre">ids</span></code> (default: every catalogued model).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.dead_models" title="falaw.dead_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dead_models</span></code></a>([ids, status_of])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.dead_models" title="falaw.dead_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dead_models</span></code></a>([ids, status_of])</p></td>
 <td><p>The ids from <a class="reference internal" href="#falaw.check_model_liveness" title="falaw.check_model_liveness"><code class="xref py py-func docutils literal notranslate"><span class="pre">check_model_liveness()</span></code></a> that are no longer deployed.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.fetch_model_prices" title="falaw.fetch_model_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_model_prices</span></code></a>(endpoint_ids, *[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.fetch_model_prices" title="falaw.fetch_model_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_model_prices</span></code></a>(endpoint_ids, *[, ...])</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">{endpoint_id:</span> <span class="pre">{&quot;unit_price&quot;,</span> <span class="pre">&quot;unit&quot;,</span> <span class="pre">&quot;currency&quot;}}</span></code> from fal's API.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh_llm_rates" title="falaw.refresh_llm_rates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_llm_rates</span></code></a>(*[, write, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh_llm_rates" title="falaw.refresh_llm_rates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_llm_rates</span></code></a>(*[, write, ...])</p></td>
 <td><p>Fetch both sources, propose a fresh table, diff it — never overwrite.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh_state" title="falaw.refresh_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_state</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh_state" title="falaw.refresh_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_state</span></code></a>()</p></td>
 <td><p>Return the saved per-source refresh state (etags, last fetch times).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.register_tool" title="falaw.register_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_tool</span></code></a>(**spec_kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.register_tool" title="falaw.register_tool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_tool</span></code></a>(**spec_kwargs)</p></td>
 <td><p>Decorator: register the wrapped function as a falaw tool.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.remove_background" title="falaw.remove_background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_background</span></code></a>(image_url, *[, quality, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.remove_background" title="falaw.remove_background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_background</span></code></a>(image_url, *[, quality, ...])</p></td>
 <td><p>Remove the background from an image.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.render_beat" title="falaw.render_beat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_beat</span></code></a>(beat, character, *[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.render_beat" title="falaw.render_beat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_beat</span></code></a>(beat, character, *[, ...])</p></td>
 <td><p>Render one Beat to a lipsynced video.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.render_scene" title="falaw.render_scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_scene</span></code></a>(scene, *[, tts_quality, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.render_scene" title="falaw.render_scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_scene</span></code></a>(scene, *[, tts_quality, ...])</p></td>
 <td><p>Render every shot and beat.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.render_shot" title="falaw.render_shot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_shot</span></code></a>(shot, *[, environment, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.render_shot" title="falaw.render_shot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render_shot</span></code></a>(shot, *[, environment, ...])</p></td>
 <td><p>Render a Shot as a still (default) or a short clip.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_scene</span></code>(scene, path)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_scene</span></code>(scene, path)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.scene_from_dict" title="falaw.scene_from_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene_from_dict</span></code></a>(d)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.scene_from_dict" title="falaw.scene_from_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene_from_dict</span></code></a>(d)</p></td>
 <td><p>Inverse of asdict: reconstruct a Scene from a plain dict.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene_to_dict</span></code>(scene)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene_to_dict</span></code>(scene)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">shot_content_hash</span></code>(shot, *[, environment])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">shot_content_hash</span></code>(shot, *[, environment])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.storyboard_shot" title="falaw.storyboard_shot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">storyboard_shot</span></code></a>(shot, *[, environment, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.storyboard_shot" title="falaw.storyboard_shot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">storyboard_shot</span></code></a>(shot, *[, environment, ...])</p></td>
 <td><p>Render a storyboard still for a Shot.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.talking_avatar_from_text" title="falaw.talking_avatar_from_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">talking_avatar_from_text</span></code></a>(text, image_url, *)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.talking_avatar_from_text" title="falaw.talking_avatar_from_text"><code class="xref py py-obj docutils literal notranslate"><span class="pre">talking_avatar_from_text</span></code></a>(text, image_url, *)</p></td>
 <td><p>text + face image → talking video.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.generate_audio" title="falaw.generate_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_audio</span></code></a>(prompt, *[, kind, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.generate_audio" title="falaw.generate_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_audio</span></code></a>(prompt, *[, kind, ...])</p></td>
 <td><p>Generate ambient/SFX/music from a prompt.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.text_to_speech" title="falaw.text_to_speech"><code class="xref py py-obj docutils literal notranslate"><span class="pre">text_to_speech</span></code></a>(text, *[, quality, voice, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.text_to_speech" title="falaw.text_to_speech"><code class="xref py py-obj docutils literal notranslate"><span class="pre">text_to_speech</span></code></a>(text, *[, quality, voice, ...])</p></td>
 <td><p>Synthesize speech.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.text_to_video" title="falaw.text_to_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">text_to_video</span></code></a>(prompt, *[, quality, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.text_to_video" title="falaw.text_to_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">text_to_video</span></code></a>(prompt, *[, quality, ...])</p></td>
 <td><p>Generate a video from a text prompt.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.upscale_image" title="falaw.upscale_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upscale_image</span></code></a>(image_url, *[, scale, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.upscale_image" title="falaw.upscale_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upscale_image</span></code></a>(image_url, *[, scale, ...])</p></td>
 <td><p>Upscale an image.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.using_fal_credentials" title="falaw.using_fal_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">using_fal_credentials</span></code></a>(key)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.using_fal_credentials" title="falaw.using_fal_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">using_fal_credentials</span></code></a>(key)</p></td>
 <td><p>Bind <code class="docutils literal notranslate"><span class="pre">key</span></code> as the fal credential for every <a class="reference internal" href="#falaw.call_fal" title="falaw.call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code></a> in this context.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.voice_clone" title="falaw.voice_clone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voice_clone</span></code></a>(reference_audio_url, text, *[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.voice_clone" title="falaw.voice_clone"><code class="xref py py-obj docutils literal notranslate"><span class="pre">voice_clone</span></code></a>(reference_audio_url, text, *[, ...])</p></td>
 <td><p>Generate speech in a cloned voice.</p></td>
 </tr>
 </tbody>
@@ -2037,7 +2041,7 @@ model the table does not price), or <code class="docutils literal notranslate"><
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.ModelRecord">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">ModelRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality_tier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clip_seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_character_recommended</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_resolutions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_negative_prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens_per_pixel_second</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_prompt_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'image_size'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_specs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/base.html#ModelRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.ModelRecord" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">ModelRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aliases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality_tier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_clip_seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_character_recommended</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">supported_resolutions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_negative_prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_pick</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens_per_pixel_second</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_prompt_chars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'image_size'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_specs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">dict()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/base.html#ModelRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.ModelRecord" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One entry in the fal model catalog.</p>
 <dl class="field-list simple">
@@ -2047,6 +2051,16 @@ model the table does not price), or <code class="docutils literal notranslate"><
 <span class="sig-name descname"><span class="pre">default_negative_prompt</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a></span><a class="headerlink" href="#falaw.ModelRecord.default_negative_prompt" title="Link to this definition">#</a></dt>
 <dd><p>Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.ModelRecord.default_pick">
+<span class="sig-name descname"><span class="pre">default_pick</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.ModelRecord.default_pick" title="Link to this definition">#</a></dt>
+<dd><p>Whether <a class="reference internal" href="#falaw.pick_model" title="falaw.pick_model"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.pick_model()</span></code></a> may choose this record when a caller names
+only a category and tier. <code class="docutils literal notranslate"><span class="pre">False</span></code> for a record that is catalogued, priced
+and usable by id or alias but must never become the default — so its
+<code class="docutils literal notranslate"><span class="pre">quality_tier</span></code> can state its real quality, and a price refresh’s re-sort
+cannot promote it (falaw#95).</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3375,7 +3389,7 @@ price for a model nobody has priced.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.image_to_video">
-<span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">image_to_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'high'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/video.html#image_to_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.image_to_video" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">image_to_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'high'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/video.html#image_to_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.image_to_video" title="Link to this definition">#</a></dt>
 <dd><p>Animate a still image into a video.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -4037,6 +4051,23 @@ has reconciled real numbers against their fal invoice.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="falaw.plan_reference_to_video">
+<span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">plan_reference_to_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_urls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_urls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_urls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'high'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consult_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/_plan.html#plan_reference_to_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.plan_reference_to_video" title="Link to this definition">#</a></dt>
+<dd><p>Plan a reference-to-video call (Seedance 2.0): a prompt steered by
+reference images, videos and audio.</p>
+<p>The counts are checked against the model’s recorded limits
+(<code class="docutils literal notranslate"><span class="pre">model_constraints(id)[&quot;max_references&quot;]</span></code>) by <a class="reference internal" href="#falaw.make_call_plan" title="falaw.make_call_plan"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_call_plan()</span></code></a>, while
+planning is free, whatever route (<code class="docutils literal notranslate"><span class="pre">extra</span></code> included) they arrive by. The
+quote is the standard rate, a ceiling: fal bills about 0.6x when video
+references are supplied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.plan.html#falaw.plan.CallPlan" title="falaw.plan.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="falaw.plan_text_to_speech">
 <span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">plan_text_to_speech</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'balanced'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voice</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consult_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/_plan.html#plan_text_to_speech"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.plan_text_to_speech" title="Link to this definition">#</a></dt>
 <dd><p>Plan a <a class="reference internal" href="#falaw.text_to_speech" title="falaw.text_to_speech"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.text_to_speech()</span></code></a> call (text → audio Artifact).</p>
@@ -4520,7 +4551,7 @@ invoice — see <a class="reference internal" href="#falaw.Pricer" title="falaw.
 
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.text_to_video">
-<span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">text_to_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'high'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/video.html#text_to_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.text_to_video" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">text_to_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'high'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/video.html#text_to_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.text_to_video" title="Link to this definition">#</a></dt>
 <dd><p>Generate a video from a text prompt.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -4766,6 +4797,9 @@ shot-list builder shows as its model-limits reference.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="falaw.testing.html#module-falaw.testing" title="falaw.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">testing</span></code></a></p></td>
 <td><p>Make a suite that uses falaw genuinely offline — the fake asset transport.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.validation.html#module-falaw.validation" title="falaw.validation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validation</span></code></a></p></td>
+<td><p>Check a call's arguments against the limits its catalogue record states.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -4948,6 +4982,7 @@ shot-list builder shows as its model-limits reference.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.LlmReceipt"><code class="docutils literal notranslate"><span class="pre">LlmReceipt</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelRecord"><code class="docutils literal notranslate"><span class="pre">ModelRecord</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelRecord.default_negative_prompt"><code class="docutils literal notranslate"><span class="pre">ModelRecord.default_negative_prompt</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelRecord.default_pick"><code class="docutils literal notranslate"><span class="pre">ModelRecord.default_pick</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelRecord.max_clip_seconds"><code class="docutils literal notranslate"><span class="pre">ModelRecord.max_clip_seconds</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelRecord.max_prompt_chars"><code class="docutils literal notranslate"><span class="pre">ModelRecord.max_prompt_chars</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelRecord.param_specs"><code class="docutils literal notranslate"><span class="pre">ModelRecord.param_specs</span></code></a></li>
@@ -5073,6 +5108,7 @@ shot-list builder shows as its model-limits reference.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_image_to_video"><code class="docutils literal notranslate"><span class="pre">plan_image_to_video()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_lipsync"><code class="docutils literal notranslate"><span class="pre">plan_lipsync()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_llm_complete"><code class="docutils literal notranslate"><span class="pre">plan_llm_complete()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_reference_to_video"><code class="docutils literal notranslate"><span class="pre">plan_reference_to_video()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_text_to_speech"><code class="docutils literal notranslate"><span class="pre">plan_text_to_speech()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_text_to_video"><code class="docutils literal notranslate"><span class="pre">plan_text_to_video()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan_to_dict"><code class="docutils literal notranslate"><span class="pre">plan_to_dict()</span></code></a></li>

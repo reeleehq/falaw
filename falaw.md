@@ -1,4 +1,4 @@
-> built 2026-10-26 13:00 UTC from 8738ae1 (main) · falaw 0.0.67. Details: build_info.json
+> built 2026-10-26 13:20 UTC from 43a0ccb (main) · falaw 0.0.68. Details: build_info.json
 
 # index.html.md
 
@@ -570,7 +570,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -580,6 +580,14 @@ One entry in the fal model catalog.
 
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
+
+#### default_pick *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether [`falaw.pick_model()`](_autosummary/falaw.html.md#falaw.pick_model) may choose this record when a caller names
+only a category and tier. `False` for a record that is catalogued, priced
+and usable by id or alias but must never become the default — so its
+`quality_tier` can state its real quality, and a price refresh’s re-sort
+cannot promote it (falaw#95).
 
 #### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
@@ -2382,7 +2390,8 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 
 | [`DFLT_MEGAPIXELS`](_autosummary/falaw.cost.html.md#falaw.cost.DFLT_MEGAPIXELS)       | Pixel budget assumed for a `per_megapixel` call when the caller gives none: a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.   |
 |------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`RESOLUTION_PIXELS`](_autosummary/falaw.cost.html.md#falaw.cost.RESOLUTION_PIXELS)     | 9; other aspect ratios bill within about a percent of this).                                                                                                |
+| [`RESOLUTION_SHORT_SIDE`](_autosummary/falaw.cost.html.md#falaw.cost.RESOLUTION_SHORT_SIDE) | The short side, in pixels, of fal's named video resolutions.                                                                                                |
+| [`DFLT_VIDEO_ASPECT`](_autosummary/falaw.cost.html.md#falaw.cost.DFLT_VIDEO_ASPECT)     | Aspect ratio assumed when none is given or fal derives it (`"auto"`, from the input image): the common case, and 1:1 or 4:3 then over-quote.                |
 | [`DFLT_VIDEO_RESOLUTION`](_autosummary/falaw.cost.html.md#falaw.cost.DFLT_VIDEO_RESOLUTION) | Resolution assumed for a token-billed video model that records no default.                                                                                  |
 
 ### Functions
@@ -2390,6 +2399,8 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 | [`estimate_call_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                 |
 |-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | [`estimate_scene_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
+| [`frame_pixels`](_autosummary/falaw.cost.html.md#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).        |
+| [`video_call_arguments`](_autosummary/falaw.cost.html.md#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.           |
 | [`video_duration_arg`](_autosummary/falaw.cost.html.md#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
 | [`video_price_quantities`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
 
@@ -2424,17 +2435,19 @@ Pixel budget assumed for a `per_megapixel` call when the caller gives none:
 a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same.
 
+### falaw.cost.DFLT_VIDEO_ASPECT *= '16:9'*
+
+Aspect ratio assumed when none is given or fal derives it (`"auto"`, from
+the input image): the common case, and 1:1 or 4:3 then over-quote.
+
 ### falaw.cost.DFLT_VIDEO_RESOLUTION *= '720p'*
 
 Resolution assumed for a token-billed video model that records no default.
 
-### falaw.cost.RESOLUTION_PIXELS *= {'1080p': 2073600, '480p': 409920, '4k': 8294400, '720p': 921600}*
+### falaw.cost.RESOLUTION_SHORT_SIDE *= {'1080p': 1080, '480p': 480, '4k': 2160, '720p': 720}*
 
-9; other aspect ratios
-bill within about a percent of this). Feeds [`video_price_quantities()`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities).
-
-* **Type:**
-  Pixels per frame of fal’s named video resolutions (16
+The short side, in pixels, of fal’s named video resolutions. The frame is
+that squared times the aspect ratio’s long/short ratio ([`frame_pixels()`](_autosummary/falaw.cost.html.md#falaw.cost.frame_pixels)).
 
 ### falaw.cost.estimate_call_cost(record, , count=1, seconds=None, megapixels=None, tokens=None)
 
@@ -2483,6 +2496,30 @@ Pass the length you expect (the beat path has the same knob as
 * **Return type:**
   [`CostRollup`](_autosummary/falaw.cost.html.md#falaw.cost.CostRollup)
 
+### falaw.cost.frame_pixels(resolution, aspect_ratio=None)
+
+Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).
+
+An estimate within about a percent of what fal bills (it rounds frame
+sides to codec-friendly multiples): `short_side ** 2 * long / short`.
+
+* **Return type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
+### falaw.cost.video_call_arguments(record, arguments, , duration_s, extra)
+
+`(wire arguments, seconds the call bills)` for a video call.
+
+The one place planned and eager video calls agree. `duration_s` is *sent*
+only for a model whose record lists a `duration` parameter (Seedance spells
+it as a string enum), validated by [`video_duration_arg()`](_autosummary/falaw.cost.html.md#falaw.cost.video_duration_arg); elsewhere it
+is estimator-only when planning, since models name that argument
+differently. `extra` wins over everything and the billed seconds follow
+what it says.
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`float`](https://docs.python.org/3/builtins/functions.html#float) | [`None`](https://docs.python.org/3/builtins/constants.html#None)]
+
 ### falaw.cost.video_duration_arg(record, duration_s)
 
 `duration_s` as the string fal’s duration enum wants, or `ValueError`.
@@ -2495,14 +2532,15 @@ even), and within the record’s `duration` enum when it lists numbers
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### falaw.cost.video_price_quantities(record, , seconds=None, resolution=None)
+### falaw.cost.video_price_quantities(record, , seconds=None, resolution=None, aspect_ratio=None)
 
 The quantity hints that price one video call against `record`.
 
 `{"tokens": n}` for a model billed per video token (its
 `tokens_per_pixel_second` is set), else `{"seconds": s}`; `{}` when
 `seconds` is unknown, so the call stays unpriceable rather than free.
-`resolution` defaults to the model’s recorded default.
+`resolution` defaults to the model’s recorded default; `aspect_ratio`
+to [`DFLT_VIDEO_ASPECT`](_autosummary/falaw.cost.html.md#falaw.cost.DFLT_VIDEO_ASPECT).
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
@@ -3038,6 +3076,7 @@ Leave notes for future sessions:
 | [`plan_generate_image`](_autosummary/falaw.html.md#falaw.plan_generate_image)(prompt, \*[, quality, ...])    | Plan a [`falaw.generate_image()`](_autosummary/falaw.html.md#falaw.generate_image) call without executing it.                                                                                                  |
 | [`plan_generate_image_with_refs`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_refs)(prompt, ...[, ...])  | Plan a [`falaw.generate_image_with_refs()`](_autosummary/falaw.html.md#falaw.generate_image_with_refs) call.                                                                                                             |
 | [`plan_image_to_video`](_autosummary/falaw.html.md#falaw.plan_image_to_video)(image_url[, prompt, ...])      | Plan a [`falaw.image_to_video()`](_autosummary/falaw.html.md#falaw.image_to_video) call.                                                                                                                       |
+| [`plan_reference_to_video`](_autosummary/falaw.html.md#falaw.plan_reference_to_video)(prompt, \*[, ...])         | Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.                                                                                                     |
 | [`plan_text_to_video`](_autosummary/falaw.html.md#falaw.plan_text_to_video)(prompt, \*[, quality, ...])     | Plan a [`falaw.text_to_video()`](_autosummary/falaw.html.md#falaw.text_to_video) call — the sibling of [`plan_image_to_video()`](_autosummary/falaw.html.md#falaw.plan_image_to_video) (same duration and cost rules). |
 | [`plan_lipsync`](_autosummary/falaw.html.md#falaw.plan_lipsync)(video_url, audio_url, \*[, ...])      | Plan a [`falaw.lipsync()`](_autosummary/falaw.html.md#falaw.lipsync) call (existing video + new audio → re-synced video).                                                                               |
 | [`plan_llm_complete`](_autosummary/falaw.html.md#falaw.plan_llm_complete)(prompt, \*[, system, ...])       | Plan a [`falaw.llm_complete()`](_autosummary/falaw.html.md#falaw.llm_complete) call without executing it.                                                                                                    |
@@ -3950,7 +3989,7 @@ Field semantics, honest by construction:
   `"rate_table:per_call"`, `"registry:<kind>"` (the fallback for a
   model the table does not price), or `"unknown"`.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3960,6 +3999,14 @@ One entry in the fal model catalog.
 
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
+
+#### default_pick *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether [`falaw.pick_model()`](_autosummary/falaw.html.md#falaw.pick_model) may choose this record when a caller names
+only a category and tier. `False` for a record that is catalogued, priced
+and usable by id or alias but must never become the default — so its
+`quality_tier` can state its real quality, and a price refresh’s re-sort
+cannot promote it (falaw#95).
 
 #### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
@@ -5050,7 +5097,7 @@ price for a model nobody has priced.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmRate`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)]
 
-### falaw.image_to_video(image_url, prompt='', , quality='high', model_id=None, extra=None)
+### falaw.image_to_video(image_url, prompt='', , quality='high', duration_s=None, model_id=None, extra=None)
 
 Animate a still image into a video.
 
@@ -5624,6 +5671,20 @@ has reconciled real numbers against their fal invoice.
 * **Return type:**
   [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)
 
+### falaw.plan_reference_to_video(prompt, , image_urls=(), video_urls=(), audio_urls=(), quality='high', model_id=None, duration_s=None, extra=None, metadata=None, consult_cache=True)
+
+Plan a reference-to-video call (Seedance 2.0): a prompt steered by
+reference images, videos and audio.
+
+The counts are checked against the model’s recorded limits
+(`model_constraints(id)["max_references"]`) by [`make_call_plan()`](_autosummary/falaw.html.md#falaw.make_call_plan), while
+planning is free, whatever route (`extra` included) they arrive by. The
+quote is the standard rate, a ceiling: fal bills about 0.6x when video
+references are supplied.
+
+* **Return type:**
+  [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)
+
 ### falaw.plan_text_to_speech(text, , quality='balanced', voice=None, model_id=None, duration_s=None, tokens=None, extra=None, metadata=None, consult_cache=True)
 
 Plan a [`falaw.text_to_speech()`](_autosummary/falaw.html.md#falaw.text_to_speech) call (text → audio Artifact).
@@ -6004,7 +6065,7 @@ Synthesize speech. `voice` semantics are model-specific.
 * **Return type:**
   [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)
 
-### falaw.text_to_video(prompt, , quality='high', model_id=None, extra=None)
+### falaw.text_to_video(prompt, , quality='high', duration_s=None, model_id=None, extra=None)
 
 Generate a video from a text prompt.
 
@@ -6160,6 +6221,7 @@ Generate speech in a cloned voice.
 | [`schema_export`](_autosummary/falaw.schema_export.html.md#module-falaw.schema_export)         | Export the Python SSOT as committed JSON for the TypeScript twin (`ts/`).                                             |
 | [`session`](_autosummary/falaw.session.html.md#module-falaw.session)                     | Session: optional stateful controller over a sequence of falaw operations.                                            |
 | [`testing`](_autosummary/falaw.testing.html.md#module-falaw.testing)                     | Make a suite that uses falaw genuinely offline — the fake asset transport.                                            |
+| [`validation`](_autosummary/falaw.validation.html.md#module-falaw.validation)               | Check a call's arguments against the limits its catalogue record states.                                              |
 
 
 # _autosummary/falaw.journal.html.md
@@ -7489,14 +7551,14 @@ Video-generation operations: text-to-video and image-to-video.
 |------------------------------------------------------------------------------------------------------|---------------------------------------|
 | [`text_to_video`](_autosummary/falaw.operations.video.html.md#falaw.operations.video.text_to_video)(prompt, \*[, quality, ...])           | Generate a video from a text prompt.  |
 
-### falaw.operations.video.image_to_video(image_url, prompt='', , quality='high', model_id=None, extra=None)
+### falaw.operations.video.image_to_video(image_url, prompt='', , quality='high', duration_s=None, model_id=None, extra=None)
 
 Animate a still image into a video.
 
 * **Return type:**
   [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)
 
-### falaw.operations.video.text_to_video(prompt, , quality='high', model_id=None, extra=None)
+### falaw.operations.video.text_to_video(prompt, , quality='high', duration_s=None, model_id=None, extra=None)
 
 Generate a video from a text prompt.
 
@@ -10188,22 +10250,50 @@ False
   [`bytes`](https://docs.python.org/3/builtins/stdtypes.html#bytes)
 
 
+# _autosummary/falaw.validation.html.md
+
+# falaw.validation
+
+Check a call’s arguments against the limits its catalogue record states.
+
+The data-driven seam for request-shape limits that fal would otherwise reject
+with an HTTP 422 after queueing: `param_specs[name]` may carry `max_items`
+(a list argument such as reference images) and `min_pixels` / `max_pixels`
+(an explicit `{"width", "height"}` size). One function, called from the two
+places every call passes through — [`falaw.make_call_plan()`](_autosummary/falaw.html.md#falaw.make_call_plan) and
+[`falaw.call_fal()`](_autosummary/falaw.html.md#falaw.call_fal) — so no planner or eager verb can forget it.
+
+### Functions
+
+| [`check_call_arguments`](_autosummary/falaw.validation.html.md#falaw.validation.check_call_arguments)(record, arguments)   | Raise `ValueError` if `arguments` break a limit `record` states.   |
+|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+
+### falaw.validation.check_call_arguments(record, arguments)
+
+Raise `ValueError` if `arguments` break a limit `record` states.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+
 # about-this-build.html.md
 
 <!-- generated by epythet -->
 
 # About this build
 
-This documentation was built on **2026-10-26 13:00 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/8738ae18b9657a8ebb6df622e1e52bf9fb17d442"><code>8738ae1</code></a> on branch <code>main</code>, for **falaw 0.0.67** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 13:20 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/43a0ccb70862a0b3f940335a6dc2a692638fac2b"><code>43a0ccb</code></a> on branch <code>main</code>, for **falaw 0.0.68** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.68) is behind the latest release on PyPI (0.0.69): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/8738ae18b9657a8ebb6df622e1e52bf9fb17d442"><code>8738ae18b9657a8ebb6df622e1e52bf9fb17d442</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/43a0ccb70862a0b3f940335a6dc2a692638fac2b"><code>43a0ccb70862a0b3f940335a6dc2a692638fac2b</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10214,9 +10304,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40326634417">40326634417</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40329403213">40329403213</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>8738ae18b9657a8ebb6df622e1e52bf9fb17d442</code> (in the history of the built commit) |
+| Event commit | <code>43a0ccb70862a0b3f940335a6dc2a692638fac2b</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -10241,13 +10331,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.67/">0.0.67</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.69/">0.0.69</a>, newer than the documented version (0.0.68).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 8738ae18b9657a8ebb6df622e1e52bf9fb17d442
+git checkout 43a0ccb70862a0b3f940335a6dc2a692638fac2b
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

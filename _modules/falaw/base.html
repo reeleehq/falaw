@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
+    <script src="../../_static/documentation_options.js?v=6eb1e6b8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.67" />
+  <meta name="docsearch:version" content="0.0.68" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -833,6 +833,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">default_negative_prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 <span class="w">    </span><span class="sd">"""Quality/realism negatives worth appending by default (e.g. to avoid the</span>
 <span class="sd">    plastic-skin look). Empty when none."""</span>
+    <span class="n">default_pick</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="w">    </span><span class="sd">"""Whether :func:`falaw.pick_model` may choose this record when a caller names</span>
+<span class="sd">    only a category and tier. ``False`` for a record that is catalogued, priced</span>
+<span class="sd">    and usable by id or alias but must never become the default — so its</span>
+<span class="sd">    ``quality_tier`` can state its real quality, and a price refresh's re-sort</span>
+<span class="sd">    cannot promote it (falaw#95)."""</span>
     <span class="n">tokens_per_pixel_second</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">"""For a model billed per *video token*: tokens = width x height x seconds</span>
 <span class="sd">    x this (Seedance: 24/1024). With a ``per_token`` ``cost_estimate`` it lets</span>

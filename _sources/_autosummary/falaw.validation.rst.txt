@@ -1,0 +1,12 @@
+falaw.validation
+================
+
+.. automodule:: falaw.validation
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      check_call_arguments
+   

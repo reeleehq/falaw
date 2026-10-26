@@ -72,7 +72,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -82,6 +82,14 @@ One entry in the fal model catalog.
 
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
+
+#### default_pick *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether [`falaw.pick_model()`](falaw.html.md#falaw.pick_model) may choose this record when a caller names
+only a category and tier. `False` for a record that is catalogued, priced
+and usable by id or alias but must never become the default — so its
+`quality_tier` can state its real quality, and a price refresh’s re-sort
+cannot promote it (falaw#95).
 
 #### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 

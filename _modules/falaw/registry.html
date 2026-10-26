@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
+    <script src="../../_static/documentation_options.js?v=6eb1e6b8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.67" />
+  <meta name="docsearch:version" content="0.0.68" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -905,7 +905,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    has the exact tier, neighboring tiers are tried. KeyError only when</span>
 <span class="sd">    the category is empty.</span>
 <span class="sd">    """</span>
-    <span class="n">candidates</span> <span class="o">=</span> <span class="n">list_models</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
+    <span class="n">everything</span> <span class="o">=</span> <span class="n">list_models</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
+    <span class="c1"># A record opted out of default picks never wins; a category made only of</span>
+    <span class="c1"># such records (nothing else to offer) still answers.</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">everything</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">default_pick</span><span class="p">]</span> <span class="ow">or</span> <span class="n">everything</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_first_with_tier</span><span class="p">(</span><span class="n">tier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelRecord</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">next</span><span class="p">((</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">candidates</span> <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">quality_tier</span> <span class="o">==</span> <span class="n">tier</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>

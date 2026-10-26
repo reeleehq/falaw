@@ -89,6 +89,7 @@
       plan_generate_image
       plan_generate_image_with_refs
       plan_image_to_video
+      plan_reference_to_video
       plan_text_to_video
       plan_lipsync
       plan_llm_complete
@@ -217,3 +218,4 @@
    schema_export
    session
    testing
+   validation

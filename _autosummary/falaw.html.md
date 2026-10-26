@@ -111,6 +111,7 @@ Leave notes for future sessions:
 | [`plan_generate_image`](#falaw.plan_generate_image)(prompt, \*[, quality, ...])    | Plan a [`falaw.generate_image()`](#falaw.generate_image) call without executing it.                                                                                                  |
 | [`plan_generate_image_with_refs`](#falaw.plan_generate_image_with_refs)(prompt, ...[, ...])  | Plan a [`falaw.generate_image_with_refs()`](#falaw.generate_image_with_refs) call.                                                                                                             |
 | [`plan_image_to_video`](#falaw.plan_image_to_video)(image_url[, prompt, ...])      | Plan a [`falaw.image_to_video()`](#falaw.image_to_video) call.                                                                                                                       |
+| [`plan_reference_to_video`](#falaw.plan_reference_to_video)(prompt, \*[, ...])         | Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.                                                                                                     |
 | [`plan_text_to_video`](#falaw.plan_text_to_video)(prompt, \*[, quality, ...])     | Plan a [`falaw.text_to_video()`](#falaw.text_to_video) call — the sibling of [`plan_image_to_video()`](#falaw.plan_image_to_video) (same duration and cost rules). |
 | [`plan_lipsync`](#falaw.plan_lipsync)(video_url, audio_url, \*[, ...])      | Plan a [`falaw.lipsync()`](#falaw.lipsync) call (existing video + new audio → re-synced video).                                                                               |
 | [`plan_llm_complete`](#falaw.plan_llm_complete)(prompt, \*[, system, ...])       | Plan a [`falaw.llm_complete()`](#falaw.llm_complete) call without executing it.                                                                                                    |
@@ -1023,7 +1024,7 @@ Field semantics, honest by construction:
   `"rate_table:per_call"`, `"registry:<kind>"` (the fallback for a
   model the table does not price), or `"unknown"`.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -1033,6 +1034,14 @@ One entry in the fal model catalog.
 
 Quality/realism negatives worth appending by default (e.g. to avoid the
 plastic-skin look). Empty when none.
+
+#### default_pick *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether [`falaw.pick_model()`](#falaw.pick_model) may choose this record when a caller names
+only a category and tier. `False` for a record that is catalogued, priced
+and usable by id or alias but must never become the default — so its
+`quality_tier` can state its real quality, and a price refresh’s re-sort
+cannot promote it (falaw#95).
 
 #### max_clip_seconds *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
 
@@ -2123,7 +2132,7 @@ price for a model nobody has priced.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmRate`](falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)]
 
-### falaw.image_to_video(image_url, prompt='', , quality='high', model_id=None, extra=None)
+### falaw.image_to_video(image_url, prompt='', , quality='high', duration_s=None, model_id=None, extra=None)
 
 Animate a still image into a video.
 
@@ -2697,6 +2706,20 @@ has reconciled real numbers against their fal invoice.
 * **Return type:**
   [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
 
+### falaw.plan_reference_to_video(prompt, , image_urls=(), video_urls=(), audio_urls=(), quality='high', model_id=None, duration_s=None, extra=None, metadata=None, consult_cache=True)
+
+Plan a reference-to-video call (Seedance 2.0): a prompt steered by
+reference images, videos and audio.
+
+The counts are checked against the model’s recorded limits
+(`model_constraints(id)["max_references"]`) by [`make_call_plan()`](#falaw.make_call_plan), while
+planning is free, whatever route (`extra` included) they arrive by. The
+quote is the standard rate, a ceiling: fal bills about 0.6x when video
+references are supplied.
+
+* **Return type:**
+  [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
+
 ### falaw.plan_text_to_speech(text, , quality='balanced', voice=None, model_id=None, duration_s=None, tokens=None, extra=None, metadata=None, consult_cache=True)
 
 Plan a [`falaw.text_to_speech()`](#falaw.text_to_speech) call (text → audio Artifact).
@@ -3077,7 +3100,7 @@ Synthesize speech. `voice` semantics are model-specific.
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.text_to_video(prompt, , quality='high', model_id=None, extra=None)
+### falaw.text_to_video(prompt, , quality='high', duration_s=None, model_id=None, extra=None)
 
 Generate a video from a text prompt.
 
@@ -3233,3 +3256,4 @@ Generate speech in a cloned voice.
 | [`schema_export`](falaw.schema_export.html.md#module-falaw.schema_export)         | Export the Python SSOT as committed JSON for the TypeScript twin (`ts/`).                                             |
 | [`session`](falaw.session.html.md#module-falaw.session)                     | Session: optional stateful controller over a sequence of falaw operations.                                            |
 | [`testing`](falaw.testing.html.md#module-falaw.testing)                     | Make a suite that uses falaw genuinely offline — the fake asset transport.                                            |
+| [`validation`](falaw.validation.html.md#module-falaw.validation)               | Check a call's arguments against the limits its catalogue record states.                                              |

@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
+    <script src="../../_static/documentation_options.js?v=6eb1e6b8"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.67" />
+  <meta name="docsearch:version" content="0.0.68" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -734,6 +734,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
@@ -786,17 +787,37 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">Exported to the TypeScript twin, which must assume the same."""</span>
 
 
-<span class="n">RESOLUTION_PIXELS</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"480p"</span><span class="p">:</span> <span class="mi">854</span> <span class="o">*</span> <span class="mi">480</span><span class="p">,</span>
-    <span class="s2">"720p"</span><span class="p">:</span> <span class="mi">1280</span> <span class="o">*</span> <span class="mi">720</span><span class="p">,</span>
-    <span class="s2">"1080p"</span><span class="p">:</span> <span class="mi">1920</span> <span class="o">*</span> <span class="mi">1080</span><span class="p">,</span>
-    <span class="s2">"4k"</span><span class="p">:</span> <span class="mi">3840</span> <span class="o">*</span> <span class="mi">2160</span><span class="p">,</span>
-<span class="p">}</span>
-<span class="sd">"""Pixels per frame of fal's named video resolutions (16:9; other aspect ratios</span>
-<span class="sd">bill within about a percent of this). Feeds :func:`video_price_quantities`."""</span>
+<span class="n">RESOLUTION_SHORT_SIDE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"480p"</span><span class="p">:</span> <span class="mi">480</span><span class="p">,</span> <span class="s2">"720p"</span><span class="p">:</span> <span class="mi">720</span><span class="p">,</span> <span class="s2">"1080p"</span><span class="p">:</span> <span class="mi">1080</span><span class="p">,</span> <span class="s2">"4k"</span><span class="p">:</span> <span class="mi">2160</span><span class="p">}</span>
+<span class="sd">"""The short side, in pixels, of fal's named video resolutions. The frame is</span>
+<span class="sd">that squared times the aspect ratio's long/short ratio (:func:`frame_pixels`)."""</span>
+
+<span class="n">DFLT_VIDEO_ASPECT</span> <span class="o">=</span> <span class="s2">"16:9"</span>
+<span class="sd">"""Aspect ratio assumed when none is given or fal derives it (``"auto"``, from</span>
+<span class="sd">the input image): the common case, and 1:1 or 4:3 then over-quote."""</span>
 
 <span class="n">DFLT_VIDEO_RESOLUTION</span> <span class="o">=</span> <span class="s2">"720p"</span>
 <span class="sd">"""Resolution assumed for a token-billed video model that records no default."""</span>
+
+
+<span class="n">_ASPECT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\s*(\d+)\s*:\s*(\d+)\s*"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="frame_pixels">
+<a class="viewcode-back" href="../../_autosummary/falaw.cost.html#falaw.frame_pixels">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">frame_pixels</span><span class="p">(</span><span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Pixels per frame of a ``resolution`` at ``aspect_ratio`` (``"W:H"``).</span>
+
+<span class="sd">    An estimate within about a percent of what fal bills (it rounds frame</span>
+<span class="sd">    sides to codec-friendly multiples): ``short_side ** 2 * long / short``.</span>
+<span class="sd">    """</span>
+    <span class="n">short</span> <span class="o">=</span> <span class="n">RESOLUTION_SHORT_SIDE</span><span class="p">[</span><span class="n">resolution</span><span class="p">]</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">DFLT_VIDEO_ASPECT</span> <span class="k">if</span> <span class="n">aspect_ratio</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="k">else</span> <span class="n">aspect_ratio</span>
+    <span class="n">match</span> <span class="o">=</span> <span class="n">_ASPECT</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ratio</span><span class="p">))</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">())</span> <span class="k">if</span> <span class="n">match</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">w</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">h</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"aspect_ratio must look like '16:9' or 'auto', got </span><span class="si">{</span><span class="n">ratio</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">short</span> <span class="o">*</span> <span class="n">short</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">/</span> <span class="nb">min</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="video_price_quantities">
@@ -806,13 +827,15 @@ window.runMermaid = runMermaid;</script>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">seconds</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aspect_ratio</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The quantity hints that price one video call against ``record``.</span>
 
 <span class="sd">    ``{"tokens": n}`` for a model billed per video token (its</span>
 <span class="sd">    ``tokens_per_pixel_second`` is set), else ``{"seconds": s}``; ``{}`` when</span>
 <span class="sd">    ``seconds`` is unknown, so the call stays unpriceable rather than free.</span>
-<span class="sd">    ``resolution`` defaults to the model's recorded default.</span>
+<span class="sd">    ``resolution`` defaults to the model's recorded default; ``aspect_ratio``</span>
+<span class="sd">    to :data:`DFLT_VIDEO_ASPECT`.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">seconds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{}</span>
@@ -821,13 +844,14 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="p">{</span><span class="s2">"seconds"</span><span class="p">:</span> <span class="n">seconds</span><span class="p">}</span>
     <span class="n">spec</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"resolution"</span><span class="p">,</span> <span class="p">{})</span>
     <span class="n">resolution</span> <span class="o">=</span> <span class="n">resolution</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">DFLT_VIDEO_RESOLUTION</span>
-    <span class="n">allowed</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"enum"</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">RESOLUTION_PIXELS</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">resolution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span> <span class="ow">or</span> <span class="n">resolution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">RESOLUTION_PIXELS</span><span class="p">:</span>
+    <span class="n">allowed</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"enum"</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">RESOLUTION_SHORT_SIDE</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">resolution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span> <span class="ow">or</span> <span class="n">resolution</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">RESOLUTION_SHORT_SIDE</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> does not offer resolution </span><span class="si">{</span><span class="n">resolution</span><span class="si">!r}</span><span class="s2">; "</span>
             <span class="sa">f</span><span class="s2">"expected one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">allowed</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">"tokens"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">RESOLUTION_PIXELS</span><span class="p">[</span><span class="n">resolution</span><span class="p">]</span> <span class="o">*</span> <span class="n">seconds</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)}</span></div>
+    <span class="n">pixels</span> <span class="o">=</span> <span class="n">frame_pixels</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">"tokens"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">pixels</span> <span class="o">*</span> <span class="n">seconds</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)}</span></div>
 
 
 
@@ -852,6 +876,46 @@ window.runMermaid = runMermaid;</script>
             <span class="sa">f</span><span class="s2">"got </span><span class="si">{</span><span class="n">duration_s</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_numeric_seconds</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk</span>
+<span class="sd">    (unknown, so the call stays unpriced rather than free)."""</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">seconds</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="video_call_arguments">
+<a class="viewcode-back" href="../../_autosummary/falaw.cost.html#falaw.video_call_arguments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">video_call_arguments</span><span class="p">(</span>
+    <span class="n">record</span><span class="p">:</span> <span class="n">ModelRecord</span><span class="p">,</span>
+    <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">duration_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">extra</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""``(wire arguments, seconds the call bills)`` for a video call.</span>
+
+<span class="sd">    The one place planned and eager video calls agree. ``duration_s`` is *sent*</span>
+<span class="sd">    only for a model whose record lists a ``duration`` parameter (Seedance spells</span>
+<span class="sd">    it as a string enum), validated by :func:`video_duration_arg`; elsewhere it</span>
+<span class="sd">    is estimator-only when planning, since models name that argument</span>
+<span class="sd">    differently. ``extra`` wins over everything and the billed seconds follow</span>
+<span class="sd">    what it says.</span>
+<span class="sd">    """</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">extra</span> <span class="ow">or</span> <span class="p">{})}</span>
+    <span class="n">seconds</span> <span class="o">=</span> <span class="n">duration_s</span>
+    <span class="k">if</span> <span class="s2">"duration"</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">duration_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"duration"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">arguments</span><span class="p">:</span>
+            <span class="n">arguments</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">video_duration_arg</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">duration_s</span><span class="p">)</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="n">_numeric_seconds</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"duration"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">seconds</span></div>
 
 
 

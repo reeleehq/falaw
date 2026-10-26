@@ -22,7 +22,8 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 
 | [`DFLT_MEGAPIXELS`](#falaw.cost.DFLT_MEGAPIXELS)       | Pixel budget assumed for a `per_megapixel` call when the caller gives none: a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.   |
 |------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`RESOLUTION_PIXELS`](#falaw.cost.RESOLUTION_PIXELS)     | 9; other aspect ratios bill within about a percent of this).                                                                                                |
+| [`RESOLUTION_SHORT_SIDE`](#falaw.cost.RESOLUTION_SHORT_SIDE) | The short side, in pixels, of fal's named video resolutions.                                                                                                |
+| [`DFLT_VIDEO_ASPECT`](#falaw.cost.DFLT_VIDEO_ASPECT)     | Aspect ratio assumed when none is given or fal derives it (`"auto"`, from the input image): the common case, and 1:1 or 4:3 then over-quote.                |
 | [`DFLT_VIDEO_RESOLUTION`](#falaw.cost.DFLT_VIDEO_RESOLUTION) | Resolution assumed for a token-billed video model that records no default.                                                                                  |
 
 ### Functions
@@ -30,6 +31,8 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 | [`estimate_call_cost`](#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                 |
 |-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | [`estimate_scene_cost`](#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
+| [`frame_pixels`](#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).        |
+| [`video_call_arguments`](#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.           |
 | [`video_duration_arg`](#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
 | [`video_price_quantities`](#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
 
@@ -64,17 +67,19 @@ Pixel budget assumed for a `per_megapixel` call when the caller gives none:
 a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same.
 
+### falaw.cost.DFLT_VIDEO_ASPECT *= '16:9'*
+
+Aspect ratio assumed when none is given or fal derives it (`"auto"`, from
+the input image): the common case, and 1:1 or 4:3 then over-quote.
+
 ### falaw.cost.DFLT_VIDEO_RESOLUTION *= '720p'*
 
 Resolution assumed for a token-billed video model that records no default.
 
-### falaw.cost.RESOLUTION_PIXELS *= {'1080p': 2073600, '480p': 409920, '4k': 8294400, '720p': 921600}*
+### falaw.cost.RESOLUTION_SHORT_SIDE *= {'1080p': 1080, '480p': 480, '4k': 2160, '720p': 720}*
 
-9; other aspect ratios
-bill within about a percent of this). Feeds [`video_price_quantities()`](#falaw.cost.video_price_quantities).
-
-* **Type:**
-  Pixels per frame of fal’s named video resolutions (16
+The short side, in pixels, of fal’s named video resolutions. The frame is
+that squared times the aspect ratio’s long/short ratio ([`frame_pixels()`](#falaw.cost.frame_pixels)).
 
 ### falaw.cost.estimate_call_cost(record, , count=1, seconds=None, megapixels=None, tokens=None)
 
@@ -123,6 +128,30 @@ Pass the length you expect (the beat path has the same knob as
 * **Return type:**
   [`CostRollup`](#falaw.cost.CostRollup)
 
+### falaw.cost.frame_pixels(resolution, aspect_ratio=None)
+
+Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).
+
+An estimate within about a percent of what fal bills (it rounds frame
+sides to codec-friendly multiples): `short_side ** 2 * long / short`.
+
+* **Return type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
+### falaw.cost.video_call_arguments(record, arguments, , duration_s, extra)
+
+`(wire arguments, seconds the call bills)` for a video call.
+
+The one place planned and eager video calls agree. `duration_s` is *sent*
+only for a model whose record lists a `duration` parameter (Seedance spells
+it as a string enum), validated by [`video_duration_arg()`](#falaw.cost.video_duration_arg); elsewhere it
+is estimator-only when planning, since models name that argument
+differently. `extra` wins over everything and the billed seconds follow
+what it says.
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`float`](https://docs.python.org/3/builtins/functions.html#float) | [`None`](https://docs.python.org/3/builtins/constants.html#None)]
+
 ### falaw.cost.video_duration_arg(record, duration_s)
 
 `duration_s` as the string fal’s duration enum wants, or `ValueError`.
@@ -135,14 +164,15 @@ even), and within the record’s `duration` enum when it lists numbers
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### falaw.cost.video_price_quantities(record, , seconds=None, resolution=None)
+### falaw.cost.video_price_quantities(record, , seconds=None, resolution=None, aspect_ratio=None)
 
 The quantity hints that price one video call against `record`.
 
 `{"tokens": n}` for a model billed per video token (its
 `tokens_per_pixel_second` is set), else `{"seconds": s}`; `{}` when
 `seconds` is unknown, so the call stays unpriceable rather than free.
-`resolution` defaults to the model’s recorded default.
+`resolution` defaults to the model’s recorded default; `aspect_ratio`
+to [`DFLT_VIDEO_ASPECT`](#falaw.cost.DFLT_VIDEO_ASPECT).
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
