@@ -247,3 +247,82 @@ def test_table_file_is_valid_json_with_rows():
 
     path = os.path.join(os.path.dirname(falaw.__file__), "data", PRICES_FILENAME)
     assert json.load(open(path))["rows"]
+
+
+# ---------------------------------------------------------------------------
+# llm_token_counts: the counts the cost was computed from (falaw#89)
+# ---------------------------------------------------------------------------
+
+
+def test_a_none_key_falls_through_to_the_other_shape_like_the_cost_does():
+    """The disagreement that motivated the helper: ``input_tokens`` present but
+    ``None`` beside ``prompt_tokens``. Hand-parsing read 0, the cost read N."""
+    from falaw import llm_token_counts
+
+    usage = {"input_tokens": None, "prompt_tokens": 7, "completion_tokens": 3}
+    counts = llm_token_counts("openai", usage)
+    assert (counts.input, counts.output) == (7, 3)
+    usd, _ = llm_call_cost_usd("openai", "gpt-5", usage)
+    rate = falaw.get_llm_price("openai", "gpt-5").rates
+    assert usd == pytest.approx(
+        (7 * rate.input_usd_per_mtok + 3 * rate.output_usd_per_mtok) / 1e6, abs=1e-6
+    )
+
+
+def test_openai_counts_split_cached_input_and_report_reasoning():
+    from falaw import llm_token_counts
+
+    counts = llm_token_counts(
+        "openai",
+        {
+            "input_tokens": 1000,
+            "output_tokens": 100,
+            "input_tokens_details": {"cached_tokens": 400},
+            "output_tokens_details": {"reasoning_tokens": 60},
+        },
+    )
+    assert (counts.fresh_input, counts.cache_read, counts.input) == (600, 400, 1000)
+    assert (counts.output, counts.reasoning) == (100, 60)
+
+
+def test_anthropic_counts_cover_cache_tiers_and_sdk_objects():
+    from types import SimpleNamespace as NS
+
+    from falaw import llm_token_counts
+
+    usage = NS(
+        input_tokens=10,
+        output_tokens=5,
+        cache_read_input_tokens=100,
+        cache_creation_input_tokens=50,
+        cache_creation=NS(ephemeral_1h_input_tokens=80),  # more than was written
+    )
+    counts = llm_token_counts("anthropic", usage)
+    assert counts.cache_write_1h == 50  # clamped to what was written
+    assert counts.input == 160
+
+
+def test_counts_reject_an_unknown_provider_and_empty_usage_is_zero():
+    from falaw import llm_token_counts
+
+    with pytest.raises(ValueError, match="No first-party price table"):
+        llm_token_counts("acme", {})
+    assert llm_token_counts("anthropic", None).input == 0
+
+
+def test_long_prompt_rates_apply_to_any_provider_whose_row_has_them():
+    rates = falaw.llm_prices.LlmPriceRates
+    table = {
+        ("openai", "mine"): falaw.llm_prices.LlmPrice(
+            provider="openai",
+            model="mine",
+            rates=rates(input_usd_per_mtok=1.0, output_usd_per_mtok=0.0),
+            long_prompt_over_tokens=100,
+            long_prompt_rates=rates(input_usd_per_mtok=2.0, output_usd_per_mtok=0.0),
+        )
+    }
+    usd = lambda n: llm_call_cost_usd(
+        "openai", "mine", {"input_tokens": n}, prices=table
+    )[0]
+    assert usd(100) == 100 / 1e6
+    assert usd(101) == 2 * 101 / 1e6

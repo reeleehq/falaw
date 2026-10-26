@@ -173,61 +173,111 @@ def llm_call_cost_usd(
     Raises:
         ValueError: ``provider`` is not one of :data:`PROVIDERS`.
     """
+    _check_provider(provider)
+    table = load_llm_prices() if prices is None else prices
+    price = table.get((provider, str(model or "").strip()))
+    known = price is not None
+    rates = price.rates if price else _dearest_rates(provider, table)
+    counts = llm_token_counts(provider, usage)
+    if (
+        price
+        and price.long_prompt_rates
+        and counts.input > price.long_prompt_over_tokens
+    ):
+        rates = price.long_prompt_rates
+    usd = _usd(rates, counts)
+    return round(usd, COST_DECIMALS), known
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class LlmTokenCounts:
+    """The token counts a first-party call's ``usage`` reports, normalized across
+    providers: the very counts :func:`llm_call_cost_usd` prices, so a caller that
+    records them next to the cost cannot disagree with it (falaw#89).
+
+    ``fresh_input`` is billed at the input rate, ``cache_read`` and
+    ``cache_write`` at their own; ``cache_write_1h`` is the part of
+    ``cache_write`` on the 1-hour tier (already included in it: do not add the two). ``reasoning`` is informational: it is
+    already inside ``output``.
+    """
+
+    fresh_input: int = 0
+    cache_read: int = 0
+    cache_write: int = 0
+    cache_write_1h: int = 0
+    output: int = 0
+    reasoning: int = 0
+
+    @property
+    def input(self) -> int:
+        """Every prompt token, cached or not."""
+        return self.fresh_input + self.cache_read + self.cache_write
+
+
+def llm_token_counts(provider: str, usage: Any) -> LlmTokenCounts:
+    """The :class:`LlmTokenCounts` of a vendor ``usage``, in the shapes
+    :func:`llm_call_cost_usd` accepts (a mapping or an SDK object).
+
+    >>> llm_token_counts("openai", {"prompt_tokens": 1000, "completion_tokens": 100,
+    ...     "prompt_tokens_details": {"cached_tokens": 400}})
+    LlmTokenCounts(fresh_input=600, cache_read=400, cache_write=0, cache_write_1h=0, output=100, reasoning=0)
+
+    A key that is present but ``None`` falls through to the next shape's key
+    (``{"input_tokens": None, "prompt_tokens": 7}`` counts 7).
+
+    Raises:
+        ValueError: ``provider`` is not one of :data:`PROVIDERS`.
+    """
+    _check_provider(provider)
+    if provider == "anthropic":
+        cache_write = _count(_get(usage, "cache_creation_input_tokens"))
+        return LlmTokenCounts(
+            fresh_input=_count(_get(usage, "input_tokens")),
+            cache_read=_count(_get(usage, "cache_read_input_tokens")),
+            cache_write=cache_write,
+            cache_write_1h=min(
+                cache_write,
+                _count(
+                    _get(_get(usage, "cache_creation"), "ephemeral_1h_input_tokens")
+                ),
+            ),
+            output=_count(_get(usage, "output_tokens")),
+        )
+    total_in = _count(_first(usage, "input_tokens", "prompt_tokens"))
+    cached = _count(
+        _get(
+            _first(usage, "input_tokens_details", "prompt_tokens_details"),
+            "cached_tokens",
+        )
+    )
+    details_out = _first(usage, "output_tokens_details", "completion_tokens_details")
+    return LlmTokenCounts(
+        fresh_input=max(0, total_in - cached),
+        cache_read=cached,
+        output=_count(_first(usage, "output_tokens", "completion_tokens")),
+        reasoning=_count(_get(details_out, "reasoning_tokens")),
+    )
+
+
+def _usd(rates: LlmPriceRates, counts: LlmTokenCounts) -> float:
+    cache_read_rate = _or(rates.cache_read_usd_per_mtok, rates.input_usd_per_mtok)
+    cache_write_rate = _or(rates.cache_write_usd_per_mtok, rates.input_usd_per_mtok)
+    cache_write_1h_rate = _or(rates.cache_write_1h_usd_per_mtok, cache_write_rate)
+    return (
+        rates.input_usd_per_mtok * counts.fresh_input
+        + cache_read_rate * counts.cache_read
+        + cache_write_rate * (counts.cache_write - counts.cache_write_1h)
+        + cache_write_1h_rate * counts.cache_write_1h
+        + rates.output_usd_per_mtok * counts.output
+    ) / TOKENS_PER_PRICE_UNIT
+
+
+def _check_provider(provider: str) -> None:
     if provider not in PROVIDERS:
         raise ValueError(
             f"No first-party price table for provider {provider!r}; "
             f"known providers: {', '.join(PROVIDERS)}."
         )
-    table = load_llm_prices() if prices is None else prices
-    price = table.get((provider, str(model or "").strip()))
-    known = price is not None
-    rates = price.rates if price else _dearest_rates(provider, table)
-    if provider == "anthropic":
-        usd = _anthropic_usd(price, rates, usage)
-    else:
-        usd = _openai_usd(rates, usage)
-    return round(usd, COST_DECIMALS), known
-
-
-def _anthropic_usd(
-    price: Optional[LlmPrice], rates: LlmPriceRates, usage: Any
-) -> float:
-    fresh = _count(_get(usage, "input_tokens"))
-    cache_read = _count(_get(usage, "cache_read_input_tokens"))
-    cache_write = _count(_get(usage, "cache_creation_input_tokens"))
-    write_1h = min(
-        cache_write,
-        _count(_get(_get(usage, "cache_creation"), "ephemeral_1h_input_tokens")),
-    )
-    if (
-        price
-        and price.long_prompt_rates
-        and fresh + cache_read + cache_write > price.long_prompt_over_tokens
-    ):
-        rates = price.long_prompt_rates
-    cache_read_rate = _or(rates.cache_read_usd_per_mtok, rates.input_usd_per_mtok)
-    cache_write_rate = _or(rates.cache_write_usd_per_mtok, rates.input_usd_per_mtok)
-    cache_write_1h_rate = _or(rates.cache_write_1h_usd_per_mtok, cache_write_rate)
-    return (
-        rates.input_usd_per_mtok * fresh
-        + cache_read_rate * cache_read
-        + cache_write_rate * (cache_write - write_1h)
-        + cache_write_1h_rate * write_1h
-        + rates.output_usd_per_mtok * _count(_get(usage, "output_tokens"))
-    ) / TOKENS_PER_PRICE_UNIT
-
-
-def _openai_usd(rates: LlmPriceRates, usage: Any) -> float:
-    total_in = _count(_first(usage, "input_tokens", "prompt_tokens"))
-    output = _count(_first(usage, "output_tokens", "completion_tokens"))
-    details = _first(usage, "input_tokens_details", "prompt_tokens_details")
-    cached = _count(_get(details, "cached_tokens"))
-    cached_rate = _or(rates.cache_read_usd_per_mtok, rates.input_usd_per_mtok)
-    return (
-        rates.input_usd_per_mtok * max(0, total_in - cached)
-        + cached_rate * cached
-        + rates.output_usd_per_mtok * output
-    ) / TOKENS_PER_PRICE_UNIT
 
 
 def _dearest_rates(provider: str, table: LlmPriceTable) -> LlmPriceRates:
