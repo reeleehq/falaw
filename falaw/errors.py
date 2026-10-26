@@ -198,7 +198,8 @@ class FalDurationOutOfRange(FalError):
 class FalTermsViolation(FalError):
     """The model's terms of service forbid (or leave unknown) this use.
 
-    Raised at plan time by :func:`falaw.terms.check_terms` — before the call,
+    Raised by :func:`falaw.terms.check_terms` at plan time (``plan_*``) and, opt-in, at
+    execution time (``execute(..., terms_context=)``) — before any call,
     not audited after. ``unknown`` refuses, like ``has_unknown_costs`` does
     for money. The message names the model, the backend, the clause and the
     ledger row's ``source_url``; the same fields are attributes.

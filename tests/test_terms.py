@@ -220,6 +220,15 @@ def _plan_calls():
         "plan_lipsync": lambda **k: _plan.plan_lipsync(img, aud, **k),
         "plan_text_to_speech": lambda **k: _plan.plan_text_to_speech("p", **k),
         "plan_generate_audio": lambda **k: _plan.plan_generate_audio("p", **k),
+        "plan_generate_image_with_refs": lambda **k: (
+            _plan.plan_generate_image_with_refs("p", [img], **k)
+        ),
+        "plan_composite_character_in_environment": lambda **k: (
+            _plan.plan_composite_character_in_environment(img, img, **k)
+        ),
+        "plan_reference_to_video": lambda **k: _plan.plan_reference_to_video(
+            "p", image_urls=[img], **k
+        ),
         "plan_llm_complete": lambda **k: _plan.plan_llm_complete("p", **k),
     }
 
