@@ -13,6 +13,7 @@ def test_seedance_2_quote_matches_the_issue_observation():
         "https://x/a.png",
         model_id="bytedance/seedance-2.0/image-to-video",
         duration_s=5,
+        extra={"aspect_ratio": "16:9"},
         consult_cache=False,
     )
     # 1280*720*24*5/1024 tokens at $0.014 per 1k; the issue measured ~$0.3034/s.
@@ -23,18 +24,19 @@ def test_seedance_2_quote_matches_the_issue_observation():
 
 def test_fast_is_eighty_percent_and_resolution_follows_extra():
     kw = dict(duration_s=4, consult_cache=False)
+    wide = {"aspect_ratio": "16:9"}
     full = falaw.plan_image_to_video(
-        "u", model_id="bytedance/seedance-2.0/image-to-video", **kw
+        "u", model_id="bytedance/seedance-2.0/image-to-video", extra=wide, **kw
     )
     fast = falaw.plan_image_to_video(
-        "u", model_id="bytedance/seedance-2.0/fast/image-to-video", **kw
+        "u", model_id="bytedance/seedance-2.0/fast/image-to-video", extra=wide, **kw
     )
     assert fast.estimated_cost_usd == pytest.approx(0.8 * full.estimated_cost_usd)
     assert full.cost_basis.quantities == {"tokens": 86400}  # 1280*720*4*24/1024
     p480 = falaw.plan_image_to_video(
         "u",
         model_id="bytedance/seedance-2.0/image-to-video",
-        extra={"resolution": "480p"},
+        extra={**wide, "resolution": "480p"},
         **kw,
     )
     assert p480.cost_basis.quantities == {
@@ -63,7 +65,9 @@ def test_extra_duration_wins_and_drives_the_quote():
 
 
 def test_default_text_to_video_pick_is_stable_and_priced():
-    p = falaw.plan_text_to_video("a fox", duration_s=5, consult_cache=False)
+    p = falaw.plan_text_to_video(
+        "a fox", duration_s=5, extra={"aspect_ratio": "16:9"}, consult_cache=False
+    )
     assert p.application == "fal-ai/bytedance/seedance/v1/pro/text-to-video"
     assert p.estimated_cost_usd == pytest.approx(1920 * 1080 * 24 * 5 / 1024 * 2.5e-6)
 
@@ -350,3 +354,61 @@ def test_aspect_ratios_parse_strictly(ratio):
 
     with pytest.raises(ValueError, match="aspect_ratio"):
         frame_pixels("720p", ratio)
+
+
+# ---------------------------------------------------------------------------
+# Ceilings: auto aspect, 4K and reference-video rates (falaw#99)
+# ---------------------------------------------------------------------------
+
+
+def test_auto_aspect_is_quoted_at_the_widest_listed_ratio():
+    from falaw.cost import quote_aspect
+
+    rec = falaw.get_model("seedance2-i2v")
+    assert quote_aspect(rec, "auto") == quote_aspect(rec) == "21:9"
+    assert quote_aspect(rec, "9:16") == "9:16"  # explicit wins
+    assert (
+        quote_aspect(falaw.get_model("flux-dev")) == "16:9"
+    )  # no enum: the house default
+
+
+def test_a_21_9_result_is_never_under_quoted():
+    kw = dict(model_id="seedance2-i2v", duration_s=5, consult_cache=False)
+    auto = falaw.plan_image_to_video("u", **kw)
+    wide = falaw.plan_image_to_video("u", extra={"aspect_ratio": "21:9"}, **kw)
+    assert auto.cost_basis.quantities == wide.cost_basis.quantities
+
+
+def test_4k_bills_the_lower_per_token_rate():
+    kw = dict(model_id="seedance2-t2v", duration_s=5, consult_cache=False)
+    full = falaw.plan_text_to_video(
+        "x", extra={"aspect_ratio": "16:9", "resolution": "4k"}, **kw
+    )
+    pixels = 3840 * 2160
+    # fal: $0.008/1k at 4K; the factor rounds up, so the quote is a ceiling just above it.
+    exact = pixels * 5 * 24 / 1024 * 0.008e-3
+    assert exact <= full.estimated_cost_usd <= exact * 1.01
+
+
+def test_resolution_rate_factors_are_well_formed():
+    for rec in falaw.list_models():
+        for res, factor in rec.resolution_rate_factors.items():
+            assert res in rec.supported_resolutions, (rec.id, res)
+            assert 0 < factor <= 1, (rec.id, res, factor)
+
+
+def test_4k_quote_is_the_1080p_style_math_times_the_factor():
+    rec = falaw.get_model("seedance2-t2v")
+    at_4k = video_price_quantities(rec, seconds=5, resolution="4k", aspect_ratio="16:9")
+    expected = 3840 * 2160 * 5 * rec.tokens_per_pixel_second * 0.572
+    assert at_4k["tokens"] == round(expected)
+    # No factor for a resolution that bills the recorded rate.
+    at_1080 = video_price_quantities(rec, seconds=5, resolution="1080p", aspect_ratio="16:9")
+    assert at_1080["tokens"] == round(1920 * 1080 * 5 * rec.tokens_per_pixel_second)
+
+
+def test_reference_videos_are_not_discounted_until_fal_billing_is_verified():
+    kw = dict(model_id="seedance2-ref", duration_s=5, consult_cache=False)
+    images = falaw.plan_reference_to_video("x", image_urls=["https://x/a.png"], **kw)
+    videos = falaw.plan_reference_to_video("x", video_urls=["https://x/a.mp4"], **kw)
+    assert videos.estimated_cost_usd == images.estimated_cost_usd

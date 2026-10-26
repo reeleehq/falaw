@@ -132,6 +132,14 @@
       "title": "Quality Tier",
       "type": "string"
     },
+    "resolution_rate_factors": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "default": {},
+      "title": "Resolution Rate Factors",
+      "type": "object"
+    },
     "single_character_recommended": {
       "default": false,
       "title": "Single Character Recommended",

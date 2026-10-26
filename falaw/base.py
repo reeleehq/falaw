@@ -120,6 +120,16 @@ class ModelRecord:
     plan time quote an honest cost from a resolution and a duration
     (:func:`falaw.cost.video_price_quantities`). ``None`` for every other
     model."""
+    resolution_rate_factors: Mapping[str, float] = field(
+        default_factory=dict, hash=False
+    )
+    """Per-resolution discounts off the recorded per-token rate, for a model
+    whose higher resolutions bill less per token (Seedance 2.0 at ``"4k"``).
+    Each value is in (0, 1]: the fraction of the recorded rate fal bills, rounded
+    up so a quote stays a ceiling. The recorded rate is relative, so a price
+    refresh that moves it moves these quotes with it. A quote's
+    ``cost_basis.quantities["tokens"]`` is then rate-equivalent tokens, not the
+    tokens fal counts. See :func:`falaw.cost.video_price_quantities`."""
 
     # --- request-shape metadata (image models; falaw#76) ---
     max_prompt_chars: Optional[int] = None

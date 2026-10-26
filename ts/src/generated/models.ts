@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "ace08bcba966";
+export const MODELS_TABLE_VERSION = "63e5f7cd7a70";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -1098,7 +1098,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.000014,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the ceiling (480p-1080p, no reference videos); 4K bills less (resolution_rate_factors); reference videos may bill differently (falaw#99).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1159,7 +1159,10 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "resolution_rate_factors": {
+      "4k": 0.572
+    }
   },
   {
     "id": "bytedance/seedance-2.0/image-to-video",
@@ -1175,7 +1178,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.000014,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the ceiling (480p-1080p, no reference videos); 4K bills less (resolution_rate_factors); reference videos may bill differently (falaw#99).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1236,7 +1239,10 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "resolution_rate_factors": {
+      "4k": 0.572
+    }
   },
   {
     "id": "bytedance/seedance-2.0/reference-to-video",
@@ -1252,7 +1258,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.000014,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the ceiling (480p-1080p, no reference videos); 4K bills less (resolution_rate_factors); reference videos may bill differently (falaw#99).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1321,6 +1327,9 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
         ],
         "default": true
       }
+    },
+    "resolution_rate_factors": {
+      "4k": 0.572
     }
   },
   {
@@ -1337,7 +1346,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.0000112,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is a ceiling.",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1410,7 +1419,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.0000112,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is a ceiling.",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1483,7 +1492,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.0000112,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is a ceiling.",
       "source": "api"
     },
     "max_clip_seconds": 15,

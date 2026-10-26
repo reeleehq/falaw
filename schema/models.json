@@ -1087,7 +1087,7 @@
       "kind": "per_token",
       "amount": 1.4e-05,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the ceiling (480p-1080p, no reference videos); 4K bills less (resolution_rate_factors); reference videos may bill differently (falaw#99).",
       "source": "api"
     },
     "max_clip_seconds": 15.0,
@@ -1148,7 +1148,10 @@
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "resolution_rate_factors": {
+      "4k": 0.572
+    }
   },
   {
     "id": "bytedance/seedance-2.0/image-to-video",
@@ -1164,7 +1167,7 @@
       "kind": "per_token",
       "amount": 1.4e-05,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the ceiling (480p-1080p, no reference videos); 4K bills less (resolution_rate_factors); reference videos may bill differently (falaw#99).",
       "source": "api"
     },
     "max_clip_seconds": 15.0,
@@ -1225,7 +1228,10 @@
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "resolution_rate_factors": {
+      "4k": 0.572
+    }
   },
   {
     "id": "bytedance/seedance-2.0/reference-to-video",
@@ -1241,7 +1247,7 @@
       "kind": "per_token",
       "amount": 1.4e-05,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the ceiling (480p-1080p, no reference videos); 4K bills less (resolution_rate_factors); reference videos may bill differently (falaw#99).",
       "source": "api"
     },
     "max_clip_seconds": 15.0,
@@ -1310,6 +1316,9 @@
         ],
         "default": true
       }
+    },
+    "resolution_rate_factors": {
+      "4k": 0.572
     }
   },
   {
@@ -1326,7 +1335,7 @@
       "kind": "per_token",
       "amount": 1.12e-05,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is a ceiling.",
       "source": "api"
     },
     "max_clip_seconds": 15.0,
@@ -1399,7 +1408,7 @@
       "kind": "per_token",
       "amount": 1.12e-05,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is a ceiling.",
       "source": "api"
     },
     "max_clip_seconds": 15.0,
@@ -1472,7 +1481,7 @@
       "kind": "per_token",
       "amount": 1.12e-05,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is a ceiling.",
       "source": "api"
     },
     "max_clip_seconds": 15.0,

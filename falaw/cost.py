@@ -79,6 +79,22 @@ DFLT_VIDEO_RESOLUTION = "720p"
 _ASPECT = re.compile(r"\s*(\d+)\s*:\s*(\d+)\s*")
 
 
+def quote_aspect(record: ModelRecord, aspect_ratio: str | None = None) -> str:
+    """The aspect ratio a quote assumes, so that it stays a ceiling.
+
+    An explicit ratio is used as given. When it is absent or ``"auto"`` (fal
+    derives it from the input image) and the record lists a ``"W:H"`` enum, the
+    widest ratio listed, which has the most pixels; without an enum,
+    :data:`DFLT_VIDEO_ASPECT`.
+    """
+    spec = record.param_specs.get("aspect_ratio", {})
+    aspect_ratio = aspect_ratio or spec.get("default")
+    if aspect_ratio not in (None, "", "auto"):
+        return aspect_ratio
+    ratios = [r for r in spec.get("enum", ()) if _ASPECT.fullmatch(str(r))]
+    return max(ratios, key=lambda r: frame_pixels("480p", r), default=DFLT_VIDEO_ASPECT)
+
+
 def frame_pixels(resolution: str, aspect_ratio: str | None = None) -> float:
     """Pixels per frame of a ``resolution`` at ``aspect_ratio`` (``"W:H"``).
 
@@ -107,7 +123,10 @@ def video_price_quantities(
     ``tokens_per_pixel_second`` is set), else ``{"seconds": s}``; ``{}`` when
     ``seconds`` is unknown, so the call stays unpriceable rather than free.
     ``resolution`` defaults to the model's recorded default; ``aspect_ratio``
-    to :data:`DFLT_VIDEO_ASPECT`.
+    to :func:`quote_aspect`'s ceiling. The record's
+    ``resolution_rate_factors`` entry for ``resolution`` scales the tokens, so
+    they are rate-equivalent tokens at the recorded rate: the quote stays
+    ``rate x tokens``.
     """
     if seconds is None:
         return {}
@@ -122,8 +141,15 @@ def video_price_quantities(
             f"{record.id} does not offer resolution {resolution!r}; "
             f"expected one of {list(allowed)}"
         )
-    pixels = frame_pixels(resolution, aspect_ratio)
-    return {"tokens": round(pixels * seconds * factor)}
+    pixels = frame_pixels(resolution, quote_aspect(record, aspect_ratio))
+    return {
+        "tokens": round(
+            pixels
+            * seconds
+            * factor
+            * record.resolution_rate_factors.get(resolution, 1.0)
+        )
+    }
 
 
 def video_duration_arg(record: ModelRecord, duration_s: float) -> str:

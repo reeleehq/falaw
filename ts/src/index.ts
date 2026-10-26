@@ -23,6 +23,7 @@ export {
   makeCallPlan,
   planGenerateImage,
   planImageToVideo,
+  planReferenceToVideo,
   planTextToVideo,
   makePlan,
   totalCostUsd,

@@ -11,7 +11,7 @@ import { estimateCallCost } from './cost';
 import { FalNonCanonicalArgument } from './errors';
 import { MODELS, MODELS_TABLE_VERSION } from './generated/models';
 import { CONSTANTS } from './generated/constants';
-import { hasUnknownCosts, makePlan, planGenerateImage, planHash, planImageToVideo, planTextToVideo, totalCostUsd } from './plan';
+import { hasUnknownCosts, makePlan, planGenerateImage, planHash, planImageToVideo, planReferenceToVideo, planTextToVideo, totalCostUsd } from './plan';
 import { pickModel } from './registry';
 import { parseResponse } from './results';
 
@@ -26,6 +26,7 @@ interface PlanCase {
 }
 interface Plans {
   calls: PlanCase[];
+  errors: { tool: string; input: Record<string, unknown>; message: string }[];
   plans: { calls: number[]; expected: Record<string, unknown>; plan_hash: string; total_cost_usd: number; has_unknown_costs: boolean }[];
 }
 
@@ -36,6 +37,7 @@ function plan(tool: string, input: Record<string, unknown>) {
   if (tool === 'generate_image') return planGenerateImage(camel as unknown as Parameters<typeof planGenerateImage>[0]);
   if (tool === 'image_to_video') return planImageToVideo(camel as unknown as Parameters<typeof planImageToVideo>[0]);
   if (tool === 'text_to_video') return planTextToVideo(camel as unknown as Parameters<typeof planTextToVideo>[0]);
+  if (tool === 'reference_to_video') return planReferenceToVideo(camel as unknown as Parameters<typeof planReferenceToVideo>[0]);
   throw new Error(`no planner for ${tool}`);
 }
 
@@ -59,6 +61,10 @@ describe('plans', () => {
     expect(await planHash(built)).toBe(p.plan_hash);
     expect(totalCostUsd(built)).toBeCloseTo(p.total_cost_usd, 12);
     expect(hasUnknownCosts(built)).toBe(p.has_unknown_costs);
+  });
+
+  it.each(fixture.errors.map((e, i) => [i, e] as const))('error case %i raises like Python', (_, e) => {
+    expect(() => plan(e.tool, e.input)).toThrow(e.message);
   });
 
   it('every plan fixture prices from this catalogue version', () => {
