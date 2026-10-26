@@ -1,0 +1,20 @@
+falaw.licences
+==============
+
+.. automodule:: falaw.licences
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      SPDX_IDS
+      UNKNOWN
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      is_valid_licence
+      validate_licence
+   

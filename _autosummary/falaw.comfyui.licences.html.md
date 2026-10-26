@@ -14,12 +14,12 @@ the AGPL, so a substring scan would reject every GPLv3 pack.
 
 ### Module Attributes
 
-| [`LICENCE_FILE_PREFIXES`](#falaw.comfyui.licences.LICENCE_FILE_PREFIXES)   | any root-level file whose name starts with one.                                                                            |
-|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| [`TITLE_LINES`](#falaw.comfyui.licences.TITLE_LINES)             | How many leading non-blank lines count as a licence's title (room for a copyright line or three above the licence's name). |
-| [`RESTRICTED_FAMILY`](#falaw.comfyui.licences.RESTRICTED_FAMILY)       | The AGPL family plus SSPL (same network-copyleft reach).                                                                   |
-| [`AGPL_TITLE`](#falaw.comfyui.licences.AGPL_TITLE)              | The AGPL's own upper-case title, flagged wherever it sits in a file.                                                       |
-| [`KNOWN_LICENCES`](#falaw.comfyui.licences.KNOWN_LICENCES)          | Licences recognised as *determinable*, looked for in a file's title lines.                                                 |
+| [`LICENCE_FILE_PREFIXES`](#falaw.comfyui.licences.LICENCE_FILE_PREFIXES)   | any root-level file whose name starts with one.                                                                                                                                                                                       |
+|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`TITLE_LINES`](#falaw.comfyui.licences.TITLE_LINES)             | How many leading non-blank lines count as a licence's title (room for a copyright line or three above the licence's name).                                                                                                            |
+| [`RESTRICTED_FAMILY`](#falaw.comfyui.licences.RESTRICTED_FAMILY)       | The AGPL family plus SSPL (same network-copyleft reach).                                                                                                                                                                              |
+| [`AGPL_TITLE`](#falaw.comfyui.licences.AGPL_TITLE)              | The AGPL's own upper-case title, flagged wherever it sits in a file.                                                                                                                                                                  |
+| [`KNOWN_LICENCES`](#falaw.comfyui.licences.KNOWN_LICENCES)          | Licences recognised as *determinable* (keyed in the shared [`falaw.licences`](falaw.licences.html.md#module-falaw.licences) vocabulary; a `-family` spans several SPDX ids), looked for in a file's title lines. |
 
 ### Functions
 
@@ -38,10 +38,11 @@ the AGPL, so a substring scan would reject every GPLv3 pack.
 The AGPL’s own upper-case title, flagged wherever it sits in a file. GPLv3
 section 13 names the licence in mixed case, so this does not flag GPLv3.
 
-### falaw.comfyui.licences.KNOWN_LICENCES *= {'Apache-2.0': 'Apache License,?\\\\s+Version 2', 'BSD': 'Redistribution and use in source and binary forms', 'CC0': 'CC0 1\\\\.0|Creative Commons Zero', 'GPL': 'GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE', 'ISC': '\\\\bISC License\\\\b|Permission to use, copy, modify, and/or distribute', 'MIT': '\\\\bMIT License\\\\b|Permission is hereby granted, free of charge', 'MPL-2.0': 'Mozilla Public License', 'Unlicense': 'This is free and unencumbered software', 'WTFPL': 'DO WHAT THE FUCK YOU WANT'}*
+### falaw.comfyui.licences.KNOWN_LICENCES *= {'Apache-2.0': 'Apache License,?\\\\s+Version 2', 'CC0-1.0': 'CC0 1\\\\.0|Creative Commons Zero', 'ISC': '\\\\bISC License\\\\b|Permission to use, copy, modify, and/or distribute', 'LicenseRef-BSD-family': 'Redistribution and use in source and binary forms', 'LicenseRef-GPL-family': 'GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE', 'MIT': '\\\\bMIT License\\\\b|Permission is hereby granted, free of charge', 'MPL-2.0': 'Mozilla Public License', 'Unlicense': 'This is free and unencumbered software', 'WTFPL': 'DO WHAT THE FUCK YOU WANT'}*
 
-Licences recognised as *determinable*, looked for in a file’s title lines.
-Text matching none of these is undeterminable, which fails the screen: terms
+Licences recognised as *determinable* (keyed in the shared
+[`falaw.licences`](falaw.licences.html.md#module-falaw.licences) vocabulary; a `-family` spans several SPDX ids), looked
+for in a file’s title lines. Text matching none of these is undeterminable, which fails the screen: terms
 we cannot read are not a pass. A heuristic by design; what it cannot place
 goes to a human.
 

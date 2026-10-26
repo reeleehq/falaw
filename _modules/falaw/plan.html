@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=1e158f99"></script>
+    <script src="../../_static/documentation_options.js?v=d59c1f54"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.73" />
+  <meta name="docsearch:version" content="0.0.74" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -783,7 +783,13 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.canonical</span><span class="w"> </span><span class="kn">import</span> <span class="n">DFLT_BACKEND</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.terms</span><span class="w"> </span><span class="kn">import</span> <span class="n">TermsContext</span><span class="p">,</span> <span class="n">check_terms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.terms</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CLEARANCE_KEY</span><span class="p">,</span>
+    <span class="n">TermsContext</span><span class="p">,</span>
+    <span class="n">check_terms</span><span class="p">,</span>
+    <span class="n">clearance</span><span class="p">,</span>
+    <span class="n">effective_terms_context</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.degrade</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEGRADE_WARNING_SINK</span><span class="p">,</span>
     <span class="n">deferred_degrade_warnings</span><span class="p">,</span>
@@ -1391,7 +1397,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.canonical</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_canonical</span>
 
-    <span class="n">check_terms</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">)</span>
+    <span class="n">terms_context</span> <span class="o">=</span> <span class="n">effective_terms_context</span><span class="p">(</span><span class="n">terms_context</span><span class="p">)</span>
+    <span class="n">check_terms</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">terms_context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="o">**</span><span class="p">(</span><span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}),</span>
+            <span class="n">CLEARANCE_KEY</span><span class="p">:</span> <span class="n">clearance</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">,</span> <span class="n">arguments</span><span class="p">),</span>
+        <span class="p">}</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.upload</span><span class="w"> </span><span class="kn">import</span> <span class="n">localize_paths</span><span class="p">,</span> <span class="n">resolve_local_files</span>
 
     <span class="c1"># A local file (``os.PathLike``) becomes a "&lt;file ...&gt;" marker: the Plan</span>
@@ -1767,8 +1779,13 @@ window.runMermaid = runMermaid;</script>
             <span class="s2">"It bounds how many calls are in flight at once; 1 is sequential."</span>
         <span class="p">)</span>
     <span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span> <span class="o">=</span> <span class="n">_resolved_cache_mode</span><span class="p">(</span><span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span><span class="p">)</span>
+    <span class="c1"># Every call is cleared up front, before a cache read or any spend, on every</span>
+    <span class="c1"># backend: the cache-hit path and non-fal executors never reach call_fal.</span>
+    <span class="n">terms_context</span> <span class="o">=</span> <span class="n">effective_terms_context</span><span class="p">(</span><span class="n">terms_context</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">calls</span><span class="p">:</span>
-        <span class="n">check_terms</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">)</span>
+        <span class="n">check_terms</span><span class="p">(</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">call</span><span class="o">.</span><span class="n">arguments</span>
+        <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">dry_run</span><span class="p">:</span>
         <span class="c1"># Per-call isolation applies to dry runs too: a hand-built CallPlan</span>

@@ -31,6 +31,7 @@
 - [falaw.degrade](_autosummary/falaw.degrade.html.md): Where falaw sends “I carried on, but you should know” — one collection point.
 - [falaw.errors](_autosummary/falaw.errors.html.md): Typed exceptions for falaw operations.
 - [falaw.events](_autosummary/falaw.events.html.md): Structured progress events for fal calls.
+- [falaw.licences](_autosummary/falaw.licences.html.md): One licence vocabulary for every falaw ledger (falaw#110).
 - [falaw.liveness](_autosummary/falaw.liveness.html.md): Is a catalogued endpoint still deployed? (falaw#76)
 - [falaw.llm_prices](_autosummary/falaw.llm_prices.html.md): One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).
 - [falaw.llm_rates](_autosummary/falaw.llm_rates.html.md): Per-routed-model LLM rates: the data behind a &#42;ceiling&#42; quote (falaw#50, option A).
@@ -59,7 +60,7 @@
 - [falaw.testing](_autosummary/falaw.testing.html.md): Make a suite that uses falaw genuinely offline — the fake asset transport.
 - [falaw.validation](_autosummary/falaw.validation.html.md): Check a call’s arguments against the limits its catalogue record states.
 - [For AI agents](ai-agents.html.md): &#96;falaw&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-26 17:42 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-26 17:59 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
 
 ## Optional
 

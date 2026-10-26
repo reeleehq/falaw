@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=1e158f99"></script>
+    <script src="../_static/documentation_options.js?v=d59c1f54"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.73" />
+  <meta name="docsearch:version" content="0.0.74" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -347,6 +347,7 @@
 <li class="toctree-l2"><a class="reference internal" href="falaw.degrade.html">falaw.degrade</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.errors.html">falaw.errors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.events.html">falaw.events</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.licences.html">falaw.licences</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.liveness.html">falaw.liveness</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_prices.html">falaw.llm_prices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates.html">falaw.llm_rates</a></li>
@@ -471,7 +472,7 @@ the AGPL, so a substring scan would reject every GPLv3 pack.</p>
 <td><p>The AGPL's own upper-case title, flagged wherever it sits in a file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.comfyui.licences.KNOWN_LICENCES" title="falaw.comfyui.licences.KNOWN_LICENCES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KNOWN_LICENCES</span></code></a></p></td>
-<td><p>Licences recognised as <em>determinable</em>, looked for in a file's title lines.</p></td>
+<td><p>Licences recognised as <em>determinable</em> (keyed in the shared <a class="reference internal" href="falaw.licences.html#module-falaw.licences" title="falaw.licences"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.licences</span></code></a> vocabulary; a <code class="docutils literal notranslate"><span class="pre">-family</span></code> spans several SPDX ids), looked for in a file's title lines.</p></td>
 </tr>
 </tbody>
 </table>
@@ -509,9 +510,10 @@ section 13 names the licence in mixed case, so this does not flag GPLv3.</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="falaw.comfyui.licences.KNOWN_LICENCES">
-<span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">KNOWN_LICENCES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Apache-2.0':</span> <span class="pre">'Apache</span> <span class="pre">License,?\\s+Version</span> <span class="pre">2',</span> <span class="pre">'BSD':</span> <span class="pre">'Redistribution</span> <span class="pre">and</span> <span class="pre">use</span> <span class="pre">in</span> <span class="pre">source</span> <span class="pre">and</span> <span class="pre">binary</span> <span class="pre">forms',</span> <span class="pre">'CC0':</span> <span class="pre">'CC0</span> <span class="pre">1\\.0|Creative</span> <span class="pre">Commons</span> <span class="pre">Zero',</span> <span class="pre">'GPL':</span> <span class="pre">'GNU</span> <span class="pre">(?:LESSER</span> <span class="pre">|LIBRARY</span> <span class="pre">)?GENERAL</span> <span class="pre">PUBLIC</span> <span class="pre">LICENSE',</span> <span class="pre">'ISC':</span> <span class="pre">'\\bISC</span> <span class="pre">License\\b|Permission</span> <span class="pre">to</span> <span class="pre">use,</span> <span class="pre">copy,</span> <span class="pre">modify,</span> <span class="pre">and/or</span> <span class="pre">distribute',</span> <span class="pre">'MIT':</span> <span class="pre">'\\bMIT</span> <span class="pre">License\\b|Permission</span> <span class="pre">is</span> <span class="pre">hereby</span> <span class="pre">granted,</span> <span class="pre">free</span> <span class="pre">of</span> <span class="pre">charge',</span> <span class="pre">'MPL-2.0':</span> <span class="pre">'Mozilla</span> <span class="pre">Public</span> <span class="pre">License',</span> <span class="pre">'Unlicense':</span> <span class="pre">'This</span> <span class="pre">is</span> <span class="pre">free</span> <span class="pre">and</span> <span class="pre">unencumbered</span> <span class="pre">software',</span> <span class="pre">'WTFPL':</span> <span class="pre">'DO</span> <span class="pre">WHAT</span> <span class="pre">THE</span> <span class="pre">FUCK</span> <span class="pre">YOU</span> <span class="pre">WANT'}</span></span><a class="headerlink" href="#falaw.comfyui.licences.KNOWN_LICENCES" title="Link to this definition">#</a></dt>
-<dd><p>Licences recognised as <em>determinable</em>, looked for in a file’s title lines.
-Text matching none of these is undeterminable, which fails the screen: terms
+<span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">KNOWN_LICENCES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Apache-2.0':</span> <span class="pre">'Apache</span> <span class="pre">License,?\\s+Version</span> <span class="pre">2',</span> <span class="pre">'CC0-1.0':</span> <span class="pre">'CC0</span> <span class="pre">1\\.0|Creative</span> <span class="pre">Commons</span> <span class="pre">Zero',</span> <span class="pre">'ISC':</span> <span class="pre">'\\bISC</span> <span class="pre">License\\b|Permission</span> <span class="pre">to</span> <span class="pre">use,</span> <span class="pre">copy,</span> <span class="pre">modify,</span> <span class="pre">and/or</span> <span class="pre">distribute',</span> <span class="pre">'LicenseRef-BSD-family':</span> <span class="pre">'Redistribution</span> <span class="pre">and</span> <span class="pre">use</span> <span class="pre">in</span> <span class="pre">source</span> <span class="pre">and</span> <span class="pre">binary</span> <span class="pre">forms',</span> <span class="pre">'LicenseRef-GPL-family':</span> <span class="pre">'GNU</span> <span class="pre">(?:LESSER</span> <span class="pre">|LIBRARY</span> <span class="pre">)?GENERAL</span> <span class="pre">PUBLIC</span> <span class="pre">LICENSE',</span> <span class="pre">'MIT':</span> <span class="pre">'\\bMIT</span> <span class="pre">License\\b|Permission</span> <span class="pre">is</span> <span class="pre">hereby</span> <span class="pre">granted,</span> <span class="pre">free</span> <span class="pre">of</span> <span class="pre">charge',</span> <span class="pre">'MPL-2.0':</span> <span class="pre">'Mozilla</span> <span class="pre">Public</span> <span class="pre">License',</span> <span class="pre">'Unlicense':</span> <span class="pre">'This</span> <span class="pre">is</span> <span class="pre">free</span> <span class="pre">and</span> <span class="pre">unencumbered</span> <span class="pre">software',</span> <span class="pre">'WTFPL':</span> <span class="pre">'DO</span> <span class="pre">WHAT</span> <span class="pre">THE</span> <span class="pre">FUCK</span> <span class="pre">YOU</span> <span class="pre">WANT'}</span></span><a class="headerlink" href="#falaw.comfyui.licences.KNOWN_LICENCES" title="Link to this definition">#</a></dt>
+<dd><p>Licences recognised as <em>determinable</em> (keyed in the shared
+<a class="reference internal" href="falaw.licences.html#module-falaw.licences" title="falaw.licences"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.licences</span></code></a> vocabulary; a <code class="docutils literal notranslate"><span class="pre">-family</span></code> spans several SPDX ids), looked
+for in a file’s title lines. Text matching none of these is undeterminable, which fails the screen: terms
 we cannot read are not a pass. A heuristic by design; what it cannot place
 goes to a human.</p>
 </dd></dl>

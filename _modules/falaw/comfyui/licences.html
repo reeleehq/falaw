@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=1e158f99"></script>
+    <script src="../../../_static/documentation_options.js?v=d59c1f54"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.73" />
+  <meta name="docsearch:version" content="0.0.74" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -761,16 +761,17 @@ window.runMermaid = runMermaid;</script>
 <span class="n">KNOWN_LICENCES</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"MIT"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\bMIT License\b|Permission is hereby granted, free of charge"</span><span class="p">,</span>
     <span class="s2">"Apache-2.0"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"Apache License,?\s+Version 2"</span><span class="p">,</span>
-    <span class="s2">"BSD"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"Redistribution and use in source and binary forms"</span><span class="p">,</span>
-    <span class="s2">"GPL"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE"</span><span class="p">,</span>
+    <span class="s2">"LicenseRef-BSD-family"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"Redistribution and use in source and binary forms"</span><span class="p">,</span>
+    <span class="s2">"LicenseRef-GPL-family"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE"</span><span class="p">,</span>
     <span class="s2">"MPL-2.0"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"Mozilla Public License"</span><span class="p">,</span>
     <span class="s2">"ISC"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"\bISC License\b|Permission to use, copy, modify, and/or distribute"</span><span class="p">,</span>
     <span class="s2">"Unlicense"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"This is free and unencumbered software"</span><span class="p">,</span>
-    <span class="s2">"CC0"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"CC0 1\.0|Creative Commons Zero"</span><span class="p">,</span>
+    <span class="s2">"CC0-1.0"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"CC0 1\.0|Creative Commons Zero"</span><span class="p">,</span>
     <span class="s2">"WTFPL"</span><span class="p">:</span> <span class="sa">r</span><span class="s2">"DO WHAT THE FUCK YOU WANT"</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="sd">"""Licences recognised as *determinable*, looked for in a file's title lines.</span>
-<span class="sd">Text matching none of these is undeterminable, which fails the screen: terms</span>
+<span class="sd">"""Licences recognised as *determinable* (keyed in the shared</span>
+<span class="sd">:mod:`falaw.licences` vocabulary; a ``-family`` spans several SPDX ids), looked</span>
+<span class="sd">for in a file's title lines. Text matching none of these is undeterminable, which fails the screen: terms</span>
 <span class="sd">we cannot read are not a pass. A heuristic by design; what it cannot place</span>
 <span class="sd">goes to a human."""</span>
 

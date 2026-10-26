@@ -29,6 +29,7 @@
 - [falaw.degrade](falaw.degrade.html.md): Where falaw sends “I carried on, but you should know” — one collection point.
 - [falaw.errors](falaw.errors.html.md): Typed exceptions for falaw operations.
 - [falaw.events](falaw.events.html.md): Structured progress events for fal calls.
+- [falaw.licences](falaw.licences.html.md): One licence vocabulary for every falaw ledger (falaw#110).
 - [falaw.liveness](falaw.liveness.html.md): Is a catalogued endpoint still deployed? (falaw#76)
 - [falaw.llm_prices](falaw.llm_prices.html.md): One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).
 - [falaw.llm_rates](falaw.llm_rates.html.md): Per-routed-model LLM rates: the data behind a &#42;ceiling&#42; quote (falaw#50, option A).

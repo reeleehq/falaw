@@ -36,6 +36,7 @@ Leave notes for future sessions:
 | [`llm_token_counts`](#falaw.llm_token_counts)(provider, usage)                  | The [`LlmTokenCounts`](#falaw.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](#falaw.llm_call_cost_usd) accepts (a mapping or an SDK object).  |
 | [`llm_prices_table_version`](#falaw.llm_prices_table_version)()                         | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version)).                                                   |
 | [`check_terms`](#falaw.check_terms)(model_id, backend, context, \*[, ...]) | Raise [`FalTermsViolation`](#falaw.FalTermsViolation) unless `(model_id, backend)` is usable for *context*.                                                                                     |
+| [`using_terms_context`](#falaw.using_terms_context)(context)                       | Scope *context* over every call made inside the block, eager or planned.                                                                                                                                           |
 | [`third_party_tenancy_ok`](#falaw.third_party_tenancy_ok)(model_id, backend, \*)      | The routing-visible projection: may a router send third-party work to `(model_id, backend)` without consulting the full ledger? `False` when unsure — the cheap 80%, so a router can drop an incompatible backend. |
 | [`call_plan_from_dict`](#falaw.call_plan_from_dict)(d)                             | Rebuild a [`CallPlan`](#falaw.CallPlan) from a [`call_plan_to_dict()`](#falaw.call_plan_to_dict) dict.                                                              |
 | [`call_plan_to_dict`](#falaw.call_plan_to_dict)(call)                            | Convert a [`CallPlan`](#falaw.CallPlan) to a plain JSON-serializable dict.                                                                                                             |
@@ -162,7 +163,7 @@ Leave notes for future sessions:
 | [`Environment`](#falaw.Environment)(\*, name[, description, ...])          | A reusable location/setting.                                                                                                                                                                                                                                        |
 | [`ExecutionReport`](#falaw.ExecutionReport)([outcomes])                        | The result of running a Plan: one [`CallOutcome`](#falaw.CallOutcome) per call, in order.                                                                                                                                                  |
 | [`ModelTerms`](#falaw.ModelTerms)(\*, model_id, backend[, license, ...])  | One ledger row.                                                                                                                                                                                                                                                     |
-| [`TermsContext`](#falaw.TermsContext)(\*[, commercial, third_party, c2pa])  | What the job needs from the terms — supplied by the caller, never global.                                                                                                                                                                                           |
+| [`TermsContext`](#falaw.TermsContext)(\*[, commercial, third_party, c2pa])  | What the job needs from the terms — supplied by the caller, never process-global (an explicit argument, or scoped to a block by [`using_terms_context()`](#falaw.using_terms_context)).                                                            |
 | [`ModelRecord`](#falaw.ModelRecord)(\*, id, category[, description, ...])  | One entry in the fal model catalog.                                                                                                                                                                                                                                 |
 | [`Plan`](#falaw.Plan)([calls])                                      | An ordered sequence of [`CallPlan`](#falaw.CallPlan) — a render plan, in essence.                                                                                                                                                       |
 | [`CallRepricing`](#falaw.CallRepricing)(\*, index, call, old_cost_usd, ...)  | The before/after for one call in a re-priced plan.                                                                                                                                                                                                                  |
@@ -1448,7 +1449,8 @@ lipsync renders).
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
-What the job needs from the terms — supplied by the caller, never global.
+What the job needs from the terms — supplied by the caller, never process-global
+(an explicit argument, or scoped to a block by [`using_terms_context()`](#falaw.using_terms_context)).
 
 The defaults describe the strictest ordinary use (commercial) without
 claiming anything extra; `third_party` and `c2pa` are opt-in because
@@ -1720,11 +1722,13 @@ raises rather than report a live model as dead, which would get it deleted.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
 
-### falaw.check_terms(model_id, backend, context, , ledger=None)
+### falaw.check_terms(model_id, backend, context, , ledger=None, arguments=None)
 
 Raise [`FalTermsViolation`](#falaw.FalTermsViolation) unless `(model_id, backend)` is
 usable for *context*. `context=None` (the default everywhere) checks
-nothing: the strict path is opt-in per deployment.
+nothing: the strict path is opt-in per deployment. Pass the call’s
+`arguments` so a router is judged by the model it routes to
+(`terms_subject()`).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
@@ -3288,6 +3292,19 @@ requests.
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
+### falaw.using_terms_context(context)
+
+Scope *context* over every call made inside the block, eager or planned.
+
+The eager verbs (`generate_image`, `render_scene`, …) take no
+`terms_context`; this is the one seam that covers all of them, enforced
+where every call passes ([`falaw.cache.cached_call_fal()`](falaw.cache.html.md#falaw.cache.cached_call_fal),
+[`falaw.core.call_fal()`](falaw.core.html.md#falaw.core.call_fal)). Scoped to the block (and its threads/tasks),
+never process-global: the deployment decides, per job.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
+
 ### falaw.using_uploader(uploader, , namespace=None)
 
 Make `uploader` the transfer for every [`upload()`](#falaw.upload) (and every local
@@ -3367,6 +3384,7 @@ Generate speech in a cloned voice.
 | [`degrade`](falaw.degrade.html.md#module-falaw.degrade)                     | Where falaw sends "I carried on, but you should know" — one collection point.                                         |
 | [`errors`](falaw.errors.html.md#module-falaw.errors)                       | Typed exceptions for falaw operations.                                                                                |
 | [`events`](falaw.events.html.md#module-falaw.events)                       | Structured progress events for fal calls.                                                                             |
+| [`licences`](falaw.licences.html.md#module-falaw.licences)                   | One licence vocabulary for every falaw ledger (falaw#110).                                                            |
 | [`liveness`](falaw.liveness.html.md#module-falaw.liveness)                   | Is a catalogued endpoint still deployed? (falaw#76)                                                                   |
 | [`llm_prices`](falaw.llm_prices.html.md#module-falaw.llm_prices)               | One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).                              |
 | [`llm_rates`](falaw.llm_rates.html.md#module-falaw.llm_rates)                 | Per-routed-model LLM rates: the data behind a *ceiling* quote (falaw#50, option A).                                   |

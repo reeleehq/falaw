@@ -14,6 +14,7 @@
       llm_token_counts
       llm_prices_table_version
       check_terms
+      using_terms_context
       third_party_tenancy_ok
       call_plan_from_dict
       call_plan_to_dict
@@ -207,6 +208,7 @@
    degrade
    errors
    events
+   licences
    liveness
    llm_prices
    llm_rates

@@ -1,4 +1,4 @@
-> built 2026-10-26 17:42 UTC from 9fc4477 (main) · falaw 0.0.73. Details: build_info.json
+> built 2026-10-26 17:59 UTC from 9ab1159 (main) · falaw 0.0.74. Details: build_info.json
 
 # index.html.md
 
@@ -1598,12 +1598,12 @@ the AGPL, so a substring scan would reject every GPLv3 pack.
 
 ### Module Attributes
 
-| [`LICENCE_FILE_PREFIXES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.LICENCE_FILE_PREFIXES)   | any root-level file whose name starts with one.                                                                            |
-|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
-| [`TITLE_LINES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.TITLE_LINES)             | How many leading non-blank lines count as a licence's title (room for a copyright line or three above the licence's name). |
-| [`RESTRICTED_FAMILY`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.RESTRICTED_FAMILY)       | The AGPL family plus SSPL (same network-copyleft reach).                                                                   |
-| [`AGPL_TITLE`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.AGPL_TITLE)              | The AGPL's own upper-case title, flagged wherever it sits in a file.                                                       |
-| [`KNOWN_LICENCES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.KNOWN_LICENCES)          | Licences recognised as *determinable*, looked for in a file's title lines.                                                 |
+| [`LICENCE_FILE_PREFIXES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.LICENCE_FILE_PREFIXES)   | any root-level file whose name starts with one.                                                                                                                                                                                       |
+|--------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`TITLE_LINES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.TITLE_LINES)             | How many leading non-blank lines count as a licence's title (room for a copyright line or three above the licence's name).                                                                                                            |
+| [`RESTRICTED_FAMILY`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.RESTRICTED_FAMILY)       | The AGPL family plus SSPL (same network-copyleft reach).                                                                                                                                                                              |
+| [`AGPL_TITLE`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.AGPL_TITLE)              | The AGPL's own upper-case title, flagged wherever it sits in a file.                                                                                                                                                                  |
+| [`KNOWN_LICENCES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.KNOWN_LICENCES)          | Licences recognised as *determinable* (keyed in the shared [`falaw.licences`](_autosummary/falaw.licences.html.md#module-falaw.licences) vocabulary; a `-family` spans several SPDX ids), looked for in a file's title lines. |
 
 ### Functions
 
@@ -1622,10 +1622,11 @@ the AGPL, so a substring scan would reject every GPLv3 pack.
 The AGPL’s own upper-case title, flagged wherever it sits in a file. GPLv3
 section 13 names the licence in mixed case, so this does not flag GPLv3.
 
-### falaw.comfyui.licences.KNOWN_LICENCES *= {'Apache-2.0': 'Apache License,?\\\\s+Version 2', 'BSD': 'Redistribution and use in source and binary forms', 'CC0': 'CC0 1\\\\.0|Creative Commons Zero', 'GPL': 'GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE', 'ISC': '\\\\bISC License\\\\b|Permission to use, copy, modify, and/or distribute', 'MIT': '\\\\bMIT License\\\\b|Permission is hereby granted, free of charge', 'MPL-2.0': 'Mozilla Public License', 'Unlicense': 'This is free and unencumbered software', 'WTFPL': 'DO WHAT THE FUCK YOU WANT'}*
+### falaw.comfyui.licences.KNOWN_LICENCES *= {'Apache-2.0': 'Apache License,?\\\\s+Version 2', 'CC0-1.0': 'CC0 1\\\\.0|Creative Commons Zero', 'ISC': '\\\\bISC License\\\\b|Permission to use, copy, modify, and/or distribute', 'LicenseRef-BSD-family': 'Redistribution and use in source and binary forms', 'LicenseRef-GPL-family': 'GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE', 'MIT': '\\\\bMIT License\\\\b|Permission is hereby granted, free of charge', 'MPL-2.0': 'Mozilla Public License', 'Unlicense': 'This is free and unencumbered software', 'WTFPL': 'DO WHAT THE FUCK YOU WANT'}*
 
-Licences recognised as *determinable*, looked for in a file’s title lines.
-Text matching none of these is undeterminable, which fails the screen: terms
+Licences recognised as *determinable* (keyed in the shared
+[`falaw.licences`](_autosummary/falaw.licences.html.md#module-falaw.licences) vocabulary; a `-family` spans several SPDX ids), looked
+for in a file’s title lines. Text matching none of these is undeterminable, which fails the screen: terms
 we cannot read are not a pass. A heuristic by design; what it cannot place
 goes to a human.
 
@@ -3051,6 +3052,7 @@ Leave notes for future sessions:
 | [`llm_token_counts`](_autosummary/falaw.html.md#falaw.llm_token_counts)(provider, usage)                  | The [`LlmTokenCounts`](_autosummary/falaw.html.md#falaw.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd) accepts (a mapping or an SDK object).  |
 | [`llm_prices_table_version`](_autosummary/falaw.html.md#falaw.llm_prices_table_version)()                         | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version)).                                                   |
 | [`check_terms`](_autosummary/falaw.html.md#falaw.check_terms)(model_id, backend, context, \*[, ...]) | Raise [`FalTermsViolation`](_autosummary/falaw.html.md#falaw.FalTermsViolation) unless `(model_id, backend)` is usable for *context*.                                                                                     |
+| [`using_terms_context`](_autosummary/falaw.html.md#falaw.using_terms_context)(context)                       | Scope *context* over every call made inside the block, eager or planned.                                                                                                                                           |
 | [`third_party_tenancy_ok`](_autosummary/falaw.html.md#falaw.third_party_tenancy_ok)(model_id, backend, \*)      | The routing-visible projection: may a router send third-party work to `(model_id, backend)` without consulting the full ledger? `False` when unsure — the cheap 80%, so a router can drop an incompatible backend. |
 | [`call_plan_from_dict`](_autosummary/falaw.html.md#falaw.call_plan_from_dict)(d)                             | Rebuild a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) from a [`call_plan_to_dict()`](_autosummary/falaw.html.md#falaw.call_plan_to_dict) dict.                                                              |
 | [`call_plan_to_dict`](_autosummary/falaw.html.md#falaw.call_plan_to_dict)(call)                            | Convert a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) to a plain JSON-serializable dict.                                                                                                             |
@@ -3177,7 +3179,7 @@ Leave notes for future sessions:
 | [`Environment`](_autosummary/falaw.html.md#falaw.Environment)(\*, name[, description, ...])          | A reusable location/setting.                                                                                                                                                                                                                                        |
 | [`ExecutionReport`](_autosummary/falaw.html.md#falaw.ExecutionReport)([outcomes])                        | The result of running a Plan: one [`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome) per call, in order.                                                                                                                                                  |
 | [`ModelTerms`](_autosummary/falaw.html.md#falaw.ModelTerms)(\*, model_id, backend[, license, ...])  | One ledger row.                                                                                                                                                                                                                                                     |
-| [`TermsContext`](_autosummary/falaw.html.md#falaw.TermsContext)(\*[, commercial, third_party, c2pa])  | What the job needs from the terms — supplied by the caller, never global.                                                                                                                                                                                           |
+| [`TermsContext`](_autosummary/falaw.html.md#falaw.TermsContext)(\*[, commercial, third_party, c2pa])  | What the job needs from the terms — supplied by the caller, never process-global (an explicit argument, or scoped to a block by [`using_terms_context()`](_autosummary/falaw.html.md#falaw.using_terms_context)).                                                            |
 | [`ModelRecord`](_autosummary/falaw.html.md#falaw.ModelRecord)(\*, id, category[, description, ...])  | One entry in the fal model catalog.                                                                                                                                                                                                                                 |
 | [`Plan`](_autosummary/falaw.html.md#falaw.Plan)([calls])                                      | An ordered sequence of [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) — a render plan, in essence.                                                                                                                                                       |
 | [`CallRepricing`](_autosummary/falaw.html.md#falaw.CallRepricing)(\*, index, call, old_cost_usd, ...)  | The before/after for one call in a re-priced plan.                                                                                                                                                                                                                  |
@@ -4463,7 +4465,8 @@ lipsync renders).
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
-What the job needs from the terms — supplied by the caller, never global.
+What the job needs from the terms — supplied by the caller, never process-global
+(an explicit argument, or scoped to a block by [`using_terms_context()`](_autosummary/falaw.html.md#falaw.using_terms_context)).
 
 The defaults describe the strictest ordinary use (commercial) without
 claiming anything extra; `third_party` and `c2pa` are opt-in because
@@ -4735,11 +4738,13 @@ raises rather than report a live model as dead, which would get it deleted.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
 
-### falaw.check_terms(model_id, backend, context, , ledger=None)
+### falaw.check_terms(model_id, backend, context, , ledger=None, arguments=None)
 
 Raise [`FalTermsViolation`](_autosummary/falaw.html.md#falaw.FalTermsViolation) unless `(model_id, backend)` is
 usable for *context*. `context=None` (the default everywhere) checks
-nothing: the strict path is opt-in per deployment.
+nothing: the strict path is opt-in per deployment. Pass the call’s
+`arguments` so a router is judged by the model it routes to
+(`terms_subject()`).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
@@ -6303,6 +6308,19 @@ requests.
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
+### falaw.using_terms_context(context)
+
+Scope *context* over every call made inside the block, eager or planned.
+
+The eager verbs (`generate_image`, `render_scene`, …) take no
+`terms_context`; this is the one seam that covers all of them, enforced
+where every call passes ([`falaw.cache.cached_call_fal()`](_autosummary/falaw.cache.html.md#falaw.cache.cached_call_fal),
+[`falaw.core.call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_fal)). Scoped to the block (and its threads/tasks),
+never process-global: the deployment decides, per job.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
+
 ### falaw.using_uploader(uploader, , namespace=None)
 
 Make `uploader` the transfer for every [`upload()`](_autosummary/falaw.html.md#falaw.upload) (and every local
@@ -6382,6 +6400,7 @@ Generate speech in a cloned voice.
 | [`degrade`](_autosummary/falaw.degrade.html.md#module-falaw.degrade)                     | Where falaw sends "I carried on, but you should know" — one collection point.                                         |
 | [`errors`](_autosummary/falaw.errors.html.md#module-falaw.errors)                       | Typed exceptions for falaw operations.                                                                                |
 | [`events`](_autosummary/falaw.events.html.md#module-falaw.events)                       | Structured progress events for fal calls.                                                                             |
+| [`licences`](_autosummary/falaw.licences.html.md#module-falaw.licences)                   | One licence vocabulary for every falaw ledger (falaw#110).                                                            |
 | [`liveness`](_autosummary/falaw.liveness.html.md#module-falaw.liveness)                   | Is a catalogued endpoint still deployed? (falaw#76)                                                                   |
 | [`llm_prices`](_autosummary/falaw.llm_prices.html.md#module-falaw.llm_prices)               | One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).                              |
 | [`llm_rates`](_autosummary/falaw.llm_rates.html.md#module-falaw.llm_rates)                 | Per-routed-model LLM rates: the data behind a *ceiling* quote (falaw#50, option A).                                   |
@@ -6462,6 +6481,70 @@ a process-wide sequence number breaking same-tick ties, so
 ### *class* falaw.journal.JournalEntry(, id, timestamp, kind, text, tags=(), suggestion='', context=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+
+# _autosummary/falaw.licences.html.md
+
+# falaw.licences
+
+One licence vocabulary for every falaw ledger (falaw#110).
+
+Licences are named by an SPDX identifier where one exists and by a
+`LicenseRef-*` identifier (SPDX’s own convention for bespoke terms) where it
+does not. The terms ledger ([`falaw.terms`](_autosummary/falaw.terms.html.md#module-falaw.terms)) and the ComfyUI licence screen
+([`falaw.comfyui.licences`](_autosummary/falaw.comfyui.licences.html.md#module-falaw.comfyui.licences)) validate against this one definition, so the
+same licence is never spelled two ways.
+
+The SPDX list is deliberately a curated subset ([`SPDX_IDS`](_autosummary/falaw.licences.html.md#falaw.licences.SPDX_IDS)): the ids the
+ledgers actually use. Add one here when a row needs it, rather than pulling in
+the full list as a dependency.
+
+```pycon
+>>> is_valid_licence("Apache-2.0")
+True
+>>> is_valid_licence("MIT OR Apache-2.0")
+True
+>>> is_valid_licence("flux-1-dev-non-commercial-license")
+False
+```
+
+### Module Attributes
+
+| [`SPDX_IDS`](_autosummary/falaw.licences.html.md#falaw.licences.SPDX_IDS)   | //spdx.org/licenses/).                                      |
+|-------------------------------------------------------------|-------------------------------------------------------------|
+| [`UNKNOWN`](_autosummary/falaw.licences.html.md#falaw.licences.UNKNOWN)    | The licence nobody has read yet; a ledger row may carry it. |
+
+### Functions
+
+| [`is_valid_licence`](_autosummary/falaw.licences.html.md#falaw.licences.is_valid_licence)(expression, \*[, known])   | Whether *expression* is `unknown`, or ids from *known* / `LicenseRef-*` joined by `AND` / `OR`.   |
+|----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| [`validate_licence`](_autosummary/falaw.licences.html.md#falaw.licences.validate_licence)(expression, \*[, known])   | *expression* itself, or `ValueError` saying how to spell it.                                      |
+
+### falaw.licences.SPDX_IDS *= frozenset({'AGPL-3.0-only', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'CC-BY-4.0', 'CC-BY-NC-4.0', 'CC-BY-SA-4.0', 'CC0-1.0', 'GPL-2.0-only', 'GPL-3.0-only', 'GPL-3.0-or-later', 'ISC', 'LGPL-2.1-only', 'LGPL-3.0-only', 'MIT', 'MPL-2.0', 'Unlicense', 'WTFPL'})*
+
+//spdx.org/licenses/).
+
+* **Type:**
+  Standard SPDX ids falaw’s ledgers use (https
+
+### falaw.licences.UNKNOWN *= 'unknown'*
+
+The licence nobody has read yet; a ledger row may carry it.
+
+### falaw.licences.is_valid_licence(expression, , known=frozenset({'AGPL-3.0-only', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'CC-BY-4.0', 'CC-BY-NC-4.0', 'CC-BY-SA-4.0', 'CC0-1.0', 'GPL-2.0-only', 'GPL-3.0-only', 'GPL-3.0-or-later', 'ISC', 'LGPL-2.1-only', 'LGPL-3.0-only', 'MIT', 'MPL-2.0', 'Unlicense', 'WTFPL'}))
+
+Whether *expression* is `unknown`, or ids from *known* / `LicenseRef-*`
+joined by `AND` / `OR`.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### falaw.licences.validate_licence(expression, , known=frozenset({'AGPL-3.0-only', 'Apache-2.0', 'BSD-2-Clause', 'BSD-3-Clause', 'CC-BY-4.0', 'CC-BY-NC-4.0', 'CC-BY-SA-4.0', 'CC0-1.0', 'GPL-2.0-only', 'GPL-3.0-only', 'GPL-3.0-or-later', 'ISC', 'LGPL-2.1-only', 'LGPL-3.0-only', 'MIT', 'MPL-2.0', 'Unlicense', 'WTFPL'}))
+
+*expression* itself, or `ValueError` saying how to spell it.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 
 # _autosummary/falaw.liveness.html.md
@@ -10076,8 +10159,8 @@ call: `plan_*(..., terms_context=TermsContext(...))`. With no context
 
 This is an implementation of what the terms *say*, not legal advice; it
 refuses when unsure and does not adjudicate. The *context* (is this job
-serving a third party? will its output be C2PA-stamped?) is the caller’s, never
-read from a global; the ledger is data, the check is falaw’s.
+serving a third party? will its output be C2PA-stamped?) is the caller’s (an argument, or
+scoped to a block by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context)), never process-global; the ledger is data, the check is falaw’s.
 
 ```pycon
 >>> ctx = TermsContext(third_party=True)
@@ -10097,16 +10180,22 @@ falaw.errors.FalTermsViolation: ...
 
 | [`check_terms`](_autosummary/falaw.terms.html.md#falaw.terms.check_terms)(model_id, backend, context, \*[, ...])   | Raise `FalTermsViolation` unless `(model_id, backend)` is usable for *context*.                                                                                                                                    |
 |-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`clearance`](_autosummary/falaw.terms.html.md#falaw.terms.clearance)(application, backend, context[, ...])      | The descriptive record a plan carries once [`check_terms()`](_autosummary/falaw.terms.html.md#falaw.terms.check_terms) passed: what was cleared, where, for which job.                                                          |
+| [`current_terms_context`](_autosummary/falaw.terms.html.md#falaw.terms.current_terms_context)()                              | The context bound by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context), else `None`.                                                                                                          |
+| [`effective_terms_context`](_autosummary/falaw.terms.html.md#falaw.terms.effective_terms_context)(explicit)                    | The context a check runs under: an explicit `terms_context=` argument wins; otherwise the one scoped by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context).                                    |
 | [`get_terms`](_autosummary/falaw.terms.html.md#falaw.terms.get_terms)(model_id, backend, \*[, ledger])           | The row for `(model_id, backend)`, or `None` when nobody reviewed it.                                                                                                                                              |
+| [`is_cleared`](_autosummary/falaw.terms.html.md#falaw.terms.is_cleared)(call, context)                            | (Describes what the stamp says, not the ledger's later edits.) Whether *call* (a `CallPlan`) carries a clearance that still describes it: same model and backend as now, for exactly *context*.                    |
 | [`load_terms`](_autosummary/falaw.terms.html.md#falaw.terms.load_terms)([path])                                   | The ledger as `{(model_id, backend): ModelTerms}` (cached per path).                                                                                                                                               |
+| [`terms_subject`](_autosummary/falaw.terms.html.md#falaw.terms.terms_subject)(application[, arguments])              | The model id the ledger judges for this call: the routed model for a router such as `fal-ai/any-llm`, else *application* itself.                                                                                   |
 | [`third_party_tenancy_ok`](_autosummary/falaw.terms.html.md#falaw.terms.third_party_tenancy_ok)(model_id, backend, \*)        | The routing-visible projection: may a router send third-party work to `(model_id, backend)` without consulting the full ledger? `False` when unsure — the cheap 80%, so a router can drop an incompatible backend. |
 | [`unreviewed_models`](_autosummary/falaw.terms.html.md#falaw.terms.unreviewed_models)(\*[, ledger, backend])             | Catalogue models with no ledger row on *backend* — what still needs a human read of the terms (each is refused under a strict context).                                                                            |
+| [`using_terms_context`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context)(context)                         | Scope *context* over every call made inside the block, eager or planned.                                                                                                                                           |
 
 ### Classes
 
-| [`ModelTerms`](_autosummary/falaw.terms.html.md#falaw.terms.ModelTerms)(\*, model_id, backend[, license, ...])   | One ledger row.                                                           |
-|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------|
-| [`TermsContext`](_autosummary/falaw.terms.html.md#falaw.terms.TermsContext)(\*[, commercial, third_party, c2pa])   | What the job needs from the terms — supplied by the caller, never global. |
+| [`ModelTerms`](_autosummary/falaw.terms.html.md#falaw.terms.ModelTerms)(\*, model_id, backend[, license, ...])   | One ledger row.                                                                                                                                                                                          |
+|------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`TermsContext`](_autosummary/falaw.terms.html.md#falaw.terms.TermsContext)(\*[, commercial, third_party, c2pa])   | What the job needs from the terms — supplied by the caller, never process-global (an explicit argument, or scoped to a block by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context)). |
 
 ### *class* falaw.terms.ModelTerms(, model_id, backend, license='unknown', license_binds_us='unknown', commercial_use='unknown', third_party_tenancy='unknown', c2pa_compatible='unknown', provenance_constraint='', notes='', source_url='', observed_on='')
 
@@ -10123,20 +10212,49 @@ cadence and is reviewed as a legal artifact.
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
-What the job needs from the terms — supplied by the caller, never global.
+What the job needs from the terms — supplied by the caller, never process-global
+(an explicit argument, or scoped to a block by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context)).
 
 The defaults describe the strictest ordinary use (commercial) without
 claiming anything extra; `third_party` and `c2pa` are opt-in because
 they are the facts only the deployment knows.
 
-### falaw.terms.check_terms(model_id, backend, context, , ledger=None)
+### falaw.terms.check_terms(model_id, backend, context, , ledger=None, arguments=None)
 
 Raise `FalTermsViolation` unless `(model_id, backend)` is
 usable for *context*. `context=None` (the default everywhere) checks
-nothing: the strict path is opt-in per deployment.
+nothing: the strict path is opt-in per deployment. Pass the call’s
+`arguments` so a router is judged by the model it routes to
+([`terms_subject()`](_autosummary/falaw.terms.html.md#falaw.terms.terms_subject)).
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.terms.clearance(application, backend, context, arguments=None)
+
+The descriptive record a plan carries once [`check_terms()`](_autosummary/falaw.terms.html.md#falaw.terms.check_terms) passed:
+what was cleared, where, for which job. Lives in `CallPlan.metadata`
+(never hashed), so a persisted plan can show it was cleared.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.terms.current_terms_context()
+
+The context bound by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context), else `None`.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TermsContext`](_autosummary/falaw.terms.html.md#falaw.terms.TermsContext)]
+
+### falaw.terms.effective_terms_context(explicit)
+
+The context a check runs under: an explicit `terms_context=` argument
+wins; otherwise the one scoped by [`using_terms_context()`](_autosummary/falaw.terms.html.md#falaw.terms.using_terms_context). (Entry
+points that take no argument still enforce the scoped one at the call
+chokepoints, so the strictest applicable check always runs.)
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TermsContext`](_autosummary/falaw.terms.html.md#falaw.terms.TermsContext)]
 
 ### falaw.terms.get_terms(model_id, backend, , ledger=None)
 
@@ -10145,12 +10263,30 @@ The row for `(model_id, backend)`, or `None` when nobody reviewed it.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`ModelTerms`](_autosummary/falaw.terms.html.md#falaw.terms.ModelTerms)]
 
+### falaw.terms.is_cleared(call, context)
+
+(Describes what the stamp says, not the ledger’s later edits.) Whether *call* (a `CallPlan`) carries a clearance that still describes
+it: same model and backend as now, for exactly *context*. A call re-targeted
+after planning (`dataclasses.replace(call, backend=...)`, a replayed or
+repriced plan) fails this, so it must be re-checked, never trusted.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
 ### falaw.terms.load_terms(path=None)
 
 The ledger as `{(model_id, backend): ModelTerms}` (cached per path).
 
 * **Return type:**
   [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`ModelTerms`](_autosummary/falaw.terms.html.md#falaw.terms.ModelTerms)]
+
+### falaw.terms.terms_subject(application, arguments=None)
+
+The model id the ledger judges for this call: the routed model for a
+router such as `fal-ai/any-llm`, else *application* itself.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.terms.third_party_tenancy_ok(model_id, backend, , ledger=None)
 
@@ -10168,6 +10304,19 @@ human read of the terms (each is refused under a strict context).
 
 * **Return type:**
   [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### falaw.terms.using_terms_context(context)
+
+Scope *context* over every call made inside the block, eager or planned.
+
+The eager verbs (`generate_image`, `render_scene`, …) take no
+`terms_context`; this is the one seam that covers all of them, enforced
+where every call passes ([`falaw.cache.cached_call_fal()`](_autosummary/falaw.cache.html.md#falaw.cache.cached_call_fal),
+[`falaw.core.call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_fal)). Scoped to the block (and its threads/tasks),
+never process-global: the deployment decides, per job.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 
 # _autosummary/falaw.testing.html.md
@@ -10647,16 +10796,18 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-26 17:42 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/9fc44770df4c39c4d4297a852723c2e261099d40"><code>9fc4477</code></a> on branch <code>main</code>, for **falaw 0.0.73** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 17:59 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/9ab1159a1b2cafd76bcb525bf7cc4a7ea02c969a"><code>9ab1159</code></a> on branch <code>main</code>, for **falaw 0.0.74** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.74) is behind the latest release on PyPI (0.0.75): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/9fc44770df4c39c4d4297a852723c2e261099d40"><code>9fc44770df4c39c4d4297a852723c2e261099d40</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/9ab1159a1b2cafd76bcb525bf7cc4a7ea02c969a"><code>9ab1159a1b2cafd76bcb525bf7cc4a7ea02c969a</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10667,9 +10818,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40370760444">40370760444</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40373498515">40373498515</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>9fc44770df4c39c4d4297a852723c2e261099d40</code> (in the history of the built commit) |
+| Event commit | <code>9ab1159a1b2cafd76bcb525bf7cc4a7ea02c969a</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -10694,13 +10845,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.73/">0.0.73</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.75/">0.0.75</a>, newer than the documented version (0.0.74).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 9fc44770df4c39c4d4297a852723c2e261099d40
+git checkout 9ab1159a1b2cafd76bcb525bf7cc4a7ea02c969a
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

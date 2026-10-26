@@ -15,10 +15,16 @@ falaw.terms
    .. autosummary::
    
       check_terms
+      clearance
+      current_terms_context
+      effective_terms_context
       get_terms
+      is_cleared
       load_terms
+      terms_subject
       third_party_tenancy_ok
       unreviewed_models
+      using_terms_context
    
    .. rubric:: Classes
 
