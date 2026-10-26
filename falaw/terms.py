@@ -43,12 +43,14 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import asdict, dataclass, fields
 from functools import lru_cache
+from hashlib import sha256
 from types import MappingProxyType
 from pathlib import Path
 from typing import Optional
 
 from .errors import FalTermsViolation
 from .licences import validate_licence
+from .routing import ROUTERS, routed_model  # noqa: F401  (ROUTERS re-exported)
 
 TERMS_PATH = Path(__file__).parent / "data" / "model_terms.json"
 """The ledger — separate from ``models.json`` so it refreshes on its own
@@ -57,11 +59,18 @@ cadence and is reviewed as a legal artifact."""
 TRI_STATE = frozenset({"yes", "no", "unknown"})
 PERMISSION = frozenset({"allowed", "forbidden", "unknown"})
 
-ROUTERS = MappingProxyType(
-    {"fal-ai/any-llm": "model", "fal-ai/any-llm/vision": "model"}
+DECISIVE_FIELDS = (
+    "license",
+    "license_binds_us",
+    "commercial_use",
+    "third_party_tenancy",
+    "c2pa_compatible",
+    "provenance_constraint",
 )
-"""Applications that route to another model, mapped to the argument naming it.
-The routed model is who actually serves the call, so it is the ledger subject."""
+"""The ledger fields :func:`_refusal` reads: a change to one can change a verdict."""
+
+ROW_DIGEST_CHARS = 16
+"""Hex characters of a row's digest kept in a clearance stamp."""
 
 CLEARANCE_KEY = "terms_cleared"
 """``CallPlan.metadata`` key under which a cleared plan records its clearance."""
@@ -180,10 +189,9 @@ def effective_terms_context(explicit: Optional[TermsContext]) -> Optional[TermsC
 
 def terms_subject(application: str, arguments: Optional[Mapping] = None) -> str:
     """The model id the ledger judges for this call: the routed model for a
-    router such as ``fal-ai/any-llm``, else *application* itself."""
-    arg = ROUTERS.get(application)
-    routed = (arguments or {}).get(arg) if arg else None
-    return routed if isinstance(routed, str) and routed else application
+    router such as ``fal-ai/any-llm`` (:func:`falaw.routing.routed_model`), else
+    *application* itself."""
+    return routed_model(application, arguments)
 
 
 def _refusal(row: Optional[ModelTerms], context: TermsContext) -> Optional[str]:
@@ -246,29 +254,55 @@ def check_terms(
     )
 
 
+def row_digest(row: Optional[ModelTerms]) -> str:
+    """A short digest of the fields of a ledger row that decide a clearance
+    (``""`` for no row): the version of the terms a clearance was granted
+    under, so an edit to a verdict shows up even when nobody bumped
+    ``observed_on``. Prose fields (notes, source) and new fields do not move it."""
+    if row is None:
+        return ""
+    blob = json.dumps(
+        {name: getattr(row, name) for name in DECISIVE_FIELDS}, sort_keys=True
+    ).encode("utf-8")
+    return sha256(blob).hexdigest()[:ROW_DIGEST_CHARS]
+
+
 def clearance(
     application: str,
     backend: str,
     context: TermsContext,
     arguments: Optional[Mapping] = None,
+    *,
+    ledger: Optional[Mapping] = None,
 ) -> dict:
     """The descriptive record a plan carries once :func:`check_terms` passed:
-    what was cleared, where, for which job. Lives in ``CallPlan.metadata``
-    (never hashed), so a persisted plan can show it was cleared."""
+    what was cleared, where, for which job, under which version of the row.
+    Lives in ``CallPlan.metadata`` (never hashed), so a persisted plan can show
+    it was cleared."""
+    model = terms_subject(application, arguments)
     return {
-        "model": terms_subject(application, arguments),
+        "model": model,
         "backend": backend,
         "context": asdict(context),
+        "row": row_digest(get_terms(model, backend, ledger=ledger)),
     }
 
 
-def is_cleared(call, context: TermsContext) -> bool:
-    """(Describes what the stamp says, not the ledger's later edits.) Whether *call* (a ``CallPlan``) carries a clearance that still describes
-    it: same model and backend as now, for exactly *context*. A call re-targeted
-    after planning (``dataclasses.replace(call, backend=...)``, a replayed or
-    repriced plan) fails this, so it must be re-checked, never trusted."""
+def is_cleared(
+    call, context: TermsContext, *, ledger: Optional[Mapping] = None
+) -> bool:
+    """Whether *call* (a ``CallPlan``) carries a clearance that still describes
+    it: same model and backend as now, for exactly *context*, under the ledger
+    row as it reads now. A call re-targeted after planning
+    (``dataclasses.replace(call, backend=...)``, a replayed or repriced plan) or
+    whose row was edited since fails this, so it must be re-checked, never
+    trusted. Stamps are issued against the default ledger; pass ``ledger=`` to
+    verify against another. A stamp from before the row digest existed has no
+    ``row`` and reads as not cleared."""
     stamp = call.metadata.get(CLEARANCE_KEY)
-    return stamp == clearance(call.application, call.backend, context, call.arguments)
+    return stamp == clearance(
+        call.application, call.backend, context, call.arguments, ledger=ledger
+    )
 
 
 def third_party_tenancy_ok(
@@ -301,6 +335,7 @@ __all__ = [
     "current_terms_context",
     "effective_terms_context",
     "get_terms",
+    "row_digest",
     "is_cleared",
     "load_terms",
     "terms_subject",

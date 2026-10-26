@@ -389,3 +389,49 @@ def test_a_scene_render_cache_hit_is_not_served_under_a_terms_context(monkeypatc
         with pytest.raises(FalTermsViolation):
             render.render_shot(shot, quality="high")
     assert served == []
+
+
+def test_a_clearance_goes_stale_when_its_ledger_row_is_edited():
+    import dataclasses
+
+    from falaw.terms import is_cleared, load_terms
+
+    ctx = TermsContext(third_party=True)
+    call = falaw.plan.make_call_plan(
+        tool="generate_image",
+        application="fal-ai/flux/schnell",
+        arguments={"prompt": "p"},
+        output_kind="image",
+        backend=SELF_HOSTED,
+        consult_cache=False,
+        terms_context=ctx,
+    )
+    ledger = dict(load_terms())
+    assert is_cleared(call, ctx, ledger=ledger)
+    key = ("fal-ai/flux/schnell", SELF_HOSTED)
+    ledger[key] = dataclasses.replace(ledger[key], third_party_tenancy="unknown")
+    assert not is_cleared(call, ctx, ledger=ledger)
+
+
+def test_one_routing_rule_serves_terms_and_the_llm_receipt():
+    from falaw import routing, terms
+    from falaw.operations import llm
+
+    assert terms.ROUTERS is routing.ROUTERS
+    assert llm._DEFAULT_LLM in routing.ROUTERS
+    args = {"model": "anthropic/claude-sonnet-4.5"}
+    assert terms.terms_subject(llm._DEFAULT_LLM, args) == routing.routed_model(
+        llm._DEFAULT_LLM, args
+    )
+
+
+def test_the_row_digest_ignores_prose_and_follows_verdicts():
+    import dataclasses
+
+    from falaw.terms import get_terms, row_digest
+
+    row = get_terms("fal-ai/flux/schnell", SELF_HOSTED)
+    assert row_digest(dataclasses.replace(row, notes="reworded")) == row_digest(row)
+    assert row_digest(dataclasses.replace(row, commercial_use="unknown")) != row_digest(
+        row
+    )
