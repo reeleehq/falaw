@@ -108,6 +108,12 @@ class ModelRecord:
     default_negative_prompt: str = ""
     """Quality/realism negatives worth appending by default (e.g. to avoid the
     plastic-skin look). Empty when none."""
+    default_pick: bool = True
+    """Whether :func:`falaw.pick_model` may choose this record when a caller names
+    only a category and tier. ``False`` for a record that is catalogued, priced
+    and usable by id or alias but must never become the default — so its
+    ``quality_tier`` can state its real quality, and a price refresh's re-sort
+    cannot promote it (falaw#95)."""
     tokens_per_pixel_second: Optional[float] = None
     """For a model billed per *video token*: tokens = width x height x seconds
     x this (Seedance: 24/1024). With a ``per_token`` ``cost_estimate`` it lets

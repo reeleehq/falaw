@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "ed9eb733484c";
+export const MODELS_TABLE_VERSION = "fccd6f3beb94";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -1087,18 +1087,18 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "bytedance/seedance-2.0/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedance2-t2v"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "high",
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
     "cost_estimate": {
       "kind": "per_token",
       "amount": 0.000014,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1150,24 +1150,32 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
           "9:16"
         ],
         "default": "auto"
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "bytedance/seedance-2.0/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedance2-i2v"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "high",
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video",
     "cost_estimate": {
       "kind": "per_token",
       "amount": 0.000014,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1219,8 +1227,16 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
           "9:16"
         ],
         "default": "auto"
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "bytedance/seedance-2.0/reference-to-video",
@@ -1236,7 +1252,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.000014,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1297,24 +1313,31 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       },
       "audio_urls": {
         "max_items": 3
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
     }
   },
   {
     "id": "bytedance/seedance-2.0/fast/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only. Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only. Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedance2-fast-t2v"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "balanced",
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video",
     "cost_estimate": {
       "kind": "per_token",
       "amount": 0.0000112,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1362,24 +1385,32 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
           "9:16"
         ],
         "default": "auto"
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "bytedance/seedance-2.0/fast/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only. Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only. Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedance2-fast-i2v"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "balanced",
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video",
     "cost_estimate": {
       "kind": "per_token",
       "amount": 0.0000112,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1427,8 +1458,16 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
           "9:16"
         ],
         "default": "auto"
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "bytedance/seedance-2.0/fast/reference-to-video",
@@ -1444,7 +1483,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "kind": "per_token",
       "amount": 0.0000112,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities).  The recorded rate is the 480p-1080p ceiling: 4K bills $0.008/1k, and reference-to-video with video inputs about 0.6x ($0.0086/1k).",
       "source": "api"
     },
     "max_clip_seconds": 15,
@@ -1501,24 +1540,31 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       },
       "audio_urls": {
         "max_items": 3
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
     }
   },
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio). Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedance15-t2v"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "high",
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
     "cost_estimate": {
       "kind": "per_token",
-      "amount": 0.0000012,
+      "amount": 0.0000024,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal model page, checked 2026-10-26: $2.40 per 1M video tokens with audio (the default, generate_audio=true), $1.20 without; this is the audio-on ceiling. Billed per video token: width*height*24*seconds/1024.",
       "source": "api"
     },
     "max_clip_seconds": 12,
@@ -1564,24 +1610,32 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
           "auto"
         ],
         "default": "16:9"
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio). Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedance15-i2v"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "high",
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
     "cost_estimate": {
       "kind": "per_token",
-      "amount": 0.0000012,
+      "amount": 0.0000024,
       "currency": "USD",
-      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "notes": "fal model page, checked 2026-10-26: $2.40 per 1M video tokens with audio (the default, generate_audio=true), $1.20 without; this is the audio-on ceiling. Billed per video token: width*height*24*seconds/1024.",
       "source": "api"
     },
     "max_clip_seconds": 12,
@@ -1627,17 +1681,25 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
           "auto"
         ],
         "default": "16:9"
+      },
+      "generate_audio": {
+        "enum": [
+          true,
+          false
+        ],
+        "default": true
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "fal-ai/bytedance/seedream/v4.5/text-to-image",
     "category": "image",
-    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total between 2560x1440 and 4096x4096 pixels (enforced at plan time). Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedream45"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "high",
     "cost_hint": "medium",
     "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image",
     "cost_estimate": {
@@ -1662,18 +1724,21 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
         "default": {
           "height": 2048,
           "width": 2048
-        }
+        },
+        "min_pixels": 3686400,
+        "max_pixels": 16777216
       }
-    }
+    },
+    "default_pick": false
   },
   {
     "id": "fal-ai/bytedance/seedream/v4.5/edit",
     "category": "image_edit",
-    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
+    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total between 2560x1440 and 4096x4096 pixels (enforced at plan time). Priced and usable by id/alias; opted out of default picks (falaw#95).",
     "aliases": [
       "seedream45-edit"
     ],
-    "quality_tier": "unranked",
+    "quality_tier": "high",
     "cost_hint": "medium",
     "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit",
     "cost_estimate": {
@@ -1698,8 +1763,11 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
         "default": {
           "height": 2048,
           "width": 2048
-        }
+        },
+        "min_pixels": 3686400,
+        "max_pixels": 16777216
       }
-    }
+    },
+    "default_pick": false
   }
 ]);

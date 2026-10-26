@@ -40,7 +40,10 @@ export function getModel(id: string): ModelRecord {
  *  category is empty. */
 export function pickModel(opts: { readonly category: string; readonly qualityTier?: string }): ModelRecord {
   const tier = opts.qualityTier ?? 'balanced';
-  const candidates = listModels({ category: opts.category });
+  const everything = listModels({ category: opts.category });
+  // A record opted out of default picks never wins; a category made only of them still answers.
+  const eligible = everything.filter((m) => m.default_pick !== false);
+  const candidates = eligible.length ? eligible : everything;
   const firstWithTier = (t: string) => candidates.find((m) => m.quality_tier === t) ?? null;
   const exact = firstWithTier(tier);
   if (exact) return exact;

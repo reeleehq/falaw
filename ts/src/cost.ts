@@ -88,6 +88,16 @@ export function numericSeconds(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Pixels per frame of a named resolution at a "W:H" aspect (`falaw.cost.frame_pixels`). */
+export function framePixels(resolution: string, aspectRatio?: string | null): number {
+  const short = (CONSTANTS.video_resolution_short_side as Record<string, number>)[resolution]!;
+  const ratio = !aspectRatio || aspectRatio === 'auto' ? CONSTANTS.default_video_aspect : aspectRatio;
+  const parts = String(ratio).split(':');
+  const [w, h] = parts.map((p) => (/^\d+$/.test(p.trim()) ? Number(p) : 0));
+  if (parts.length !== 2 || !w || !h) throw new Error(`aspect_ratio must look like '16:9' or 'auto', got ${JSON.stringify(ratio)}`);
+  return (short * short * Math.max(w, h)) / Math.min(w, h);
+}
+
 /** The quantity hints that price one video call (`falaw.cost.video_price_quantities`):
  *  `{tokens}` for a per-video-token model, `{seconds}` otherwise, `{}` when the duration
  *  is unknown (unpriceable, never free). */
@@ -95,16 +105,17 @@ export function videoPriceQuantities(
   record: Pick<ModelRecord, 'id' | 'tokens_per_pixel_second' | 'param_specs'>,
   seconds: number | null | undefined,
   resolution?: string | null,
+  aspectRatio?: string | null,
 ): Omit<CostHints, 'count'> {
   if (seconds == null) return {};
   const factor = record.tokens_per_pixel_second;
   if (factor == null) return { seconds };
   const spec = record.param_specs.resolution;
   const res = resolution || (spec?.default as string | undefined) || CONSTANTS.default_video_resolution;
-  const table = CONSTANTS.video_resolution_pixels as Record<string, number>;
-  const allowed = (spec?.enum as string[] | undefined) ?? Object.keys(table).sort();
-  if (!allowed.includes(res) || table[res] === undefined) {
+  const shortSides = CONSTANTS.video_resolution_short_side as Record<string, number>;
+  const allowed = (spec?.enum as string[] | undefined) ?? Object.keys(shortSides).sort();
+  if (!allowed.includes(res) || shortSides[res] === undefined) {
     throw new Error(`${record.id} does not offer resolution '${res}'; expected one of ${JSON.stringify(allowed)}`);
   }
-  return { tokens: roundHalfEven(table[res] * seconds * factor) };
+  return { tokens: roundHalfEven(framePixels(res, aspectRatio) * seconds * factor) };
 }

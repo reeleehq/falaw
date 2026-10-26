@@ -63,17 +63,33 @@ a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same."""
 
 
-RESOLUTION_PIXELS = {
-    "480p": 854 * 480,
-    "720p": 1280 * 720,
-    "1080p": 1920 * 1080,
-    "4k": 3840 * 2160,
-}
-"""Pixels per frame of fal's named video resolutions (16:9; other aspect ratios
-bill within about a percent of this). Feeds :func:`video_price_quantities`."""
+RESOLUTION_SHORT_SIDE = {"480p": 480, "720p": 720, "1080p": 1080, "4k": 2160}
+"""The short side, in pixels, of fal's named video resolutions. The frame is
+that squared times the aspect ratio's long/short ratio (:func:`frame_pixels`)."""
+
+DFLT_VIDEO_ASPECT = "16:9"
+"""Aspect ratio assumed when none is given or fal derives it (``"auto"``, from
+the input image): the common case, and 1:1 or 4:3 then over-quote."""
 
 DFLT_VIDEO_RESOLUTION = "720p"
 """Resolution assumed for a token-billed video model that records no default."""
+
+
+def frame_pixels(resolution: str, aspect_ratio: str | None = None) -> float:
+    """Pixels per frame of a ``resolution`` at ``aspect_ratio`` (``"W:H"``).
+
+    An estimate within about a percent of what fal bills (it rounds frame
+    sides to codec-friendly multiples): ``short_side ** 2 * long / short``.
+    """
+    short = RESOLUTION_SHORT_SIDE[resolution]
+    ratio = DFLT_VIDEO_ASPECT if aspect_ratio in (None, "", "auto") else aspect_ratio
+    try:
+        w, h = (int(part) for part in str(ratio).split(":"))
+    except ValueError:
+        w = h = 0
+    if w <= 0 or h <= 0:
+        raise ValueError(f"aspect_ratio must look like '16:9' or 'auto', got {ratio!r}")
+    return short * short * max(w, h) / min(w, h)
 
 
 def video_price_quantities(
@@ -81,13 +97,15 @@ def video_price_quantities(
     *,
     seconds: float | None = None,
     resolution: str | None = None,
+    aspect_ratio: str | None = None,
 ) -> dict:
     """The quantity hints that price one video call against ``record``.
 
     ``{"tokens": n}`` for a model billed per video token (its
     ``tokens_per_pixel_second`` is set), else ``{"seconds": s}``; ``{}`` when
     ``seconds`` is unknown, so the call stays unpriceable rather than free.
-    ``resolution`` defaults to the model's recorded default.
+    ``resolution`` defaults to the model's recorded default; ``aspect_ratio``
+    to :data:`DFLT_VIDEO_ASPECT`.
     """
     if seconds is None:
         return {}
@@ -96,13 +114,14 @@ def video_price_quantities(
         return {"seconds": seconds}
     spec = record.param_specs.get("resolution", {})
     resolution = resolution or spec.get("default") or DFLT_VIDEO_RESOLUTION
-    allowed = spec.get("enum") or sorted(RESOLUTION_PIXELS)
-    if resolution not in allowed or resolution not in RESOLUTION_PIXELS:
+    allowed = spec.get("enum") or sorted(RESOLUTION_SHORT_SIDE)
+    if resolution not in allowed or resolution not in RESOLUTION_SHORT_SIDE:
         raise ValueError(
             f"{record.id} does not offer resolution {resolution!r}; "
             f"expected one of {list(allowed)}"
         )
-    return {"tokens": round(RESOLUTION_PIXELS[resolution] * seconds * factor)}
+    pixels = frame_pixels(resolution, aspect_ratio)
+    return {"tokens": round(pixels * seconds * factor)}
 
 
 def video_duration_arg(record: ModelRecord, duration_s: float) -> str:

@@ -174,7 +174,10 @@ def pick_model(
     has the exact tier, neighboring tiers are tried. KeyError only when
     the category is empty.
     """
-    candidates = list_models(category=category)
+    everything = list_models(category=category)
+    # A record opted out of default picks never wins; a category made only of
+    # such records (nothing else to offer) still answers.
+    candidates = [m for m in everything if m.default_pick] or everything
 
     def _first_with_tier(tier: str) -> Optional[ModelRecord]:
         return next((m for m in candidates if m.quality_tier == tier), None)

@@ -116,7 +116,12 @@ function planVideo(tool: string, args: Record<string, unknown>, input: VideoInpu
     if (input.durationS != null && !('duration' in merged)) merged.duration = videoDurationArg(record, input.durationS);
     seconds = numericSeconds(merged.duration);
   }
-  const quantities = videoPriceQuantities(record, seconds, merged.resolution as string | undefined);
+  const quantities = videoPriceQuantities(
+    record,
+    seconds,
+    merged.resolution as string | undefined,
+    merged.aspect_ratio as string | undefined,
+  );
   return makeCallPlan({
     tool,
     application: record.id,
