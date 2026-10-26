@@ -293,6 +293,7 @@ def _plan_video(
         metadata=metadata,
         consult_cache=consult_cache,
         cost_basis=basis,
+        expected_duration_s=record.typical_duration_s,
     )
 
 

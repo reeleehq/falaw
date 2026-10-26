@@ -403,7 +403,9 @@ def test_4k_quote_is_the_1080p_style_math_times_the_factor():
     expected = 3840 * 2160 * 5 * rec.tokens_per_pixel_second * 0.572
     assert at_4k["tokens"] == round(expected)
     # No factor for a resolution that bills the recorded rate.
-    at_1080 = video_price_quantities(rec, seconds=5, resolution="1080p", aspect_ratio="16:9")
+    at_1080 = video_price_quantities(
+        rec, seconds=5, resolution="1080p", aspect_ratio="16:9"
+    )
     assert at_1080["tokens"] == round(1920 * 1080 * 5 * rec.tokens_per_pixel_second)
 
 
@@ -412,3 +414,15 @@ def test_reference_videos_are_not_discounted_until_fal_billing_is_verified():
     images = falaw.plan_reference_to_video("x", image_urls=["https://x/a.png"], **kw)
     videos = falaw.plan_reference_to_video("x", video_urls=["https://x/a.mp4"], **kw)
     assert videos.estimated_cost_usd == images.estimated_cost_usd
+
+
+def test_a_measured_latency_reaches_the_plan_as_the_expected_duration():
+    kw = dict(duration_s=5, consult_cache=False)
+    seedance = falaw.plan_text_to_video("x", model_id="seedance2-t2v", **kw)
+    assert seedance.expected_duration_s == (240.0, 420.0)
+    assert falaw.plan_reference_to_video("x", model_id="seedance2-ref", **kw)
+    # a model with no measurement says nothing rather than guessing
+    assert (
+        falaw.plan_text_to_video("x", model_id="seedance-t2v", **kw).expected_duration_s
+        is None
+    )

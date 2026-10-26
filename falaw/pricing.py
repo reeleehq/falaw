@@ -278,6 +278,7 @@ def refresh_model_prices(
     unmapped: dict[str, str] = {}
     missing_from_api: list[str] = []
     stamped_ids: set = set()
+    carries_factors = {r["id"] for r in records if r.get("resolution_rate_factors")}
 
     for record in records:
         row = prices.get(record["id"])
@@ -353,6 +354,11 @@ def refresh_model_prices(
         "newly_priced": sorted(newly_priced),
         "price_deltas": overwritten,
         "restamped": sorted(restamped),
+        # resolution_rate_factors are fractions of cost_estimate.amount, so a
+        # moved rate moves these quotes too: the caller should re-check them.
+        "rate_factors_to_review": sorted(
+            d["id"] for d in overwritten if d["id"] in carries_factors
+        ),
         "rejected_rows": rejected_rows,
         "unmapped_units": unmapped,
         "missing_from_api": sorted(missing_from_api),
