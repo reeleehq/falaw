@@ -158,3 +158,77 @@ def test_every_plan_function_accepts_terms_context():
         and "terms_context" not in inspect.signature(fn).parameters
     ]
     assert not missing
+
+
+# ── review regressions ──────────────────────────────────────────────────────
+
+_REFUSE_ALL = TermsContext(third_party=True)
+
+
+def test_execution_checks_every_call_whatever_its_backend_before_running_any():
+    from falaw import CallPlan, Plan, execute_plan
+
+    ok = CallPlan(
+        tool="t",
+        application="fal-ai/flux/schnell",
+        backend=SELF_HOSTED,
+        arguments={},
+        output_kind="image",
+    )
+    bad = CallPlan(
+        tool="t",
+        application="fal-ai/flux/dev",
+        backend=SELF_HOSTED,
+        arguments={},
+        output_kind="image",
+    )
+    plan = Plan(calls=(ok, bad))
+    with pytest.raises(FalTermsViolation, match="forbidden"):
+        execute_plan(plan, dry_run=True, terms_context=_REFUSE_ALL)
+    assert (
+        len(execute_plan(Plan(calls=(ok,)), dry_run=True, terms_context=_REFUSE_ALL))
+        == 1
+    )
+    assert len(execute_plan(plan, dry_run=True)) == 2  # no context: unchanged
+
+
+def test_a_definite_prohibition_outranks_an_unknown():
+    with pytest.raises(FalTermsViolation, match="commercial_use is forbidden"):
+        check_terms("fal-ai/mmaudio-v2/text-to-audio", HOSTED, TermsContext())
+
+
+def test_the_ledger_cannot_be_mutated_by_a_caller():
+    with pytest.raises(TypeError):
+        load_terms()[("x", "y")] = _row()
+
+
+def test_tenancy_projection_counts_commercial_use():
+    row = _row(commercial_use="forbidden")
+    assert not third_party_tenancy_ok("m", "b", ledger=_ledger(row))
+
+
+def _plan_calls():
+    """One refusing-able call per plan_* function (minimal valid arguments)."""
+    img = "https://x/y.png"
+    aud = "https://x/y.mp3"
+    return {
+        "plan_generate_image": lambda **k: _plan.plan_generate_image("p", **k),
+        "plan_edit_image": lambda **k: _plan.plan_edit_image(img, "p", **k),
+        "plan_image_to_video": lambda **k: _plan.plan_image_to_video(img, "p", **k),
+        "plan_text_to_video": lambda **k: _plan.plan_text_to_video("p", **k),
+        "plan_animate_face": lambda **k: _plan.plan_animate_face(img, aud, **k),
+        "plan_lipsync": lambda **k: _plan.plan_lipsync(img, aud, **k),
+        "plan_text_to_speech": lambda **k: _plan.plan_text_to_speech("p", **k),
+        "plan_generate_audio": lambda **k: _plan.plan_generate_audio("p", **k),
+        "plan_llm_complete": lambda **k: _plan.plan_llm_complete("p", **k),
+    }
+
+
+@pytest.mark.parametrize("name", sorted(_plan_calls()))
+def test_each_plan_function_really_forwards_the_context(name, monkeypatch):
+    """Not just that the parameter exists: a refusing ledger must stop the plan."""
+    from falaw import terms
+
+    monkeypatch.setattr(terms, "load_terms", lambda path=None: {})
+    with pytest.raises(FalTermsViolation, match="no terms row"):
+        _plan_calls()[name](terms_context=TermsContext())

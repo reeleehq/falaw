@@ -6,6 +6,10 @@ Copyleft is the famous perimeter; vendor terms of service are the one that
 binds a commercial product. This module owns a per-``(model, backend)`` ledger
 (``falaw/data/model_terms.json``) and the plan-time check over it.
 
+Rows are keyed on ``CallPlan.application`` — the *resolved* model id, never an
+alias — and ``CallPlan.backend``. A self-hosted backend must therefore plan
+its calls under the catalogue model id the ledger row names.
+
 The key is ``(model, backend)``, not ``model``: the backend decides whether an
 upstream weights licence flows through to us. Through a hosted API the host
 holds the weights licence (``license_binds_us="no"``); the same weights
@@ -37,6 +41,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, fields
 from functools import lru_cache
+from types import MappingProxyType
 from pathlib import Path
 from typing import Optional
 
@@ -107,7 +112,7 @@ def _load(path: str) -> Mapping[tuple[str, str], ModelTerms]:
         if key in rows:
             raise ValueError(f"model_terms has a duplicate row for {key}")
         rows[key] = row
-    return rows
+    return MappingProxyType(rows)
 
 
 def load_terms(
@@ -125,26 +130,29 @@ def get_terms(
 
 
 def _refusal(row: Optional[ModelTerms], context: TermsContext) -> Optional[str]:
-    """The first clause that makes this row unusable for *context*, else None."""
+    """The clause that makes this row unusable for *context*, else None.
+
+    A definite prohibition outranks an unknown: "commercial use is forbidden"
+    tells the caller more than "binds_us is unknown" about the same row.
+    """
     if row is None:
         return "no terms row: nobody has reviewed this model on this backend"
-    if row.license_binds_us == "unknown":
-        return "license_binds_us is unknown (hosted vs. self-hosted position)"
+    needed = [("license_binds_us", row.license_binds_us, None)]
     if context.commercial:
-        if row.commercial_use == "forbidden":
-            return f"commercial use is forbidden ({row.license})"
-        if row.commercial_use == "unknown":
-            return "commercial_use is unknown"
+        needed.append(("commercial_use", row.commercial_use, "forbidden"))
     if context.third_party:
-        if row.third_party_tenancy == "forbidden":
-            return f"third-party tenancy is forbidden ({row.license})"
-        if row.third_party_tenancy == "unknown":
-            return "third_party_tenancy is unknown"
+        needed.append(("third_party_tenancy", row.third_party_tenancy, "forbidden"))
     if context.c2pa:
-        if row.c2pa_compatible == "no":
-            return f"incompatible with C2PA provenance: {row.provenance_constraint}"
-        if row.c2pa_compatible == "unknown":
-            return "c2pa_compatible is unknown"
+        needed.append(("c2pa_compatible", row.c2pa_compatible, "no"))
+    for name, value, prohibited in needed:
+        if value == prohibited:
+            detail = (
+                row.provenance_constraint if name == "c2pa_compatible" else row.license
+            )
+            return f"{name} is {prohibited}" + (f" ({detail})" if detail else "")
+    for name, value, _ in needed:
+        if value == "unknown":
+            return f"{name} is unknown"
     return None
 
 
@@ -182,7 +190,7 @@ def third_party_tenancy_ok(
     ``(model_id, backend)`` without consulting the full ledger? ``False`` when
     unsure — the cheap 80%, so a router can drop an incompatible backend."""
     row = get_terms(model_id, backend, ledger=ledger)
-    return _refusal(row, TermsContext(commercial=False, third_party=True)) is None
+    return _refusal(row, TermsContext(third_party=True)) is None
 
 
 def unreviewed_models(
