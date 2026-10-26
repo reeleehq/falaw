@@ -57,3 +57,32 @@ export function catalogueCostBasis(modelId: string, quantities: Omit<CostHints, 
     table_version: MODELS_TABLE_VERSION,
   };
 }
+
+/** Python's `round()` — halves go to the even neighbour (JS `Math.round` rounds them up). */
+export function roundHalfEven(x: number): number {
+  const floor = Math.floor(x);
+  const diff = x - floor;
+  if (diff < 0.5) return floor;
+  if (diff > 0.5) return floor + 1;
+  return floor % 2 === 0 ? floor : floor + 1;
+}
+
+/** The quantity hints that price one video call (`falaw.cost.video_price_quantities`):
+ *  `{tokens}` for a per-video-token model, `{seconds}` otherwise, `{}` when the duration
+ *  is unknown (unpriceable, never free). */
+export function videoPriceQuantities(
+  record: Pick<ModelRecord, 'id' | 'tokens_per_pixel_second' | 'param_specs'>,
+  seconds: number | null | undefined,
+  resolution?: string | null,
+): Omit<CostHints, 'count'> {
+  if (seconds == null) return {};
+  const factor = record.tokens_per_pixel_second;
+  if (factor == null) return { seconds };
+  const res =
+    resolution || (record.param_specs.resolution?.default as string | undefined) || CONSTANTS.default_video_resolution;
+  const pixels = (CONSTANTS.video_resolution_pixels as Record<string, number>)[res];
+  if (pixels === undefined) {
+    throw new Error(`${record.id}: unknown resolution '${res}'; expected one of ${Object.keys(CONSTANTS.video_resolution_pixels).sort().join(', ')}`);
+  }
+  return { tokens: roundHalfEven(pixels * seconds * factor) };
+}

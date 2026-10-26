@@ -62,6 +62,50 @@ a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same."""
 
 
+RESOLUTION_PIXELS = {
+    "480p": 854 * 480,
+    "720p": 1280 * 720,
+    "1080p": 1920 * 1080,
+    "4k": 3840 * 2160,
+}
+"""Pixels per frame of fal's named video resolutions (16:9; other aspect ratios
+bill within about a percent of this). Feeds :func:`video_price_quantities`."""
+
+DFLT_VIDEO_RESOLUTION = "720p"
+"""Resolution assumed for a token-billed video model that records no default."""
+
+
+def video_price_quantities(
+    record: ModelRecord,
+    *,
+    seconds: float | None = None,
+    resolution: str | None = None,
+) -> dict:
+    """The quantity hints that price one video call against ``record``.
+
+    ``{"tokens": n}`` for a model billed per video token (its
+    ``tokens_per_pixel_second`` is set), else ``{"seconds": s}``; ``{}`` when
+    ``seconds`` is unknown, so the call stays unpriceable rather than free.
+    ``resolution`` defaults to the model's recorded default.
+    """
+    if seconds is None:
+        return {}
+    factor = record.tokens_per_pixel_second
+    if factor is None:
+        return {"seconds": seconds}
+    resolution = (
+        resolution
+        or record.param_specs.get("resolution", {}).get("default")
+        or DFLT_VIDEO_RESOLUTION
+    )
+    if resolution not in RESOLUTION_PIXELS:
+        raise ValueError(
+            f"{record.id}: unknown resolution {resolution!r}; "
+            f"expected one of {sorted(RESOLUTION_PIXELS)}"
+        )
+    return {"tokens": round(RESOLUTION_PIXELS[resolution] * seconds * factor)}
+
+
 def estimate_call_cost(
     record: ModelRecord,
     *,
@@ -160,7 +204,9 @@ def _shot_pricing_lines(
 
     if shots_as_video:
         v_record = pick_model(category="image_to_video", quality_tier=quality)
-        v_cost = estimate_call_cost(v_record, seconds=duration)
+        v_cost = estimate_call_cost(
+            v_record, **video_price_quantities(v_record, seconds=duration)
+        )
         if v_cost is None:
             why = (
                 "no duration on the Shot, and the model is priced per second"

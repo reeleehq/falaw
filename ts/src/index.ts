@@ -23,13 +23,14 @@ export {
   makeCallPlan,
   planGenerateImage,
   planImageToVideo,
+  planTextToVideo,
   makePlan,
   totalCostUsd,
   billableCostUsd,
   hasUnknownCosts,
   planHash,
 } from './plan';
-export type { Plan, CallPlan, OutputKind, GenerateImageInput, ImageToVideoInput, MakeCallPlanOptions } from './plan';
+export type { Plan, CallPlan, OutputKind, GenerateImageInput, ImageToVideoInput, TextToVideoInput, MakeCallPlanOptions } from './plan';
 export { execute, hasPlaceholder } from './execute';
 export type { ExecutedCall, ExecuteOptions } from './execute';
 export { queueTransport } from './transport';

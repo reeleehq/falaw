@@ -476,20 +476,59 @@
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/pro/image-to-video",
     "cost_estimate": {
-      "kind": "per_second",
-      "amount": 0.2,
+      "kind": "per_token",
+      "amount": 2.5e-06,
       "currency": "USD",
-      "notes": "Seedance Pro i2v: ~$0.20/s (estimate; high tier).",
-      "source": "approximate"
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024, $2.5 per 1M).",
+      "source": "api"
     },
-    "max_clip_seconds": 10.0,
+    "max_clip_seconds": 12.0,
     "single_character_recommended": true,
     "supported_resolutions": [
       "480p",
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail"
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "default": "1080p"
+      },
+      "duration": {
+        "enum": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "default": "5"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "auto"
+        ],
+        "default": "auto"
+      }
+    }
   },
   {
     "id": "fal-ai/kling-video/v2.1/master/image-to-video",
@@ -739,20 +778,59 @@
     "cost_hint": "high",
     "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1/pro/text-to-video",
     "cost_estimate": {
-      "kind": "per_second",
-      "amount": 0.2,
+      "kind": "per_token",
+      "amount": 2.5e-06,
       "currency": "USD",
-      "notes": "Seedance Pro t2v: ~$0.20/s.",
-      "source": "approximate"
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024, $2.5 per 1M).",
+      "source": "api"
     },
-    "max_clip_seconds": 10.0,
+    "max_clip_seconds": 12.0,
     "single_character_recommended": true,
     "supported_resolutions": [
       "480p",
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail"
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "default": "1080p"
+      },
+      "duration": {
+        "enum": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "default": "5"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "auto"
+        ],
+        "default": "auto"
+      }
+    }
   },
   {
     "id": "fal-ai/veo3",
@@ -993,6 +1071,624 @@
       "currency": "USD",
       "notes": "fal model page: '$0.05 per megapixel', rounded up to the next megapixel, read 2026-10-13; endpoint marked deprecated.",
       "source": "docs"
+    }
+  },
+  {
+    "id": "bytedance/seedance-2.0/text-to-video",
+    "category": "text_to_video",
+    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "aliases": [
+      "seedance2-t2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.4e-05,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 15.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p",
+      "1080p",
+      "4k"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "auto",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "default": "auto"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "auto"
+      }
+    }
+  },
+  {
+    "id": "bytedance/seedance-2.0/image-to-video",
+    "category": "image_to_video",
+    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "aliases": [
+      "seedance2-i2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/image-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.4e-05,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 15.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p",
+      "1080p",
+      "4k"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "auto",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "default": "auto"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "auto"
+      }
+    }
+  },
+  {
+    "id": "bytedance/seedance-2.0/reference-to-video",
+    "category": "reference_to_video",
+    "description": "ByteDance Seedance 2.0 reference-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "aliases": [
+      "seedance2-ref"
+    ],
+    "quality_tier": "high",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/reference-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.4e-05,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 15.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p",
+      "1080p",
+      "4k"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p",
+          "4k"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "auto",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "default": "auto"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "auto"
+      },
+      "image_urls": {
+        "max_items": 9
+      },
+      "video_urls": {
+        "max_items": 3
+      },
+      "audio_urls": {
+        "max_items": 3
+      }
+    }
+  },
+  {
+    "id": "bytedance/seedance-2.0/fast/text-to-video",
+    "category": "text_to_video",
+    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only.",
+    "aliases": [
+      "seedance2-fast-t2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/text-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.12e-05,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 15.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "auto",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "default": "auto"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "auto"
+      }
+    }
+  },
+  {
+    "id": "bytedance/seedance-2.0/fast/image-to-video",
+    "category": "image_to_video",
+    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only.",
+    "aliases": [
+      "seedance2-fast-i2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/image-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.12e-05,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 15.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "auto",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "default": "auto"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "auto"
+      }
+    }
+  },
+  {
+    "id": "bytedance/seedance-2.0/fast/reference-to-video",
+    "category": "reference_to_video",
+    "description": "ByteDance Seedance 2.0 Fast reference-to-video: 0.8x the price, 480p/720p only.",
+    "aliases": [
+      "seedance2-fast-ref"
+    ],
+    "quality_tier": "balanced",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/bytedance/seedance-2.0/fast/reference-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.12e-05,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 15.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "auto",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "default": "auto"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "default": "auto"
+      },
+      "image_urls": {
+        "max_items": 9
+      },
+      "video_urls": {
+        "max_items": 3
+      },
+      "audio_urls": {
+        "max_items": 3
+      }
+    }
+  },
+  {
+    "id": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
+    "category": "text_to_video",
+    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio).",
+    "aliases": [
+      "seedance15-t2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.2e-06,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 12.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p",
+      "1080p"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "default": "5"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "auto"
+        ],
+        "default": "16:9"
+      }
+    }
+  },
+  {
+    "id": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+    "category": "image_to_video",
+    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio).",
+    "aliases": [
+      "seedance15-i2v"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "high",
+    "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 1.2e-06,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26 (billed per video token: width*height*24*seconds/1024; quote via falaw.cost.video_price_quantities). ",
+      "source": "api"
+    },
+    "max_clip_seconds": 12.0,
+    "single_character_recommended": true,
+    "supported_resolutions": [
+      "480p",
+      "720p",
+      "1080p"
+    ],
+    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
+    "tokens_per_pixel_second": 0.0234375,
+    "param_specs": {
+      "resolution": {
+        "enum": [
+          "480p",
+          "720p",
+          "1080p"
+        ],
+        "default": "720p"
+      },
+      "duration": {
+        "enum": [
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12"
+        ],
+        "default": "5"
+      },
+      "aspect_ratio": {
+        "enum": [
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16",
+          "auto"
+        ],
+        "default": "16:9"
+      }
+    }
+  },
+  {
+    "id": "fal-ai/bytedance/seedream/v4.5/text-to-image",
+    "category": "image",
+    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096).",
+    "aliases": [
+      "seedream45"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "medium",
+    "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/text-to-image",
+    "cost_estimate": {
+      "kind": "per_image",
+      "amount": 0.04,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26",
+      "source": "api"
+    },
+    "param_specs": {
+      "image_size": {
+        "enum": [
+          "square_hd",
+          "square",
+          "portrait_4_3",
+          "portrait_16_9",
+          "landscape_4_3",
+          "landscape_16_9",
+          "auto_2K",
+          "auto_4K"
+        ],
+        "default": {
+          "height": 2048,
+          "width": 2048
+        }
+      }
+    }
+  },
+  {
+    "id": "fal-ai/bytedance/seedream/v4.5/edit",
+    "category": "image_edit",
+    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096).",
+    "aliases": [
+      "seedream45-edit"
+    ],
+    "quality_tier": "unranked",
+    "cost_hint": "medium",
+    "docs_url": "https://fal.ai/models/fal-ai/bytedance/seedream/v4.5/edit",
+    "cost_estimate": {
+      "kind": "per_image",
+      "amount": 0.04,
+      "currency": "USD",
+      "notes": "fal pricing API, fetched 2026-10-26",
+      "source": "api"
+    },
+    "param_specs": {
+      "image_size": {
+        "enum": [
+          "square_hd",
+          "square",
+          "portrait_4_3",
+          "portrait_16_9",
+          "landscape_4_3",
+          "landscape_16_9",
+          "auto_2K",
+          "auto_4K"
+        ],
+        "default": {
+          "height": 2048,
+          "width": 2048
+        }
+      }
     }
   }
 ]

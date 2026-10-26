@@ -22,7 +22,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Optional
 
-from ..cost import estimate_call_cost
+from ..cost import estimate_call_cost, video_price_quantities
 from ..llm_rates import LlmRateTable, llm_ceiling_usd
 from ..plan import CallPlan, CostBasis, make_call_plan
 from ..registry import get_model, pick_model
@@ -255,6 +255,56 @@ def plan_composite_character_in_environment(
 # ---------------------------------------------------------------------------
 
 
+def _plan_video(
+    tool: str,
+    category: str,
+    arguments: dict,
+    *,
+    quality: str,
+    model_id: Optional[str],
+    duration_s: Optional[float],
+    extra: Optional[dict],
+    metadata: Optional[dict],
+    consult_cache: bool,
+) -> CallPlan:
+    """The planning body shared by the video verbs.
+
+    ``duration_s`` feeds the cost estimate. For a model that records a
+    ``duration`` parameter (Seedance spells it as a string enum) it is also
+    *sent*, so the quote is the duration that bills; elsewhere it stays
+    estimator-only, since models name that argument differently. ``extra``
+    wins over everything and the quote follows what it says.
+    """
+    application, record = _resolve_model_id_and_record(
+        model_id=model_id, category=category, quality_tier=quality
+    )
+    arguments = {**arguments, **(extra or {})}
+    if duration_s is not None and "duration" in record.param_specs:
+        arguments.setdefault("duration", str(max(1, int(round(duration_s)))))
+    seconds = duration_s
+    if "duration" in record.param_specs:
+        try:
+            seconds = float(arguments["duration"])
+        except (KeyError, TypeError, ValueError):  # absent, or fal's "auto"
+            seconds = None
+    cost, basis = _catalogue_price(
+        record,
+        **video_price_quantities(
+            record, seconds=seconds, resolution=arguments.get("resolution")
+        ),
+    )
+    return make_call_plan(
+        tool=tool,
+        application=application,
+        arguments=arguments,
+        output_kind="video",
+        estimated_cost_usd=cost,
+        metadata=metadata,
+        consult_cache=consult_cache,
+        cost_basis=basis,
+    )
+
+
 def plan_image_to_video(
     image_url: str,
     prompt: str = "",
@@ -268,26 +318,49 @@ def plan_image_to_video(
 ) -> CallPlan:
     """Plan a :func:`falaw.image_to_video` call.
 
-    ``duration_s`` is used only for cost estimation when the model is priced
-    ``per_second``; it does not get passed to fal unless the caller puts it
-    in ``extra`` (different models have different argument names).
+    ``duration_s`` is used for cost estimation (``per_second`` and
+    ``per_token`` models); it reaches fal only for models whose catalogue
+    record lists a ``duration`` parameter (see :func:`_plan_video`), else only
+    if the caller puts it in ``extra``.
     """
-    application, record = _resolve_model_id_and_record(
-        model_id=model_id, category="image_to_video", quality_tier=quality
-    )
-    arguments: dict = {"image_url": image_url, **(extra or {})}
+    arguments: dict = {"image_url": image_url}
     if prompt:
         arguments["prompt"] = prompt
-    cost, basis = _catalogue_price(record, seconds=duration_s)
-    return make_call_plan(
-        tool="image_to_video",
-        application=application,
-        arguments=arguments,
-        output_kind="video",
-        estimated_cost_usd=cost,
+    return _plan_video(
+        "image_to_video",
+        "image_to_video",
+        arguments,
+        quality=quality,
+        model_id=model_id,
+        duration_s=duration_s,
+        extra=extra,
         metadata=metadata,
         consult_cache=consult_cache,
-        cost_basis=basis,
+    )
+
+
+def plan_text_to_video(
+    prompt: str,
+    *,
+    quality: str = "high",
+    model_id: Optional[str] = None,
+    duration_s: Optional[float] = None,
+    extra: Optional[dict] = None,
+    metadata: Optional[dict] = None,
+    consult_cache: bool = True,
+) -> CallPlan:
+    """Plan a :func:`falaw.text_to_video` call — the sibling of
+    :func:`plan_image_to_video` (same duration and cost rules)."""
+    return _plan_video(
+        "text_to_video",
+        "text_to_video",
+        {"prompt": prompt},
+        quality=quality,
+        model_id=model_id,
+        duration_s=duration_s,
+        extra=extra,
+        metadata=metadata,
+        consult_cache=consult_cache,
     )
 
 
