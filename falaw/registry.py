@@ -65,6 +65,8 @@ def _load_models() -> dict[str, ModelRecord]:
         r["aliases"] = tuple(r.get("aliases") or ())
         if "supported_resolutions" in r:
             r["supported_resolutions"] = tuple(r.get("supported_resolutions") or ())
+        if r.get("typical_wall_time_s") is not None:
+            r["typical_wall_time_s"] = tuple(r["typical_wall_time_s"])
         ce = r.get("cost_estimate")
         if isinstance(ce, dict):
             r["cost_estimate"] = CostEstimate(**ce)

@@ -169,6 +169,23 @@
       ],
       "default": null,
       "title": "Tokens Per Pixel Second"
+    },
+    "typical_wall_time_s": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Typical Wall Time S"
     }
   },
   "required": [
