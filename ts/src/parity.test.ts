@@ -41,9 +41,9 @@ function plan(tool: string, input: Record<string, unknown>) {
   throw new Error(`no planner for ${tool}`);
 }
 
-/** Python omits `local_files` when empty (like `cost_basis`); absent reads as empty. */
+/** Python omits `local_files` when empty and `expected_wall_time_s` when unmeasured; absent reads as empty / null. */
 function withTolerated(call: Record<string, unknown>): Record<string, unknown> {
-  return { local_files: [], ...call };
+  return { local_files: [], expected_wall_time_s: null, ...call };
 }
 
 describe('plans', () => {

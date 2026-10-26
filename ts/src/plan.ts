@@ -33,6 +33,8 @@ export interface MakeCallPlanOptions {
   readonly backend?: string;
   readonly estimatedCostUsd?: number | null;
   readonly expectedDurationS?: readonly [number, number] | null;
+  /** Measured wall-clock range of the call (`ModelRecord.typical_wall_time_s`), not the clip length. */
+  readonly expectedWallTimeS?: readonly [number, number] | null;
   readonly metadata?: Readonly<Record<string, unknown>> | null;
   readonly costBasis?: CostBasis | null;
   /** Identity beyond the wire arguments (nw's Transform `impl_version`): joins the cache
@@ -58,6 +60,7 @@ export function makeCallPlan(opts: MakeCallPlanOptions): CallPlan {
     estimated_cost_usd: cost,
     cache_status: 'unknown',
     expected_duration_s: opts.expectedDurationS ? [...opts.expectedDurationS] : null,
+    expected_wall_time_s: opts.expectedWallTimeS ? [...opts.expectedWallTimeS] : null,
     metadata: { ...(opts.metadata ?? {}) },
     key_extra: { ...(opts.keyExtra ?? {}) },
     // Python omits the key when unset; `null` here parses identically on that side
@@ -132,6 +135,7 @@ function planVideo(tool: string, args: Record<string, unknown>, input: VideoInpu
     arguments: merged,
     outputKind: 'video',
     estimatedCostUsd: estimateCallCost(record, quantities),
+    expectedWallTimeS: record.typical_wall_time_s as [number, number] | null,
     metadata: input.metadata,
     costBasis: catalogueCostBasis(record.id, quantities),
   });

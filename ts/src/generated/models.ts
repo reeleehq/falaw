@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "63e5f7cd7a70";
+export const MODELS_TABLE_VERSION = "f0b3aec5a3e8";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -1162,7 +1162,11 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
     "default_pick": false,
     "resolution_rate_factors": {
       "4k": 0.572
-    }
+    },
+    "typical_wall_time_s": [
+      240,
+      420
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/image-to-video",
@@ -1242,7 +1246,11 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
     "default_pick": false,
     "resolution_rate_factors": {
       "4k": 0.572
-    }
+    },
+    "typical_wall_time_s": [
+      240,
+      420
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/reference-to-video",
@@ -1330,7 +1338,11 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
     },
     "resolution_rate_factors": {
       "4k": 0.572
-    }
+    },
+    "typical_wall_time_s": [
+      240,
+      420
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/fast/text-to-video",
