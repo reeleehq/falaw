@@ -20,14 +20,18 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 
 ### Module Attributes
 
-| [`DFLT_MEGAPIXELS`](#falaw.cost.DFLT_MEGAPIXELS)   | Pixel budget assumed for a `per_megapixel` call when the caller gives none: a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.   |
-|--------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DFLT_MEGAPIXELS`](#falaw.cost.DFLT_MEGAPIXELS)       | Pixel budget assumed for a `per_megapixel` call when the caller gives none: a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.   |
+|------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`RESOLUTION_PIXELS`](#falaw.cost.RESOLUTION_PIXELS)     | 9; other aspect ratios bill within about a percent of this).                                                                                                |
+| [`DFLT_VIDEO_RESOLUTION`](#falaw.cost.DFLT_VIDEO_RESOLUTION) | Resolution assumed for a token-billed video model that records no default.                                                                                  |
 
 ### Functions
 
-| [`estimate_call_cost`](#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                       |
-|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| [`estimate_scene_cost`](#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation. |
+| [`estimate_call_cost`](#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                 |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
+| [`estimate_scene_cost`](#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
+| [`video_duration_arg`](#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
+| [`video_price_quantities`](#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
 
 ### Classes
 
@@ -59,6 +63,18 @@ Sum per `kind` for quick inspection.
 Pixel budget assumed for a `per_megapixel` call when the caller gives none:
 a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same.
+
+### falaw.cost.DFLT_VIDEO_RESOLUTION *= '720p'*
+
+Resolution assumed for a token-billed video model that records no default.
+
+### falaw.cost.RESOLUTION_PIXELS *= {'1080p': 2073600, '480p': 409920, '4k': 8294400, '720p': 921600}*
+
+9; other aspect ratios
+bill within about a percent of this). Feeds [`video_price_quantities()`](#falaw.cost.video_price_quantities).
+
+* **Type:**
+  Pixels per frame of fal’s named video resolutions (16
 
 ### falaw.cost.estimate_call_cost(record, , count=1, seconds=None, megapixels=None, tokens=None)
 
@@ -106,3 +122,27 @@ Pass the length you expect (the beat path has the same knob as
 
 * **Return type:**
   [`CostRollup`](#falaw.cost.CostRollup)
+
+### falaw.cost.video_duration_arg(record, duration_s)
+
+`duration_s` as the string fal’s duration enum wants, or `ValueError`.
+
+The one rule the planner (what is sent and quoted) and the scene rollup
+share, so neither prices a call fal would reject: whole seconds (halves to
+even), and within the record’s `duration` enum when it lists numbers
+(`"auto"` aside).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.cost.video_price_quantities(record, , seconds=None, resolution=None)
+
+The quantity hints that price one video call against `record`.
+
+`{"tokens": n}` for a model billed per video token (its
+`tokens_per_pixel_second` is set), else `{"seconds": s}`; `{}` when
+`seconds` is unknown, so the call stays unpriceable rather than free.
+`resolution` defaults to the model’s recorded default.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)

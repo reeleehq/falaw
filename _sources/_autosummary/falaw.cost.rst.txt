@@ -9,6 +9,8 @@ falaw.cost
    .. autosummary::
    
       DFLT_MEGAPIXELS
+      RESOLUTION_PIXELS
+      DFLT_VIDEO_RESOLUTION
    
    .. rubric:: Functions
 
@@ -16,6 +18,8 @@ falaw.cost
    
       estimate_call_cost
       estimate_scene_cost
+      video_duration_arg
+      video_price_quantities
    
    .. rubric:: Classes
 

@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b153cf10"></script>
+    <script src="../_static/documentation_options.js?v=152b4b09"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.64" />
+  <meta name="docsearch:version" content="0.0.65" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -458,6 +458,12 @@ enough to gate on (e.g. <code class="docutils literal notranslate"><span class="
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.DFLT_MEGAPIXELS" title="falaw.cost.DFLT_MEGAPIXELS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_MEGAPIXELS</span></code></a></p></td>
 <td><p>Pixel budget assumed for a <code class="docutils literal notranslate"><span class="pre">per_megapixel</span></code> call when the caller gives none: a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.RESOLUTION_PIXELS" title="falaw.cost.RESOLUTION_PIXELS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RESOLUTION_PIXELS</span></code></a></p></td>
+<td><p>9; other aspect ratios bill within about a percent of this).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.DFLT_VIDEO_RESOLUTION" title="falaw.cost.DFLT_VIDEO_RESOLUTION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_VIDEO_RESOLUTION</span></code></a></p></td>
+<td><p>Resolution assumed for a token-billed video model that records no default.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -469,6 +475,12 @@ enough to gate on (e.g. <code class="docutils literal notranslate"><span class="
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.estimate_scene_cost" title="falaw.cost.estimate_scene_cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_scene_cost</span></code></a>(scene, *[, tts_quality, ...])</p></td>
 <td><p>Estimate the USD cost of a full <code class="xref py py-func docutils literal notranslate"><span class="pre">render_scene()</span></code> invocation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.video_duration_arg" title="falaw.cost.video_duration_arg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_duration_arg</span></code></a>(record, duration_s)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">duration_s</span></code> as the string fal's duration enum wants, or <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.video_price_quantities" title="falaw.cost.video_price_quantities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_price_quantities</span></code></a>(record, *[, seconds, ...])</p></td>
+<td><p>The quantity hints that price one video call against <code class="docutils literal notranslate"><span class="pre">record</span></code>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -522,6 +534,24 @@ a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same.</p>
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.cost.DFLT_VIDEO_RESOLUTION">
+<span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">DFLT_VIDEO_RESOLUTION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'720p'</span></span><a class="headerlink" href="#falaw.cost.DFLT_VIDEO_RESOLUTION" title="Link to this definition">#</a></dt>
+<dd><p>Resolution assumed for a token-billed video model that records no default.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.cost.RESOLUTION_PIXELS">
+<span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">RESOLUTION_PIXELS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'1080p':</span> <span class="pre">2073600,</span> <span class="pre">'480p':</span> <span class="pre">409920,</span> <span class="pre">'4k':</span> <span class="pre">8294400,</span> <span class="pre">'720p':</span> <span class="pre">921600}</span></span><a class="headerlink" href="#falaw.cost.RESOLUTION_PIXELS" title="Link to this definition">#</a></dt>
+<dd><p>9; other aspect ratios
+bill within about a percent of this). Feeds <a class="reference internal" href="#falaw.cost.video_price_quantities" title="falaw.cost.video_price_quantities"><code class="xref py py-func docutils literal notranslate"><span class="pre">video_price_quantities()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pixels per frame of fal’s named video resolutions (16</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.cost.estimate_call_cost">
 <span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">estimate_call_cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">megapixels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/cost.html#estimate_call_cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.cost.estimate_call_cost" title="Link to this definition">#</a></dt>
@@ -568,6 +598,36 @@ Pass the length you expect (the beat path has the same knob as
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.cost.CostRollup" title="falaw.cost.CostRollup"><code class="xref py py-class docutils literal notranslate"><span class="pre">CostRollup</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.cost.video_duration_arg">
+<span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">video_duration_arg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/cost.html#video_duration_arg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.cost.video_duration_arg" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">duration_s</span></code> as the string fal’s duration enum wants, or <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p>
+<p>The one rule the planner (what is sent and quoted) and the scene rollup
+share, so neither prices a call fal would reject: whole seconds (halves to
+even), and within the record’s <code class="docutils literal notranslate"><span class="pre">duration</span></code> enum when it lists numbers
+(<code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> aside).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.cost.video_price_quantities">
+<span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">video_price_quantities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">seconds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/cost.html#video_price_quantities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.cost.video_price_quantities" title="Link to this definition">#</a></dt>
+<dd><p>The quantity hints that price one video call against <code class="docutils literal notranslate"><span class="pre">record</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">{&quot;tokens&quot;:</span> <span class="pre">n}</span></code> for a model billed per video token (its
+<code class="docutils literal notranslate"><span class="pre">tokens_per_pixel_second</span></code> is set), else <code class="docutils literal notranslate"><span class="pre">{&quot;seconds&quot;:</span> <span class="pre">s}</span></code>; <code class="docutils literal notranslate"><span class="pre">{}</span></code> when
+<code class="docutils literal notranslate"><span class="pre">seconds</span></code> is unknown, so the call stays unpriceable rather than free.
+<code class="docutils literal notranslate"><span class="pre">resolution</span></code> defaults to the model’s recorded default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -627,8 +687,12 @@ Pass the length you expect (the beat path has the same knob as
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.DFLT_MEGAPIXELS"><code class="docutils literal notranslate"><span class="pre">DFLT_MEGAPIXELS</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.DFLT_VIDEO_RESOLUTION"><code class="docutils literal notranslate"><span class="pre">DFLT_VIDEO_RESOLUTION</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.RESOLUTION_PIXELS"><code class="docutils literal notranslate"><span class="pre">RESOLUTION_PIXELS</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.estimate_call_cost"><code class="docutils literal notranslate"><span class="pre">estimate_call_cost()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.estimate_scene_cost"><code class="docutils literal notranslate"><span class="pre">estimate_scene_cost()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.video_duration_arg"><code class="docutils literal notranslate"><span class="pre">video_duration_arg()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.video_price_quantities"><code class="docutils literal notranslate"><span class="pre">video_price_quantities()</span></code></a></li>
 </ul>
   </nav></div>
 

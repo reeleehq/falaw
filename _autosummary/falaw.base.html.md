@@ -72,7 +72,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -117,6 +117,17 @@ presets, the default) or `"aspect_ratio"` (+ `resolution`).
 #### supported_resolutions *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
 
 Resolutions the model offers, cheap→expensive (e.g. (“720p”, “1080p”)).
+
+#### tokens_per_pixel_second *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+tokens = width x height x seconds
+x this (Seedance: 24/1024). With a `per_token` `cost_estimate` it lets
+plan time quote an honest cost from a resolution and a duration
+([`falaw.cost.video_price_quantities()`](falaw.cost.html.md#falaw.cost.video_price_quantities)). `None` for every other
+model.
+
+* **Type:**
+  For a model billed per *video token*
 
 ### falaw.base.TABLE_VERSION_CHARS *= 12*
 

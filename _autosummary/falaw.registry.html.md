@@ -48,7 +48,8 @@ when unknown for that model.
 
 Per-model parameters worth knowing before a call, `{name: spec}`.
 
-Each spec is `{"enum": [...], "default": ...}`; resolves aliases. For
+Each spec is `{"enum": [...], "default": ...}` (or `{"max_items": n}` for
+a list argument such as reference images); resolves aliases. For
 `fal-ai/recraft/v3/text-to-image` this shows `style` defaults to
 `realistic_image` — a photograph, whatever the prompt describes — and
 lists the styles that actually give a woodcut or a linocut. Empty when the

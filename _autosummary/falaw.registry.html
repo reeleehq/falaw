@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=b153cf10"></script>
+    <script src="../_static/documentation_options.js?v=152b4b09"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.64" />
+  <meta name="docsearch:version" content="0.0.65" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -510,7 +510,8 @@ when unknown for that model.</p>
 <dt class="sig sig-object py" id="falaw.registry.model_params">
 <span class="sig-prename descclassname"><span class="pre">falaw.registry.</span></span><span class="sig-name descname"><span class="pre">model_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/registry.html#model_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.registry.model_params" title="Link to this definition">#</a></dt>
 <dd><p>Per-model parameters worth knowing before a call, <code class="docutils literal notranslate"><span class="pre">{name:</span> <span class="pre">spec}</span></code>.</p>
-<p>Each spec is <code class="docutils literal notranslate"><span class="pre">{&quot;enum&quot;:</span> <span class="pre">[...],</span> <span class="pre">&quot;default&quot;:</span> <span class="pre">...}</span></code>; resolves aliases. For
+<p>Each spec is <code class="docutils literal notranslate"><span class="pre">{&quot;enum&quot;:</span> <span class="pre">[...],</span> <span class="pre">&quot;default&quot;:</span> <span class="pre">...}</span></code> (or <code class="docutils literal notranslate"><span class="pre">{&quot;max_items&quot;:</span> <span class="pre">n}</span></code> for
+a list argument such as reference images); resolves aliases. For
 <code class="docutils literal notranslate"><span class="pre">fal-ai/recraft/v3/text-to-image</span></code> this shows <code class="docutils literal notranslate"><span class="pre">style</span></code> defaults to
 <code class="docutils literal notranslate"><span class="pre">realistic_image</span></code> — a photograph, whatever the prompt describes — and
 lists the styles that actually give a woodcut or a linocut. Empty when the
