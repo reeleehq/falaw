@@ -1915,6 +1915,8 @@ def extract_first_url(raw: dict) -> Optional[str]:
             return first
     for key in ("video", "audio", "image"):
         v = raw.get(key)
+        if isinstance(v, list) and v:  # Mirelo SFX 2.0: a list of files
+            v = v[0]
         if isinstance(v, dict) and "url" in v:
             return v["url"]
     if isinstance(raw.get("audio_url"), str):

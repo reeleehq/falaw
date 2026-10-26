@@ -109,7 +109,7 @@ def voice_clone(
         "Generate ambient sound, an SFX bed, or music from a text prompt — "
         "the 'city night' / 'rain on a tin roof' bed a cut needs, without "
         "leaving the editor. `kind` picks the model family: 'ambient'/'sfx' "
-        "→ mmaudio text-to-audio, 'music' → Lyria 2. Returns a falaw.Result "
+        "→ Stable Audio 3 SFX (commercially usable), 'music' → Lyria 2. Returns a falaw.Result "
         "whose .first asset is the audio URL."
     ),
     tags=("audio", "ambient", "music", "generate"),
@@ -148,16 +148,15 @@ def generate_audio(
     """Generate ambient/SFX/music from a prompt. Argument shape mirrors
     :func:`falaw.plan_generate_audio` exactly, so planned and eager calls
     with identical inputs collapse to the same cache entry."""
-    from ._plan import GENERATE_AUDIO_DEFAULTS
+    from ._plan import GENERATE_AUDIO_DEFAULTS, generate_audio_arguments
 
     if kind not in GENERATE_AUDIO_DEFAULTS:
         raise ValueError(
             f"unknown kind {kind!r}; expected one of {sorted(GENERATE_AUDIO_DEFAULTS)}"
         )
     model = model_id or GENERATE_AUDIO_DEFAULTS[kind]
-    arguments: dict = {"prompt": prompt}
-    if duration_s is not None and model == GENERATE_AUDIO_DEFAULTS["ambient"]:
-        arguments["duration"] = max(1, int(round(float(duration_s))))
-    arguments.update(extra or {})
+    arguments = generate_audio_arguments(
+        model, prompt, duration_s=duration_s, extra=extra
+    )
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)

@@ -19,7 +19,8 @@ to work in the meantime.
 
 from __future__ import annotations
 
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Any, Callable, Mapping, Optional
 
 from ..cost import estimate_call_cost
 from ..llm_rates import LlmRateTable, llm_ceiling_usd
@@ -431,11 +432,71 @@ def plan_text_to_speech(
 #: bare prompt would make a structurally valid call that runs, bills, and
 #: produces nothing the caller asked for (the exact failure class working
 #: rule 10 names). Overridable per call via ``model_id``.
+#:
+#: SFX and ambient default to Stable Audio 3 small-SFX, not MMAudio: MMAudio's
+#: weights are CC BY-NC 4.0 whatever fal's ``license_type`` says, so sound it
+#: made may not be used commercially (falaw#88). MMAudio stays reachable via
+#: ``model_id=``.
 GENERATE_AUDIO_DEFAULTS = {
-    "ambient": "fal-ai/mmaudio-v2/text-to-audio",
-    "sfx": "fal-ai/mmaudio-v2/text-to-audio",
+    "ambient": "fal-ai/stable-audio-3/small/sfx/text-to-audio",
+    "sfx": "fal-ai/stable-audio-3/small/sfx/text-to-audio",
     "music": "fal-ai/lyria2",
 }
+
+
+@dataclass(frozen=True)
+class _AudioArgs:
+    """How one audio endpoint spells its inputs (they differ per vendor)."""
+
+    prompt: str = "prompt"
+    duration: Optional[str] = None  # None: the endpoint takes no duration
+    cast: Callable[[float], Any] = float
+    defaults: Mapping[str, Any] = field(default_factory=dict)
+    """Arguments pinned so the quote matches the bill (Mirelo bills per sample
+    and returns two unless told otherwise)."""
+
+
+def _whole_seconds(seconds: float) -> int:
+    return max(1, int(round(float(seconds))))
+
+
+#: Endpoints whose input names or duration type differ from the default
+#: (``prompt``, no duration). An id absent here takes ``prompt`` only.
+_AUDIO_ARGS = {
+    "fal-ai/mmaudio-v2/text-to-audio": _AudioArgs(
+        duration="duration", cast=_whole_seconds
+    ),
+    "fal-ai/stable-audio-3/small/sfx/text-to-audio": _AudioArgs(duration="duration"),
+    "fal-ai/stable-audio-3/medium/text-to-audio": _AudioArgs(duration="duration"),
+    "mirelo-ai/sfx2.0/text-to-audio": _AudioArgs(
+        duration="duration", defaults={"num_samples": 1}
+    ),
+    "sonilo/v1.1/text-to-sound-effects": _AudioArgs(duration="duration"),
+    "fal-ai/elevenlabs/sound-effects/v2": _AudioArgs(
+        prompt="text", duration="duration_seconds"
+    ),
+}
+
+
+def generate_audio_arguments(
+    application: str,
+    prompt: str,
+    *,
+    duration_s: Optional[float] = None,
+    extra: Optional[dict] = None,
+) -> dict:
+    """The fal request body for a prompt-driven audio endpoint.
+
+    The one place planned and eager :func:`falaw.generate_audio` agree on an
+    argument shape (so identical inputs share a cache entry). ``duration_s``
+    is forwarded only to endpoints that take one.
+    """
+    spec = _AUDIO_ARGS.get(application, _AudioArgs())
+    arguments: dict = {spec.prompt: prompt, **spec.defaults}
+    if duration_s is not None and spec.duration:
+        arguments[spec.duration] = spec.cast(duration_s)
+    arguments.update(extra or {})
+    return arguments
 
 
 def plan_generate_audio(
@@ -459,9 +520,9 @@ def plan_generate_audio(
 
     ``kind`` selects the default model (see :data:`GENERATE_AUDIO_DEFAULTS`
     for why these are explicit ids). ``duration_s`` reaches the model as its
-    integer ``duration`` argument where the model takes one (mmaudio does)
-    AND feeds the cost estimate; for models with no duration argument it is
-    estimator-only.
+    duration argument where the model takes one (see
+    :func:`generate_audio_arguments`) AND feeds the cost estimate; for models
+    with no duration argument it is estimator-only.
     """
     if kind not in GENERATE_AUDIO_DEFAULTS:
         raise ValueError(
@@ -469,11 +530,9 @@ def plan_generate_audio(
         )
     application = model_id or GENERATE_AUDIO_DEFAULTS[kind]
     record = get_model(application)
-    arguments: dict = {"prompt": prompt}
-    if duration_s is not None and application == GENERATE_AUDIO_DEFAULTS["ambient"]:
-        arguments["duration"] = max(1, int(round(float(duration_s))))
-    if extra:
-        arguments.update(extra)
+    arguments = generate_audio_arguments(
+        application, prompt, duration_s=duration_s, extra=extra
+    )
     cost, basis = _catalogue_price(record, seconds=duration_s)
     return make_call_plan(
         tool="generate_audio",

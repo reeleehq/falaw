@@ -362,7 +362,7 @@ Examples:
 
 ### `falaw.generate_audio`
 
-Generate ambient sound, an SFX bed, or music from a text prompt — the 'city night' / 'rain on a tin roof' bed a cut needs, without leaving the editor. `kind` picks the model family: 'ambient'/'sfx' → mmaudio text-to-audio, 'music' → Lyria 2. Returns a falaw.Result whose .first asset is the audio URL.
+Generate ambient sound, an SFX bed, or music from a text prompt — the 'city night' / 'rain on a tin roof' bed a cut needs, without leaving the editor. `kind` picks the model family: 'ambient'/'sfx' → Stable Audio 3 SFX (commercially usable), 'music' → Lyria 2. Returns a falaw.Result whose .first asset is the audio URL.
 
 Examples:
   - `falaw.generate_audio(**{'prompt': 'city street at night, distant traffic', 'kind': 'ambient'})`
@@ -589,6 +589,11 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   llm                  balanced   fal-ai/any-llm/vision
   music                balanced   fal-ai/diffrhythm
   music                balanced   fal-ai/mmaudio-v2/text-to-audio
+  music                balanced   fal-ai/stable-audio-3/small/sfx/text-to-audio
+  music                balanced   fal-ai/stable-audio-3/medium/text-to-audio
+  music                balanced   mirelo-ai/sfx2.0/text-to-audio
+  music                balanced   fal-ai/elevenlabs/sound-effects/v2
+  music                balanced   sonilo/v1.1/text-to-sound-effects
   music                high       fal-ai/lyria2
   text_to_video        high       fal-ai/bytedance/seedance/v1/pro/text-to-video
   text_to_video        ultra      fal-ai/veo3
