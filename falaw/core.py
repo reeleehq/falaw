@@ -163,7 +163,14 @@ def call_fal(
     call_id = uuid.uuid4().hex[:12]
     started = time.time()
 
-    def _ev(kind: str, *, message: str = "", pct: float | None = None) -> None:
+    def _ev(
+        kind: str,
+        *,
+        message: str = "",
+        pct: float | None = None,
+        provider_phase: str | None = None,
+        queue_position: int | None = None,
+    ) -> None:
         emit(
             ProgressEvent(
                 kind=kind,  # type: ignore[arg-type]
@@ -172,6 +179,8 @@ def call_fal(
                 message=message,
                 pct=pct,
                 elapsed_s=time.time() - started,
+                provider_phase=provider_phase,  # type: ignore[arg-type]
+                queue_position=queue_position,
             ),
             also=(on_event,) if on_event else (),
         )
@@ -179,16 +188,26 @@ def call_fal(
     log = on_log if on_log is not None else (lambda _msg: None)
 
     def _on_queue_update(update):
-        if isinstance(update, fal_client.InProgress):
-            entries = update.logs or ()
-            if not entries:
-                _ev("progress")
+        queued_cls = getattr(fal_client, "Queued", None)
+        if queued_cls is not None and isinstance(update, queued_cls):
+            _ev(
+                "provider_queued",
+                provider_phase="in_queue",
+                queue_position=getattr(update, "position", None),
+            )
+        elif isinstance(update, fal_client.InProgress):
+            messages = [
+                entry.get("message") if isinstance(entry, dict) else None
+                for entry in (update.logs or ())
+            ]
+            messages = [m for m in messages if m]
+            if not messages:
+                # IN_PROGRESS is reported even when it carries no log line.
+                _ev("progress", provider_phase="in_progress")
                 return
-            for entry in entries:
-                msg = entry.get("message") if isinstance(entry, dict) else None
-                if msg:
-                    log(msg)
-                    _ev("log", message=msg)
+            for msg in messages:
+                log(msg)
+                _ev("log", message=msg, provider_phase="in_progress")
 
     _ev("queued")
     try:

@@ -161,3 +161,78 @@ def test_global_subscriber_isolated_from_per_call(monkeypatch):
     # Both lists see the same events.
     assert [e.kind for e in global_events] == ["queued", "done"]
     assert [e.kind for e in per_call_events] == ["queued", "done"]
+
+
+def _install_fake_fal_client_with_queue(updates):
+    """A stub whose ``subscribe`` replays ``updates`` (Queued / InProgress objects)."""
+
+    class _Queued:
+        def __init__(self, position):
+            self.position = position
+
+    class _InProgress:
+        def __init__(self, logs=()):
+            self.logs = logs
+
+    def subscribe(application, *, arguments, with_logs, on_queue_update):
+        for make in updates:
+            on_queue_update(make(_Queued, _InProgress))
+        return {"ok": True}
+
+    fake = types.SimpleNamespace(Queued=_Queued, InProgress=_InProgress, subscribe=subscribe)
+    sys.modules["fal_client"] = fake
+    return fake
+
+
+def test_the_providers_own_phase_rides_the_events_it_produces():
+    """fal's QUEUED carries a position; IN_PROGRESS marks the call as being made.
+    Our own ``queued`` (submitted) and ``done`` say nothing about the provider."""
+    _install_fake_fal_client_with_queue(
+        [
+            lambda Q, I: Q(2),
+            lambda Q, I: Q(0),
+            lambda Q, I: I(),
+            lambda Q, I: I([{"message": "step 1"}]),
+            lambda Q, I: I([{"level": "info"}]),  # no message: still IN_PROGRESS
+        ]
+    )
+    from falaw import call_fal
+    from falaw.events import subscribe
+
+    events = []
+    subscribe(events.append)
+    call_fal("fal-ai/x", {})
+    seen = [(e.kind, e.provider_phase, e.queue_position) for e in events]
+    assert seen == [
+        ("queued", None, None),
+        ("provider_queued", "in_queue", 2),
+        ("provider_queued", "in_queue", 0),
+        ("progress", "in_progress", None),
+        ("log", "in_progress", None),
+        ("progress", "in_progress", None),
+        ("done", None, None),
+    ]
+
+
+def test_listening_is_scoped_to_its_block_and_its_context():
+    from concurrent.futures import ThreadPoolExecutor
+
+    _install_fake_fal_client()
+    from falaw import call_fal
+    from falaw.events import listening
+
+    mine, other = [], []
+
+    def run(sink):
+        with listening(sink.append):
+            call_fal("fal-ai/x", {})
+
+    with ThreadPoolExecutor(2) as pool:  # two "jobs", each hears only its own call
+        list(pool.map(run, [mine, other]))
+    assert [e.kind for e in mine] == ["queued", "done"]
+    assert [e.kind for e in other] == ["queued", "done"]
+
+    call_fal("fal-ai/x", {})  # outside the block: nobody is listening
+    assert len(mine) == len(other) == 2
+    with listening(None):  # a caller with no sink needs no `if`
+        call_fal("fal-ai/x", {})
