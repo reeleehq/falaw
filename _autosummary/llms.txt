@@ -53,6 +53,7 @@
 - [falaw.scene](falaw.scene.html.md): Scene IR: the editable structure that survives all the way to the pixels.
 - [falaw.schema_export](falaw.schema_export.html.md): Export the Python SSOT as committed JSON for the TypeScript twin (&#96;ts/&#96;).
 - [falaw.session](falaw.session.html.md): Session: optional stateful controller over a sequence of falaw operations.
+- [falaw.terms](falaw.terms.html.md): The terms ledger: may this &#96;(model, backend)&#96; be used for &#42;this&#42; job? (falaw#16)
 - [falaw.testing](falaw.testing.html.md): Make a suite that uses falaw genuinely offline — the fake asset transport.
 - [falaw.validation](falaw.validation.html.md): Check a call’s arguments against the limits its catalogue record states.
 

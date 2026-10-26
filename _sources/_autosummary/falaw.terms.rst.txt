@@ -1,0 +1,29 @@
+falaw.terms
+===========
+
+.. automodule:: falaw.terms
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      TERMS_PATH
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      check_terms
+      get_terms
+      load_terms
+      third_party_tenancy_ok
+      unreviewed_models
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ModelTerms
+      TermsContext
+   

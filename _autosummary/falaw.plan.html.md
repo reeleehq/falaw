@@ -449,7 +449,7 @@ that names no table writes no key rather than a pair of `""`.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
-### falaw.plan.execute(plan, , on_event=None, dry_run=False, use_cache=True, refresh=False, artifact_converter=None, content_store=None, fetch_bytes=None, asset_fetcher=None, concurrency=1)
+### falaw.plan.execute(plan, , on_event=None, dry_run=False, use_cache=True, refresh=False, artifact_converter=None, content_store=None, fetch_bytes=None, asset_fetcher=None, concurrency=1, terms_context=None)
 
 Execute a Plan, returning a list of materialized :class:
 
@@ -560,6 +560,9 @@ get two different answers:
 
 ## Placeholder resolution — the wire/key split
 
+`terms_context` checks every call against the terms ledger before any
+call runs; see [`execute_isolated()`](#falaw.plan.execute_isolated).
+
 Any string argument equal to `"<from N>"` (for an integer `N`) is
 rewritten *just before* the call is made — so a multi-step plan (e.g.
 generate_image → image_to_video) can reference the upstream output without
@@ -587,7 +590,7 @@ key ref falls back to the URL — a guaranteed miss, never a wrong hit.
   One `lacing.Artifact` per [`CallPlan`](#falaw.plan.CallPlan) in `plan.calls`,
   in the same order.
 
-### falaw.plan.execute_isolated(plan, , on_event=None, dry_run=False, use_cache=True, refresh=False, artifact_converter=None, content_store=None, fetch_bytes=None, asset_fetcher=None, concurrency=1, halt_on_failure=False)
+### falaw.plan.execute_isolated(plan, , on_event=None, dry_run=False, use_cache=True, refresh=False, artifact_converter=None, content_store=None, fetch_bytes=None, asset_fetcher=None, concurrency=1, halt_on_failure=False, terms_context=None)
 
 Execute a Plan with **per-call failure isolation**, returning a report.
 
@@ -602,14 +605,20 @@ with the reason why.
 something per call can zip against `report.outcomes` and stay aligned.
 
 * **Parameters:**
-  **halt_on_failure** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, stop *submitting* work as soon as any call
-  fails; everything not yet started is reported `blocked` with a
-  run-level reason. This is what [`execute()`](#falaw.plan.execute) uses, and at
-  `concurrency=1` it reproduces the historical sequential
-  behaviour exactly. Note that at `concurrency > 1` calls already
-  in flight are **not** cancelled — a fal request cannot be recalled
-  once made, and pretending otherwise would discard results that were
-  billed anyway.
+  * **halt_on_failure** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – When True, stop *submitting* work as soon as any call
+    fails; everything not yet started is reported `blocked` with a
+    run-level reason. This is what [`execute()`](#falaw.plan.execute) uses, and at
+    `concurrency=1` it reproduces the historical sequential
+    behaviour exactly. Note that at `concurrency > 1` calls already
+    in flight are **not** cancelled — a fal request cannot be recalled
+    once made, and pretending otherwise would discard results that were
+    billed anyway.
+  * **terms_context** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`TermsContext`](falaw.terms.html.md#falaw.terms.TermsContext)]) – Opt in to the terms ledger (falaw#16) at execution
+    time: every call’s `(application, backend)` is checked \*\*before
+    any call runs\*\*, whatever its backend, and one refusal raises
+    [`FalTermsViolation`](falaw.html.md#falaw.FalTermsViolation) for the whole plan. Planning
+    checks only the calls `plan_*` builds; this also covers plans
+    rebuilt from dicts, edited, or given a non-default `backend`.
 * **Return type:**
   [`ExecutionReport`](falaw.outcomes.html.md#falaw.outcomes.ExecutionReport)
 
@@ -646,7 +655,7 @@ drift into two opinions about what a response’s asset is.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
-### falaw.plan.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None)
+### falaw.plan.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None, terms_context=None)
 
 Build a [`CallPlan`](#falaw.plan.CallPlan) and (optionally) check the cache.
 
@@ -674,11 +683,18 @@ quote can be re-run later (falaw#60). It is descriptive only: it never
 reaches the cache key or [`plan_hash()`](#falaw.plan.plan_hash), and a plan built without one
 is byte-identical to one built before the field existed.
 
+`terms_context` opts this call into the terms ledger (falaw#16): with a
+[`falaw.terms.TermsContext`](falaw.terms.html.md#falaw.terms.TermsContext), a `(application, backend)` whose terms
+forbid the job — or are unknown — is refused here, before anything is
+called. `None` (the default) checks nothing.
+
 * **Raises:**
-  [**FalNonCanonicalArgument**](falaw.errors.html.md#falaw.errors.FalNonCanonicalArgument) – an argument cannot be hashed
-      faithfully (non-JSON object, non-finite float, non-string mapping
-      key). Raised here — while planning is still free — rather than at
-      key-composition time on the way to the network (falaw#17).
+  * [**FalNonCanonicalArgument**](falaw.errors.html.md#falaw.errors.FalNonCanonicalArgument) – an argument cannot be hashed
+        faithfully (non-JSON object, non-finite float, non-string mapping
+        key). Raised here — while planning is still free — rather than at
+        key-composition time on the way to the network (falaw#17).
+  * [**FalTermsViolation**](falaw.errors.html.md#falaw.errors.FalTermsViolation) – `terms_context` was given and the
+        ledger does not clear this `(application, backend)`.
 * **Return type:**
   [`CallPlan`](#falaw.plan.CallPlan)
 

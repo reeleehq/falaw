@@ -13,6 +13,8 @@
       llm_call_cost_usd
       llm_token_counts
       llm_prices_table_version
+      check_terms
+      third_party_tenancy_ok
       call_plan_from_dict
       call_plan_to_dict
       plan_dependencies
@@ -138,6 +140,8 @@
       ContentRef
       Environment
       ExecutionReport
+      ModelTerms
+      TermsContext
       ModelRecord
       Plan
       CallRepricing
@@ -171,6 +175,7 @@
       FalBadRequest
       FalDurationOutOfRange
       FalError
+      FalTermsViolation
       FalHTTPError
       FalInsufficientFunds
       FalModelHung
@@ -219,5 +224,6 @@
    scene
    schema_export
    session
+   terms
    testing
    validation

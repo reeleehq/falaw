@@ -55,6 +55,7 @@ True
 | [`FalPromptTooLong`](#falaw.errors.FalPromptTooLong)(message, \*, model, limit, ...)    | The prompt exceeds the model's hard length cap (falaw#76).                   |
 | [`FalRateLimited`](#falaw.errors.FalRateLimited)(message, \*[, retry_after_s])        | fal is throttling requests — typical 429.                                    |
 | [`FalServerError`](#falaw.errors.FalServerError)(message, \*, status_code[, ...])     | fal-side server error — typical 5xx.                                         |
+| [`FalTermsViolation`](#falaw.errors.FalTermsViolation)(message, \*, model_id, ...)       | The model's terms of service forbid (or leave unknown) this use.             |
 | [`FalTimeout`](#falaw.errors.FalTimeout)(message, \*, elapsed_s[, application])   | The fal call timed out before producing a result.                            |
 | [`FalUnauthorized`](#falaw.errors.FalUnauthorized)(message, \*, status_code[, ...])    | Missing or invalid API credentials — typical 401.                            |
 
@@ -178,6 +179,18 @@ else `None` (caller decides backoff).
 Bases: [`FalHTTPError`](#falaw.errors.FalHTTPError)
 
 fal-side server error — typical 5xx. Generally retryable.
+
+### *exception* falaw.errors.FalTermsViolation(message, , model_id, backend, clause, source_url='')
+
+Bases: [`FalError`](#falaw.errors.FalError)
+
+The model’s terms of service forbid (or leave unknown) this use.
+
+Raised by [`falaw.terms.check_terms()`](falaw.terms.html.md#falaw.terms.check_terms) at plan time (`plan_*`) and, opt-in, at
+execution time (`execute(..., terms_context=)`) — before any call,
+not audited after. `unknown` refuses, like `has_unknown_costs` does
+for money. The message names the model, the backend, the clause and the
+ledger row’s `source_url`; the same fields are attributes.
 
 ### *exception* falaw.errors.FalTimeout(message, , elapsed_s, application=None)
 

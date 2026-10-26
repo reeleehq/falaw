@@ -29,6 +29,7 @@ falaw.errors
       FalPromptTooLong
       FalRateLimited
       FalServerError
+      FalTermsViolation
       FalTimeout
       FalUnauthorized
    

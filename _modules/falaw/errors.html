@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=8d9581ea"></script>
+    <script src="../../_static/documentation_options.js?v=ba6d0b80"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.71" />
+  <meta name="docsearch:version" content="0.0.72" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -948,6 +948,35 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span> <span class="o">=</span> <span class="n">model_id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">requested</span> <span class="o">=</span> <span class="n">requested</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_range</span> <span class="o">=</span> <span class="n">valid_range</span></div>
+
+
+
+<div class="viewcode-block" id="FalTermsViolation">
+<a class="viewcode-back" href="../../_autosummary/falaw.errors.html#falaw.FalTermsViolation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FalTermsViolation</span><span class="p">(</span><span class="n">FalError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The model's terms of service forbid (or leave unknown) this use.</span>
+
+<span class="sd">    Raised by :func:`falaw.terms.check_terms` at plan time (``plan_*``) and, opt-in, at</span>
+<span class="sd">    execution time (``execute(..., terms_context=)``) — before any call,</span>
+<span class="sd">    not audited after. ``unknown`` refuses, like ``has_unknown_costs`` does</span>
+<span class="sd">    for money. The message names the model, the backend, the clause and the</span>
+<span class="sd">    ledger row's ``source_url``; the same fields are attributes.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">model_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">clause</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">source_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span> <span class="o">=</span> <span class="n">model_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clause</span> <span class="o">=</span> <span class="n">clause</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_url</span> <span class="o">=</span> <span class="n">source_url</span></div>
 
 
 

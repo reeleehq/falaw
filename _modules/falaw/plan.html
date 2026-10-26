@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=8d9581ea"></script>
+    <script src="../../_static/documentation_options.js?v=ba6d0b80"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.71" />
+  <meta name="docsearch:version" content="0.0.72" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -783,6 +783,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.canonical</span><span class="w"> </span><span class="kn">import</span> <span class="n">DFLT_BACKEND</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.terms</span><span class="w"> </span><span class="kn">import</span> <span class="n">TermsContext</span><span class="p">,</span> <span class="n">check_terms</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.degrade</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">DEGRADE_WARNING_SINK</span><span class="p">,</span>
     <span class="n">deferred_degrade_warnings</span><span class="p">,</span>
@@ -1347,6 +1348,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">consult_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">cost_basis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CostBasis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">terms_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TermsContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CallPlan</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Build a :class:`CallPlan` and (optionally) check the cache.</span>
 
@@ -1374,13 +1376,22 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    reaches the cache key or :func:`plan_hash`, and a plan built without one</span>
 <span class="sd">    is byte-identical to one built before the field existed.</span>
 
+<span class="sd">    ``terms_context`` opts this call into the terms ledger (falaw#16): with a</span>
+<span class="sd">    :class:`falaw.terms.TermsContext`, a ``(application, backend)`` whose terms</span>
+<span class="sd">    forbid the job — or are unknown — is refused here, before anything is</span>
+<span class="sd">    called. ``None`` (the default) checks nothing.</span>
+
 <span class="sd">    Raises:</span>
 <span class="sd">        falaw.errors.FalNonCanonicalArgument: an argument cannot be hashed</span>
 <span class="sd">            faithfully (non-JSON object, non-finite float, non-string mapping</span>
 <span class="sd">            key). Raised here — while planning is still free — rather than at</span>
 <span class="sd">            key-composition time on the way to the network (falaw#17).</span>
+<span class="sd">        falaw.errors.FalTermsViolation: ``terms_context`` was given and the</span>
+<span class="sd">            ledger does not clear this ``(application, backend)``.</span>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.canonical</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_canonical</span>
+
+    <span class="n">check_terms</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">)</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.upload</span><span class="w"> </span><span class="kn">import</span> <span class="n">localize_paths</span><span class="p">,</span> <span class="n">resolve_local_files</span>
 
     <span class="c1"># A local file (``os.PathLike``) becomes a "&lt;file ...&gt;" marker: the Plan</span>
@@ -1538,6 +1549,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">fetch_bytes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">asset_fetcher</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">concurrency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_CONCURRENCY</span><span class="p">,</span>
+    <span class="n">terms_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TermsContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute a Plan, returning a list of materialized :class:`lacing.Artifact`s.</span>
 
@@ -1640,6 +1652,9 @@ window.runMermaid = runMermaid;</script>
 
 <span class="sd">    Placeholder resolution — the wire/key split</span>
 <span class="sd">    -------------------------------------------</span>
+<span class="sd">    ``terms_context`` checks every call against the terms ledger before any</span>
+<span class="sd">    call runs; see :func:`execute_isolated`.</span>
+
 <span class="sd">    Any string argument equal to ``"&lt;from N&gt;"`` (for an integer ``N``) is</span>
 <span class="sd">    rewritten *just before* the call is made — so a multi-step plan (e.g.</span>
 <span class="sd">    generate_image → image_to_video) can reference the upstream output without</span>
@@ -1677,6 +1692,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">asset_fetcher</span><span class="o">=</span><span class="n">asset_fetcher</span><span class="p">,</span>
         <span class="n">concurrency</span><span class="o">=</span><span class="n">concurrency</span><span class="p">,</span>
         <span class="n">halt_on_failure</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">terms_context</span><span class="o">=</span><span class="n">terms_context</span><span class="p">,</span>
     <span class="p">)</span><span class="o">.</span><span class="n">artifacts_or_raise</span><span class="p">()</span></div>
 
 
@@ -1696,6 +1712,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">asset_fetcher</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">concurrency</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DFLT_CONCURRENCY</span><span class="p">,</span>
     <span class="n">halt_on_failure</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">terms_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TermsContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionReport</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute a Plan with **per-call failure isolation**, returning a report.</span>
 
@@ -1718,6 +1735,13 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            in flight are **not** cancelled — a fal request cannot be recalled</span>
 <span class="sd">            once made, and pretending otherwise would discard results that were</span>
 <span class="sd">            billed anyway.</span>
+
+<span class="sd">        terms_context: Opt in to the terms ledger (falaw#16) at execution</span>
+<span class="sd">            time: every call's ``(application, backend)`` is checked **before</span>
+<span class="sd">            any call runs**, whatever its backend, and one refusal raises</span>
+<span class="sd">            :class:`~falaw.FalTermsViolation` for the whole plan. Planning</span>
+<span class="sd">            checks only the calls ``plan_*`` builds; this also covers plans</span>
+<span class="sd">            rebuilt from dicts, edited, or given a non-default ``backend``.</span>
 
 <span class="sd">        All other arguments are as :func:`execute`.</span>
 
@@ -1743,6 +1767,8 @@ window.runMermaid = runMermaid;</script>
             <span class="s2">"It bounds how many calls are in flight at once; 1 is sequential."</span>
         <span class="p">)</span>
     <span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span> <span class="o">=</span> <span class="n">_resolved_cache_mode</span><span class="p">(</span><span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">call</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">calls</span><span class="p">:</span>
+        <span class="n">check_terms</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">terms_context</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">dry_run</span><span class="p">:</span>
         <span class="c1"># Per-call isolation applies to dry runs too: a hand-built CallPlan</span>
