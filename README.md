@@ -79,7 +79,7 @@ you do.
 lifecycle transition (`queued`, `progress`, `log`, `done`, `error`,
 `cache_hit`, and `provider_queued` when fal reports the call waiting in its line).
 Subscribe per-call (`on_event=`), globally (`falaw.subscribe(...)`) or for one block
-and its threads (`with falaw.events.listening(callback): ...`); the legacy
+and its threads (`with falaw.listening(callback): ...`); the legacy
 `on_log=print` is still honored for backward compatibility.
 
 fal's own word on where a call is rides the events as `provider_phase`

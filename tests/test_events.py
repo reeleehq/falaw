@@ -236,3 +236,29 @@ def test_listening_is_scoped_to_its_block_and_its_context():
     assert len(mine) == len(other) == 2
     with listening(None):  # a caller with no sink needs no `if`
         call_fal("fal-ai/x", {})
+    assert len(mine) == len(other) == 2
+
+
+def test_a_callback_named_by_several_routes_hears_each_event_once():
+    _install_fake_fal_client()
+    from falaw import call_fal
+    from falaw.events import listening, subscribe
+
+    heard = []
+    subscribe(heard.append)
+    with listening(heard.append):
+        call_fal("fal-ai/x", {}, on_event=heard.append)
+    assert [e.kind for e in heard] == ["queued", "done"]
+
+
+def test_a_queue_that_does_not_move_is_reported_once():
+    _install_fake_fal_client_with_queue(
+        [lambda Q, I: Q(4)] * 5 + [lambda Q, I: Q(3), lambda Q, I: Q(3)]
+    )
+    from falaw import call_fal
+    from falaw.events import subscribe
+
+    events = []
+    subscribe(events.append)
+    call_fal("fal-ai/x", {})
+    assert [e.queue_position for e in events if e.kind == "provider_queued"] == [4, 3]

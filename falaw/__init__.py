@@ -103,6 +103,7 @@ from .llm_rates import (
 from .events import (
     ProgressEvent,
     clear_subscribers,
+    listening,
     subscribe,
     unsubscribe,
 )
@@ -287,6 +288,7 @@ __all__ = [
     "get_llm_rate",
     "list_llm_rates",
     "llm_ceiling_usd",
+    "listening",
     "subscribe",
     "unsubscribe",
     "animate_face",

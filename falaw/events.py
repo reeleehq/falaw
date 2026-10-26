@@ -143,7 +143,8 @@ def emit(event: ProgressEvent, *, also: Iterable[EventCallback] = ()) -> None:
     Subscriber exceptions are swallowed (with a printed warning) so a
     misbehaving UI hook can't bring the rendering pipeline down.
     """
-    for cb in [*_subscribers, *_AMBIENT.get(), *also]:
+    # One delivery per callback however many routes name it (subscribe, listening, on_event).
+    for cb in dict.fromkeys([*_subscribers, *_AMBIENT.get(), *also]):
         try:
             cb(event)
         except Exception as exc:  # pragma: no cover — defensive

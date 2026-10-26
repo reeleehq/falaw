@@ -187,14 +187,15 @@ def call_fal(
 
     log = on_log if on_log is not None else (lambda _msg: None)
 
+    last_position: list = []  # fal re-reports the queue ~10x/s: say it on a change only
+
     def _on_queue_update(update):
         queued_cls = getattr(fal_client, "Queued", None)
         if queued_cls is not None and isinstance(update, queued_cls):
-            _ev(
-                "provider_queued",
-                provider_phase="in_queue",
-                queue_position=getattr(update, "position", None),
-            )
+            position = getattr(update, "position", None)
+            if last_position != [position]:
+                last_position[:] = [position]
+                _ev("provider_queued", provider_phase="in_queue", queue_position=position)
         elif isinstance(update, fal_client.InProgress):
             messages = [
                 entry.get("message") if isinstance(entry, dict) else None
@@ -211,6 +212,9 @@ def call_fal(
 
     _ev("queued")
     try:
+        # NB: the queue updates must be delivered on THIS thread's context for
+        # `events.listening` to hear them; fal's `client_timeout=` runs the polling
+        # on its own executor, which does not copy the context. Not passed today.
         result = subscribe(
             application,
             arguments=dict(arguments),
