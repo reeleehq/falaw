@@ -22,13 +22,15 @@ from __future__ import annotations
 
 import hashlib
 import ipaddress
+import posixpath
 import re
 import subprocess
+import urllib.parse
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from .licences import RESTRICTED_FAMILY, nodes_digest
+from .licences import RESTRICTED_FAMILY, LicenceScreen, nodes_digest
 from .problems import Problem
 
 FLOOR_TAG = "v0.28.0"
@@ -47,6 +49,7 @@ _INTERNAL_HOST = re.compile(
 BLOCKED_ENDPOINTS = (
     "/internal",
     "/userdata",
+    "/v2/userdata",
     "/users",
     "/settings",
     "/system_stats",
@@ -88,6 +91,18 @@ EXPLICITLY_FORBIDDEN_ARGS = {
     ),
     "--enable-cors-header": ("7", "lets any web page drive the unauthenticated API"),
 }
+
+DIRECTORY_FLAGS = {
+    "--output-directory": ("/output",),
+    "--temp-directory": ("/temp",),
+    "--input-directory": ("/temp",),
+}
+"""Directory flags may only point at the quota'd mounts, never at host paths."""
+
+HOST_SYSTEM_DIRS = frozenset(
+    {"etc", "proc", "sys", "root", "home", "var", "usr", "bin", "dev", "boot", "run"}
+)
+"""First path segments a mount ``source`` may not start with."""
 
 REQUIRED_MOUNTS = ("/models", "/output", "/temp")
 """The only paths a deployment may mount (row 6: no other host path)."""
@@ -211,6 +226,10 @@ def _check_args(
         and set(flags["--whitelist-custom-nodes"]) != names
     ):
         yield Problem("4", "--whitelist-custom-nodes must equal custom_nodes names")
+    for flag, mounts in DIRECTORY_FLAGS.items():
+        for value in flags.get(flag, ()):
+            if value not in mounts:
+                yield Problem("6", f"{flag} {value!r} must be one of {list(mounts)}")
     for port in flags.get("--port", ()):
         if not port.isdigit():
             yield Problem("1", f"--port {port!r} is not a number")
@@ -261,8 +280,9 @@ def _check_listen(manifest: Mapping) -> Iterator[Problem]:
 
 
 def _normalise_endpoint(endpoint: str) -> str:
-    """``//API/Internal/`` -> ``/internal``: what the engine would route it as."""
-    path = "/" + "/".join(seg for seg in endpoint.lower().split("/") if seg)
+    """``//API/./%49nternal/`` -> ``/internal``: what the engine would route it as."""
+    path = urllib.parse.unquote(endpoint.lower()).split("?")[0]
+    path = posixpath.normpath("/" + path.lstrip("/")).replace("//", "/")
     if path == API_PREFIX or path.startswith(API_PREFIX + "/"):
         path = path[len(API_PREFIX) :] or "/"
     return path
@@ -296,21 +316,38 @@ def _check_proxy(
             yield Problem("3", f"{ep!r} may be reachable by the facade only")
 
 
+def _bad_source(source: Any) -> bool:
+    """Whether a mount ``source`` could expose the host: not a string, or the
+    root, a parent escape, or a system directory."""
+    if not isinstance(source, str) or not source.strip():
+        return True
+    norm = posixpath.normpath(source)
+    first = norm.lstrip("/").split("/")[0]
+    return (
+        norm in ("/", ".")
+        or norm.startswith("..")
+        or (norm.startswith("/") and first in HOST_SYSTEM_DIRS)
+    )
+
+
 def _check_mounts(manifest: Mapping) -> Iterator[Problem]:
-    mounts = _mappings(manifest.get("mounts"))
+    raw = manifest.get("mounts")
+    entries = raw if isinstance(raw, list) else []
+    if not isinstance(raw, list) or not all(isinstance(m, Mapping) for m in entries):
+        yield Problem("6", "mounts must be a list of mappings")
+    mounts = [m for m in entries if isinstance(m, Mapping)]
     for mount in mounts:
-        path, source = str(mount.get("path", "")), mount.get("source")
-        quota = mount.get("quota_gb")
+        path, quota = str(mount.get("path", "")), mount.get("quota_gb")
         if path not in REQUIRED_MOUNTS:
             yield Problem(
                 "6",
                 f"mount {path!r}: no host path other than {list(REQUIRED_MOUNTS)} may be mounted",
             )
             continue
-        if not isinstance(source, str) or source.strip("/") == "":
+        if _bad_source(mount.get("source")):
             yield Problem(
                 "6",
-                f"mount {path}: source must name a dedicated volume or directory, not '/'",
+                f"mount {path}: source must name a dedicated volume or directory (not '/', '..' or a system directory)",
             )
         if path == "/models" and mount.get("mode") != "ro":
             yield Problem("6", "/models must be mounted read-only")
@@ -358,22 +395,36 @@ def _check_tenancy(manifest: Mapping, allow_shared: bool) -> Iterator[Problem]:
         )
 
 
-def _check_licences(manifest: Mapping) -> Iterator[Problem]:
+def _check_licences(
+    manifest: Mapping,
+    licence_screen: Optional[Callable[[Collection[str]], LicenceScreen]],
+) -> Iterator[Problem]:
     screen = _mapping(manifest.get("licence_screen"))
+    nodes = _mappings(manifest.get("custom_nodes"))
     if not screen.get("checked_at"):
         yield Problem("L", "the licence screen has not been run")
     if screen.get("agpl_packs") or screen.get("undeterminable"):
         yield Problem(
             "L", "the licence screen found AGPL-family or undeterminable packs"
         )
-    expected = nodes_digest(
-        (n.get("name"), n.get("commit"))
-        for n in _mappings(manifest.get("custom_nodes"))
-    )
+    expected = nodes_digest((n.get("name"), n.get("commit")) for n in nodes)
     if screen.get("nodes_digest") != expected:
         yield Problem(
             "L", "licence_screen.nodes_digest does not match the current custom_nodes"
         )
+    if licence_screen is None:
+        yield Problem(
+            "L",
+            "the licence screen is self-asserted: pass licence_screen= to re-run it on the pinned checkout",
+        )
+    else:
+        fresh = licence_screen([str(n.get("name")) for n in nodes])
+        yield from fresh.problems()
+        if fresh.nodes_digest != expected:
+            yield Problem(
+                "L",
+                "the pinned checkout does not match custom_nodes (names/commits differ)",
+            )
     for worker in _mappings(manifest.get("third_party_workers")):
         restricted = RESTRICTED_FAMILY.search(str(worker.get("licence", "")))
         if restricted and worker.get("use") != "black box only":
@@ -391,14 +442,17 @@ def check_manifest(
     allowed_args: Mapping[str, tuple[int, int]] = DEFAULT_ALLOWED_ARGS,
     blocked_endpoints: Collection[str] = BLOCKED_ENDPOINTS,
     allow_shared: bool = False,
+    licence_screen: Optional[Callable[[Collection[str]], LicenceScreen]] = None,
 ) -> list[Problem]:
     """Problems with a deployment manifest; an empty list means it passes.
 
     ``base_dir`` is where evidence files (proxy config, network policy) are
     resolved and their sha256 verified; ``commit_floor(commit) -> bool`` answers
     whether the commit is at or after :data:`FLOOR_TAG` (see
-    :func:`git_commit_floor`). Without them those claims cannot be verified,
-    which is a problem, not a pass.
+    :func:`git_commit_floor`); ``licence_screen(names) -> LicenceScreen``
+    re-runs the screen on the pinned checkout (e.g.
+    ``lambda names: screen_licences(nodes_dir, only=names)``). Without
+    them those claims cannot be verified, which is a problem, not a pass.
     """
     if not isinstance(manifest, Mapping):
         return [Problem("*", "the manifest must be a JSON object")]
@@ -412,6 +466,6 @@ def check_manifest(
         _check_mounts(manifest),
         _check_egress(manifest, base),
         _check_tenancy(manifest, allow_shared),
-        _check_licences(manifest),
+        _check_licences(manifest, licence_screen),
     )
     return [problem for check in checks for problem in check]

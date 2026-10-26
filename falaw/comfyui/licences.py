@@ -17,10 +17,11 @@ import hashlib
 import json
 import re
 import subprocess
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 from .problems import Problem
 
@@ -32,7 +33,7 @@ TITLE_LINES = 12
 copyright line or three above the licence's name)."""
 
 RESTRICTED_FAMILY = re.compile(
-    r"\bAGPL\b|AFFERO|\bSSPL\b|SERVER SIDE PUBLIC LICENSE", re.IGNORECASE
+    r"AGPL|AFFERO|\bSSPL\b|SERVER SIDE PUBLIC LICENSE", re.IGNORECASE
 )
 """The AGPL family plus SSPL (same network-copyleft reach). Matched against a
 file's title lines and SPDX tags, not its whole text; see :func:`_is_restricted`."""
@@ -154,12 +155,15 @@ def git_head(pack: Path) -> str:
 def screen_licences(
     nodes_dir: str | Path,
     *,
+    only: Optional[Collection[str]] = None,
     commit_of: Callable[[Path], str] = git_head,
     clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> LicenceScreen:
     """Screen every node pack (a directory, or a single ``.py`` file) under ``nodes_dir``.
 
-    ``commit_of`` reads each pack's pinned commit (default: its git ``HEAD``)
+    ``only`` restricts the screen to the manifest's declared packs (a stock
+    ComfyUI checkout also carries unrelated example nodes under
+    ``custom_nodes/``). ``commit_of`` reads each pack's pinned commit (default: its git ``HEAD``)
     so the returned ``nodes_digest`` matches
     :func:`nodes_digest` of the manifest's ``custom_nodes``.
     """
@@ -167,7 +171,9 @@ def screen_licences(
     for pack in sorted(
         p
         for p in Path(nodes_dir).iterdir()
-        if not p.name.startswith((".", "__")) and (p.is_dir() or p.suffix == ".py")
+        if not p.name.startswith((".", "__"))
+        and (p.is_dir() or p.suffix == ".py")
+        and (only is None or p.name in only)
     ):
         commit = commit_of(pack)
         identity.append((pack.name, commit))

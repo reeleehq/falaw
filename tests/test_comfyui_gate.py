@@ -11,6 +11,7 @@ import pytest
 
 from falaw.comfyui import (
     FileAuditSink,
+    LicenceScreen,
     UnsafeGraphError,
     assert_safe_graph,
     check_graph_paths,
@@ -69,8 +70,17 @@ def good(tmp_path):
     }
 
 
+def _rescreen(m):
+    """A stand-in for re-running the screen on the checkout: it agrees with m."""
+    return lambda names: LicenceScreen(
+        checked_at="now",
+        nodes_digest=nodes_digest((n["name"], n["commit"]) for n in m["custom_nodes"]),
+    )
+
+
 def _check(m, tmp_path, **kw):
     kw.setdefault("commit_floor", lambda c: True)
+    kw.setdefault("licence_screen", _rescreen(m))
     return check_manifest(m, base_dir=tmp_path, **kw)
 
 
@@ -111,6 +121,7 @@ def test_commit_floor_is_verified_not_trusted(good, tmp_path):
     assert "2" in _items(_check(good, tmp_path, commit_floor=lambda c: False))
     no_seam = check_manifest(good, base_dir=tmp_path)  # cannot verify -> a problem
     assert any("cannot verify" in str(p) for p in no_seam)
+    assert any("self-asserted" in str(p) for p in no_seam)
 
 
 def test_git_commit_floor_uses_ancestry(tmp_path):
@@ -621,6 +632,7 @@ def test_internal_egress_names_mounts_and_workers(good, tmp_path):
     good["network"]["egress_allow"] = ["metadata.google.internal"]
     good["mounts"][1]["quota_gb"] = True
     good["mounts"][0]["source"] = "/"
+    good["mounts"].append("/:/host")
     good["third_party_workers"] = [
         {"name": "w", "licence": "GNU Affero GPL v3", "use": "forked"}
     ]
@@ -660,3 +672,99 @@ def test_a_pack_that_is_not_a_git_checkout_is_undeterminable(tmp_path):
     _pack(tmp_path, "mit", "MIT License")
     screen = screen_licences(tmp_path)  # real git_head: tmp_path/mit is no repo
     assert screen.undeterminable == ("mit",)
+
+
+# --- second review ----------------------------------------------------------------
+
+
+def _wired(prompt, consumer_class, consumer_input, consumer_spec):
+    info = {
+        **OBJECT_INFO,
+        consumer_class: {"input": {"required": {consumer_input: consumer_spec}}},
+    }
+    graph = {
+        "1": {"class_type": "StringConst", "inputs": {"string": prompt}},
+        "2": {"class_type": consumer_class, "inputs": {consumer_input: ["1", 0]}},
+    }
+    return check_graph_paths(graph, info)
+
+
+def test_a_prompt_wired_into_conditioning_stays_prose():
+    prompt = r"portrait of \(cyberpunk\) /imagine blurry"
+    assert _wired(prompt, "KSampler", "positive", ["CONDITIONING", {}]) == []
+
+
+def test_a_string_wired_into_a_path_input_is_screened_even_in_two_hops():
+    assert _wired("/etc/passwd", "Loader", "path", ["STRING", {}])
+    graph = {
+        "1": {"class_type": "StringConst", "inputs": {"string": "/etc/passwd"}},
+        "2": {"class_type": "Concat", "inputs": {"a": ["1", 0]}},
+        "3": {"class_type": "PathLoader", "inputs": {"path": ["2", 0]}},
+    }
+    info = {
+        **OBJECT_INFO,
+        "Concat": {"input": {"required": {"a": ["STRING", {"multiline": True}]}}},
+    }
+    assert any("node 1" in str(p) for p in check_graph_paths(graph, info))
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "/v2/userdata",
+        "/api/v2/userdata",
+        "/./internal",
+        "/view/../internal",
+        "/%69nternal",
+    ],
+)
+def test_endpoint_traversal_and_v2_userdata_are_refused(good, tmp_path, endpoint):
+    good["proxy"]["client_endpoints"].append(endpoint)
+    assert "3" in _items(_check(good, tmp_path))
+
+
+@pytest.mark.parametrize("source", ["/.", "/..", "/etc", "/proc/self", "../x", ""])
+def test_mount_sources_cannot_reach_the_host(good, tmp_path, source):
+    good["mounts"][0]["source"] = source
+    assert "6" in _items(_check(good, tmp_path))
+
+
+@pytest.mark.parametrize(
+    "flag", ["--output-directory", "--temp-directory", "--input-directory"]
+)
+def test_directory_flags_only_name_the_quota_mounts(good, tmp_path, flag):
+    good["args"] += [flag, "/proc/self"]
+    assert "6" in _items(_check(good, tmp_path))
+
+
+@pytest.mark.parametrize(
+    "object_info", [None, [], {"LoadImage": {"input": {"required": []}}}]
+)
+def test_a_screen_that_cannot_run_refuses_and_is_audited(object_info):
+    sink = _ListSink([])
+    with pytest.raises(UnsafeGraphError):
+        submit_graph(
+            _g("LoadImage", image="a.png"),
+            send=print,
+            sink=sink,
+            object_info=object_info,
+            context=object(),
+        )
+    assert len(sink.records) == 1 and sink.records[0]["rejected"]
+
+
+def test_the_rescreen_catches_a_self_asserted_clean_manifest(good, tmp_path):
+    bad = lambda names: LicenceScreen(
+        checked_at="now", nodes_digest="x", agpl_packs=("n1",)
+    )
+    msgs = " | ".join(str(p) for p in _check(good, tmp_path, licence_screen=bad))
+    assert "AGPL-family" in msgs and "does not match custom_nodes" in msgs
+
+
+def test_screen_only_the_declared_packs_and_catch_agplv3_spelling(tmp_path):
+    _pack(tmp_path, "mine", "MIT License\n\nthis pack is AGPLv3 in spirit")
+    _pack(tmp_path, "other", None)
+    (tmp_path / "websocket_image_save.py").write_text("x")
+    screen = screen_licences(tmp_path, only={"mine"}, commit_of=lambda p: SHA)
+    assert screen.agpl_packs == ("mine",) and screen.undeterminable == ()
+    assert screen.nodes_digest == nodes_digest([("mine", SHA)])

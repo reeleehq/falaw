@@ -77,10 +77,12 @@ def submit_graph(
     the screen, or is not even canonical JSON, is recorded and raises
     :class:`UnsafeGraphError`.
     """
-    record: dict = {
-        "submitted_at": clock().isoformat(),
-        "context": dict(context or {}),
-    }
+    record: dict = {"submitted_at": clock().isoformat()}
+    try:
+        record["context"] = _freeze(dict(context or {}))
+    except Exception as e:  # noqa: BLE001
+        record["context"] = {"unserialisable": repr(context)[:REPR_LIMIT]}
+        record["context_error"] = str(e)
     try:
         frozen = _freeze(graph)
     except Exception as e:  # noqa: BLE001 — the attempt is audited, whatever it was
@@ -90,7 +92,10 @@ def submit_graph(
         )
         sink.write(record)
         raise UnsafeGraphError(problems) from e
-    problems = check_graph_paths(frozen, object_info, free_text=free_text)
+    try:
+        problems = check_graph_paths(frozen, object_info, free_text=free_text)
+    except Exception as e:  # noqa: BLE001 — a screen that cannot run refuses, and is audited
+        problems = [Problem("5", f"the path screen could not run: {e!r}")]
     record.update(
         graph=frozen,
         graph_sha256=hashlib.sha256(canonical_blob(frozen)).hexdigest(),

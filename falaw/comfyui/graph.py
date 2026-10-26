@@ -18,6 +18,9 @@ withdrawn for a node whose output is wired into any non-exempt input: a prompt
 node feeding a path is a path. The default is the safe one: any other string is
 screened, because which strings reach a filesystem is the custom node's secret,
 not the schema's.
+
+The facade must re-fetch ``/object_info`` after each ``/upload/image``, or every
+newly uploaded ``LoadImage`` filename is (correctly) absent from its combo.
 """
 
 from __future__ import annotations
@@ -106,7 +109,22 @@ def _literal_strings(value: Any) -> Iterator[str]:
 def _input_specs(node_info: Any) -> dict:
     declared = node_info.get("input") if isinstance(node_info, Mapping) else None
     declared = declared if isinstance(declared, Mapping) else {}
-    return {**(declared.get("optional") or {}), **(declared.get("required") or {})}
+    return {
+        **_mapping(declared.get("optional")),
+        **_mapping(declared.get("required")),
+    }
+
+
+def _mapping(value: Any) -> Mapping:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _takes_strings(spec: Any) -> bool:
+    """Whether an input could receive a wired string: a STRING, a wildcard, a
+    combo, or one the engine did not declare."""
+    if spec is None or _combo_options(spec) is not None:
+        return True
+    return isinstance(spec, (list, tuple)) and bool(spec) and spec[0] in ("STRING", "*")
 
 
 def _is_multiline(spec: Any) -> bool:
@@ -126,6 +144,29 @@ def _nodes(graph: Mapping) -> Iterator[tuple[str, str, Any]]:
             yield str(node_id), node["class_type"], node.get("inputs")
 
 
+def _prose_and_taint(nodes, object_info, node_ids, free_text):
+    """``(exempt, tainted)``: which ``(node, input)`` hold prose, and which nodes'
+    output ends up in a screened input, directly or through other string nodes.
+
+    A wire only carries a path if the input receiving it takes strings, so a
+    prompt wired into a sampler's CONDITIONING stays prose.
+    """
+    exempt: set[tuple[str, str]] = set()
+    edges: list[tuple[str, str, str]] = []  # (source, receiving node, input)
+    for node_id, class_type, inputs in nodes:
+        specs = _input_specs(object_info.get(class_type))
+        for name, value in inputs.items():
+            if _is_multiline(specs.get(name)) or (class_type, name) in free_text:
+                exempt.add((node_id, name))
+            source = _link_source(value, node_ids)
+            if source is not None and _takes_strings(specs.get(name)):
+                edges.append((source, node_id, name))
+    tainted = {src for src, dst, name in edges if (dst, name) not in exempt}
+    while grew := {src for src, dst, _ in edges if dst in tainted} - tainted:
+        tainted |= grew
+    return exempt, tainted
+
+
 def check_graph_paths(
     graph: Mapping,
     object_info: Mapping,
@@ -140,6 +181,8 @@ def check_graph_paths(
     """
     if not isinstance(graph, Mapping):
         return [Problem("5", "a graph must be a mapping of node ids to nodes")]
+    if not isinstance(object_info, Mapping):
+        return [Problem("5", "object_info must be the engine's /object_info mapping")]
     out: list[Problem] = []
     node_ids = {str(k) for k in graph}
     nodes = list(_nodes(graph))
@@ -152,16 +195,7 @@ def check_graph_paths(
             )
     nodes = [(i, c, inp) for i, c, inp in nodes if isinstance(inp, Mapping)]
 
-    exempt: set[tuple[str, str]] = set()  # (node_id, input) holding prose
-    tainted: set[str] = set()  # nodes whose output feeds a screened input
-    for node_id, class_type, inputs in nodes:
-        specs = _input_specs(object_info.get(class_type))
-        for name, value in inputs.items():
-            prose = _is_multiline(specs.get(name)) or (class_type, name) in free_text
-            if prose:
-                exempt.add((node_id, name))
-            elif (source := _link_source(value, node_ids)) is not None:
-                tainted.add(source)
+    exempt, tainted = _prose_and_taint(nodes, object_info, node_ids, free_text)
 
     for node_id, class_type, inputs in nodes:
         where = f"node {node_id} ({class_type})"
