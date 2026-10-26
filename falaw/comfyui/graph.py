@@ -8,12 +8,16 @@ the ``/object_info`` the engine declared, before anything is sent:
 
 * a **combo** input (a closed list of choices) must hold one of its options;
 * any other **string** must carry no path hazard: a NUL, a backslash, a drive
-  letter, a leading ``/``, or a ``..`` path segment.
+  letter, a leading ``/``, or a ``..`` path segment (leading whitespace is
+  ignored, dictionary keys are screened too).
 
-Free-text inputs (a prompt) legitimately contain such characters, so they are
-exempt by *name* (:data:`FREE_TEXT_INPUTS`, overridable). The default is the
-safe one: any other string is screened, because which strings reach a
-filesystem is the custom node's secret, not the schema's.
+Prose boxes legitimately contain such characters, so a **multiline** ``STRING``
+input (the engine's own marker for a text area) is exempt, as is anything in
+the ``free_text`` seam (``(class_type, input)`` pairs). The exemption is
+withdrawn for a node whose output is wired into any non-exempt input: a prompt
+node feeding a path is a path. The default is the safe one: any other string is
+screened, because which strings reach a filesystem is the custom node's secret,
+not the schema's.
 """
 
 from __future__ import annotations
@@ -24,8 +28,8 @@ from typing import Any, Optional
 
 from .problems import Problem
 
-FREE_TEXT_INPUTS = frozenset({"text", "prompt", "positive", "negative", "string"})
-"""Input names that carry prose, not a path; exempt from the hazard scan."""
+FREE_TEXT: frozenset[tuple[str, str]] = frozenset()
+"""Extra ``(class_type, input)`` pairs to exempt beyond multiline strings."""
 
 _DRIVE_LETTER = re.compile(r"[A-Za-z]:")
 
@@ -43,6 +47,7 @@ def _path_hazard(value: str) -> Optional[str]:
         return "contains a NUL byte"
     if "\\" in value:
         return "contains a backslash"
+    value = value.lstrip()
     if _DRIVE_LETTER.match(value):
         return "starts with a drive letter"
     if value.startswith("/"):
@@ -68,37 +73,64 @@ def _combo_options(spec: Any) -> Optional[list]:
     return None
 
 
-def _is_link(value: Any) -> bool:
-    """``[node_id, output_index]``: a wire to another node, not a literal."""
-    return (
+def _link_source(value: Any, node_ids: Collection[str]) -> Optional[str]:
+    """The node id a ``[node_id, output_index]`` wire points at, or ``None``.
+
+    Only a list whose first element is a node *of this graph* is a wire; any
+    other two-element list is a literal and is screened like one.
+    """
+    if (
         isinstance(value, list)
         and len(value) == 2
         and isinstance(value[0], (str, int))
+        and not isinstance(value[0], bool)
         and isinstance(value[1], int)
-    )
+        and str(value[0]) in node_ids
+    ):
+        return str(value[0])
+    return None
 
 
 def _literal_strings(value: Any) -> Iterator[str]:
     if isinstance(value, str):
         yield value
-    elif isinstance(value, (list, tuple)) and not _is_link(value):
+    elif isinstance(value, (list, tuple)):
         for item in value:
             yield from _literal_strings(item)
     elif isinstance(value, Mapping):
-        for item in value.values():
+        for key, item in value.items():
+            yield from _literal_strings(key)
             yield from _literal_strings(item)
 
 
-def _input_specs(node_info: Mapping) -> dict:
-    declared = node_info.get("input") or {}
+def _input_specs(node_info: Any) -> dict:
+    declared = node_info.get("input") if isinstance(node_info, Mapping) else None
+    declared = declared if isinstance(declared, Mapping) else {}
     return {**(declared.get("optional") or {}), **(declared.get("required") or {})}
+
+
+def _is_multiline(spec: Any) -> bool:
+    return (
+        isinstance(spec, (list, tuple))
+        and len(spec) > 1
+        and spec[0] == "STRING"
+        and isinstance(spec[1], Mapping)
+        and spec[1].get("multiline") is True
+    )
+
+
+def _nodes(graph: Mapping) -> Iterator[tuple[str, str, Any]]:
+    """``(node_id, class_type, inputs)`` for each node with a string class_type."""
+    for node_id, node in graph.items():
+        if isinstance(node, Mapping) and isinstance(node.get("class_type"), str):
+            yield str(node_id), node["class_type"], node.get("inputs")
 
 
 def check_graph_paths(
     graph: Mapping,
     object_info: Mapping,
     *,
-    free_text_inputs: Collection[str] = FREE_TEXT_INPUTS,
+    free_text: Collection[tuple[str, str]] = FREE_TEXT,
 ) -> list[Problem]:
     """Problems that make ``graph`` unsafe to submit; empty means it may go.
 
@@ -106,44 +138,58 @@ def check_graph_paths(
     ``object_info`` is the engine's ``GET /object_info`` (the facade is the one
     identity allowed to read it).
     """
+    if not isinstance(graph, Mapping):
+        return [Problem("5", "a graph must be a mapping of node ids to nodes")]
     out: list[Problem] = []
-    for node_id, node in graph.items():
-        where = f"node {node_id}"
-        node = node if isinstance(node, Mapping) else {}
-        class_type = node.get("class_type")
+    node_ids = {str(k) for k in graph}
+    nodes = list(_nodes(graph))
+    for node_id in node_ids - {n[0] for n in nodes}:
+        out.append(Problem("5", f"node {node_id}: needs a string class_type"))
+    for node_id, class_type, inputs in nodes:
+        if not isinstance(inputs, Mapping):
+            out.append(
+                Problem("5", f"node {node_id} ({class_type}): inputs must be a mapping")
+            )
+    nodes = [(i, c, inp) for i, c, inp in nodes if isinstance(inp, Mapping)]
+
+    exempt: set[tuple[str, str]] = set()  # (node_id, input) holding prose
+    tainted: set[str] = set()  # nodes whose output feeds a screened input
+    for node_id, class_type, inputs in nodes:
+        specs = _input_specs(object_info.get(class_type))
+        for name, value in inputs.items():
+            prose = _is_multiline(specs.get(name)) or (class_type, name) in free_text
+            if prose:
+                exempt.add((node_id, name))
+            elif (source := _link_source(value, node_ids)) is not None:
+                tainted.add(source)
+
+    for node_id, class_type, inputs in nodes:
+        where = f"node {node_id} ({class_type})"
         if class_type not in object_info:
-            out.append(Problem("5", f"{where}: unknown class_type {class_type!r}"))
+            out.append(Problem("5", f"{where}: unknown class_type"))
             continue
         specs = _input_specs(object_info[class_type])
-        for name, value in (node.get("inputs") or {}).items():
-            if _is_link(value):
+        for name, value in inputs.items():
+            if _link_source(value, node_ids) is not None:
                 continue
             if name not in specs:
-                out.append(
-                    Problem(
-                        "5", f"{where} ({class_type}): input {name!r} is not declared"
-                    )
-                )
+                out.append(Problem("5", f"{where}: input {name!r} is not declared"))
                 continue
             options = _combo_options(specs[name])
             if options is not None and value not in options:
                 out.append(
                     Problem(
                         "5",
-                        f"{where} ({class_type}).{name}: {value!r} is not one of the declared options",
+                        f"{where}.{name}: {value!r} is not one of the declared options",
                     )
                 )
                 continue
-            if name in free_text_inputs and options is None:
+            if (node_id, name) in exempt and node_id not in tainted:
                 continue
             for text in _literal_strings(value):
                 hazard = _path_hazard(text)
                 if hazard:
-                    out.append(
-                        Problem(
-                            "5", f"{where} ({class_type}).{name}: {text!r} {hazard}"
-                        )
-                    )
+                    out.append(Problem("5", f"{where}.{name}: {text!r} {hazard}"))
     return out
 
 
@@ -151,9 +197,9 @@ def assert_safe_graph(
     graph: Mapping,
     object_info: Mapping,
     *,
-    free_text_inputs: Collection[str] = FREE_TEXT_INPUTS,
+    free_text: Collection[tuple[str, str]] = FREE_TEXT,
 ) -> None:
     """Raise :class:`UnsafeGraphError` unless :func:`check_graph_paths` is empty."""
-    problems = check_graph_paths(graph, object_info, free_text_inputs=free_text_inputs)
+    problems = check_graph_paths(graph, object_info, free_text=free_text)
     if problems:
         raise UnsafeGraphError(problems)

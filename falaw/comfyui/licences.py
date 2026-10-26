@@ -27,11 +27,19 @@ from .problems import Problem
 LICENCE_FILE_PREFIXES = ("LICENSE", "LICENCE", "COPYING")
 """A pack's licence files: any root-level file whose name starts with one."""
 
-TITLE_LINES = 8
-"""How many leading non-blank lines count as a licence's title."""
+TITLE_LINES = 12
+"""How many leading non-blank lines count as a licence's title (room for a
+copyright line or three above the licence's name)."""
 
-AGPL_FAMILY = re.compile(r"\bAGPL\b|AFFERO", re.IGNORECASE)
-"""Matched against the title lines and SPDX tags only (see module docstring)."""
+RESTRICTED_FAMILY = re.compile(
+    r"\bAGPL\b|AFFERO|\bSSPL\b|SERVER SIDE PUBLIC LICENSE", re.IGNORECASE
+)
+"""The AGPL family plus SSPL (same network-copyleft reach). Matched against a
+file's title lines and SPDX tags, not its whole text; see :func:`_is_restricted`."""
+
+AGPL_TITLE = "GNU AFFERO GENERAL PUBLIC LICENSE"
+"""The AGPL's own upper-case title, flagged wherever it sits in a file. GPLv3
+section 13 names the licence in mixed case, so this does not flag GPLv3."""
 
 SPDX_TAG = re.compile(r"SPDX-License-Identifier:\s*(.+)", re.IGNORECASE)
 
@@ -46,8 +54,10 @@ KNOWN_LICENCES = {
     "CC0": r"CC0 1\.0|Creative Commons Zero",
     "WTFPL": r"DO WHAT THE FUCK YOU WANT",
 }
-"""Licences recognised as *determinable*. Text matching none of these is
-undeterminable, which fails the screen: unreadable terms are not a pass."""
+"""Licences recognised as *determinable*, looked for in a file's title lines.
+Text matching none of these is undeterminable, which fails the screen: terms
+we cannot read are not a pass. A heuristic by design; what it cannot place
+goes to a human."""
 
 
 def nodes_digest(nodes: Iterable[tuple[str, str]]) -> str:
@@ -88,33 +98,57 @@ class LicenceScreen:
         ]
 
 
-def _licence_text(pack: Path) -> str:
-    files = sorted(
+def _licence_files(pack: Path) -> list[Path]:
+    if pack.is_file():  # a single-file node has no licence file of its own
+        return []
+    return sorted(
         f
         for f in pack.iterdir()
         if f.is_file() and f.name.upper().startswith(LICENCE_FILE_PREFIXES)
     )
-    return "\n".join(f.read_text(errors="replace") for f in files)
 
 
-def _is_agpl(text: str) -> bool:
-    title = " ".join([ln for ln in text.splitlines() if ln.strip()][:TITLE_LINES])
+def _title(text: str) -> str:
+    return " ".join([ln for ln in text.splitlines() if ln.strip()][:TITLE_LINES])
+
+
+def _is_restricted(text: str) -> bool:
     tags = " ".join(SPDX_TAG.findall(text))
-    return bool(AGPL_FAMILY.search(title) or AGPL_FAMILY.search(tags))
+    return bool(
+        AGPL_TITLE in text
+        or RESTRICTED_FAMILY.search(_title(text))
+        or RESTRICTED_FAMILY.search(tags)
+    )
 
 
 def _is_determinable(text: str) -> bool:
-    return any(re.search(p, text, re.IGNORECASE) for p in KNOWN_LICENCES.values())
+    title = _title(text)
+    return any(re.search(p, title, re.IGNORECASE) for p in KNOWN_LICENCES.values())
+
+
+def _classify(pack: Path) -> str:
+    """``"agpl"``, ``"undeterminable"`` or ``"ok"`` — each file judged on its
+    own, so one permissive file cannot vouch for a restrictive sibling."""
+    texts = [f.read_text(errors="replace") for f in _licence_files(pack)]
+    if any(_is_restricted(t) for t in texts):
+        return "agpl"
+    if not texts or not all(_is_determinable(t) for t in texts):
+        return "undeterminable"
+    return "ok"
 
 
 def git_head(pack: Path) -> str:
-    """The commit checked out in ``pack`` (``git rev-parse HEAD``)."""
-    return subprocess.run(
-        ["git", "-C", str(pack), "rev-parse", "HEAD"],
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
+    """The commit checked out in ``pack`` (``git rev-parse HEAD``); ``""`` when
+    ``pack`` is not a git checkout (it cannot be pinned, so it cannot pass)."""
+    try:
+        return subprocess.run(
+            ["git", "-C", str(pack), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError, NotADirectoryError):
+        return ""
 
 
 def screen_licences(
@@ -123,7 +157,7 @@ def screen_licences(
     commit_of: Callable[[Path], str] = git_head,
     clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> LicenceScreen:
-    """Screen every pack directory under ``nodes_dir``.
+    """Screen every node pack (a directory, or a single ``.py`` file) under ``nodes_dir``.
 
     ``commit_of`` reads each pack's pinned commit (default: its git ``HEAD``)
     so the returned ``nodes_digest`` matches
@@ -133,13 +167,14 @@ def screen_licences(
     for pack in sorted(
         p
         for p in Path(nodes_dir).iterdir()
-        if p.is_dir() and not p.name.startswith((".", "__"))
+        if not p.name.startswith((".", "__")) and (p.is_dir() or p.suffix == ".py")
     ):
-        identity.append((pack.name, commit_of(pack)))
-        text = _licence_text(pack)
-        if _is_agpl(text):
+        commit = commit_of(pack)
+        identity.append((pack.name, commit))
+        verdict = _classify(pack)
+        if verdict == "agpl":
             agpl.append(pack.name)
-        elif not _is_determinable(text):
+        elif verdict == "undeterminable" or not commit:
             unknown.append(pack.name)
     return LicenceScreen(
         checked_at=clock().isoformat(timespec="seconds"),

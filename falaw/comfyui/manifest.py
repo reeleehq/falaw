@@ -6,7 +6,12 @@ against what backs it (a file digest, a pinned commit proven to sit at or after
 the floor tag, an allowlist of arguments). Everything the checker would have to
 reach for is a keyword argument: ``base_dir`` (where evidence files live),
 ``commit_floor`` (the git ancestry test), ``allowed_args`` and the blocked
-endpoint set.
+endpoint set. A wrong-typed field is a :class:`Problem`, never an exception.
+
+Limit worth knowing: a proxy config's digest proves the file is the one the
+manifest names, not that it enforces ``client_endpoints``. The endpoint lists
+are claims about that config until a parser for the deployment's proxy is
+plugged in.
 
 >>> from falaw.comfyui import check_manifest
 >>> [str(p) for p in check_manifest({})][:1]
@@ -19,11 +24,11 @@ import hashlib
 import ipaddress
 import re
 import subprocess
-from collections.abc import Callable, Collection, Mapping
+from collections.abc import Callable, Collection, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import Any, Optional
 
-from .licences import nodes_digest
+from .licences import RESTRICTED_FAMILY, nodes_digest
 from .problems import Problem
 
 FLOOR_TAG = "v0.28.0"
@@ -34,6 +39,9 @@ _SHA1 = re.compile(r"[0-9a-f]{40}")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _HOSTNAME = re.compile(
     r"(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}", re.IGNORECASE
+)
+_INTERNAL_HOST = re.compile(
+    r"(^|\.)(internal|local|localhost|localdomain)$", re.IGNORECASE
 )
 
 BLOCKED_ENDPOINTS = (
@@ -49,34 +57,62 @@ BLOCKED_ENDPOINTS = (
 FACADE_ONLY_ENDPOINTS = ("/object_info",)
 """Reachable by the facade's identity only: never in ``client_endpoints``."""
 
-DEFAULT_ALLOWED_ARGS = frozenset(
-    {
-        "--listen",
-        "--port",
-        "--disable-all-custom-nodes",
-        "--whitelist-custom-nodes",
-        "--output-directory",
-        "--temp-directory",
-        "--input-directory",
-        "--cpu",
-        "--disable-auto-launch",
-        "--disable-metadata",
-        "--dont-print-server",
-        "--max-upload-size",
-    }
-)
-"""Arguments a deployment may pass. An allowlist, not a secret-shaped scan:
-``/system_stats`` returns ``sys.argv``, so only known-benign flags are allowed
-(a secret-looking scan stays a backstop, never the rule)."""
+API_PREFIX = "/api"
+"""ComfyUI serves every route again under this prefix; both spellings are one."""
 
-EXPLICITLY_FORBIDDEN_ARGS = {
-    "--enable-manager": "installs arbitrary code from HTTP requests (CVSS 10.0 RCE of its own)",
-    "--enable-cors-header": "lets any web page drive the unauthenticated API",
+DEFAULT_ALLOWED_ARGS: Mapping[str, tuple[int, int]] = {
+    "--listen": (1, 1),
+    "--port": (1, 1),
+    "--disable-all-custom-nodes": (0, 0),
+    "--whitelist-custom-nodes": (1, 1000),
+    "--output-directory": (1, 1),
+    "--temp-directory": (1, 1),
+    "--input-directory": (1, 1),
+    "--cpu": (0, 0),
+    "--disable-auto-launch": (0, 0),
+    "--disable-metadata": (0, 0),
+    "--dont-print-server": (0, 0),
+    "--max-upload-size": (1, 1),
 }
-"""Named so the failure says *why*, rather than only 'not on the allowlist'."""
+"""Arguments a deployment may pass, each with its ``(min, max)`` value count.
+An allowlist, not a secret-shaped scan: ``/system_stats`` returns ``sys.argv``,
+so a stray value after a flag that takes none (``--cpu sk-...``) is as much a
+leak as a ``--api-key`` flag. A bare ``--listen`` is refused by its count: in
+ComfyUI it means every interface."""
+
+#: flag -> (checklist row, why). Named so the failure says *why*.
+EXPLICITLY_FORBIDDEN_ARGS = {
+    "--enable-manager": (
+        "4",
+        "installs arbitrary code from HTTP requests (CVSS 10.0 RCE of its own)",
+    ),
+    "--enable-cors-header": ("7", "lets any web page drive the unauthenticated API"),
+}
 
 REQUIRED_MOUNTS = ("/models", "/output", "/temp")
 """The only paths a deployment may mount (row 6: no other host path)."""
+
+
+# --- shape normalisation ------------------------------------------------------
+
+
+def _mapping(value: Any) -> Mapping:
+    return value if isinstance(value, Mapping) else {}
+
+
+def _mappings(value: Any) -> list[Mapping]:
+    """The mapping entries of a list; wrong-typed entries are reported by the
+    caller's own presence checks (they simply contribute nothing)."""
+    return (
+        [v for v in value if isinstance(v, Mapping)] if isinstance(value, list) else []
+    )
+
+
+def _strings(value: Any) -> list[str]:
+    return [v for v in value if isinstance(v, str)] if isinstance(value, list) else []
+
+
+# --- evidence -----------------------------------------------------------------
 
 
 def _digest_of(path: Path) -> str:
@@ -99,203 +135,251 @@ def git_commit_floor(
     return at_or_after
 
 
-def _args_by_flag(args: list[str]) -> dict[str, list[str]]:
-    """``["--port", "8188", "--cpu"]`` -> ``{"--port": ["8188"], "--cpu": []}``."""
+def _evidence(
+    item: str, label: str, evidence: Any, base: Optional[Path]
+) -> Iterator[Problem]:
+    """``{"path", "sha256"}`` evidence: a file inside ``base`` matching its digest."""
+    ev = _mapping(evidence)
+    path, claimed = ev.get("path"), str(ev.get("sha256", ""))
+    if not isinstance(path, str) or not path or not _SHA256.fullmatch(claimed):
+        yield Problem(item, f"{label} must be {{path, sha256}} evidence")
+        return
+    if base is None:
+        yield Problem(item, f"{label}: no base_dir given to verify {path!r}")
+        return
+    target = (base / path).resolve()
+    if not target.is_relative_to(base.resolve()):
+        yield Problem(item, f"{label}: {path!r} points outside base_dir")
+    elif not target.is_file():
+        yield Problem(item, f"{label}: {path!r} not found under base_dir")
+    elif _digest_of(target) != claimed:
+        yield Problem(item, f"{label}: {path!r} does not match its sha256")
+
+
+# --- arguments ----------------------------------------------------------------
+
+
+def _flags(args: list[str]) -> tuple[dict[str, list[str]], list[Problem]]:
+    """Group argv into ``{flag: [values]}``; shape errors come back as Problems."""
     out: dict[str, list[str]] = {}
+    problems: list[Problem] = []
     flag = None
     for token in args:
         if token.startswith("--"):
+            if "=" in token:
+                problems.append(
+                    Problem(
+                        "7",
+                        f"{token!r}: write a flag and its value as separate arguments",
+                    )
+                )
+            if token in out:
+                problems.append(Problem("7", f"{token} is given twice"))
             flag = token
             out.setdefault(flag, [])
-        elif flag is not None:
-            out[flag].append(token)
+        elif flag is None:
+            problems.append(Problem("7", f"{token!r} is a value with no flag"))
         else:
-            out.setdefault(token, [])  # a stray value: surfaces as not allowed
-    return out
+            out[flag].append(token)
+    return out, problems
 
 
-def _check_evidence(
-    item: str,
-    label: str,
-    evidence: Any,
-    base_dir: Optional[Path],
-    out: list[Problem],
-) -> None:
-    """``{"path", "sha256"}`` evidence: the file must exist and match its digest."""
-    ev = evidence if isinstance(evidence, Mapping) else {}
-    path, claimed = ev.get("path"), str(ev.get("sha256", ""))
-    if not path or not _SHA256.fullmatch(claimed):
-        out.append(Problem(item, f"{label} must be {{path, sha256}} evidence"))
+def _check_args(
+    manifest: Mapping, allowed: Mapping[str, tuple[int, int]]
+) -> Iterator[Problem]:
+    raw = manifest.get("args")
+    if not isinstance(raw, list) or not all(isinstance(a, str) for a in raw):
+        yield Problem("7", "args must be a list of strings")
         return
-    if base_dir is None:
-        out.append(Problem(item, f"{label}: no base_dir given to verify {path!r}"))
+    flags, problems = _flags(raw)
+    yield from problems
+    if "--disable-all-custom-nodes" not in flags:
+        yield Problem("4", "--disable-all-custom-nodes is required")
+    names = {n.get("name") for n in _mappings(manifest.get("custom_nodes"))}
+    for flag, values in flags.items():
+        if flag in EXPLICITLY_FORBIDDEN_ARGS:
+            item, why = EXPLICITLY_FORBIDDEN_ARGS[flag]
+            yield Problem(item, f"never {flag}: {why}")
+        elif flag not in allowed:
+            yield Problem("7", f"argument {flag!r} is not on the allowlist")
+        else:
+            lo, hi = allowed[flag]
+            if not lo <= len(values) <= hi:
+                yield Problem("7", f"{flag} takes {lo}..{hi} values, got {len(values)}")
+    if (
+        "--whitelist-custom-nodes" in flags
+        and set(flags["--whitelist-custom-nodes"]) != names
+    ):
+        yield Problem("4", "--whitelist-custom-nodes must equal custom_nodes names")
+    for port in flags.get("--port", ()):
+        if not port.isdigit():
+            yield Problem("1", f"--port {port!r} is not a number")
+
+
+# --- rows ---------------------------------------------------------------------
+
+
+def _check_commits(manifest: Mapping, commit_floor) -> Iterator[Problem]:
+    commit = str(_mapping(manifest.get("comfyui")).get("commit", ""))
+    if not _SHA1.fullmatch(commit):
+        yield Problem("2", "comfyui.commit must be a 40-hex commit sha")
+    elif commit_floor is None:
+        yield Problem(
+            "2",
+            f"cannot verify the commit is at or after {FLOOR_TAG} (no commit_floor given)",
+        )
+    elif not commit_floor(commit):
+        yield Problem("2", f"comfyui.commit is not at or after {FLOOR_TAG}")
+
+
+def _check_custom_nodes(manifest: Mapping) -> Iterator[Problem]:
+    nodes = manifest.get("custom_nodes") or []
+    if not isinstance(nodes, list):
+        yield Problem("4", "custom_nodes must be a list")
         return
-    target = base_dir / path
-    if not target.is_file():
-        out.append(Problem(item, f"{label}: {path!r} not found under base_dir"))
-    elif _digest_of(target) != claimed:
-        out.append(Problem(item, f"{label}: {path!r} does not match its sha256"))
+    for node in nodes:
+        node = _mapping(node)
+        label = node.get("name") or "?"
+        if not node.get("name") or not node.get("repo"):
+            yield Problem("4", f"custom node {label!r} needs name and repo")
+        if not _SHA1.fullmatch(str(node.get("commit", ""))):
+            yield Problem("4", f"custom node {label!r} is not pinned by commit")
 
 
-def _check_network(m: Mapping, args: Mapping[str, list[str]], base, out) -> None:
-    net = m.get("network") or {}
-    if net.get("public_ingress") is not False:
-        out.append(Problem("1", "network.public_ingress must be false"))
-    for value in args.get("--listen", ()):
+def _check_listen(manifest: Mapping) -> Iterator[Problem]:
+    flags, _ = _flags(_strings(manifest.get("args")))
+    if _mapping(manifest.get("network")).get("public_ingress") is not False:
+        yield Problem("1", "network.public_ingress must be false")
+    for value in flags.get("--listen", ()):
         try:
             ip = ipaddress.ip_address(value)
         except ValueError:
-            out.append(Problem("1", f"--listen {value!r} is not an IP address"))
+            yield Problem("1", f"--listen {value!r} is not an IP address")
             continue
         if ip.is_unspecified or not (ip.is_loopback or ip.is_private):
-            out.append(Problem("1", f"--listen {value} is not a private address"))
-    hosts = net.get("egress_allow") or []
-    if not hosts:
-        out.append(Problem("8", "network.egress_allow must name the allowed hosts"))
-    for host in hosts:
-        if not _HOSTNAME.fullmatch(str(host)):
-            out.append(
-                Problem(
-                    "8",
-                    f"egress host {host!r} must be a named host (no '*', CIDR or bare IP)",
-                )
+            yield Problem("1", f"--listen {value} is not a private address")
+
+
+def _normalise_endpoint(endpoint: str) -> str:
+    """``//API/Internal/`` -> ``/internal``: what the engine would route it as."""
+    path = "/" + "/".join(seg for seg in endpoint.lower().split("/") if seg)
+    if path == API_PREFIX or path.startswith(API_PREFIX + "/"):
+        path = path[len(API_PREFIX) :] or "/"
+    return path
+
+
+def _under(path: str, prefix: str) -> bool:
+    return path == prefix or path.startswith(prefix + "/")
+
+
+def _check_proxy(
+    manifest: Mapping, blocked: Collection[str], base
+) -> Iterator[Problem]:
+    proxy = _mapping(manifest.get("proxy"))
+    yield from _evidence("3", "proxy.config", proxy.get("config"), base)
+    facade, client = (
+        _strings(proxy.get("facade_only_endpoints")),
+        _strings(proxy.get("client_endpoints")),
+    )
+    if not client:
+        yield Problem("3", "proxy.client_endpoints must list the allowed endpoints")
+    for ep in (*facade, *client):
+        norm = _normalise_endpoint(ep)
+        if "*" in ep or norm == "/":
+            yield Problem(
+                "3", f"endpoint {ep!r} must name a route (no wildcard, no root)"
             )
-    _check_evidence(
-        "8", "network.metadata_blocked_by", net.get("metadata_blocked_by"), base, out
+        elif any(_under(norm, b) for b in blocked):
+            yield Problem("3", f"endpoint {ep!r} must not be exposed")
+    for ep in client:
+        if any(_under(_normalise_endpoint(ep), f) for f in FACADE_ONLY_ENDPOINTS):
+            yield Problem("3", f"{ep!r} may be reachable by the facade only")
+
+
+def _check_mounts(manifest: Mapping) -> Iterator[Problem]:
+    mounts = _mappings(manifest.get("mounts"))
+    for mount in mounts:
+        path, source = str(mount.get("path", "")), mount.get("source")
+        quota = mount.get("quota_gb")
+        if path not in REQUIRED_MOUNTS:
+            yield Problem(
+                "6",
+                f"mount {path!r}: no host path other than {list(REQUIRED_MOUNTS)} may be mounted",
+            )
+            continue
+        if not isinstance(source, str) or source.strip("/") == "":
+            yield Problem(
+                "6",
+                f"mount {path}: source must name a dedicated volume or directory, not '/'",
+            )
+        if path == "/models" and mount.get("mode") != "ro":
+            yield Problem("6", "/models must be mounted read-only")
+        elif path != "/models" and not (
+            isinstance(quota, (int, float))
+            and not isinstance(quota, bool)
+            and quota > 0
+        ):
+            yield Problem("6", f"{path} needs a quota_gb")
+    present = {str(m.get("path")) for m in mounts}
+    for required in REQUIRED_MOUNTS:
+        if required not in present:
+            yield Problem("6", f"missing mount {required}")
+
+
+def _check_egress(manifest: Mapping, base) -> Iterator[Problem]:
+    net = _mapping(manifest.get("network"))
+    hosts = net.get("egress_allow")
+    if not isinstance(hosts, list) or not hosts:
+        yield Problem("8", "network.egress_allow must name the allowed hosts")
+    for host in hosts if isinstance(hosts, list) else ():
+        if not isinstance(host, str) or not _HOSTNAME.fullmatch(host):
+            yield Problem(
+                "8",
+                f"egress host {host!r} must be a named host (no '*', CIDR or bare IP)",
+            )
+        elif _INTERNAL_HOST.search(host):
+            yield Problem(
+                "8",
+                f"egress host {host!r} is an internal name (cloud metadata lives there)",
+            )
+    yield from _evidence(
+        "8", "network.metadata_blocked_by", net.get("metadata_blocked_by"), base
     )
 
 
-def _check_proxy(m: Mapping, blocked: Collection[str], base, out) -> None:
-    proxy = m.get("proxy") or {}
-    _check_evidence("3", "proxy.config", proxy.get("config"), base, out)
-    facade = [str(e) for e in proxy.get("facade_only_endpoints") or ()]
-    client = [str(e) for e in proxy.get("client_endpoints") or ()]
-    if not client:
-        out.append(
-            Problem("3", "proxy.client_endpoints must list the allowed endpoints")
-        )
-    for ep in (*facade, *client):
-        if any(ep == b or ep.startswith(b + "/") for b in blocked):
-            out.append(Problem("3", f"endpoint {ep!r} must not be exposed"))
-    for ep in client:
-        if any(ep == f or ep.startswith(f + "/") for f in FACADE_ONLY_ENDPOINTS):
-            out.append(Problem("3", f"{ep!r} may be reachable by the facade only"))
-
-
-def _check_args(m: Mapping, allowed: Collection[str], flags, out) -> None:
-    names = {
-        n["name"]
-        for n in m.get("custom_nodes") or ()
-        if isinstance(n, Mapping) and "name" in n
-    }
-    if "--disable-all-custom-nodes" not in flags:
-        out.append(Problem("4", "--disable-all-custom-nodes is required"))
-    for flag, values in flags.items():
-        if flag in EXPLICITLY_FORBIDDEN_ARGS:
-            out.append(
-                Problem(
-                    "4" if "manager" in flag else "7",
-                    f"never {flag}: {EXPLICITLY_FORBIDDEN_ARGS[flag]}",
-                )
-            )
-        elif flag not in allowed:
-            out.append(Problem("7", f"argument {flag!r} is not on the allowlist"))
-    if (
-        flags.get("--whitelist-custom-nodes") is not None
-        and set(flags["--whitelist-custom-nodes"]) != names
-    ):
-        out.append(
-            Problem("4", "--whitelist-custom-nodes must equal custom_nodes names")
-        )
-    for port in flags.get("--port", ()):
-        if not port.isdigit():
-            out.append(Problem("1", f"--port {port!r} is not a number"))
-
-
-def _check_commits(m: Mapping, commit_floor, out) -> None:
-    commit = str((m.get("comfyui") or {}).get("commit", ""))
-    if not _SHA1.fullmatch(commit):
-        out.append(Problem("2", "comfyui.commit must be a 40-hex commit sha"))
-    elif commit_floor is None:
-        out.append(
-            Problem(
-                "2",
-                f"cannot verify the commit is at or after {FLOOR_TAG} (no commit_floor given)",
-            )
-        )
-    elif not commit_floor(commit):
-        out.append(Problem("2", f"comfyui.commit is not at or after {FLOOR_TAG}"))
-    for node in m.get("custom_nodes") or ():
-        node = node if isinstance(node, Mapping) else {}
-        label = node.get("name") or "?"
-        if not node.get("name") or not node.get("repo"):
-            out.append(Problem("4", f"custom node {label!r} needs name and repo"))
-        if not _SHA1.fullmatch(str(node.get("commit", ""))):
-            out.append(Problem("4", f"custom node {label!r} is not pinned by commit"))
-
-
-def _check_mounts(m: Mapping, out) -> None:
-    for mount in m.get("mounts") or ():
-        path, mode = str(mount.get("path", "")), mount.get("mode")
-        if path not in REQUIRED_MOUNTS:
-            out.append(
-                Problem(
-                    "6",
-                    f"mount {path!r}: no host path other than {list(REQUIRED_MOUNTS)} may be mounted",
-                )
-            )
-        elif path == "/models" and mode != "ro":
-            out.append(Problem("6", "/models must be mounted read-only"))
-        elif path != "/models" and not (
-            isinstance(mount.get("quota_gb"), (int, float)) and mount["quota_gb"] > 0
-        ):
-            out.append(Problem("6", f"{path} needs a quota_gb"))
-    present = {str(mt.get("path")) for mt in m.get("mounts") or ()}
-    for required in REQUIRED_MOUNTS:
-        if required not in present:
-            out.append(Problem("6", f"missing mount {required}"))
-
-
-def _check_tenancy_and_licences(m: Mapping, allow_shared, out) -> None:
-    tenancy = m.get("tenancy")
+def _check_tenancy(manifest: Mapping, allow_shared: bool) -> Iterator[Problem]:
+    tenancy = manifest.get("tenancy")
     if tenancy not in ("per_tenant", "shared"):
-        out.append(Problem("9", "tenancy must be recorded (per_tenant | shared)"))
+        yield Problem("9", "tenancy must be recorded (per_tenant | shared)")
     elif tenancy == "shared" and not allow_shared:
-        out.append(
-            Problem(
-                "9",
-                "tenancy 'shared' is incompatible with a multi-tenant host (pass allow_shared=True for a single-owner dev instance)",
-            )
+        yield Problem(
+            "9",
+            "tenancy 'shared' is incompatible with a multi-tenant host (pass allow_shared=True for a single-owner dev instance)",
         )
-    screen = m.get("licence_screen") or {}
+
+
+def _check_licences(manifest: Mapping) -> Iterator[Problem]:
+    screen = _mapping(manifest.get("licence_screen"))
     if not screen.get("checked_at"):
-        out.append(Problem("L", "the licence screen has not been run"))
+        yield Problem("L", "the licence screen has not been run")
     if screen.get("agpl_packs") or screen.get("undeterminable"):
-        out.append(
-            Problem("L", "the licence screen found AGPL-family or undeterminable packs")
+        yield Problem(
+            "L", "the licence screen found AGPL-family or undeterminable packs"
         )
     expected = nodes_digest(
         (n.get("name"), n.get("commit"))
-        for n in m.get("custom_nodes") or ()
-        if isinstance(n, Mapping)
+        for n in _mappings(manifest.get("custom_nodes"))
     )
     if screen.get("nodes_digest") != expected:
-        out.append(
-            Problem(
-                "L",
-                "licence_screen.nodes_digest does not match the current custom_nodes",
-            )
+        yield Problem(
+            "L", "licence_screen.nodes_digest does not match the current custom_nodes"
         )
-    for worker in m.get("third_party_workers") or ():
-        if (
-            "AGPL" in str(worker.get("licence", "")).upper()
-            and worker.get("use") != "black box only"
-        ):
-            out.append(
-                Problem(
-                    "L",
-                    f"AGPL worker {worker.get('name')!r} may only be used as a black box",
-                )
+    for worker in _mappings(manifest.get("third_party_workers")):
+        restricted = RESTRICTED_FAMILY.search(str(worker.get("licence", "")))
+        if restricted and worker.get("use") != "black box only":
+            yield Problem(
+                "L",
+                f"AGPL-family worker {worker.get('name')!r} may only be used as a black box",
             )
 
 
@@ -304,7 +388,7 @@ def check_manifest(
     *,
     base_dir: str | Path | None = None,
     commit_floor: Optional[Callable[[str], bool]] = None,
-    allowed_args: Collection[str] = DEFAULT_ALLOWED_ARGS,
+    allowed_args: Mapping[str, tuple[int, int]] = DEFAULT_ALLOWED_ARGS,
     blocked_endpoints: Collection[str] = BLOCKED_ENDPOINTS,
     allow_shared: bool = False,
 ) -> list[Problem]:
@@ -316,13 +400,18 @@ def check_manifest(
     :func:`git_commit_floor`). Without them those claims cannot be verified,
     which is a problem, not a pass.
     """
-    out: list[Problem] = []
+    if not isinstance(manifest, Mapping):
+        return [Problem("*", "the manifest must be a JSON object")]
     base = Path(base_dir) if base_dir is not None else None
-    flags = _args_by_flag([str(a) for a in manifest.get("args") or ()])
-    _check_commits(manifest, commit_floor, out)
-    _check_network(manifest, flags, base, out)
-    _check_proxy(manifest, blocked_endpoints, base, out)
-    _check_args(manifest, allowed_args, flags, out)
-    _check_mounts(manifest, out)
-    _check_tenancy_and_licences(manifest, allow_shared, out)
-    return out
+    checks: Iterable[Iterator[Problem]] = (
+        _check_commits(manifest, commit_floor),
+        _check_listen(manifest),
+        _check_proxy(manifest, blocked_endpoints, base),
+        _check_custom_nodes(manifest),
+        _check_args(manifest, allowed_args),
+        _check_mounts(manifest),
+        _check_egress(manifest, base),
+        _check_tenancy(manifest, allow_shared),
+        _check_licences(manifest),
+    )
+    return [problem for check in checks for problem in check]

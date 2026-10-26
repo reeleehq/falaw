@@ -13,16 +13,19 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Collection, Mapping
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional, Protocol
 
 
 from ..canonical import canonical_blob
-from .graph import UnsafeGraphError, check_graph_paths
+from .graph import FREE_TEXT, UnsafeGraphError, check_graph_paths
+from .problems import Problem
 
 AUDIT_FILENAME = "graphs.jsonl"
+REPR_LIMIT = 4000
+"""Characters of an un-serialisable graph's ``repr`` kept in its audit record."""
 
 
 class GraphAuditSink(Protocol):
@@ -49,6 +52,12 @@ class FileAuditSink:
             os.close(fd)
 
 
+def _freeze(graph: Mapping) -> dict:
+    """A private, JSON-native copy: what is screened, audited and sent is this
+    one object, so nothing can change it between the three."""
+    return json.loads(canonical_blob(dict(graph)))
+
+
 def submit_graph(
     graph: Mapping,
     *,
@@ -56,26 +65,38 @@ def submit_graph(
     sink: GraphAuditSink,
     object_info: Mapping,
     context: Optional[Mapping] = None,
+    free_text: Collection[tuple[str, str]] = FREE_TEXT,
     clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
 ) -> Any:
     """Screen, audit, then send ``graph``; returns whatever ``send`` returns.
 
-    Order is the contract: the path screen runs, the record (graph, its
-    sha256, time, ``context`` and the verdict) is written to ``sink``, and only
-    then — if the screen passed — is ``send(graph)`` called. A raising sink
-    stops everything; an unsafe graph is recorded and raises
+    Order is the contract: the graph is frozen to a private copy, the path
+    screen runs, the record (graph, its sha256, time, ``context`` and the
+    verdict) is written to ``sink``, and only then — if the screen passed — is
+    ``send(copy)`` called. A raising sink stops everything. A graph that fails
+    the screen, or is not even canonical JSON, is recorded and raises
     :class:`UnsafeGraphError`.
     """
-    problems = check_graph_paths(graph, object_info)
-    sink.write(
-        {
-            "submitted_at": clock().isoformat(),
-            "graph_sha256": hashlib.sha256(canonical_blob(dict(graph))).hexdigest(),
-            "graph": graph,
-            "context": dict(context or {}),
-            "rejected": [str(p) for p in problems],
-        }
+    record: dict = {
+        "submitted_at": clock().isoformat(),
+        "context": dict(context or {}),
+    }
+    try:
+        frozen = _freeze(graph)
+    except Exception as e:  # noqa: BLE001 — the attempt is audited, whatever it was
+        problems = [Problem("10", f"graph is not canonical JSON: {e}")]
+        record.update(
+            graph_repr=repr(graph)[:REPR_LIMIT], rejected=[str(p) for p in problems]
+        )
+        sink.write(record)
+        raise UnsafeGraphError(problems) from e
+    problems = check_graph_paths(frozen, object_info, free_text=free_text)
+    record.update(
+        graph=frozen,
+        graph_sha256=hashlib.sha256(canonical_blob(frozen)).hexdigest(),
+        rejected=[str(p) for p in problems],
     )
+    sink.write(record)
     if problems:
         raise UnsafeGraphError(problems)
-    return send(graph)
+    return send(frozen)

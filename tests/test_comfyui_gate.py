@@ -55,9 +55,9 @@ def good(tmp_path):
             "client_endpoints": ["/prompt", "/history/{id}", "/view", "/upload/image"],
         },
         "mounts": [
-            {"path": "/models", "mode": "ro"},
-            {"path": "/output", "mode": "rw", "quota_gb": 20},
-            {"path": "/temp", "mode": "rw", "quota_gb": 5},
+            {"path": "/models", "mode": "ro", "source": "models-vol"},
+            {"path": "/output", "mode": "rw", "source": "out-vol", "quota_gb": 20},
+            {"path": "/temp", "mode": "rw", "source": "tmp-vol", "quota_gb": 5},
         ],
         "tenancy": "per_tenant",
         "licence_screen": {
@@ -184,7 +184,8 @@ def test_arguments_are_an_allowlist_not_a_secret_regex(good, tmp_path):
         a for a in good["args"] if a not in ("--some-new-flag", "--tls-keyfile", "k")
     ]
     assert (
-        _check(good, tmp_path, allowed_args={"--listen", "--port"}) != []
+        _check(good, tmp_path, allowed_args={"--listen": (1, 1), "--port": (1, 1)})
+        != []
     )  # allowlist is a seam
     good["args"].append("--enable-cors-header")
     assert any("--enable-cors-header" in str(p) for p in _check(good, tmp_path))
@@ -313,8 +314,12 @@ OBJECT_INFO = {
         "input": {"required": {"ckpt_name": ["COMBO", {"options": ["m.safetensors"]}]}}
     },
     "CLIPTextEncode": {
-        "input": {"required": {"text": ["STRING", {}], "clip": ["CLIP", {}]}}
+        "input": {
+            "required": {"text": ["STRING", {"multiline": True}], "clip": ["CLIP", {}]}
+        }
     },
+    "PathLoader": {"input": {"required": {"path": ["STRING", {}]}}},
+    "StringConst": {"input": {"required": {"string": ["STRING", {"multiline": True}]}}},
     "SaveImage": {
         "input": {
             "required": {"images": ["IMAGE", {}], "filename_prefix": ["STRING", {}]}
@@ -383,12 +388,12 @@ def test_unknown_classes_and_undeclared_inputs_are_refused():
     )
 
 
-def test_free_text_exemption_is_by_name_and_overridable():
-    graph = _g("SaveImage", images=["1", 0], filename_prefix="/x")
-    assert (
-        check_graph_paths(graph, OBJECT_INFO, free_text_inputs={"filename_prefix"})
-        == []
-    )
+def test_free_text_exemption_is_by_declared_type_and_overridable():
+    graph = _g("SaveImage", images=["9", 0], filename_prefix="/x")
+    pair = {("SaveImage", "filename_prefix")}
+    assert check_graph_paths(graph, OBJECT_INFO, free_text=pair) == []
+    # a non-multiline STRING is never exempt just because of its name
+    assert check_graph_paths(_g("PathLoader", path="/etc/passwd"), OBJECT_INFO)
     with pytest.raises(UnsafeGraphError) as e:
         assert_safe_graph(graph, OBJECT_INFO)
     assert e.value.problems
@@ -479,3 +484,179 @@ def test_file_sink_appends_durable_json_lines(tmp_path):
         "a.png",
         "sub/b.png",
     ]
+
+
+# --- review findings (hostile shapes) -------------------------------------------
+
+
+def test_a_prose_node_wired_into_a_path_is_screened():
+    graph = {
+        "1": {"class_type": "StringConst", "inputs": {"string": "/etc/passwd"}},
+        "2": {"class_type": "PathLoader", "inputs": {"path": ["1", 0]}},
+    }
+    problems = check_graph_paths(graph, OBJECT_INFO)
+    assert any("node 1" in str(p) for p in problems)
+
+
+def test_a_link_shaped_literal_is_not_a_wire_unless_it_names_a_node():
+    assert check_graph_paths(_g("LoadImage", image=["/etc/passwd", 0]), OBJECT_INFO)
+    assert check_graph_paths(_g("PathLoader", path=["/etc/passwd", 0]), OBJECT_INFO)
+
+
+def test_hazards_hide_in_whitespace_nested_values_and_keys():
+    assert check_graph_paths(_g("PathLoader", path="  /etc/passwd"), OBJECT_INFO)
+    assert check_graph_paths(_g("PathLoader", path=["ok", {"/etc/x": 1}]), OBJECT_INFO)
+
+
+@pytest.mark.parametrize(
+    "graph",
+    [
+        [],
+        {"1": 5},
+        {"1": {"class_type": ["x"], "inputs": []}},
+        {"1": {"class_type": "LoadImage", "inputs": ["a"]}},
+    ],
+)
+def test_malformed_graphs_are_problems_not_exceptions(graph):
+    assert check_graph_paths(graph, OBJECT_INFO)
+
+
+def test_a_malformed_graph_is_still_audited():
+    sink = _ListSink([])
+    with pytest.raises(UnsafeGraphError):
+        submit_graph(
+            {"1": {"class_type": "LoadImage", "inputs": {"image": {1, 2}}}},
+            send=print,
+            sink=sink,
+            object_info=OBJECT_INFO,
+        )
+    assert sink.records[0]["rejected"] and "graph_repr" in sink.records[0]
+
+
+def test_send_receives_the_frozen_copy_that_was_screened_and_audited():
+    sink = _ListSink([])
+    graph = _g("LoadImage", image="a.png")
+
+    def send(g):
+        graph["1"]["inputs"]["image"] = "/etc/passwd"  # caller mutates its own object
+        return g
+
+    sent = submit_graph(graph, send=send, sink=sink, object_info=OBJECT_INFO)
+    assert (
+        sent["1"]["inputs"]["image"]
+        == "a.png"
+        == sink.records[0]["graph"]["1"]["inputs"]["image"]
+    )
+
+
+@pytest.mark.parametrize(
+    "args, item",
+    [
+        (
+            ["--listen", "--port", "8188", "--disable-all-custom-nodes"],
+            "7",
+        ),  # bare --listen = all interfaces
+        (
+            ["--disable-all-custom-nodes", "hf_TOKEN"],
+            "7",
+        ),  # value after a flag taking none
+        (["--cpu", "sk-SECRET", "--disable-all-custom-nodes"], "7"),
+        (["--listen=0.0.0.0", "--disable-all-custom-nodes"], "7"),
+        (["--port", "1", "--port", "2", "--disable-all-custom-nodes"], "7"),
+        (["stray", "--disable-all-custom-nodes"], "7"),
+    ],
+)
+def test_argument_shapes_that_leak_or_widen(good, tmp_path, args, item):
+    good["args"] = args
+    assert item in _items(_check(good, tmp_path))
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "/api/internal/logs",
+        "/api/system_stats",
+        "//internal",
+        "/INTERNAL/",
+        "/userdata*",
+        "/",
+        "/api/object_info",
+    ],
+)
+def test_endpoint_aliases_and_wildcards_are_refused(good, tmp_path, endpoint):
+    good["proxy"]["client_endpoints"].append(endpoint)
+    assert "3" in _items(_check(good, tmp_path))
+
+
+@pytest.mark.parametrize(
+    "manifest",
+    [
+        [],
+        "x",
+        {
+            "comfyui": "x",
+            "mounts": ["x"],
+            "third_party_workers": [3],
+            "args": "abc",
+            "custom_nodes": 5,
+            "network": [],
+        },
+    ],
+)
+def test_wrong_typed_manifests_are_problems_not_exceptions(manifest, tmp_path):
+    assert check_manifest(manifest, base_dir=tmp_path)
+
+
+def test_evidence_cannot_escape_base_dir(good, tmp_path):
+    outside = tmp_path.parent / "outside.conf"
+    outside.write_text("x")
+    good["proxy"]["config"] = {
+        "path": "../outside.conf",
+        "sha256": hashlib.sha256(b"x").hexdigest(),
+    }
+    assert any("outside base_dir" in str(p) for p in _check(good, tmp_path))
+
+
+def test_internal_egress_names_mounts_and_workers(good, tmp_path):
+    good["network"]["egress_allow"] = ["metadata.google.internal"]
+    good["mounts"][1]["quota_gb"] = True
+    good["mounts"][0]["source"] = "/"
+    good["third_party_workers"] = [
+        {"name": "w", "licence": "GNU Affero GPL v3", "use": "forked"}
+    ]
+    msgs = " | ".join(str(p) for p in _check(good, tmp_path))
+    assert "internal name" in msgs and "/output needs a quota_gb" in msgs
+    assert "source must name" in msgs and "AGPL-family worker" in msgs
+
+
+def test_screen_judges_each_licence_file_separately(tmp_path):
+    d = tmp_path / "both"
+    d.mkdir()
+    (d / "COPYING").write_text(GPL3)
+    (d / "LICENSE").write_text("GNU AFFERO GENERAL PUBLIC LICENSE\nVersion 3")
+    late = tmp_path / "late"
+    late.mkdir()
+    (late / "LICENSE").write_text(
+        "\n".join(["x"] * 3) + "\n   GNU AFFERO GENERAL PUBLIC LICENSE\n"
+    )
+    sspl = tmp_path / "sspl"
+    sspl.mkdir()
+    (sspl / "LICENSE").write_text(
+        "Server Side Public License\nVersion 1\nGNU General Public License"
+    )
+    nc = tmp_path / "nc"
+    nc.mkdir()
+    (nc / "LICENSE").write_text(
+        "\n".join(["Non-commercial use only"] * 20)
+        + "\nPermission is hereby granted, free of charge"
+    )
+    (tmp_path / "single.py").write_text("print()")
+    screen = screen_licences(tmp_path, commit_of=lambda p: SHA)
+    assert set(screen.agpl_packs) == {"both", "late", "sspl"}
+    assert set(screen.undeterminable) == {"nc", "single.py"}
+
+
+def test_a_pack_that_is_not_a_git_checkout_is_undeterminable(tmp_path):
+    _pack(tmp_path, "mit", "MIT License")
+    screen = screen_licences(tmp_path)  # real git_head: tmp_path/mit is no repo
+    assert screen.undeterminable == ("mit",)
