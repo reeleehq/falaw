@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=7ada5fdd"></script>
+    <script src="../_static/documentation_options.js?v=b153cf10"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.63" />
+  <meta name="docsearch:version" content="0.0.64" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -465,7 +465,10 @@ both <code class="docutils literal notranslate"><span class="pre">on_log</span><
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.core.current_fal_key" title="falaw.core.current_fal_key"><code class="xref py py-obj docutils literal notranslate"><span class="pre">current_fal_key</span></code></a>()</p></td>
 <td><p>The fal API key bound for the current context, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.core.using_fal_credentials" title="falaw.core.using_fal_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">using_fal_credentials</span></code></a>(key)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.core.fal_client_for" title="falaw.core.fal_client_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fal_client_for</span></code></a>([api_key])</p></td>
+<td><p>The object whose <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> / <code class="docutils literal notranslate"><span class="pre">upload_file</span></code> falaw calls fal through.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.core.using_fal_credentials" title="falaw.core.using_fal_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">using_fal_credentials</span></code></a>(key)</p></td>
 <td><p>Bind <code class="docutils literal notranslate"><span class="pre">key</span></code> as the fal credential for every <a class="reference internal" href="#falaw.core.call_fal" title="falaw.core.call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code></a> in this context.</p></td>
 </tr>
 </tbody>
@@ -546,6 +549,22 @@ the fal SDK’s own <code class="docutils literal notranslate"><span class="pre"
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="falaw.core.fal_client_for">
+<span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">fal_client_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/core.html#fal_client_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.core.fal_client_for" title="Link to this definition">#</a></dt>
+<dd><p>The object whose <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> / <code class="docutils literal notranslate"><span class="pre">upload_file</span></code> falaw calls fal through.</p>
+<p>Credential order: explicit <code class="docutils literal notranslate"><span class="pre">api_key</span></code> &gt; the key bound via
+<a class="reference internal" href="#falaw.core.using_fal_credentials" title="falaw.core.using_fal_credentials"><code class="xref py py-func docutils literal notranslate"><span class="pre">using_fal_credentials()</span></code></a> &gt; the SDK’s own <code class="docutils literal notranslate"><span class="pre">FAL_KEY</span></code> lookup. Only a
+<em>resolved</em> key routes through a dedicated <code class="docutils literal notranslate"><span class="pre">fal_client.SyncClient</span></code> (never
+written to a global or env var); otherwise the module itself is returned so
+the SDK’s own resolution is preserved exactly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="falaw.core.using_fal_credentials">
 <span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">using_fal_credentials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/core.html#using_fal_credentials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.core.using_fal_credentials" title="Link to this definition">#</a></dt>
 <dd><p>Bind <code class="docutils literal notranslate"><span class="pre">key</span></code> as the fal credential for every <a class="reference internal" href="#falaw.core.call_fal" title="falaw.core.call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code></a> in this context.</p>
@@ -621,6 +640,7 @@ requests.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.FAL_PROVIDER"><code class="docutils literal notranslate"><span class="pre">FAL_PROVIDER</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.call_fal"><code class="docutils literal notranslate"><span class="pre">call_fal()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.current_fal_key"><code class="docutils literal notranslate"><span class="pre">current_fal_key()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.fal_client_for"><code class="docutils literal notranslate"><span class="pre">fal_client_for()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.using_fal_credentials"><code class="docutils literal notranslate"><span class="pre">using_fal_credentials()</span></code></a></li>
 </ul>
   </nav></div>

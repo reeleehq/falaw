@@ -24,6 +24,7 @@ both `on_log` and `on_event` are given, both fire.
 | [`call_fal`](#falaw.core.call_fal)(application, arguments, \*[, ...])   | Call a fal model via fal_client.subscribe.                                                                              |
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | [`current_fal_key`](#falaw.core.current_fal_key)()                             | The fal API key bound for the current context, or `None`.                                                               |
+| [`fal_client_for`](#falaw.core.fal_client_for)([api_key])                     | The object whose `subscribe` / `upload_file` falaw calls fal through.                                                   |
 | [`using_fal_credentials`](#falaw.core.using_fal_credentials)(key)                    | Bind `key` as the fal credential for every [`call_fal()`](#falaw.core.call_fal) in this context. |
 
 ### falaw.core.FAL_KEY_ENVVARS *= ('FAL_KEY', 'FAL_API_KEY')*
@@ -84,6 +85,19 @@ the fal SDK’s own `FAL_KEY` env-var lookup.
 
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### falaw.core.fal_client_for(api_key=None)
+
+The object whose `subscribe` / `upload_file` falaw calls fal through.
+
+Credential order: explicit `api_key` > the key bound via
+[`using_fal_credentials()`](#falaw.core.using_fal_credentials) > the SDK’s own `FAL_KEY` lookup. Only a
+*resolved* key routes through a dedicated `fal_client.SyncClient` (never
+written to a global or env var); otherwise the module itself is returned so
+the SDK’s own resolution is preserved exactly.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
 
 ### falaw.core.using_fal_credentials(key)
 

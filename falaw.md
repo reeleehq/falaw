@@ -1,4 +1,4 @@
-> built 2026-10-26 11:42 UTC from 722f080 (main) · falaw 0.0.63. Details: build_info.json
+> built 2026-10-26 11:59 UTC from d411a6b (main) · falaw 0.0.64. Details: build_info.json
 
 # index.html.md
 
@@ -1646,6 +1646,7 @@ both `on_log` and `on_event` are given, both fire.
 | [`call_fal`](_autosummary/falaw.core.html.md#falaw.core.call_fal)(application, arguments, \*[, ...])   | Call a fal model via fal_client.subscribe.                                                                              |
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | [`current_fal_key`](_autosummary/falaw.core.html.md#falaw.core.current_fal_key)()                             | The fal API key bound for the current context, or `None`.                                                               |
+| [`fal_client_for`](_autosummary/falaw.core.html.md#falaw.core.fal_client_for)([api_key])                     | The object whose `subscribe` / `upload_file` falaw calls fal through.                                                   |
 | [`using_fal_credentials`](_autosummary/falaw.core.html.md#falaw.core.using_fal_credentials)(key)                    | Bind `key` as the fal credential for every [`call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_fal) in this context. |
 
 ### falaw.core.FAL_KEY_ENVVARS *= ('FAL_KEY', 'FAL_API_KEY')*
@@ -1706,6 +1707,19 @@ the fal SDK’s own `FAL_KEY` env-var lookup.
 
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+### falaw.core.fal_client_for(api_key=None)
+
+The object whose `subscribe` / `upload_file` falaw calls fal through.
+
+Credential order: explicit `api_key` > the key bound via
+[`using_fal_credentials()`](_autosummary/falaw.core.html.md#falaw.core.using_fal_credentials) > the SDK’s own `FAL_KEY` lookup. Only a
+*resolved* key routes through a dedicated `fal_client.SyncClient` (never
+written to a global or env var); otherwise the module itself is returned so
+the SDK’s own resolution is preserved exactly.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
 
 ### falaw.core.using_fal_credentials(key)
 
@@ -2353,6 +2367,7 @@ Leave notes for future sessions:
 | [`cost_basis_to_dict`](_autosummary/falaw.html.md#falaw.cost_basis_to_dict)(basis)                          | Convert a [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) to a plain JSON-serializable dict.                                                          |
 | [`llm_cost_basis`](_autosummary/falaw.html.md#falaw.llm_cost_basis)(routed_model, \*[, ...])            | A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a routed LLM call priced from the rate table.                                             |
 | [`reprice_plan`](_autosummary/falaw.html.md#falaw.reprice_plan)(plan, \*[, pricers])                  | Re-quote every call in `plan` against today's rate tables.                                                                                                       |
+| [`upload`](_autosummary/falaw.html.md#falaw.upload)(path, \*[, uploader, index, ttl_s, ...])    | A fal-fetchable URL for the local file at `path`.                                                                                                                |
 | [`clear_subscribers`](_autosummary/falaw.html.md#falaw.clear_subscribers)()                                | Drop all registered subscribers.                                                                                                                                 |
 | [`estimate_call_cost`](_autosummary/falaw.html.md#falaw.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                                                                                                           |
 | [`estimate_scene_cost`](_autosummary/falaw.html.md#falaw.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full [`render_scene()`](_autosummary/falaw.html.md#falaw.render_scene) invocation.                                                      |
@@ -5339,6 +5354,17 @@ Remove a previously [`subscribe()`](_autosummary/falaw.html.md#falaw.subscribe)�
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.upload(path, \*, uploader=None, index=None, ttl_s=86400, api_key=None, clock=<built-in function time>)
+
+A fal-fetchable URL for the local file at `path`.
+
+Cached by content: an unchanged file within `ttl_s` of its last upload
+returns the remembered URL without any transfer. `api_key` is used by the
+default uploader only (see [`falaw.core.fal_client_for()`](_autosummary/falaw.core.html.md#falaw.core.fal_client_for)).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.upscale_image(image_url, , scale=2.0, model_id=None, extra=None)
 
@@ -9452,18 +9478,18 @@ False
 
 # About this build
 
-This documentation was built on **2026-10-26 11:42 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/722f08080618f5be65885b379803e0ac98a9efb2"><code>722f080</code></a> on branch <code>main</code>, for **falaw 0.0.63** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 11:59 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/d411a6b541198597ae131431d1a8a46bba30dc6f"><code>d411a6b</code></a> on branch <code>main</code>, for **falaw 0.0.64** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.63) is behind the latest release on PyPI (0.0.64): `pip install falaw` gives newer code than these docs describe.
+- The documented version (0.0.64) is behind the latest release on PyPI (0.0.65): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/722f08080618f5be65885b379803e0ac98a9efb2"><code>722f08080618f5be65885b379803e0ac98a9efb2</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/d411a6b541198597ae131431d1a8a46bba30dc6f"><code>d411a6b541198597ae131431d1a8a46bba30dc6f</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -9474,9 +9500,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40316863462">40316863462</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40318871493">40318871493</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>722f08080618f5be65885b379803e0ac98a9efb2</code> (in the history of the built commit) |
+| Event commit | <code>d411a6b541198597ae131431d1a8a46bba30dc6f</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -9501,13 +9527,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.64/">0.0.64</a>, newer than the documented version (0.0.63).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.65/">0.0.65</a>, newer than the documented version (0.0.64).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 722f08080618f5be65885b379803e0ac98a9efb2
+git checkout d411a6b541198597ae131431d1a8a46bba30dc6f
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

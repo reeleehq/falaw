@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=7ada5fdd"></script>
+    <script src="../../_static/documentation_options.js?v=b153cf10"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.63" />
+  <meta name="docsearch:version" content="0.0.64" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -790,6 +790,7 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">ASSETS_DIRNAME</span><span class="p">,</span> <span class="n">_cache_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.content</span><span class="w"> </span><span class="kn">import</span> <span class="n">CONTENT_STORE_DIRNAME</span><span class="p">,</span> <span class="n">URL_INDEX_DIRNAME</span><span class="p">,</span> <span class="n">remembered_ref</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.upload</span><span class="w"> </span><span class="kn">import</span> <span class="n">UPLOAD_INDEX_DIRNAME</span>
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -809,6 +810,7 @@ window.runMermaid = runMermaid;</script>
 <span class="n">ASSETS_AREA</span> <span class="o">=</span> <span class="s2">"assets"</span>
 <span class="n">URL_INDEX_AREA</span> <span class="o">=</span> <span class="s2">"url_index"</span>
 <span class="n">SCENES_AREA</span> <span class="o">=</span> <span class="s2">"scenes"</span>
+<span class="n">UPLOADS_AREA</span> <span class="o">=</span> <span class="s2">"uploads"</span>
 <span class="n">OTHER_AREA</span> <span class="o">=</span> <span class="s2">"other"</span>
 
 <span class="n">AREA_NAMES</span> <span class="o">=</span> <span class="p">(</span>
@@ -817,6 +819,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">ASSETS_AREA</span><span class="p">,</span>
     <span class="n">URL_INDEX_AREA</span><span class="p">,</span>
     <span class="n">SCENES_AREA</span><span class="p">,</span>
+    <span class="n">UPLOADS_AREA</span><span class="p">,</span>
     <span class="n">OTHER_AREA</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="sd">"""Every area :func:`cache_usage` reports."""</span>
@@ -829,6 +832,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">ASSETS_DIRNAME</span><span class="p">,</span>
     <span class="n">URL_INDEX_DIRNAME</span><span class="p">,</span>
     <span class="n">SCENES_DIRNAME</span><span class="p">,</span>
+    <span class="n">UPLOAD_INDEX_DIRNAME</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="sd">"""Directory names at the cache root owned by a named area.</span>
 
@@ -957,6 +961,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">_assets_usage</span><span class="p">(</span><span class="n">root</span><span class="p">),</span>
         <span class="n">_url_index_usage</span><span class="p">(</span><span class="n">root</span><span class="p">),</span>
         <span class="n">_scenes_usage</span><span class="p">(</span><span class="n">root</span><span class="p">),</span>
+        <span class="n">_uploads_usage</span><span class="p">(</span><span class="n">root</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">CacheUsage</span><span class="p">(</span><span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">areas</span><span class="o">=</span><span class="n">named</span> <span class="o">+</span> <span class="p">(</span><span class="n">_other_usage</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">named</span><span class="p">),))</span></div>
 
@@ -1057,6 +1062,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">URL_INDEX_DIRNAME</span><span class="p">)</span>
     <span class="n">entries</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">_dir_bytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">AreaUsage</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">URL_INDEX_AREA</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">entries</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span> <span class="nb">bytes</span><span class="o">=</span><span class="n">total</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_uploads_usage</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AreaUsage</span><span class="p">:</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">UPLOAD_INDEX_DIRNAME</span><span class="p">)</span>
+    <span class="n">entries</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">_dir_bytes</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">AreaUsage</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">UPLOADS_AREA</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">entries</span><span class="o">=</span><span class="n">entries</span><span class="p">,</span> <span class="nb">bytes</span><span class="o">=</span><span class="n">total</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_scenes_usage</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AreaUsage</span><span class="p">:</span>

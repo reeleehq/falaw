@@ -45,6 +45,7 @@ Leave notes for future sessions:
 | [`cost_basis_to_dict`](#falaw.cost_basis_to_dict)(basis)                          | Convert a [`CostBasis`](#falaw.CostBasis) to a plain JSON-serializable dict.                                                          |
 | [`llm_cost_basis`](#falaw.llm_cost_basis)(routed_model, \*[, ...])            | A [`falaw.CostBasis`](#falaw.CostBasis) for a routed LLM call priced from the rate table.                                             |
 | [`reprice_plan`](#falaw.reprice_plan)(plan, \*[, pricers])                  | Re-quote every call in `plan` against today's rate tables.                                                                                                       |
+| [`upload`](#falaw.upload)(path, \*[, uploader, index, ttl_s, ...])    | A fal-fetchable URL for the local file at `path`.                                                                                                                |
 | [`clear_subscribers`](#falaw.clear_subscribers)()                                | Drop all registered subscribers.                                                                                                                                 |
 | [`estimate_call_cost`](#falaw.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                                                                                                           |
 | [`estimate_scene_cost`](#falaw.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full [`render_scene()`](#falaw.render_scene) invocation.                                                      |
@@ -3031,6 +3032,17 @@ Remove a previously [`subscribe()`](#falaw.subscribe)’d callback. No-op if abs
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.upload(path, \*, uploader=None, index=None, ttl_s=86400, api_key=None, clock=<built-in function time>)
+
+A fal-fetchable URL for the local file at `path`.
+
+Cached by content: an unchanged file within `ttl_s` of its last upload
+returns the remembered URL without any transfer. `api_key` is used by the
+default uploader only (see [`falaw.core.fal_client_for()`](falaw.core.html.md#falaw.core.fal_client_for)).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.upscale_image(image_url, , scale=2.0, model_id=None, extra=None)
 

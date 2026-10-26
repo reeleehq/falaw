@@ -23,6 +23,7 @@
       cost_basis_to_dict
       llm_cost_basis
       reprice_plan
+      upload
       clear_subscribers
       estimate_call_cost
       estimate_scene_cost
