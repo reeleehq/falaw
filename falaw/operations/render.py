@@ -28,6 +28,7 @@ from ..cache import _cache_dir, cache_get, cache_put, cached_call_fal
 from ._image_args import image_arguments, known_record
 from ..registry import pick_model, register_tool
 from ..results import parse_response
+from ..terms import current_terms_context
 from ..scene import (
     Beat,
     Character,
@@ -128,7 +129,9 @@ def render_beat(
     cache_app = "falaw.render_beat"
     cache_args = {"hash": h}
 
-    if not force:
+    # Under a terms context a composite hit cannot show which models made it, so
+    # it is a miss: the per-call caches underneath are checked (falaw#110).
+    if not force and current_terms_context() is None:
         hit = cache_get(cache_app, cache_args)
         if hit is not None:
             return {**hit, "cache_hit": True}
@@ -233,7 +236,9 @@ def render_shot(
     cache_app = "falaw.render_shot"
     cache_args = {"hash": h, "quality": quality}
 
-    if not force:
+    # Under a terms context a composite hit cannot show which models made it, so
+    # it is a miss: the per-call caches underneath are checked (falaw#110).
+    if not force and current_terms_context() is None:
         hit = cache_get(cache_app, cache_args)
         if hit is not None:
             return {**hit, "cache_hit": True}

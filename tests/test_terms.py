@@ -327,3 +327,62 @@ def test_licences_share_one_spdx_vocabulary():
         assert not is_valid_licence(bad)
     with pytest.raises(ValueError, match="LicenseRef"):
         _row(license="free text")
+
+
+def test_the_ambient_context_refuses_cached_and_non_fal_executions(monkeypatch):
+    from falaw import CallPlan, Plan, execute_plan, using_terms_context
+
+    sent = []
+    monkeypatch.setattr(
+        "falaw.backends.get_backend_executor",
+        lambda backend: lambda app, args, **kw: sent.append(app) or {},
+    )
+    call = CallPlan(
+        tool="t",
+        application="nobody/reviewed-this",
+        backend="elsewhere",
+        arguments={},
+        output_kind="json",
+    )
+    plan = Plan(calls=(call,))
+    with using_terms_context(TermsContext()):
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            execute_plan(plan, use_cache=False)
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            execute_plan(plan)
+    assert sent == []
+
+
+def test_planning_falls_back_to_the_ambient_context_and_stamps_it():
+    from falaw import using_terms_context
+
+    with using_terms_context(TermsContext()):
+        with pytest.raises(FalTermsViolation):
+            falaw.plan.make_call_plan(
+                tool="t",
+                application="nobody/reviewed-this",
+                arguments={},
+                output_kind="json",
+            )
+        ok = _plan.plan_generate_image(
+            "p", model_id="fal-ai/flux/schnell", consult_cache=False
+        )
+    assert "terms_cleared" in ok.metadata
+
+
+def test_a_scene_render_cache_hit_is_not_served_under_a_terms_context(monkeypatch):
+    from falaw import using_terms_context
+    from falaw.operations import render
+
+    served = []
+    monkeypatch.setattr(
+        render, "cache_get", lambda *a, **k: served.append(a) or {"url": "cached"}
+    )
+    assert render.current_terms_context() is None
+    with using_terms_context(TermsContext()):
+        assert render.current_terms_context() is not None
+        # the composite cache is skipped, so nothing unchecked can be served
+        shot = falaw.Shot(id="s1", description="a fox")
+        with pytest.raises(FalTermsViolation):
+            render.render_shot(shot, quality="high")
+    assert served == []

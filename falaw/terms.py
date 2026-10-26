@@ -24,8 +24,8 @@ call: ``plan_*(..., terms_context=TermsContext(...))``. With no context
 
 This is an implementation of what the terms *say*, not legal advice; it
 refuses when unsure and does not adjudicate. The *context* (is this job
-serving a third party? will its output be C2PA-stamped?) is the caller's, never
-read from a global; the ledger is data, the check is falaw's.
+serving a third party? will its output be C2PA-stamped?) is the caller's (an argument, or
+scoped to a block by :func:`using_terms_context`), never process-global; the ledger is data, the check is falaw's.
 
 >>> ctx = TermsContext(third_party=True)
 >>> check_terms("fal-ai/flux/schnell", "comfyui", ctx)   # Apache-2.0, ours to serve
@@ -100,7 +100,8 @@ class ModelTerms:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TermsContext:
-    """What the job needs from the terms — supplied by the caller, never global.
+    """What the job needs from the terms — supplied by the caller, never process-global
+    (an explicit argument, or scoped to a block by :func:`using_terms_context`).
 
     The defaults describe the strictest ordinary use (commercial) without
     claiming anything extra; ``third_party`` and ``c2pa`` are opt-in because
@@ -167,6 +168,14 @@ def using_terms_context(context: Optional[TermsContext]) -> Iterator[None]:
 def current_terms_context() -> Optional[TermsContext]:
     """The context bound by :func:`using_terms_context`, else ``None``."""
     return _AMBIENT.get()
+
+
+def effective_terms_context(explicit: Optional[TermsContext]) -> Optional[TermsContext]:
+    """The context a check runs under: an explicit ``terms_context=`` argument
+    wins; otherwise the one scoped by :func:`using_terms_context`. (Entry
+    points that take no argument still enforce the scoped one at the call
+    chokepoints, so the strictest applicable check always runs.)"""
+    return explicit if explicit is not None else _AMBIENT.get()
 
 
 def terms_subject(application: str, arguments: Optional[Mapping] = None) -> str:
@@ -254,7 +263,7 @@ def clearance(
 
 
 def is_cleared(call, context: TermsContext) -> bool:
-    """Whether *call* (a ``CallPlan``) carries a clearance that still describes
+    """(Describes what the stamp says, not the ledger's later edits.) Whether *call* (a ``CallPlan``) carries a clearance that still describes
     it: same model and backend as now, for exactly *context*. A call re-targeted
     after planning (``dataclasses.replace(call, backend=...)``, a replayed or
     repriced plan) fails this, so it must be re-checked, never trusted."""
@@ -290,6 +299,7 @@ __all__ = [
     "check_terms",
     "clearance",
     "current_terms_context",
+    "effective_terms_context",
     "get_terms",
     "is_cleared",
     "load_terms",
