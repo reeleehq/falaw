@@ -35,6 +35,7 @@
       get_llm_rate
       list_llm_rates
       llm_ceiling_usd
+      listening
       subscribe
       unsubscribe
       animate_face

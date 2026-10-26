@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=461c1127"></script>
+    <script src="_static/documentation_options.js?v=e264953e"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.76" />
+  <meta name="docsearch:version" content="0.0.77" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -445,9 +445,13 @@ you do.</p>
 <h3>Structured progress events<a class="headerlink" href="#structured-progress-events" title="Link to this heading">#</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">call_fal</span></code> and <code class="docutils literal notranslate"><span class="pre">cached_call_fal</span></code> emit <code class="docutils literal notranslate"><span class="pre">ProgressEvent</span></code>s at every
 lifecycle transition (<code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, <code class="docutils literal notranslate"><span class="pre">log</span></code>, <code class="docutils literal notranslate"><span class="pre">done</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>,
-<code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>). Subscribe per-call (<code class="docutils literal notranslate"><span class="pre">on_event=</span></code>) or globally
-(<code class="docutils literal notranslate"><span class="pre">falaw.subscribe(...)</span></code>); the legacy <code class="docutils literal notranslate"><span class="pre">on_log=print</span></code> is still honored
-for backward compatibility.</p>
+<code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> when fal reports the call waiting in its line).
+Subscribe per-call (<code class="docutils literal notranslate"><span class="pre">on_event=</span></code>), globally (<code class="docutils literal notranslate"><span class="pre">falaw.subscribe(...)</span></code>) or for one block
+and its threads (<code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">falaw.listening(callback):</span> <span class="pre">...</span></code>); the legacy
+<code class="docutils literal notranslate"><span class="pre">on_log=print</span></code> is still honored for backward compatibility.</p>
+<p>fal’s own word on where a call is rides the events as <code class="docutils literal notranslate"><span class="pre">provider_phase</span></code>
+(<code class="docutils literal notranslate"><span class="pre">&quot;in_queue&quot;</span></code> with <code class="docutils literal notranslate"><span class="pre">queue_position</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;in_progress&quot;</span></code>); it is <code class="docutils literal notranslate"><span class="pre">None</span></code> when fal said
+nothing (a cache hit, a provider that reports no queue state), never a guess.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">falaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">subscribe</span><span class="p">,</span> <span class="n">generate_image</span>
 
 <span class="n">subscribe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ev</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">kind</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">application</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">elapsed_s</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s"</span><span class="p">))</span>
@@ -692,7 +696,7 @@ refuse.</p></li>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-26 18:08 UTC from <a href="https://github.com/reeleehq/falaw/commit/c56cf9310fc45b6fe29be549d38586a659a7efae">c56cf93</a> (main) · falaw 0.0.76 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-10-26 18:31 UTC from <a href="https://github.com/reeleehq/falaw/commit/77b57f72c591812ad1e660c44e80b47016e3812e">77b57f7</a> (main) · falaw 0.0.77 · <a href="about-this-build.html">about this build</a></p>
 
                 </article>
               

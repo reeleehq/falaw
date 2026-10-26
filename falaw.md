@@ -1,4 +1,4 @@
-> built 2026-10-26 18:08 UTC from c56cf93 (main) · falaw 0.0.76. Details: build_info.json
+> built 2026-10-26 18:31 UTC from 77b57f7 (main) · falaw 0.0.77. Details: build_info.json
 
 # index.html.md
 
@@ -83,9 +83,14 @@ you do.
 
 `call_fal` and `cached_call_fal` emit `ProgressEvent`s at every
 lifecycle transition (`queued`, `progress`, `log`, `done`, `error`,
-`cache_hit`). Subscribe per-call (`on_event=`) or globally
-(`falaw.subscribe(...)`); the legacy `on_log=print` is still honored
-for backward compatibility.
+`cache_hit`, and `provider_queued` when fal reports the call waiting in its line).
+Subscribe per-call (`on_event=`), globally (`falaw.subscribe(...)`) or for one block
+and its threads (`with falaw.listening(callback): ...`); the legacy
+`on_log=print` is still honored for backward compatibility.
+
+fal’s own word on where a call is rides the events as `provider_phase`
+(`"in_queue"` with `queue_position`, or `"in_progress"`); it is `None` when fal said
+nothing (a cache hit, a provider that reports no queue state), never a guess.
 
 ```python
 from falaw import subscribe, generate_image
@@ -2899,6 +2904,13 @@ a single `call_fal` invocation:
 - `done`        — call returned a result
 - `error`       — call raised
 - `cache_hit`   — [`falaw.cached_call_fal()`](_autosummary/falaw.html.md#falaw.cached_call_fal) found a hit and skipped the network
+- `provider_queued` — fal reported the call waiting in ITS line (`queue_position`)
+
+`queued` is falaw’s own (the call was submitted). `provider_phase` is fal’s word on
+where the call is: `"in_queue"` on a `provider_queued` event, `"in_progress"` on the
+`progress` / `log` events fal’s IN_PROGRESS updates produce. It is `None` on every
+event fal said nothing about (a cache hit, `queued`, `done`), so a consumer that sees
+no phase knows nothing, which is not the same as “in progress”.
 
 Subscribers can be registered globally via [`subscribe()`](_autosummary/falaw.events.html.md#falaw.events.subscribe) or
 per-call via the `on_event=` argument on `call_fal()` /
@@ -2908,18 +2920,19 @@ notes.
 
 ### Functions
 
-| [`clear_subscribers`](_autosummary/falaw.events.html.md#falaw.events.clear_subscribers)()     | Drop all registered subscribers.                                                             |
-|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| [`emit`](_autosummary/falaw.events.html.md#falaw.events.emit)(event, \*[, also]) | Send `event` to every registered subscriber + the `also` list.                               |
-| [`subscribe`](_autosummary/falaw.events.html.md#falaw.events.subscribe)(callback)     | Register `callback` to receive every emitted ProgressEvent.                                  |
-| [`unsubscribe`](_autosummary/falaw.events.html.md#falaw.events.unsubscribe)(callback)   | Remove a previously [`subscribe()`](_autosummary/falaw.events.html.md#falaw.events.subscribe)'d callback. |
+| [`clear_subscribers`](_autosummary/falaw.events.html.md#falaw.events.clear_subscribers)()     | Drop all registered subscribers.                                                                                                                         |
+|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`emit`](_autosummary/falaw.events.html.md#falaw.events.emit)(event, \*[, also]) | Send `event` to every registered subscriber, the callbacks bound with [`listening()`](_autosummary/falaw.events.html.md#falaw.events.listening), and the `also` list. |
+| [`listening`](_autosummary/falaw.events.html.md#falaw.events.listening)(callback)     | Deliver every event emitted in this context to `callback`, then stop.                                                                                    |
+| [`subscribe`](_autosummary/falaw.events.html.md#falaw.events.subscribe)(callback)     | Register `callback` to receive every emitted ProgressEvent.                                                                                              |
+| [`unsubscribe`](_autosummary/falaw.events.html.md#falaw.events.unsubscribe)(callback)   | Remove a previously [`subscribe()`](_autosummary/falaw.events.html.md#falaw.events.subscribe)'d callback.                                                             |
 
 ### Classes
 
 | [`ProgressEvent`](_autosummary/falaw.events.html.md#falaw.events.ProgressEvent)(\*, kind, application, call_id)   | One step in the lifecycle of a fal call.   |
 |--------------------------------------------------------------------------------------------------|--------------------------------------------|
 
-### *class* falaw.events.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0)
+### *class* falaw.events.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -2930,7 +2943,7 @@ One step in the lifecycle of a fal call.
 Lifecycle stage. See `EventKind`.
 
 * **Type:**
-  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`]
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`, `'provider_queued'`]
 
 #### application
 
@@ -2972,6 +2985,21 @@ Seconds since the call started.
 * **Type:**
   [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
+#### provider_phase
+
+fal’s reported phase (see the module docstring), or `None`.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'in_queue'`, `'in_progress'`]]
+
+#### queue_position
+
+fal’s `queue_position` on a `"provider_queued"` event
+(0 = next); `None` on every other event.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
 ### falaw.events.clear_subscribers()
 
 Drop all registered subscribers. Mostly for tests.
@@ -2981,13 +3009,28 @@ Drop all registered subscribers. Mostly for tests.
 
 ### falaw.events.emit(event, , also=())
 
-Send `event` to every registered subscriber + the `also` list.
+Send `event` to every registered subscriber, the callbacks bound with
+[`listening()`](_autosummary/falaw.events.html.md#falaw.events.listening), and the `also` list.
 
 Subscriber exceptions are swallowed (with a printed warning) so a
 misbehaving UI hook can’t bring the rendering pipeline down.
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.events.listening(callback)
+
+Deliver every event emitted in this context to `callback`, then stop.
+
+The scoped sibling of [`subscribe()`](_autosummary/falaw.events.html.md#falaw.events.subscribe): where `subscribe` hears every call in
+the process, `listening` hears only the calls made inside the `with` block (and
+the contexts copied from it, as [`falaw.plan`](_autosummary/falaw.plan.html.md#module-falaw.plan) does for its worker threads). It
+is how a host that runs one unit of work per thread, such as a job worker, gets
+that unit’s events without threading `on_event=` through every layer between.
+`None` binds nothing, so a caller with no sink needs no `if`.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 ### falaw.events.subscribe(callback)
 
@@ -3073,6 +3116,7 @@ Leave notes for future sessions:
 | [`get_llm_rate`](_autosummary/falaw.html.md#falaw.get_llm_rate)(model, \*[, rates])                   | The row for `model`, or `None` when the table does not price it.                                                                                                                                                   |
 | [`list_llm_rates`](_autosummary/falaw.html.md#falaw.list_llm_rates)(\*[, rates])                        | Every row in the table, in file order — the catalogue view.                                                                                                                                                        |
 | [`llm_ceiling_usd`](_autosummary/falaw.html.md#falaw.llm_ceiling_usd)(model, \*[, input_tokens, ...])    | Ceiling cost in USD of `count` calls routing `model`, or `None`.                                                                                                                                                   |
+| [`listening`](_autosummary/falaw.html.md#falaw.listening)(callback)                                | Deliver every event emitted in this context to `callback`, then stop.                                                                                                                                              |
 | [`subscribe`](_autosummary/falaw.html.md#falaw.subscribe)(callback)                                | Register `callback` to receive every emitted ProgressEvent.                                                                                                                                                        |
 | [`unsubscribe`](_autosummary/falaw.html.md#falaw.unsubscribe)(callback)                              | Remove a previously [`subscribe()`](_autosummary/falaw.html.md#falaw.subscribe)'d callback.                                                                                                                       |
 | [`animate_face`](_autosummary/falaw.html.md#falaw.animate_face)(image_url, audio_url, \*[, ...])      | Animate a still face from audio.                                                                                                                                                                                   |
@@ -4259,7 +4303,7 @@ Identity of the table this pricer reads, for the refreshed basis.
 
 Today’s version of that table, for the refreshed basis.
 
-### *class* falaw.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0)
+### *class* falaw.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -4270,7 +4314,7 @@ One step in the lifecycle of a fal call.
 Lifecycle stage. See `EventKind`.
 
 * **Type:**
-  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`]
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`, `'provider_queued'`]
 
 #### application
 
@@ -4311,6 +4355,21 @@ Seconds since the call started.
 
 * **Type:**
   [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
+#### provider_phase
+
+fal’s reported phase (see the module docstring), or `None`.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'in_queue'`, `'in_progress'`]]
+
+#### queue_position
+
+fal’s `queue_position` on a `"provider_queued"` event
+(0 = next); `None` on every other event.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
 
 ### *class* falaw.PruneCandidate(key, path, bytes, last_modified=None)
 
@@ -5285,6 +5344,20 @@ Every row in the table, in file order — the catalogue view.
 
 * **Return type:**
   [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`LlmRate`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)]
+
+### falaw.listening(callback)
+
+Deliver every event emitted in this context to `callback`, then stop.
+
+The scoped sibling of [`subscribe()`](_autosummary/falaw.html.md#falaw.subscribe): where `subscribe` hears every call in
+the process, `listening` hears only the calls made inside the `with` block (and
+the contexts copied from it, as [`falaw.plan`](_autosummary/falaw.plan.html.md#module-falaw.plan) does for its worker threads). It
+is how a host that runs one unit of work per thread, such as a job worker, gets
+that unit’s events without threading `on_event=` through every layer between.
+`None` binds nothing, so a caller with no sink needs no `if`.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 ### falaw.llm_call_cost_usd(provider, model, usage, , prices=None)
 
@@ -10796,7 +10869,7 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-26 18:08 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c56cf9310fc45b6fe29be549d38586a659a7efae"><code>c56cf93</code></a> on branch <code>main</code>, for **falaw 0.0.76** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 18:31 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/77b57f72c591812ad1e660c44e80b47016e3812e"><code>77b57f7</code></a> on branch <code>main</code>, for **falaw 0.0.77** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -10805,7 +10878,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c56cf9310fc45b6fe29be549d38586a659a7efae"><code>c56cf9310fc45b6fe29be549d38586a659a7efae</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/77b57f72c591812ad1e660c44e80b47016e3812e"><code>77b57f72c591812ad1e660c44e80b47016e3812e</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10816,9 +10889,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40374806066">40374806066</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40378268211">40378268211</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>c56cf9310fc45b6fe29be549d38586a659a7efae</code> (in the history of the built commit) |
+| Event commit | <code>77b57f72c591812ad1e660c44e80b47016e3812e</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -10843,13 +10916,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.76/">0.0.76</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.77/">0.0.77</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout c56cf9310fc45b6fe29be549d38586a659a7efae
+git checkout 77b57f72c591812ad1e660c44e80b47016e3812e
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=461c1127"></script>
+    <script src="../_static/documentation_options.js?v=e264953e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.76" />
+  <meta name="docsearch:version" content="0.0.77" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -457,7 +457,13 @@ a single <code class="docutils literal notranslate"><span class="pre">call_fal</
 <li><p><code class="docutils literal notranslate"><span class="pre">done</span></code>        — call returned a result</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">error</span></code>       — call raised</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>   — <a class="reference internal" href="falaw.html#falaw.cached_call_fal" title="falaw.cached_call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.cached_call_fal()</span></code></a> found a hit and skipped the network</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> — fal reported the call waiting in ITS line (<code class="docutils literal notranslate"><span class="pre">queue_position</span></code>)</p></li>
 </ul>
+<p><code class="docutils literal notranslate"><span class="pre">queued</span></code> is falaw’s own (the call was submitted). <code class="docutils literal notranslate"><span class="pre">provider_phase</span></code> is fal’s word on
+where the call is: <code class="docutils literal notranslate"><span class="pre">&quot;in_queue&quot;</span></code> on a <code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> event, <code class="docutils literal notranslate"><span class="pre">&quot;in_progress&quot;</span></code> on the
+<code class="docutils literal notranslate"><span class="pre">progress</span></code> / <code class="docutils literal notranslate"><span class="pre">log</span></code> events fal’s IN_PROGRESS updates produce. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> on every
+event fal said nothing about (a cache hit, <code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">done</span></code>), so a consumer that sees
+no phase knows nothing, which is not the same as “in progress”.</p>
 <p>Subscribers can be registered globally via <a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-func docutils literal notranslate"><span class="pre">subscribe()</span></code></a> or
 per-call via the <code class="docutils literal notranslate"><span class="pre">on_event=</span></code> argument on <code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code> /
 <code class="xref py py-func docutils literal notranslate"><span class="pre">cached_call_fal()</span></code>. The <code class="docutils literal notranslate"><span class="pre">on_log</span></code> parameter still works
@@ -470,12 +476,15 @@ notes.</p>
 <td><p>Drop all registered subscribers.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.events.emit" title="falaw.events.emit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">emit</span></code></a>(event, *[, also])</p></td>
-<td><p>Send <code class="docutils literal notranslate"><span class="pre">event</span></code> to every registered subscriber + the <code class="docutils literal notranslate"><span class="pre">also</span></code> list.</p></td>
+<td><p>Send <code class="docutils literal notranslate"><span class="pre">event</span></code> to every registered subscriber, the callbacks bound with <a class="reference internal" href="#falaw.events.listening" title="falaw.events.listening"><code class="xref py py-func docutils literal notranslate"><span class="pre">listening()</span></code></a>, and the <code class="docutils literal notranslate"><span class="pre">also</span></code> list.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subscribe</span></code></a>(callback)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.events.listening" title="falaw.events.listening"><code class="xref py py-obj docutils literal notranslate"><span class="pre">listening</span></code></a>(callback)</p></td>
+<td><p>Deliver every event emitted in this context to <code class="docutils literal notranslate"><span class="pre">callback</span></code>, then stop.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subscribe</span></code></a>(callback)</p></td>
 <td><p>Register <code class="docutils literal notranslate"><span class="pre">callback</span></code> to receive every emitted ProgressEvent.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.events.unsubscribe" title="falaw.events.unsubscribe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unsubscribe</span></code></a>(callback)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.events.unsubscribe" title="falaw.events.unsubscribe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unsubscribe</span></code></a>(callback)</p></td>
 <td><p>Remove a previously <a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-func docutils literal notranslate"><span class="pre">subscribe()</span></code></a>'d callback.</p></td>
 </tr>
 </tbody>
@@ -492,7 +501,7 @@ notes.</p>
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.events.ProgressEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.events.</span></span><span class="sig-name descname"><span class="pre">ProgressEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/events.html#ProgressEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.events.ProgressEvent" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.events.</span></span><span class="sig-name descname"><span class="pre">ProgressEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/events.html#ProgressEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.events.ProgressEvent" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One step in the lifecycle of a fal call.</p>
 <dl class="field-list simple">
@@ -503,7 +512,7 @@ notes.</p>
 <dd><p>Lifecycle stage. See <code class="xref py py-data docutils literal notranslate"><span class="pre">EventKind</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'queued'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'progress'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'log'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'done'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'error'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'cache_hit'</span></span></code></span>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'queued'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'progress'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'log'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'done'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'error'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'cache_hit'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'provider_queued'</span></span></code></span>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -568,6 +577,29 @@ compatibility.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.events.ProgressEvent.provider_phase">
+<span class="sig-name descname"><span class="pre">provider_phase</span></span><a class="headerlink" href="#falaw.events.ProgressEvent.provider_phase" title="Link to this definition">#</a></dt>
+<dd><p>fal’s reported phase (see the module docstring), or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'in_queue'</span></span></code></span>, <span class="highlight sphinx_autodoc_typehints-value"><code class="docutils literal notranslate"><span class="s1"><span class="pre">'in_progress'</span></span></code></span>]]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.events.ProgressEvent.queue_position">
+<span class="sig-name descname"><span class="pre">queue_position</span></span><a class="headerlink" href="#falaw.events.ProgressEvent.queue_position" title="Link to this definition">#</a></dt>
+<dd><p>fal’s <code class="docutils literal notranslate"><span class="pre">queue_position</span></code> on a <code class="docutils literal notranslate"><span class="pre">&quot;provider_queued&quot;</span></code> event
+(0 = next); <code class="docutils literal notranslate"><span class="pre">None</span></code> on every other event.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
@@ -584,12 +616,30 @@ compatibility.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.events.emit">
 <span class="sig-prename descclassname"><span class="pre">falaw.events.</span></span><span class="sig-name descname"><span class="pre">emit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">also</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/events.html#emit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.events.emit" title="Link to this definition">#</a></dt>
-<dd><p>Send <code class="docutils literal notranslate"><span class="pre">event</span></code> to every registered subscriber + the <code class="docutils literal notranslate"><span class="pre">also</span></code> list.</p>
+<dd><p>Send <code class="docutils literal notranslate"><span class="pre">event</span></code> to every registered subscriber, the callbacks bound with
+<a class="reference internal" href="#falaw.events.listening" title="falaw.events.listening"><code class="xref py py-func docutils literal notranslate"><span class="pre">listening()</span></code></a>, and the <code class="docutils literal notranslate"><span class="pre">also</span></code> list.</p>
 <p>Subscriber exceptions are swallowed (with a printed warning) so a
 misbehaving UI hook can’t bring the rendering pipeline down.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.events.listening">
+<span class="sig-prename descclassname"><span class="pre">falaw.events.</span></span><span class="sig-name descname"><span class="pre">listening</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/events.html#listening"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.events.listening" title="Link to this definition">#</a></dt>
+<dd><p>Deliver every event emitted in this context to <code class="docutils literal notranslate"><span class="pre">callback</span></code>, then stop.</p>
+<p>The scoped sibling of <a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-func docutils literal notranslate"><span class="pre">subscribe()</span></code></a>: where <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> hears every call in
+the process, <code class="docutils literal notranslate"><span class="pre">listening</span></code> hears only the calls made inside the <code class="docutils literal notranslate"><span class="pre">with</span></code> block (and
+the contexts copied from it, as <a class="reference internal" href="falaw.plan.html#module-falaw.plan" title="falaw.plan"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.plan</span></code></a> does for its worker threads). It
+is how a host that runs one unit of work per thread, such as a job worker, gets
+that unit’s events without threading <code class="docutils literal notranslate"><span class="pre">on_event=</span></code> through every layer between.
+<code class="docutils literal notranslate"><span class="pre">None</span></code> binds nothing, so a caller with no sink needs no <code class="docutils literal notranslate"><span class="pre">if</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterator</span></code></a>[<span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -678,10 +728,13 @@ misbehaving UI hook can’t bring the rendering pipeline down.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.message"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.message</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.pct"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.pct</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.elapsed_s"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.elapsed_s</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.provider_phase"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.provider_phase</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.queue_position"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.queue_position</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.clear_subscribers"><code class="docutils literal notranslate"><span class="pre">clear_subscribers()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.emit"><code class="docutils literal notranslate"><span class="pre">emit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.listening"><code class="docutils literal notranslate"><span class="pre">listening()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.subscribe"><code class="docutils literal notranslate"><span class="pre">subscribe()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.unsubscribe"><code class="docutils literal notranslate"><span class="pre">unsubscribe()</span></code></a></li>
 </ul>

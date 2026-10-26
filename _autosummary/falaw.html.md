@@ -57,6 +57,7 @@ Leave notes for future sessions:
 | [`get_llm_rate`](#falaw.get_llm_rate)(model, \*[, rates])                   | The row for `model`, or `None` when the table does not price it.                                                                                                                                                   |
 | [`list_llm_rates`](#falaw.list_llm_rates)(\*[, rates])                        | Every row in the table, in file order — the catalogue view.                                                                                                                                                        |
 | [`llm_ceiling_usd`](#falaw.llm_ceiling_usd)(model, \*[, input_tokens, ...])    | Ceiling cost in USD of `count` calls routing `model`, or `None`.                                                                                                                                                   |
+| [`listening`](#falaw.listening)(callback)                                | Deliver every event emitted in this context to `callback`, then stop.                                                                                                                                              |
 | [`subscribe`](#falaw.subscribe)(callback)                                | Register `callback` to receive every emitted ProgressEvent.                                                                                                                                                        |
 | [`unsubscribe`](#falaw.unsubscribe)(callback)                              | Remove a previously [`subscribe()`](#falaw.subscribe)'d callback.                                                                                                                       |
 | [`animate_face`](#falaw.animate_face)(image_url, audio_url, \*[, ...])      | Animate a still face from audio.                                                                                                                                                                                   |
@@ -1243,7 +1244,7 @@ Identity of the table this pricer reads, for the refreshed basis.
 
 Today’s version of that table, for the refreshed basis.
 
-### *class* falaw.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0)
+### *class* falaw.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -1254,7 +1255,7 @@ One step in the lifecycle of a fal call.
 Lifecycle stage. See `EventKind`.
 
 * **Type:**
-  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`]
+  [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'queued'`, `'progress'`, `'log'`, `'done'`, `'error'`, `'cache_hit'`, `'provider_queued'`]
 
 #### application
 
@@ -1295,6 +1296,21 @@ Seconds since the call started.
 
 * **Type:**
   [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
+#### provider_phase
+
+fal’s reported phase (see the module docstring), or `None`.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[`'in_queue'`, `'in_progress'`]]
+
+#### queue_position
+
+fal’s `queue_position` on a `"provider_queued"` event
+(0 = next); `None` on every other event.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
 
 ### *class* falaw.PruneCandidate(key, path, bytes, last_modified=None)
 
@@ -2269,6 +2285,20 @@ Every row in the table, in file order — the catalogue view.
 
 * **Return type:**
   [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`LlmRate`](falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)]
+
+### falaw.listening(callback)
+
+Deliver every event emitted in this context to `callback`, then stop.
+
+The scoped sibling of [`subscribe()`](#falaw.subscribe): where `subscribe` hears every call in
+the process, `listening` hears only the calls made inside the `with` block (and
+the contexts copied from it, as [`falaw.plan`](falaw.plan.html.md#module-falaw.plan) does for its worker threads). It
+is how a host that runs one unit of work per thread, such as a job worker, gets
+that unit’s events without threading `on_event=` through every layer between.
+`None` binds nothing, so a caller with no sink needs no `if`.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
 
 ### falaw.llm_call_cost_usd(provider, model, usage, , prices=None)
 
