@@ -42,7 +42,6 @@ from .content import (
     default_url_fetcher,
     using_url_fetcher,
 )
-from .upload import upload
 from .core import call_fal, current_fal_key, using_fal_credentials
 from .prune import (
     AreaUsage,
@@ -197,9 +196,9 @@ from .scene import (
     shot_content_hash,
 )
 from .session import Session
+from .upload import upload
 
 __all__ = [
-    "upload",
     "LlmPrice",
     "get_llm_price",
     "list_llm_prices",
@@ -255,6 +254,7 @@ __all__ = [
     "ProgressEvent",
     "Scene",
     "Session",
+    "upload",
     "Shot",
     "ToolSpec",
     "Voice",

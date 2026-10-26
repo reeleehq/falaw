@@ -83,6 +83,22 @@ def using_fal_credentials(key: Optional[str]) -> Iterator[None]:
         yield
 
 
+def fal_client_for(api_key: Optional[str] = None) -> Any:
+    """The object whose ``subscribe`` / ``upload_file`` falaw calls fal through.
+
+    Credential order: explicit ``api_key`` > the key bound via
+    :func:`using_fal_credentials` > the SDK's own ``FAL_KEY`` lookup. Only a
+    *resolved* key routes through a dedicated ``fal_client.SyncClient`` (never
+    written to a global or env var); otherwise the module itself is returned so
+    the SDK's own resolution is preserved exactly.
+    """
+    # Lazy: `fal_client` is the optional `falaw[fal]` extra.
+    fal_client = _import_fal_client()
+    key = resolve_credential(FAL_PROVIDER, api_key=api_key, required=False)
+    client_cls = getattr(fal_client, "SyncClient", None)
+    return client_cls(key=key) if key and client_cls is not None else fal_client
+
+
 def call_fal(
     application: str,
     arguments: Mapping[str, Any],
@@ -125,12 +141,7 @@ def call_fal(
     # default. Only when a key is resolved do we route through a dedicated
     # ``SyncClient`` — otherwise we call the module-level ``subscribe`` so the
     # SDK's own env/global resolution is preserved exactly as before.
-    key = resolve_credential(FAL_PROVIDER, api_key=api_key, required=False)
-    subscribe = fal_client.subscribe
-    if key:
-        client_cls = getattr(fal_client, "SyncClient", None)
-        if client_cls is not None:
-            subscribe = client_cls(key=key).subscribe
+    subscribe = fal_client_for(api_key).subscribe
 
     call_id = uuid.uuid4().hex[:12]
     started = time.time()

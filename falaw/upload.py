@@ -27,13 +27,26 @@ Whether a *Plan* should accept a local path directly and upload at execute time
 
 from __future__ import annotations
 
+import functools
 import hashlib
+import json
 import os
 import time
+import uuid
 from collections.abc import Callable, MutableMapping
 from typing import Any, Optional
 
 from .cache import _cache_dir
+from .core import fal_client_for
+
+__all__ = [
+    "UPLOAD_INDEX_DIRNAME",
+    "DEFAULT_UPLOAD_TTL_S",
+    "default_upload_index",
+    "default_uploader",
+    "file_digest",
+    "upload",
+]
 
 UPLOAD_INDEX_DIRNAME = "uploads"
 """Directory under the falaw cache root holding the digest -> URL index."""
@@ -55,30 +68,52 @@ def file_digest(path: str | os.PathLike) -> str:
     return h.hexdigest()
 
 
+class _AtomicJsonFiles:
+    """A directory of ``<digest>`` JSON files, written via temp file + rename.
+
+    ``dol.JsonFiles`` truncates in place, so a crash (or a concurrent reader)
+    leaves a half-written file; this keeps the same mapping surface with the
+    write made atomic, as :mod:`falaw.content`'s ``url_index`` does.
+    """
+
+    def __new__(cls, rootdir: str):
+        from dol import JsonFiles
+
+        class _Index(JsonFiles):
+            def __setitem__(self, key, value):
+                tmp = os.path.join(rootdir, f"{key}.{uuid.uuid4().hex[:8]}.part")
+                with open(tmp, "w") as f:
+                    json.dump(value, f)
+                os.replace(tmp, os.path.join(rootdir, key))
+
+        return _Index(rootdir)
+
+
 def default_upload_index() -> MutableMapping[str, Any]:
     """The falaw-cache-rooted JSON-file index (constructed per call, so a test
     that re-points the cache dir gets a fresh one)."""
-    from dol import JsonFiles
-
     root = os.path.join(_cache_dir(), UPLOAD_INDEX_DIRNAME)
     os.makedirs(root, exist_ok=True)
-    return JsonFiles(root)
+    return _AtomicJsonFiles(root)
 
 
-def default_uploader(path: str) -> str:
+def default_uploader(path: str, *, api_key: Optional[str] = None) -> str:
     """Upload with ``fal_client`` under the credentials falaw resolves."""
-    from .core import FAL_PROVIDER, resolve_credential
-    from .errors import import_fal_client
+    return fal_client_for(api_key).upload_file(path)
 
-    fal_client = import_fal_client()
-    key = resolve_credential(FAL_PROVIDER, api_key=None, required=False)
-    client_cls = getattr(fal_client, "SyncClient", None)
-    upload_file = (
-        client_cls(key=key).upload_file
-        if key and client_cls
-        else fal_client.upload_file
-    )
-    return upload_file(path)
+
+def _fresh_url(entry: Any, now: float, ttl_s: float) -> Optional[str]:
+    """The entry's URL if it is well-formed and within ``ttl_s``, else ``None``.
+
+    A corrupt or foreign entry is a miss, never a failure (it is only a hint);
+    an ``uploaded_at`` in the future (clock skew) is not trusted.
+    """
+    try:
+        age = now - float(entry["uploaded_at"])
+        url = entry["url"]
+    except Exception:  # noqa: BLE001
+        return None
+    return url if isinstance(url, str) and 0 <= age < ttl_s else None
 
 
 def upload(
@@ -87,21 +122,29 @@ def upload(
     uploader: Optional[Callable[[str], str]] = None,
     index: Optional[MutableMapping[str, Any]] = None,
     ttl_s: float = DEFAULT_UPLOAD_TTL_S,
+    api_key: Optional[str] = None,
     clock: Callable[[], float] = time.time,
 ) -> str:
     """A fal-fetchable URL for the local file at ``path``.
 
     Cached by content: an unchanged file within ``ttl_s`` of its last upload
-    returns the remembered URL without any transfer.
+    returns the remembered URL without any transfer. ``api_key`` is used by the
+    default uploader only (see :func:`falaw.core.fal_client_for`).
     """
+    if ttl_s < 0:
+        raise ValueError(f"ttl_s must be >= 0, got {ttl_s}")
     path = os.fspath(path)
     digest = file_digest(path)
-    uploader = uploader or default_uploader
+    if uploader is None:
+        uploader = functools.partial(default_uploader, api_key=api_key)
     index = default_upload_index() if index is None else index
     now = clock()
-    entry = index.get(digest)
-    if entry and now - entry["uploaded_at"] < ttl_s:
-        return entry["url"]
-    url = uploader(path)
-    index[digest] = {"url": url, "uploaded_at": now}
+    try:
+        entry = index.get(digest)
+    except Exception:  # noqa: BLE001 — an unreadable entry is a miss
+        entry = None
+    url = _fresh_url(entry, now, ttl_s) if entry else None
+    if url is None:
+        url = uploader(path)
+        index[digest] = {"url": url, "uploaded_at": now}
     return url

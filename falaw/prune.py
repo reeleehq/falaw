@@ -76,6 +76,7 @@ from typing import Iterator, Optional, Sequence, Union
 
 from .cache import ASSETS_DIRNAME, _cache_dir
 from .content import CONTENT_STORE_DIRNAME, URL_INDEX_DIRNAME, remembered_ref
+from .upload import UPLOAD_INDEX_DIRNAME
 
 
 __all__ = [
@@ -95,6 +96,7 @@ CONTENT_AREA = "content"
 ASSETS_AREA = "assets"
 URL_INDEX_AREA = "url_index"
 SCENES_AREA = "scenes"
+UPLOADS_AREA = "uploads"
 OTHER_AREA = "other"
 
 AREA_NAMES = (
@@ -103,6 +105,7 @@ AREA_NAMES = (
     ASSETS_AREA,
     URL_INDEX_AREA,
     SCENES_AREA,
+    UPLOADS_AREA,
     OTHER_AREA,
 )
 """Every area :func:`cache_usage` reports."""
@@ -115,6 +118,7 @@ AREA_DIRNAMES = (
     ASSETS_DIRNAME,
     URL_INDEX_DIRNAME,
     SCENES_DIRNAME,
+    UPLOAD_INDEX_DIRNAME,
 )
 """Directory names at the cache root owned by a named area.
 
@@ -229,6 +233,7 @@ def cache_usage() -> CacheUsage:
         _assets_usage(root),
         _url_index_usage(root),
         _scenes_usage(root),
+        _uploads_usage(root),
     )
     return CacheUsage(root=root, areas=named + (_other_usage(root, named),))
 
@@ -328,6 +333,12 @@ def _url_index_usage(root: str) -> AreaUsage:
     path = os.path.join(root, URL_INDEX_DIRNAME)
     entries, total = _dir_bytes(path)
     return AreaUsage(name=URL_INDEX_AREA, path=path, entries=entries, bytes=total)
+
+
+def _uploads_usage(root: str) -> AreaUsage:
+    path = os.path.join(root, UPLOAD_INDEX_DIRNAME)
+    entries, total = _dir_bytes(path)
+    return AreaUsage(name=UPLOADS_AREA, path=path, entries=entries, bytes=total)
 
 
 def _scenes_usage(root: str) -> AreaUsage:
