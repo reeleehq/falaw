@@ -19,6 +19,7 @@ falaw.terms
       current_terms_context
       effective_terms_context
       get_terms
+      row_digest
       is_cleared
       load_terms
       terms_subject

@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=e264953e"></script>
+    <script src="../../_static/documentation_options.js?v=0a7e36fc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.77" />
+  <meta name="docsearch:version" content="0.0.78" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -757,12 +757,14 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextVar</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">asdict</span><span class="p">,</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">fields</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">hashlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">sha256</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">FalTermsViolation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.licences</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_licence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ROUTERS</span><span class="p">,</span> <span class="n">routed_model</span>  <span class="c1"># noqa: F401  (ROUTERS re-exported)</span>
 
 <span class="n">TERMS_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"data"</span> <span class="o">/</span> <span class="s2">"model_terms.json"</span>
 <span class="sd">"""The ledger — separate from ``models.json`` so it refreshes on its own</span>
@@ -771,11 +773,18 @@ window.runMermaid = runMermaid;</script>
 <span class="n">TRI_STATE</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"yes"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">})</span>
 <span class="n">PERMISSION</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">({</span><span class="s2">"allowed"</span><span class="p">,</span> <span class="s2">"forbidden"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">})</span>
 
-<span class="n">ROUTERS</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">(</span>
-    <span class="p">{</span><span class="s2">"fal-ai/any-llm"</span><span class="p">:</span> <span class="s2">"model"</span><span class="p">,</span> <span class="s2">"fal-ai/any-llm/vision"</span><span class="p">:</span> <span class="s2">"model"</span><span class="p">}</span>
+<span class="n">DECISIVE_FIELDS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"license"</span><span class="p">,</span>
+    <span class="s2">"license_binds_us"</span><span class="p">,</span>
+    <span class="s2">"commercial_use"</span><span class="p">,</span>
+    <span class="s2">"third_party_tenancy"</span><span class="p">,</span>
+    <span class="s2">"c2pa_compatible"</span><span class="p">,</span>
+    <span class="s2">"provenance_constraint"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="sd">"""Applications that route to another model, mapped to the argument naming it.</span>
-<span class="sd">The routed model is who actually serves the call, so it is the ledger subject."""</span>
+<span class="sd">"""The ledger fields :func:`_refusal` reads: a change to one can change a verdict."""</span>
+
+<span class="n">ROW_DIGEST_CHARS</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="sd">"""Hex characters of a row's digest kept in a clearance stamp."""</span>
 
 <span class="n">CLEARANCE_KEY</span> <span class="o">=</span> <span class="s2">"terms_cleared"</span>
 <span class="sd">"""``CallPlan.metadata`` key under which a cleared plan records its clearance."""</span>
@@ -917,10 +926,9 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../_autosummary/falaw.terms.html#falaw.terms_subject">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">terms_subject</span><span class="p">(</span><span class="n">application</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The model id the ledger judges for this call: the routed model for a</span>
-<span class="sd">    router such as ``fal-ai/any-llm``, else *application* itself."""</span>
-    <span class="n">arg</span> <span class="o">=</span> <span class="n">ROUTERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">application</span><span class="p">)</span>
-    <span class="n">routed</span> <span class="o">=</span> <span class="p">(</span><span class="n">arguments</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">if</span> <span class="n">arg</span> <span class="k">else</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">routed</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">routed</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">routed</span> <span class="k">else</span> <span class="n">application</span></div>
+<span class="sd">    router such as ``fal-ai/any-llm`` (:func:`falaw.routing.routed_model`), else</span>
+<span class="sd">    *application* itself."""</span>
+    <span class="k">return</span> <span class="n">routed_model</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span></div>
 
 
 
@@ -987,6 +995,22 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="row_digest">
+<a class="viewcode-back" href="../../_autosummary/falaw.terms.html#falaw.row_digest">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">row_digest</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ModelTerms</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A short digest of the fields of a ledger row that decide a clearance</span>
+<span class="sd">    (``""`` for no row): the version of the terms a clearance was granted</span>
+<span class="sd">    under, so an edit to a verdict shows up even when nobody bumped</span>
+<span class="sd">    ``observed_on``. Prose fields (notes, source) and new fields do not move it."""</span>
+    <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
+        <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">DECISIVE_FIELDS</span><span class="p">},</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sha256</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="n">ROW_DIGEST_CHARS</span><span class="p">]</span></div>
+
+
+
 <div class="viewcode-block" id="clearance">
 <a class="viewcode-back" href="../../_autosummary/falaw.terms.html#falaw.clearance">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">clearance</span><span class="p">(</span>
@@ -994,27 +1018,40 @@ window.runMermaid = runMermaid;</script>
     <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">context</span><span class="p">:</span> <span class="n">TermsContext</span><span class="p">,</span>
     <span class="n">arguments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">ledger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The descriptive record a plan carries once :func:`check_terms` passed:</span>
-<span class="sd">    what was cleared, where, for which job. Lives in ``CallPlan.metadata``</span>
-<span class="sd">    (never hashed), so a persisted plan can show it was cleared."""</span>
+<span class="sd">    what was cleared, where, for which job, under which version of the row.</span>
+<span class="sd">    Lives in ``CallPlan.metadata`` (never hashed), so a persisted plan can show</span>
+<span class="sd">    it was cleared."""</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">terms_subject</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">"model"</span><span class="p">:</span> <span class="n">terms_subject</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">),</span>
+        <span class="s2">"model"</span><span class="p">:</span> <span class="n">model</span><span class="p">,</span>
         <span class="s2">"backend"</span><span class="p">:</span> <span class="n">backend</span><span class="p">,</span>
         <span class="s2">"context"</span><span class="p">:</span> <span class="n">asdict</span><span class="p">(</span><span class="n">context</span><span class="p">),</span>
+        <span class="s2">"row"</span><span class="p">:</span> <span class="n">row_digest</span><span class="p">(</span><span class="n">get_terms</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">backend</span><span class="p">,</span> <span class="n">ledger</span><span class="o">=</span><span class="n">ledger</span><span class="p">)),</span>
     <span class="p">}</span></div>
 
 
 
 <div class="viewcode-block" id="is_cleared">
 <a class="viewcode-back" href="../../_autosummary/falaw.terms.html#falaw.is_cleared">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">is_cleared</span><span class="p">(</span><span class="n">call</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">TermsContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""(Describes what the stamp says, not the ledger's later edits.) Whether *call* (a ``CallPlan``) carries a clearance that still describes</span>
-<span class="sd">    it: same model and backend as now, for exactly *context*. A call re-targeted</span>
-<span class="sd">    after planning (``dataclasses.replace(call, backend=...)``, a replayed or</span>
-<span class="sd">    repriced plan) fails this, so it must be re-checked, never trusted."""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_cleared</span><span class="p">(</span>
+    <span class="n">call</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">TermsContext</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ledger</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether *call* (a ``CallPlan``) carries a clearance that still describes</span>
+<span class="sd">    it: same model and backend as now, for exactly *context*, under the ledger</span>
+<span class="sd">    row as it reads now. A call re-targeted after planning</span>
+<span class="sd">    (``dataclasses.replace(call, backend=...)``, a replayed or repriced plan) or</span>
+<span class="sd">    whose row was edited since fails this, so it must be re-checked, never</span>
+<span class="sd">    trusted. Stamps are issued against the default ledger; pass ``ledger=`` to</span>
+<span class="sd">    verify against another. A stamp from before the row digest existed has no</span>
+<span class="sd">    ``row`` and reads as not cleared."""</span>
     <span class="n">stamp</span> <span class="o">=</span> <span class="n">call</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">CLEARANCE_KEY</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">stamp</span> <span class="o">==</span> <span class="n">clearance</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">arguments</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">stamp</span> <span class="o">==</span> <span class="n">clearance</span><span class="p">(</span>
+        <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="n">ledger</span><span class="o">=</span><span class="n">ledger</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1054,6 +1091,7 @@ window.runMermaid = runMermaid;</script>
     <span class="s2">"current_terms_context"</span><span class="p">,</span>
     <span class="s2">"effective_terms_context"</span><span class="p">,</span>
     <span class="s2">"get_terms"</span><span class="p">,</span>
+    <span class="s2">"row_digest"</span><span class="p">,</span>
     <span class="s2">"is_cleared"</span><span class="p">,</span>
     <span class="s2">"load_terms"</span><span class="p">,</span>
     <span class="s2">"terms_subject"</span><span class="p">,</span>

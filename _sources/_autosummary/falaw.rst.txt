@@ -224,6 +224,7 @@
    registry
    reprice
    results
+   routing
    scene
    schema_export
    session

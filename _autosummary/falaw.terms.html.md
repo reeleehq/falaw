@@ -45,18 +45,19 @@ falaw.errors.FalTermsViolation: ...
 
 ### Functions
 
-| [`check_terms`](#falaw.terms.check_terms)(model_id, backend, context, \*[, ...])   | Raise `FalTermsViolation` unless `(model_id, backend)` is usable for *context*.                                                                                                                                    |
-|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`clearance`](#falaw.terms.clearance)(application, backend, context[, ...])      | The descriptive record a plan carries once [`check_terms()`](#falaw.terms.check_terms) passed: what was cleared, where, for which job.                                                          |
-| [`current_terms_context`](#falaw.terms.current_terms_context)()                              | The context bound by [`using_terms_context()`](#falaw.terms.using_terms_context), else `None`.                                                                                                          |
-| [`effective_terms_context`](#falaw.terms.effective_terms_context)(explicit)                    | The context a check runs under: an explicit `terms_context=` argument wins; otherwise the one scoped by [`using_terms_context()`](#falaw.terms.using_terms_context).                                    |
-| [`get_terms`](#falaw.terms.get_terms)(model_id, backend, \*[, ledger])           | The row for `(model_id, backend)`, or `None` when nobody reviewed it.                                                                                                                                              |
-| [`is_cleared`](#falaw.terms.is_cleared)(call, context)                            | (Describes what the stamp says, not the ledger's later edits.) Whether *call* (a `CallPlan`) carries a clearance that still describes it: same model and backend as now, for exactly *context*.                    |
-| [`load_terms`](#falaw.terms.load_terms)([path])                                   | The ledger as `{(model_id, backend): ModelTerms}` (cached per path).                                                                                                                                               |
-| [`terms_subject`](#falaw.terms.terms_subject)(application[, arguments])              | The model id the ledger judges for this call: the routed model for a router such as `fal-ai/any-llm`, else *application* itself.                                                                                   |
-| [`third_party_tenancy_ok`](#falaw.terms.third_party_tenancy_ok)(model_id, backend, \*)        | The routing-visible projection: may a router send third-party work to `(model_id, backend)` without consulting the full ledger? `False` when unsure — the cheap 80%, so a router can drop an incompatible backend. |
-| [`unreviewed_models`](#falaw.terms.unreviewed_models)(\*[, ledger, backend])             | Catalogue models with no ledger row on *backend* — what still needs a human read of the terms (each is refused under a strict context).                                                                            |
-| [`using_terms_context`](#falaw.terms.using_terms_context)(context)                         | Scope *context* over every call made inside the block, eager or planned.                                                                                                                                           |
+| [`check_terms`](#falaw.terms.check_terms)(model_id, backend, context, \*[, ...])   | Raise `FalTermsViolation` unless `(model_id, backend)` is usable for *context*.                                                                                                                                                             |
+|-------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`clearance`](#falaw.terms.clearance)(application, backend, context[, ...])      | The descriptive record a plan carries once [`check_terms()`](#falaw.terms.check_terms) passed: what was cleared, where, for which job, under which version of the row.                                                   |
+| [`current_terms_context`](#falaw.terms.current_terms_context)()                              | The context bound by [`using_terms_context()`](#falaw.terms.using_terms_context), else `None`.                                                                                                                                   |
+| [`effective_terms_context`](#falaw.terms.effective_terms_context)(explicit)                    | The context a check runs under: an explicit `terms_context=` argument wins; otherwise the one scoped by [`using_terms_context()`](#falaw.terms.using_terms_context).                                                             |
+| [`get_terms`](#falaw.terms.get_terms)(model_id, backend, \*[, ledger])           | The row for `(model_id, backend)`, or `None` when nobody reviewed it.                                                                                                                                                                       |
+| [`row_digest`](#falaw.terms.row_digest)(row)                                      | A short digest of the fields of a ledger row that decide a clearance (`""` for no row): the version of the terms a clearance was granted under, so an edit to a verdict shows up even when nobody bumped `observed_on`.                     |
+| [`is_cleared`](#falaw.terms.is_cleared)(call, context, \*[, ledger])              | Whether *call* (a `CallPlan`) carries a clearance that still describes it: same model and backend as now, for exactly *context*, under the ledger row as it reads now.                                                                      |
+| [`load_terms`](#falaw.terms.load_terms)([path])                                   | The ledger as `{(model_id, backend): ModelTerms}` (cached per path).                                                                                                                                                                        |
+| [`terms_subject`](#falaw.terms.terms_subject)(application[, arguments])              | The model id the ledger judges for this call: the routed model for a router such as `fal-ai/any-llm` ([`falaw.routing.routed_model()`](falaw.routing.html.md#falaw.routing.routed_model)), else *application* itself. |
+| [`third_party_tenancy_ok`](#falaw.terms.third_party_tenancy_ok)(model_id, backend, \*)        | The routing-visible projection: may a router send third-party work to `(model_id, backend)` without consulting the full ledger? `False` when unsure — the cheap 80%, so a router can drop an incompatible backend.                          |
+| [`unreviewed_models`](#falaw.terms.unreviewed_models)(\*[, ledger, backend])             | Catalogue models with no ledger row on *backend* — what still needs a human read of the terms (each is refused under a strict context).                                                                                                     |
+| [`using_terms_context`](#falaw.terms.using_terms_context)(context)                         | Scope *context* over every call made inside the block, eager or planned.                                                                                                                                                                    |
 
 ### Classes
 
@@ -97,11 +98,12 @@ nothing: the strict path is opt-in per deployment. Pass the call’s
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### falaw.terms.clearance(application, backend, context, arguments=None)
+### falaw.terms.clearance(application, backend, context, arguments=None, , ledger=None)
 
 The descriptive record a plan carries once [`check_terms()`](#falaw.terms.check_terms) passed:
-what was cleared, where, for which job. Lives in `CallPlan.metadata`
-(never hashed), so a persisted plan can show it was cleared.
+what was cleared, where, for which job, under which version of the row.
+Lives in `CallPlan.metadata` (never hashed), so a persisted plan can show
+it was cleared.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
@@ -130,12 +132,16 @@ The row for `(model_id, backend)`, or `None` when nobody reviewed it.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`ModelTerms`](#falaw.terms.ModelTerms)]
 
-### falaw.terms.is_cleared(call, context)
+### falaw.terms.is_cleared(call, context, , ledger=None)
 
-(Describes what the stamp says, not the ledger’s later edits.) Whether *call* (a `CallPlan`) carries a clearance that still describes
-it: same model and backend as now, for exactly *context*. A call re-targeted
-after planning (`dataclasses.replace(call, backend=...)`, a replayed or
-repriced plan) fails this, so it must be re-checked, never trusted.
+Whether *call* (a `CallPlan`) carries a clearance that still describes
+it: same model and backend as now, for exactly *context*, under the ledger
+row as it reads now. A call re-targeted after planning
+(`dataclasses.replace(call, backend=...)`, a replayed or repriced plan) or
+whose row was edited since fails this, so it must be re-checked, never
+trusted. Stamps are issued against the default ledger; pass `ledger=` to
+verify against another. A stamp from before the row digest existed has no
+`row` and reads as not cleared.
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
@@ -147,10 +153,21 @@ The ledger as `{(model_id, backend): ModelTerms}` (cached per path).
 * **Return type:**
   [`Mapping`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`ModelTerms`](#falaw.terms.ModelTerms)]
 
+### falaw.terms.row_digest(row)
+
+A short digest of the fields of a ledger row that decide a clearance
+(`""` for no row): the version of the terms a clearance was granted
+under, so an edit to a verdict shows up even when nobody bumped
+`observed_on`. Prose fields (notes, source) and new fields do not move it.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### falaw.terms.terms_subject(application, arguments=None)
 
 The model id the ledger judges for this call: the routed model for a
-router such as `fal-ai/any-llm`, else *application* itself.
+router such as `fal-ai/any-llm` ([`falaw.routing.routed_model()`](falaw.routing.html.md#falaw.routing.routed_model)), else
+*application* itself.
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)

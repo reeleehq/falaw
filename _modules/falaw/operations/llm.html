@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../../_static/documentation_options.js?v=e264953e"></script>
+    <script src="../../../_static/documentation_options.js?v=0a7e36fc"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.77" />
+  <meta name="docsearch:version" content="0.0.78" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -733,10 +733,11 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_call_fal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..cost</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_call_cost</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..llm_rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">llm_ceiling_usd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ANY_LLM</span><span class="p">,</span> <span class="n">routed_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model</span><span class="p">,</span> <span class="n">register_tool</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Beat</span><span class="p">,</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">beat_id</span><span class="p">,</span> <span class="n">make_beat</span><span class="p">,</span> <span class="n">make_shot</span><span class="p">,</span> <span class="n">shot_id</span>
 
-<span class="n">_DEFAULT_LLM</span> <span class="o">=</span> <span class="s2">"fal-ai/any-llm"</span>
+<span class="n">_DEFAULT_LLM</span> <span class="o">=</span> <span class="n">ANY_LLM</span>
 <span class="c1"># Valid any-llm OpenRouter ids (as of mid-2026); see fal-ai/any-llm schema.</span>
 <span class="c1"># Sonnet 4.5 is the strongest balanced default for structured-output tasks.</span>
 <span class="n">_DEFAULT_MODEL</span> <span class="o">=</span> <span class="s2">"anthropic/claude-sonnet-4.5"</span>
@@ -909,12 +910,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">tokens_in</span><span class="p">,</span> <span class="n">tokens_out</span> <span class="o">=</span> <span class="n">_extract_llm_usage</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
 
     <span class="n">cache_hit</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">hit_seen</span><span class="p">)</span>
-    <span class="n">routed_model</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"model"</span><span class="p">,</span> <span class="n">model</span><span class="p">))</span>
-    <span class="n">cost</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">"cache_hit"</span><span class="p">)</span> <span class="k">if</span> <span class="n">cache_hit</span> <span class="k">else</span> <span class="n">_billed_cost_of</span><span class="p">(</span><span class="n">routed_model</span><span class="p">)</span>
+    <span class="n">served_by</span> <span class="o">=</span> <span class="n">routed_model</span><span class="p">(</span><span class="n">_DEFAULT_LLM</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>  <span class="c1"># arguments always name a model</span>
+    <span class="n">cost</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">"cache_hit"</span><span class="p">)</span> <span class="k">if</span> <span class="n">cache_hit</span> <span class="k">else</span> <span class="n">_billed_cost_of</span><span class="p">(</span><span class="n">served_by</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">text</span><span class="p">,</span> <span class="n">LlmReceipt</span><span class="p">(</span>
         <span class="n">application</span><span class="o">=</span><span class="n">_DEFAULT_LLM</span><span class="p">,</span>
-        <span class="n">model</span><span class="o">=</span><span class="n">routed_model</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">served_by</span><span class="p">,</span>
         <span class="n">cache_hit</span><span class="o">=</span><span class="n">cache_hit</span><span class="p">,</span>
         <span class="n">chars_in</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">system</span><span class="p">),</span>
         <span class="n">chars_out</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span>

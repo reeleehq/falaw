@@ -53,6 +53,7 @@
 - [falaw.registry](_autosummary/falaw.registry.html.md): Tool and model registries.
 - [falaw.reprice](_autosummary/falaw.reprice.html.md): Re-quote a persisted &#96;falaw.Plan&#96; at today’s rates (falaw#60).
 - [falaw.results](_autosummary/falaw.results.html.md): Result wrapper: parse fal responses into typed assets, lazy download.
+- [falaw.routing](_autosummary/falaw.routing.html.md): Which model a router call really goes to (falaw#115).
 - [falaw.scene](_autosummary/falaw.scene.html.md): Scene IR: the editable structure that survives all the way to the pixels.
 - [falaw.schema_export](_autosummary/falaw.schema_export.html.md): Export the Python SSOT as committed JSON for the TypeScript twin (&#96;ts/&#96;).
 - [falaw.session](_autosummary/falaw.session.html.md): Session: optional stateful controller over a sequence of falaw operations.
@@ -60,7 +61,7 @@
 - [falaw.testing](_autosummary/falaw.testing.html.md): Make a suite that uses falaw genuinely offline — the fake asset transport.
 - [falaw.validation](_autosummary/falaw.validation.html.md): Check a call’s arguments against the limits its catalogue record states.
 - [For AI agents](ai-agents.html.md): &#96;falaw&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-26 18:31 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-26 20:17 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
 
 ## Optional
 

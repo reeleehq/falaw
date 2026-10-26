@@ -1,0 +1,19 @@
+falaw.routing
+=============
+
+.. automodule:: falaw.routing
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      ANY_LLM
+      ROUTERS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      routed_model
+   

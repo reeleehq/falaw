@@ -19,6 +19,9 @@ the AGPL, so a substring scan would reject every GPLv3 pack.
 | [`TITLE_LINES`](#falaw.comfyui.licences.TITLE_LINES)             | How many leading non-blank lines count as a licence's title (room for a copyright line or three above the licence's name).                                                                                                            |
 | [`RESTRICTED_FAMILY`](#falaw.comfyui.licences.RESTRICTED_FAMILY)       | The AGPL family plus SSPL (same network-copyleft reach).                                                                                                                                                                              |
 | [`AGPL_TITLE`](#falaw.comfyui.licences.AGPL_TITLE)              | The AGPL's own upper-case title, flagged wherever it sits in a file.                                                                                                                                                                  |
+| [`SPDX_TAG`](#falaw.comfyui.licences.SPDX_TAG)                | A tag's expression, up to the end of its line or a closing comment marker.                                                                                                                                                            |
+| [`SPDX_TAG_ANYWHERE`](#falaw.comfyui.licences.SPDX_TAG_ANYWHERE)       | Everything after a tag to the end of its line.                                                                                                                                                                                        |
+| [`EXCEPTION`](#falaw.comfyui.licences.EXCEPTION)               | the exception does not change which licence it is.                                                                                                                                                                                    |
 | [`KNOWN_LICENCES`](#falaw.comfyui.licences.KNOWN_LICENCES)          | Licences recognised as *determinable* (keyed in the shared [`falaw.licences`](falaw.licences.html.md#module-falaw.licences) vocabulary; a `-family` spans several SPDX ids), looked for in a file's title lines. |
 
 ### Functions
@@ -37,6 +40,13 @@ the AGPL, so a substring scan would reject every GPLv3 pack.
 
 The AGPL’s own upper-case title, flagged wherever it sits in a file. GPLv3
 section 13 names the licence in mixed case, so this does not flag GPLv3.
+
+### falaw.comfyui.licences.EXCEPTION *= re.compile('\\\\s+WITH\\\\s+\\\\S+', re.IGNORECASE)*
+
+the exception does not change which licence it is.
+
+* **Type:**
+  An SPDX `WITH <exception>` suffix
 
 ### falaw.comfyui.licences.KNOWN_LICENCES *= {'Apache-2.0': 'Apache License,?\\\\s+Version 2', 'CC0-1.0': 'CC0 1\\\\.0|Creative Commons Zero', 'ISC': '\\\\bISC License\\\\b|Permission to use, copy, modify, and/or distribute', 'LicenseRef-BSD-family': 'Redistribution and use in source and binary forms', 'LicenseRef-GPL-family': 'GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE', 'MIT': '\\\\bMIT License\\\\b|Permission is hereby granted, free of charge', 'MPL-2.0': 'Mozilla Public License', 'Unlicense': 'This is free and unencumbered software', 'WTFPL': 'DO WHAT THE FUCK YOU WANT'}*
 
@@ -70,6 +80,15 @@ The `licence_screen` block of the deployment manifest.
 
 The AGPL family plus SSPL (same network-copyleft reach). Matched against a
 file’s title lines and SPDX tags, not its whole text; see `_is_restricted()`.
+
+### falaw.comfyui.licences.SPDX_TAG *= re.compile('SPDX-License-Identifier:[ \\\\t]\*([^\\\\r\\\\n\*]+?)[ \\\\t]\*(?:\\\\\*/|-->)?[ \\\\t]\*$', re.IGNORECASE|re.MULTILINE)*
+
+A tag’s expression, up to the end of its line or a closing comment marker.
+
+### falaw.comfyui.licences.SPDX_TAG_ANYWHERE *= re.compile('SPDX-License-Identifier:\\\\s\*(.+)', re.IGNORECASE)*
+
+Everything after a tag to the end of its line. The restricted check reads
+this, not [`SPDX_TAG`](#falaw.comfyui.licences.SPDX_TAG): it must see an AGPL tag however the line is decorated.
 
 ### falaw.comfyui.licences.TITLE_LINES *= 12*
 

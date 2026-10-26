@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=e264953e"></script>
+    <script src="../_static/documentation_options.js?v=0a7e36fc"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.77" />
+  <meta name="docsearch:version" content="0.0.78" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -371,6 +371,7 @@
 <li class="toctree-l2"><a class="reference internal" href="falaw.registry.html">falaw.registry</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.reprice.html">falaw.reprice</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.results.html">falaw.results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.routing.html">falaw.routing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.scene.html">falaw.scene</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.schema_export.html">falaw.schema_export</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.session.html">falaw.session</a></li>
@@ -471,7 +472,16 @@ the AGPL, so a substring scan would reject every GPLv3 pack.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.comfyui.licences.AGPL_TITLE" title="falaw.comfyui.licences.AGPL_TITLE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AGPL_TITLE</span></code></a></p></td>
 <td><p>The AGPL's own upper-case title, flagged wherever it sits in a file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.comfyui.licences.KNOWN_LICENCES" title="falaw.comfyui.licences.KNOWN_LICENCES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KNOWN_LICENCES</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.comfyui.licences.SPDX_TAG" title="falaw.comfyui.licences.SPDX_TAG"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SPDX_TAG</span></code></a></p></td>
+<td><p>A tag's expression, up to the end of its line or a closing comment marker.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.comfyui.licences.SPDX_TAG_ANYWHERE" title="falaw.comfyui.licences.SPDX_TAG_ANYWHERE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SPDX_TAG_ANYWHERE</span></code></a></p></td>
+<td><p>Everything after a tag to the end of its line.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.comfyui.licences.EXCEPTION" title="falaw.comfyui.licences.EXCEPTION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EXCEPTION</span></code></a></p></td>
+<td><p>the exception does not change which licence it is.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.comfyui.licences.KNOWN_LICENCES" title="falaw.comfyui.licences.KNOWN_LICENCES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KNOWN_LICENCES</span></code></a></p></td>
 <td><p>Licences recognised as <em>determinable</em> (keyed in the shared <a class="reference internal" href="falaw.licences.html#module-falaw.licences" title="falaw.licences"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.licences</span></code></a> vocabulary; a <code class="docutils literal notranslate"><span class="pre">-family</span></code> spans several SPDX ids), looked for in a file's title lines.</p></td>
 </tr>
 </tbody>
@@ -506,6 +516,17 @@ the AGPL, so a substring scan would reject every GPLv3 pack.</p>
 <span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">AGPL_TITLE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'GNU</span> <span class="pre">AFFERO</span> <span class="pre">GENERAL</span> <span class="pre">PUBLIC</span> <span class="pre">LICENSE'</span></span><a class="headerlink" href="#falaw.comfyui.licences.AGPL_TITLE" title="Link to this definition">#</a></dt>
 <dd><p>The AGPL’s own upper-case title, flagged wherever it sits in a file. GPLv3
 section 13 names the licence in mixed case, so this does not flag GPLv3.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.comfyui.licences.EXCEPTION">
+<span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">EXCEPTION</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('\\s+WITH\\s+\\S+',</span> <span class="pre">re.IGNORECASE)</span></span><a class="headerlink" href="#falaw.comfyui.licences.EXCEPTION" title="Link to this definition">#</a></dt>
+<dd><p>the exception does not change which licence it is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An SPDX <code class="docutils literal notranslate"><span class="pre">WITH</span> <span class="pre">&lt;exception&gt;</span></code> suffix</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py data">
@@ -554,6 +575,19 @@ goes to a human.</p>
 <span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">RESTRICTED_FAMILY</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('AGPL|AFFERO|\\bSSPL\\b|SERVER</span> <span class="pre">SIDE</span> <span class="pre">PUBLIC</span> <span class="pre">LICENSE',</span> <span class="pre">re.IGNORECASE)</span></span><a class="headerlink" href="#falaw.comfyui.licences.RESTRICTED_FAMILY" title="Link to this definition">#</a></dt>
 <dd><p>The AGPL family plus SSPL (same network-copyleft reach). Matched against a
 file’s title lines and SPDX tags, not its whole text; see <code class="xref py py-func docutils literal notranslate"><span class="pre">_is_restricted()</span></code>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.comfyui.licences.SPDX_TAG">
+<span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">SPDX_TAG</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('SPDX-License-Identifier:[</span> <span class="pre">\\t]*([^\\r\\n*]+?)[</span> <span class="pre">\\t]*(?:\\*/|--&gt;)?[</span> <span class="pre">\\t]*$',</span> <span class="pre">re.IGNORECASE|re.MULTILINE)</span></span><a class="headerlink" href="#falaw.comfyui.licences.SPDX_TAG" title="Link to this definition">#</a></dt>
+<dd><p>A tag’s expression, up to the end of its line or a closing comment marker.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.comfyui.licences.SPDX_TAG_ANYWHERE">
+<span class="sig-prename descclassname"><span class="pre">falaw.comfyui.licences.</span></span><span class="sig-name descname"><span class="pre">SPDX_TAG_ANYWHERE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('SPDX-License-Identifier:\\s*(.+)',</span> <span class="pre">re.IGNORECASE)</span></span><a class="headerlink" href="#falaw.comfyui.licences.SPDX_TAG_ANYWHERE" title="Link to this definition">#</a></dt>
+<dd><p>Everything after a tag to the end of its line. The restricted check reads
+this, not <a class="reference internal" href="#falaw.comfyui.licences.SPDX_TAG" title="falaw.comfyui.licences.SPDX_TAG"><code class="xref py py-data docutils literal notranslate"><span class="pre">SPDX_TAG</span></code></a>: it must see an AGPL tag however the line is decorated.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -652,6 +686,7 @@ so the returned <code class="docutils literal notranslate"><span class="pre">nod
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.AGPL_TITLE"><code class="docutils literal notranslate"><span class="pre">AGPL_TITLE</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.EXCEPTION"><code class="docutils literal notranslate"><span class="pre">EXCEPTION</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.KNOWN_LICENCES"><code class="docutils literal notranslate"><span class="pre">KNOWN_LICENCES</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.LICENCE_FILE_PREFIXES"><code class="docutils literal notranslate"><span class="pre">LICENCE_FILE_PREFIXES</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.LicenceScreen"><code class="docutils literal notranslate"><span class="pre">LicenceScreen</span></code></a><ul class="nav section-nav flex-column">
@@ -659,6 +694,8 @@ so the returned <code class="docutils literal notranslate"><span class="pre">nod
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.RESTRICTED_FAMILY"><code class="docutils literal notranslate"><span class="pre">RESTRICTED_FAMILY</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.SPDX_TAG"><code class="docutils literal notranslate"><span class="pre">SPDX_TAG</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.SPDX_TAG_ANYWHERE"><code class="docutils literal notranslate"><span class="pre">SPDX_TAG_ANYWHERE</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.TITLE_LINES"><code class="docutils literal notranslate"><span class="pre">TITLE_LINES</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.git_head"><code class="docutils literal notranslate"><span class="pre">git_head()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.licences.nodes_digest"><code class="docutils literal notranslate"><span class="pre">nodes_digest()</span></code></a></li>

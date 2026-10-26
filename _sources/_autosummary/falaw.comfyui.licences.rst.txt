@@ -12,6 +12,9 @@ falaw.comfyui.licences
       TITLE_LINES
       RESTRICTED_FAMILY
       AGPL_TITLE
+      SPDX_TAG
+      SPDX_TAG_ANYWHERE
+      EXCEPTION
       KNOWN_LICENCES
    
    .. rubric:: Functions
