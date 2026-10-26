@@ -69,7 +69,13 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Iterator, Literal, Optional
 
 from .canonical import DFLT_BACKEND
-from .terms import TermsContext, check_terms
+from .terms import (
+    CLEARANCE_KEY,
+    TermsContext,
+    check_terms,
+    clearance,
+    effective_terms_context,
+)
 from .degrade import (
     DEGRADE_WARNING_SINK,
     deferred_degrade_warnings,
@@ -642,7 +648,13 @@ def make_call_plan(
     """
     from .canonical import ensure_canonical
 
-    check_terms(application, backend, terms_context)
+    terms_context = effective_terms_context(terms_context)
+    check_terms(application, backend, terms_context, arguments=arguments)
+    if terms_context is not None:
+        metadata = {
+            **(metadata or {}),
+            CLEARANCE_KEY: clearance(application, backend, terms_context, arguments),
+        }
     from .upload import localize_paths, resolve_local_files
 
     # A local file (``os.PathLike``) becomes a "<file ...>" marker: the Plan
@@ -1012,8 +1024,13 @@ def execute_isolated(
             "It bounds how many calls are in flight at once; 1 is sequential."
         )
     use_cache, refresh = _resolved_cache_mode(use_cache, refresh)
+    # Every call is cleared up front, before a cache read or any spend, on every
+    # backend: the cache-hit path and non-fal executors never reach call_fal.
+    terms_context = effective_terms_context(terms_context)
     for call in plan.calls:
-        check_terms(call.application, call.backend, terms_context)
+        check_terms(
+            call.application, call.backend, terms_context, arguments=call.arguments
+        )
 
     if dry_run:
         # Per-call isolation applies to dry runs too: a hand-built CallPlan

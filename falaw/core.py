@@ -147,6 +147,9 @@ def call_fal(
         The raw response dict from the model.
     """
     _check_against_catalogue(application, arguments)  # refuse before any network
+    from .terms import check_terms, current_terms_context
+
+    check_terms(application, "fal", current_terms_context(), arguments=arguments)
     # Lazy: `fal_client` is the optional `falaw[fal]` extra, so importing falaw
     # (and planning, pricing, hashing, cache hits) must not need it.
     fal_client = _import_fal_client()

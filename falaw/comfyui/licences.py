@@ -47,16 +47,17 @@ SPDX_TAG = re.compile(r"SPDX-License-Identifier:\s*(.+)", re.IGNORECASE)
 KNOWN_LICENCES = {
     "MIT": r"\bMIT License\b|Permission is hereby granted, free of charge",
     "Apache-2.0": r"Apache License,?\s+Version 2",
-    "BSD": r"Redistribution and use in source and binary forms",
-    "GPL": r"GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE",
+    "LicenseRef-BSD-family": r"Redistribution and use in source and binary forms",
+    "LicenseRef-GPL-family": r"GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE",
     "MPL-2.0": r"Mozilla Public License",
     "ISC": r"\bISC License\b|Permission to use, copy, modify, and/or distribute",
     "Unlicense": r"This is free and unencumbered software",
-    "CC0": r"CC0 1\.0|Creative Commons Zero",
+    "CC0-1.0": r"CC0 1\.0|Creative Commons Zero",
     "WTFPL": r"DO WHAT THE FUCK YOU WANT",
 }
-"""Licences recognised as *determinable*, looked for in a file's title lines.
-Text matching none of these is undeterminable, which fails the screen: terms
+"""Licences recognised as *determinable* (keyed in the shared
+:mod:`falaw.licences` vocabulary; a ``-family`` spans several SPDX ids), looked
+for in a file's title lines. Text matching none of these is undeterminable, which fails the screen: terms
 we cannot read are not a pass. A heuristic by design; what it cannot place
 goes to a human."""
 

@@ -241,3 +241,151 @@ def test_each_plan_function_really_forwards_the_context(name, monkeypatch):
     monkeypatch.setattr(terms, "load_terms", lambda path=None: {})
     with pytest.raises(FalTermsViolation, match="no terms row"):
         _plan_calls()[name](terms_context=TermsContext())
+
+
+# ── falaw#110: eager verbs, routed models, clearance, one licence vocabulary ──
+
+
+def test_the_ambient_context_gates_every_eager_entry_point(monkeypatch):
+    from falaw import call_fal, using_terms_context
+    from falaw.cache import cached_call_fal
+
+    sent = []
+    monkeypatch.setattr(
+        "falaw.backends.get_backend_executor",
+        lambda backend: lambda app, args, **kw: sent.append(app) or {},
+    )
+    with using_terms_context(TermsContext()):
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            cached_call_fal("nobody/reviewed-this", {})
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            call_fal("nobody/reviewed-this", {})
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            falaw.generate_image("a fox", model_id="nobody/reviewed-this")
+    assert sent == []  # refused before anything ran
+    cached_call_fal("nobody/reviewed-this", {}, refresh=True)  # scope ended
+    assert sent == ["nobody/reviewed-this"]
+
+
+def test_a_router_is_judged_by_the_model_it_routes_to():
+    ctx = TermsContext()
+    ok = _row(model_id="vendor/small", backend="fal")
+    ledger = _ledger(ok, _row(model_id="fal-ai/any-llm", backend="fal"))
+    check_terms(
+        "fal-ai/any-llm", "fal", ctx, ledger=ledger, arguments={"model": "vendor/small"}
+    )
+    with pytest.raises(FalTermsViolation, match="vendor/other"):
+        check_terms(
+            "fal-ai/any-llm",
+            "fal",
+            ctx,
+            ledger=ledger,
+            arguments={"model": "vendor/other"},
+        )
+
+
+def test_a_cleared_plan_proves_it_and_a_retargeted_one_does_not():
+    import dataclasses
+
+    ctx = TermsContext(third_party=True)
+    call = falaw.plan.make_call_plan(
+        tool="generate_image",
+        application="fal-ai/flux/schnell",
+        arguments={"prompt": "p"},
+        output_kind="image",
+        backend=SELF_HOSTED,
+        consult_cache=False,
+        terms_context=ctx,
+    )
+    from falaw.terms import is_cleared
+
+    assert is_cleared(call, ctx)
+    assert not is_cleared(call, TermsContext())
+    assert not is_cleared(dataclasses.replace(call, backend="fal"), ctx)
+    plain = _plan.plan_generate_image(
+        "p", model_id="fal-ai/flux/schnell", consult_cache=False
+    )
+    assert not is_cleared(plain, ctx)
+    assert falaw.plan_hash(falaw.Plan(calls=(call,))) == falaw.plan_hash(
+        falaw.Plan(calls=(dataclasses.replace(call, metadata={}),))
+    )  # descriptive only: never part of the identity
+
+
+def test_a_missing_self_hosted_row_says_what_id_to_plan_under():
+    with pytest.raises(FalTermsViolation, match="catalogue model id"):
+        check_terms("custom-node-id", SELF_HOSTED, TermsContext(), ledger={})
+
+
+def test_licences_share_one_spdx_vocabulary():
+    from falaw.comfyui.licences import KNOWN_LICENCES
+    from falaw.licences import is_valid_licence
+
+    assert all(is_valid_licence(k) for k in KNOWN_LICENCES)
+    assert all(is_valid_licence(r.license) for r in load_terms().values())
+    assert is_valid_licence("MIT OR LicenseRef-x") and is_valid_licence("unknown")
+    for bad in ("", "GPL", "MIT OR", "flux-license", "MIT Apache-2.0"):
+        assert not is_valid_licence(bad)
+    with pytest.raises(ValueError, match="LicenseRef"):
+        _row(license="free text")
+
+
+def test_the_ambient_context_refuses_cached_and_non_fal_executions(monkeypatch):
+    from falaw import CallPlan, Plan, execute_plan, using_terms_context
+
+    sent = []
+    monkeypatch.setattr(
+        "falaw.backends.get_backend_executor",
+        lambda backend: lambda app, args, **kw: sent.append(app) or {},
+    )
+    call = CallPlan(
+        tool="t",
+        application="nobody/reviewed-this",
+        backend="elsewhere",
+        arguments={},
+        output_kind="json",
+    )
+    plan = Plan(calls=(call,))
+    from falaw.cache import cache_put
+
+    cache_put("nobody/reviewed-this", {}, {"cached": True}, backend="elsewhere")
+    with using_terms_context(TermsContext()):
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            execute_plan(plan, use_cache=False)
+        with pytest.raises(FalTermsViolation, match="no terms row"):
+            execute_plan(plan)
+    assert sent == []
+
+
+def test_planning_falls_back_to_the_ambient_context_and_stamps_it():
+    from falaw import using_terms_context
+
+    with using_terms_context(TermsContext()):
+        with pytest.raises(FalTermsViolation):
+            falaw.plan.make_call_plan(
+                tool="t",
+                application="nobody/reviewed-this",
+                arguments={},
+                output_kind="json",
+            )
+        ok = _plan.plan_generate_image(
+            "p", model_id="fal-ai/flux/schnell", consult_cache=False
+        )
+    assert "terms_cleared" in ok.metadata
+
+
+def test_a_scene_render_cache_hit_is_not_served_under_a_terms_context(monkeypatch):
+    from falaw import using_terms_context
+    from falaw.operations import render
+
+    served = []
+    monkeypatch.setattr(
+        render, "cache_get", lambda *a, **k: served.append(a) or {"url": "cached"}
+    )
+    assert render.current_terms_context() is None
+    with using_terms_context(TermsContext()):
+        assert render.current_terms_context() is not None
+        # the composite cache is skipped, so nothing unchecked can be served
+        shot = falaw.Shot(id="s1", description="a fox")
+        with pytest.raises(FalTermsViolation):
+            render.render_shot(shot, quality="high")
+    assert served == []

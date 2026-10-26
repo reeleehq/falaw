@@ -288,6 +288,11 @@ def cached_call_fal(
     """
     from .backends import get_backend_executor
 
+    from .terms import check_terms, current_terms_context
+
+    # The ambient terms context (falaw#110) covers every eager verb: refuse
+    # before the cache is consulted, since a hit also serves the model's output.
+    check_terms(application, backend, current_terms_context(), arguments=arguments)
     key_args = arguments if key_arguments is None else key_arguments
     # Refuse while it is still free: on the `refresh=True` path the first key
     # computation would otherwise happen in `cache_put`, *after* the paid call

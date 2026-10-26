@@ -24,8 +24,8 @@ call: ``plan_*(..., terms_context=TermsContext(...))``. With no context
 
 This is an implementation of what the terms *say*, not legal advice; it
 refuses when unsure and does not adjudicate. The *context* (is this job
-serving a third party? will its output be C2PA-stamped?) is the caller's, never
-read from a global; the ledger is data, the check is falaw's.
+serving a third party? will its output be C2PA-stamped?) is the caller's (an argument, or
+scoped to a block by :func:`using_terms_context`), never process-global; the ledger is data, the check is falaw's.
 
 >>> ctx = TermsContext(third_party=True)
 >>> check_terms("fal-ai/flux/schnell", "comfyui", ctx)   # Apache-2.0, ours to serve
@@ -38,14 +38,17 @@ falaw.errors.FalTermsViolation: ...
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
-from dataclasses import dataclass, fields
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
+from contextvars import ContextVar
+from dataclasses import asdict, dataclass, fields
 from functools import lru_cache
 from types import MappingProxyType
 from pathlib import Path
 from typing import Optional
 
 from .errors import FalTermsViolation
+from .licences import validate_licence
 
 TERMS_PATH = Path(__file__).parent / "data" / "model_terms.json"
 """The ledger — separate from ``models.json`` so it refreshes on its own
@@ -54,6 +57,15 @@ cadence and is reviewed as a legal artifact."""
 TRI_STATE = frozenset({"yes", "no", "unknown"})
 PERMISSION = frozenset({"allowed", "forbidden", "unknown"})
 
+ROUTERS = MappingProxyType(
+    {"fal-ai/any-llm": "model", "fal-ai/any-llm/vision": "model"}
+)
+"""Applications that route to another model, mapped to the argument naming it.
+The routed model is who actually serves the call, so it is the ledger subject."""
+
+CLEARANCE_KEY = "terms_cleared"
+"""``CallPlan.metadata`` key under which a cleared plan records its clearance."""
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ModelTerms:
@@ -61,7 +73,7 @@ class ModelTerms:
 
     model_id: str
     backend: str
-    license: str = "unknown"  # SPDX id where one exists, else the bespoke name
+    license: str = "unknown"  # SPDX id, else LicenseRef-*, see falaw.licences
     license_binds_us: str = "unknown"  # "yes" | "no" (the host holds it) | "unknown"
     commercial_use: str = "unknown"  # "allowed" | "forbidden" | "unknown"
     third_party_tenancy: str = "unknown"  # may we run this for someone who is not us
@@ -72,6 +84,7 @@ class ModelTerms:
     observed_on: str = ""  # ISO date: makes a stale row visible as stale
 
     def __post_init__(self):
+        validate_licence(self.license)
         for name, allowed in (
             ("license_binds_us", TRI_STATE),
             ("c2pa_compatible", TRI_STATE),
@@ -87,7 +100,8 @@ class ModelTerms:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class TermsContext:
-    """What the job needs from the terms — supplied by the caller, never global.
+    """What the job needs from the terms — supplied by the caller, never process-global
+    (an explicit argument, or scoped to a block by :func:`using_terms_context`).
 
     The defaults describe the strictest ordinary use (commercial) without
     claiming anything extra; ``third_party`` and ``c2pa`` are opt-in because
@@ -129,6 +143,49 @@ def get_terms(
     return (load_terms() if ledger is None else ledger).get((model_id, backend))
 
 
+_AMBIENT: ContextVar[Optional[TermsContext]] = ContextVar(
+    "falaw_terms_context", default=None
+)
+
+
+@contextmanager
+def using_terms_context(context: Optional[TermsContext]) -> Iterator[None]:
+    """Scope *context* over every call made inside the block, eager or planned.
+
+    The eager verbs (``generate_image``, ``render_scene``, ...) take no
+    ``terms_context``; this is the one seam that covers all of them, enforced
+    where every call passes (:func:`falaw.cache.cached_call_fal`,
+    :func:`falaw.core.call_fal`). Scoped to the block (and its threads/tasks),
+    never process-global: the deployment decides, per job.
+    """
+    token = _AMBIENT.set(context)
+    try:
+        yield
+    finally:
+        _AMBIENT.reset(token)
+
+
+def current_terms_context() -> Optional[TermsContext]:
+    """The context bound by :func:`using_terms_context`, else ``None``."""
+    return _AMBIENT.get()
+
+
+def effective_terms_context(explicit: Optional[TermsContext]) -> Optional[TermsContext]:
+    """The context a check runs under: an explicit ``terms_context=`` argument
+    wins; otherwise the one scoped by :func:`using_terms_context`. (Entry
+    points that take no argument still enforce the scoped one at the call
+    chokepoints, so the strictest applicable check always runs.)"""
+    return explicit if explicit is not None else _AMBIENT.get()
+
+
+def terms_subject(application: str, arguments: Optional[Mapping] = None) -> str:
+    """The model id the ledger judges for this call: the routed model for a
+    router such as ``fal-ai/any-llm``, else *application* itself."""
+    arg = ROUTERS.get(application)
+    routed = (arguments or {}).get(arg) if arg else None
+    return routed if isinstance(routed, str) and routed else application
+
+
 def _refusal(row: Optional[ModelTerms], context: TermsContext) -> Optional[str]:
     """The clause that makes this row unusable for *context*, else None.
 
@@ -162,17 +219,23 @@ def check_terms(
     context: Optional[TermsContext],
     *,
     ledger: Optional[Mapping] = None,
+    arguments: Optional[Mapping] = None,
 ) -> None:
     """Raise :class:`FalTermsViolation` unless ``(model_id, backend)`` is
     usable for *context*. ``context=None`` (the default everywhere) checks
-    nothing: the strict path is opt-in per deployment.
+    nothing: the strict path is opt-in per deployment. Pass the call's
+    ``arguments`` so a router is judged by the model it routes to
+    (:func:`terms_subject`).
     """
     if context is None:
         return
+    model_id = terms_subject(model_id, arguments)
     row = get_terms(model_id, backend, ledger=ledger)
     clause = _refusal(row, context)
     if clause is None:
         return
+    if row is None and backend != "fal":
+        clause += f" (a {backend!r} backend must plan under the catalogue model id)"
     source = f" (see {row.source_url})" if row and row.source_url else ""
     raise FalTermsViolation(
         f"{model_id!r} on backend {backend!r} refused: {clause}{source}",
@@ -181,6 +244,31 @@ def check_terms(
         clause=clause,
         source_url=row.source_url if row else "",
     )
+
+
+def clearance(
+    application: str,
+    backend: str,
+    context: TermsContext,
+    arguments: Optional[Mapping] = None,
+) -> dict:
+    """The descriptive record a plan carries once :func:`check_terms` passed:
+    what was cleared, where, for which job. Lives in ``CallPlan.metadata``
+    (never hashed), so a persisted plan can show it was cleared."""
+    return {
+        "model": terms_subject(application, arguments),
+        "backend": backend,
+        "context": asdict(context),
+    }
+
+
+def is_cleared(call, context: TermsContext) -> bool:
+    """(Describes what the stamp says, not the ledger's later edits.) Whether *call* (a ``CallPlan``) carries a clearance that still describes
+    it: same model and backend as now, for exactly *context*. A call re-targeted
+    after planning (``dataclasses.replace(call, backend=...)``, a replayed or
+    repriced plan) fails this, so it must be re-checked, never trusted."""
+    stamp = call.metadata.get(CLEARANCE_KEY)
+    return stamp == clearance(call.application, call.backend, context, call.arguments)
 
 
 def third_party_tenancy_ok(
@@ -209,8 +297,14 @@ __all__ = [
     "TermsContext",
     "TERMS_PATH",
     "check_terms",
+    "clearance",
+    "current_terms_context",
+    "effective_terms_context",
     "get_terms",
+    "is_cleared",
     "load_terms",
+    "terms_subject",
     "third_party_tenancy_ok",
     "unreviewed_models",
+    "using_terms_context",
 ]
