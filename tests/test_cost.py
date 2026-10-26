@@ -404,3 +404,17 @@ def test_the_scene_rollup_prices_a_durationless_shot_like_the_planner():
     assert planned.estimated_cost_usd is not None
     assert [ln.amount for ln in video] == [pytest.approx(planned.estimated_cost_usd)]
     assert not any("i2v" in why for why in rollup.skipped)
+
+
+def test_the_rollup_notes_a_per_call_video_model_without_a_duration():
+    """A per-call i2v model has no seconds to show; the note must not crash."""
+    from falaw.scene import Scene, Shot
+
+    rollup = estimate_scene_cost(
+        Scene(title="t", shots=(Shot(id="s1", description="x"),)),
+        shots_as_video=True,
+        shot_quality="unranked",
+    )
+    assert [ln.note for ln in rollup.lines if ln.kind != "shot.image"] == [
+        "image_to_video"
+    ]
