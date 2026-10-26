@@ -49,6 +49,10 @@ SPDX_TAG = re.compile(
 )
 """A tag's expression, up to the end of its line or a closing comment marker."""
 
+SPDX_TAG_ANYWHERE = re.compile(r"SPDX-License-Identifier:\s*(.+)", re.IGNORECASE)
+"""Everything after a tag to the end of its line. The restricted check reads
+this, not :data:`SPDX_TAG`: it must see an AGPL tag however the line is decorated."""
+
 EXCEPTION = re.compile(r"\s+WITH\s+\S+", re.IGNORECASE)
 """An SPDX ``WITH <exception>`` suffix: the exception does not change which licence it is."""
 
@@ -123,7 +127,7 @@ def _title(text: str) -> str:
 
 
 def _is_restricted(text: str) -> bool:
-    tags = " ".join(SPDX_TAG.findall(text))
+    tags = " ".join(SPDX_TAG_ANYWHERE.findall(text))
     return bool(
         AGPL_TITLE in text
         or RESTRICTED_FAMILY.search(_title(text))

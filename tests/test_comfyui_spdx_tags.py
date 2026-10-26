@@ -49,3 +49,9 @@ def test_a_tag_overrides_a_title_that_matched_before(tmp_path):
 
 def test_tag_ids_are_case_insensitive(tmp_path):
     assert _screen(tmp_path, "SPDX-License-Identifier: mit\n").passed
+
+
+def test_a_decorated_agpl_tag_past_the_title_is_still_restricted(tmp_path):
+    text = "MIT License\n" + "\n".join(f"line {i}" for i in range(20))
+    text += "\n * SPDX-License-Identifier: AGPL-3.0-only *\n"
+    assert _screen(tmp_path, text).agpl_packs == ("pack",)
