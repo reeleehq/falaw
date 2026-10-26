@@ -57,3 +57,54 @@ export function catalogueCostBasis(modelId: string, quantities: Omit<CostHints, 
     table_version: MODELS_TABLE_VERSION,
   };
 }
+
+/** Python's `round()` — halves go to the even neighbour (JS `Math.round` rounds them up). */
+export function roundHalfEven(x: number): number {
+  const floor = Math.floor(x);
+  const diff = x - floor;
+  if (diff < 0.5) return floor;
+  if (diff > 0.5) return floor + 1;
+  return floor % 2 === 0 ? floor : floor + 1;
+}
+
+/** `durationS` as the string fal's duration enum wants (`falaw.cost.video_duration_arg`):
+ *  whole seconds (halves to even), within the record's numeric `duration` enum. Throws otherwise. */
+export function videoDurationArg(record: Pick<ModelRecord, 'id' | 'param_specs'>, durationS: number): string {
+  if (!Number.isFinite(durationS)) throw new Error(`${record.id}: duration must be finite, got ${durationS}`);
+  const seconds = roundHalfEven(durationS);
+  const enumValues = (record.param_specs.duration?.enum as unknown[] | undefined) ?? [];
+  const allowed = enumValues.filter((v) => /^\d+$/.test(String(v))).map(Number).sort((x, y) => x - y);
+  if (allowed.length && !allowed.includes(seconds)) {
+    throw new Error(`${record.id} accepts durations of ${allowed[0]} to ${allowed[allowed.length - 1]} s; got ${durationS}`);
+  }
+  return String(seconds);
+}
+
+/** A duration argument as seconds; `null` for absent, `"auto"`, empty or junk (unknown, never free). */
+export function numericSeconds(value: unknown): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value !== 'string' || value.trim() === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** The quantity hints that price one video call (`falaw.cost.video_price_quantities`):
+ *  `{tokens}` for a per-video-token model, `{seconds}` otherwise, `{}` when the duration
+ *  is unknown (unpriceable, never free). */
+export function videoPriceQuantities(
+  record: Pick<ModelRecord, 'id' | 'tokens_per_pixel_second' | 'param_specs'>,
+  seconds: number | null | undefined,
+  resolution?: string | null,
+): Omit<CostHints, 'count'> {
+  if (seconds == null) return {};
+  const factor = record.tokens_per_pixel_second;
+  if (factor == null) return { seconds };
+  const spec = record.param_specs.resolution;
+  const res = resolution || (spec?.default as string | undefined) || CONSTANTS.default_video_resolution;
+  const table = CONSTANTS.video_resolution_pixels as Record<string, number>;
+  const allowed = (spec?.enum as string[] | undefined) ?? Object.keys(table).sort();
+  if (!allowed.includes(res) || table[res] === undefined) {
+    throw new Error(`${record.id} does not offer resolution '${res}'; expected one of ${JSON.stringify(allowed)}`);
+  }
+  return { tokens: roundHalfEven(table[res] * seconds * factor) };
+}

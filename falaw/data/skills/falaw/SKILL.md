@@ -571,10 +571,12 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   image                ultra      fal-ai/flux-pro/v1.1-ultra
   image                ultra      fal-ai/nano-banana-pro
   image                unranked   fal-ai/flux-pro
+  image                unranked   fal-ai/bytedance/seedream/v4.5/text-to-image
   image_edit           balanced   fal-ai/flux-kontext/dev
   image_edit           balanced   fal-ai/omnigen-v2
   image_edit           high       fal-ai/bytedance/seededit/v3/edit-image
   image_edit           ultra      fal-ai/flux-pro/kontext/max
+  image_edit           unranked   fal-ai/bytedance/seedream/v4.5/edit
   image_to_video       balanced   fal-ai/minimax/hailuo-02/pro/image-to-video
   image_to_video       balanced   fal-ai/pixverse/v4.5/image-to-video
   image_to_video       high       fal-ai/bytedance/seedance/v1/pro/image-to-video
@@ -582,6 +584,9 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   image_to_video       unranked   fal-ai/ltx-video/image-to-video
   image_to_video       unranked   fal-ai/kling-video/v1.5/pro/image-to-video
   image_to_video       unranked   fal-ai/kling-video/v1.5/standard
+  image_to_video       unranked   bytedance/seedance-2.0/image-to-video
+  image_to_video       unranked   bytedance/seedance-2.0/fast/image-to-video
+  image_to_video       unranked   fal-ai/bytedance/seedance/v1.5/pro/image-to-video
   lipsync              balanced   fal-ai/ai-avatar/multi
   lipsync              balanced   fal-ai/kling-video/lipsync/audio-to-video
   lipsync              high       fal-ai/sync-lipsync/v2
@@ -595,11 +600,16 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   music                balanced   fal-ai/elevenlabs/sound-effects/v2
   music                balanced   sonilo/v1.1/text-to-sound-effects
   music                high       fal-ai/lyria2
+  reference_to_video   balanced   bytedance/seedance-2.0/fast/reference-to-video
+  reference_to_video   high       bytedance/seedance-2.0/reference-to-video
   text_to_video        high       fal-ai/bytedance/seedance/v1/pro/text-to-video
   text_to_video        ultra      fal-ai/veo3
   text_to_video        unranked   fal-ai/ltx-video
   text_to_video        unranked   fal-ai/mochi-v1
   text_to_video        unranked   fal-ai/kling-video/v1.5/pro/text-to-video
+  text_to_video        unranked   bytedance/seedance-2.0/text-to-video
+  text_to_video        unranked   bytedance/seedance-2.0/fast/text-to-video
+  text_to_video        unranked   fal-ai/bytedance/seedance/v1.5/pro/text-to-video
   training             balanced   fal-ai/flux-lora-portrait-trainer
   training             fast       fal-ai/flux-lora-fast-training
   training             high       fal-ai/flux-pro-trainer

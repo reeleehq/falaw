@@ -11,6 +11,7 @@ export const CONSTANTS = {
   "catalogue_pricer": "model_catalogue",
   "content_ref_prefix": "sha256:",
   "default_megapixels": 0.6,
+  "default_video_resolution": "720p",
   "dflt_backend": "fal",
   "kind_keys": [
     [
@@ -43,7 +44,7 @@ export const CONSTANTS = {
     ]
   ],
   "model_catalogue_table": "falaw/data/models.json",
-  "models_table_version": "a9897248ef91",
+  "models_table_version": "ed9eb733484c",
   "output_kinds": [
     "image",
     "video",
@@ -59,5 +60,11 @@ export const CONSTANTS = {
     "balanced",
     "high",
     "ultra"
-  ]
+  ],
+  "video_resolution_pixels": {
+    "1080p": 2073600,
+    "480p": 409920,
+    "4k": 8294400,
+    "720p": 921600
+  }
 } as const;

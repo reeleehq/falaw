@@ -108,6 +108,12 @@ class ModelRecord:
     default_negative_prompt: str = ""
     """Quality/realism negatives worth appending by default (e.g. to avoid the
     plastic-skin look). Empty when none."""
+    tokens_per_pixel_second: Optional[float] = None
+    """For a model billed per *video token*: tokens = width x height x seconds
+    x this (Seedance: 24/1024). With a ``per_token`` ``cost_estimate`` it lets
+    plan time quote an honest cost from a resolution and a duration
+    (:func:`falaw.cost.video_price_quantities`). ``None`` for every other
+    model."""
 
     # --- request-shape metadata (image models; falaw#76) ---
     max_prompt_chars: Optional[int] = None

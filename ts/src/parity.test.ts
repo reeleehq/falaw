@@ -11,7 +11,7 @@ import { estimateCallCost } from './cost';
 import { FalNonCanonicalArgument } from './errors';
 import { MODELS, MODELS_TABLE_VERSION } from './generated/models';
 import { CONSTANTS } from './generated/constants';
-import { hasUnknownCosts, makePlan, planGenerateImage, planHash, planImageToVideo, totalCostUsd } from './plan';
+import { hasUnknownCosts, makePlan, planGenerateImage, planHash, planImageToVideo, planTextToVideo, totalCostUsd } from './plan';
 import { pickModel } from './registry';
 import { parseResponse } from './results';
 
@@ -35,6 +35,7 @@ function plan(tool: string, input: Record<string, unknown>) {
   for (const [k, v] of Object.entries(input)) camel[k.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase())] = v;
   if (tool === 'generate_image') return planGenerateImage(camel as unknown as Parameters<typeof planGenerateImage>[0]);
   if (tool === 'image_to_video') return planImageToVideo(camel as unknown as Parameters<typeof planImageToVideo>[0]);
+  if (tool === 'text_to_video') return planTextToVideo(camel as unknown as Parameters<typeof planTextToVideo>[0]);
   throw new Error(`no planner for ${tool}`);
 }
 

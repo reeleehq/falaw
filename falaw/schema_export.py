@@ -52,8 +52,17 @@ from .canonical import (
     canonical_blob,
     plan_identity_payload,
 )
-from .cost import DFLT_MEGAPIXELS, estimate_call_cost
-from .operations._plan import plan_generate_image, plan_image_to_video
+from .cost import (
+    DFLT_MEGAPIXELS,
+    DFLT_VIDEO_RESOLUTION,
+    RESOLUTION_PIXELS,
+    estimate_call_cost,
+)
+from .operations._plan import (
+    plan_generate_image,
+    plan_image_to_video,
+    plan_text_to_video,
+)
 from .plan import (
     CONTENT_REF_PREFIX,
     PLAN_DICT_SCHEMA,
@@ -80,6 +89,7 @@ __all__ = ["export_schema", "PLAN_CASES", "RESPONSE_CASES", "CANONICAL_CASES"]
 _PLANNERS = {
     "generate_image": plan_generate_image,
     "image_to_video": plan_image_to_video,
+    "text_to_video": plan_text_to_video,
 }
 
 #: Planner inputs the TS ``planGenerateImage`` / ``planImageToVideo`` must turn
@@ -133,6 +143,38 @@ PLAN_CASES: tuple[dict, ...] = (
     {
         "tool": "image_to_video",
         "input": {"image_url": "<from 0>", "model_id": "hailuo-pro", "duration_s": 6},
+    },
+    # Token-billed video (falaw#86): the duration is sent as fal's string enum
+    # and the quote is tokens, from the default / the requested resolution.
+    {
+        "tool": "image_to_video",
+        "input": {
+            "image_url": "https://x.example/tiger.png",
+            "model_id": "seedance2-i2v",
+            "duration_s": 5,
+        },
+    },
+    {
+        "tool": "text_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-fast-t2v",
+            "duration_s": 4.5,
+            "extra": {"resolution": "480p"},
+        },
+    },
+    {"tool": "text_to_video", "input": {"prompt": "a tiger walks", "duration_s": 5}},
+    {
+        "tool": "text_to_video",
+        "input": {"prompt": "a tiger walks", "model_id": "seedance2-t2v"},
+    },
+    {  # an empty duration is unknown, not zero seconds (free)
+        "tool": "text_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-t2v",
+            "extra": {"duration": ""},
+        },
     },
 )
 
@@ -421,6 +463,8 @@ def _constants() -> dict:
         "placeholder_prefix": _PLACEHOLDER_PREFIX,
         "content_ref_prefix": CONTENT_REF_PREFIX,
         "default_megapixels": DFLT_MEGAPIXELS,
+        "default_video_resolution": DFLT_VIDEO_RESOLUTION,
+        "video_resolution_pixels": dict(RESOLUTION_PIXELS),
         "output_kinds": list(get_args(OutputKind)),
         "cache_statuses": list(get_args(CacheStatus)),
     }

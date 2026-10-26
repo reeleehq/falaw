@@ -144,6 +144,18 @@
       },
       "title": "Supported Resolutions",
       "type": "array"
+    },
+    "tokens_per_pixel_second": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tokens Per Pixel Second"
     }
   },
   "required": [

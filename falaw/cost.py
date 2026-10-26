@@ -19,6 +19,7 @@ enough to gate on (e.g. ``--budget=1.00``) and to surface in
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -60,6 +61,69 @@ DFLT_MEGAPIXELS = 0.6
 """Pixel budget assumed for a ``per_megapixel`` call when the caller gives none:
 a 16:9 canvas 1024 wide (≈0.59 MP), enough for a useful upper-bound estimate.
 Exported to the TypeScript twin, which must assume the same."""
+
+
+RESOLUTION_PIXELS = {
+    "480p": 854 * 480,
+    "720p": 1280 * 720,
+    "1080p": 1920 * 1080,
+    "4k": 3840 * 2160,
+}
+"""Pixels per frame of fal's named video resolutions (16:9; other aspect ratios
+bill within about a percent of this). Feeds :func:`video_price_quantities`."""
+
+DFLT_VIDEO_RESOLUTION = "720p"
+"""Resolution assumed for a token-billed video model that records no default."""
+
+
+def video_price_quantities(
+    record: ModelRecord,
+    *,
+    seconds: float | None = None,
+    resolution: str | None = None,
+) -> dict:
+    """The quantity hints that price one video call against ``record``.
+
+    ``{"tokens": n}`` for a model billed per video token (its
+    ``tokens_per_pixel_second`` is set), else ``{"seconds": s}``; ``{}`` when
+    ``seconds`` is unknown, so the call stays unpriceable rather than free.
+    ``resolution`` defaults to the model's recorded default.
+    """
+    if seconds is None:
+        return {}
+    factor = record.tokens_per_pixel_second
+    if factor is None:
+        return {"seconds": seconds}
+    spec = record.param_specs.get("resolution", {})
+    resolution = resolution or spec.get("default") or DFLT_VIDEO_RESOLUTION
+    allowed = spec.get("enum") or sorted(RESOLUTION_PIXELS)
+    if resolution not in allowed or resolution not in RESOLUTION_PIXELS:
+        raise ValueError(
+            f"{record.id} does not offer resolution {resolution!r}; "
+            f"expected one of {list(allowed)}"
+        )
+    return {"tokens": round(RESOLUTION_PIXELS[resolution] * seconds * factor)}
+
+
+def video_duration_arg(record: ModelRecord, duration_s: float) -> str:
+    """``duration_s`` as the string fal's duration enum wants, or ``ValueError``.
+
+    The one rule the planner (what is sent and quoted) and the scene rollup
+    share, so neither prices a call fal would reject: whole seconds (halves to
+    even), and within the record's ``duration`` enum when it lists numbers
+    (``"auto"`` aside).
+    """
+    if not math.isfinite(duration_s):
+        raise ValueError(f"{record.id}: duration must be finite, got {duration_s!r}")
+    seconds = round(duration_s)
+    enum = record.param_specs.get("duration", {}).get("enum") or ()
+    allowed = sorted(int(v) for v in enum if str(v).isdigit())
+    if allowed and seconds not in allowed:
+        raise ValueError(
+            f"{record.id} accepts durations of {allowed[0]} to {allowed[-1]} s; "
+            f"got {duration_s}"
+        )
+    return str(seconds)
 
 
 def estimate_call_cost(
@@ -160,10 +224,19 @@ def _shot_pricing_lines(
 
     if shots_as_video:
         v_record = pick_model(category="image_to_video", quality_tier=quality)
-        v_cost = estimate_call_cost(v_record, seconds=duration)
+        v_cost, problem = None, ""
+        try:
+            billed = duration
+            if duration is not None and "duration" in v_record.param_specs:
+                billed = float(video_duration_arg(v_record, duration))  # as sent
+            v_cost = estimate_call_cost(
+                v_record, **video_price_quantities(v_record, seconds=billed)
+            )
+        except ValueError as e:  # a duration the model would reject
+            problem = str(e)
         if v_cost is None:
-            why = (
-                "no duration on the Shot, and the model is priced per second"
+            why = problem or (
+                "no duration on the Shot, and the model is priced per second or per token"
                 if duration is None
                 else f"no cost_estimate on {v_record.id!r}"
             )

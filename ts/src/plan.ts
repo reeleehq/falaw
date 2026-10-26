@@ -9,7 +9,7 @@
 
 import { canonicalBlob, ensureCanonical, planIdentityPayload, sha256Hex } from './canonical';
 import { FalError } from './errors';
-import { catalogueCostBasis, estimateCallCost, type CostBasis } from './cost';
+import { catalogueCostBasis, estimateCallCost, numericSeconds, videoDurationArg, videoPriceQuantities, type CostBasis } from './cost';
 import { CONSTANTS } from './generated/constants';
 import type { CallPlan } from './generated/call-plan';
 import type { ModelRecord } from './generated/model-record';
@@ -97,33 +97,56 @@ export function planGenerateImage(input: GenerateImageInput): CallPlan {
   });
 }
 
-export interface ImageToVideoInput {
-  /** The still to animate — a URL, or `"<from N>"` to chain onto call N of the same plan. */
-  readonly imageUrl: string;
-  readonly prompt?: string;
-  /** default `high` */
+interface VideoInput {
   readonly quality?: string;
   readonly modelId?: string;
-  /** Used only to price a `per_second` model; not sent to fal unless you put it in `extra`. */
+  /** Prices the call; sent to fal only for a model whose record lists a `duration` parameter
+   *  (Seedance spells it as a string enum), else only if you put it in `extra`. */
   readonly durationS?: number | null;
   readonly extra?: Readonly<Record<string, unknown>>;
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
+function planVideo(tool: string, args: Record<string, unknown>, input: VideoInput): CallPlan {
+  const record = resolveModel(input.modelId, tool, input.quality ?? 'high');
+  const merged: Record<string, unknown> = { ...args, ...(input.extra ?? {}) };
+  let seconds = input.durationS ?? null;
+  if ('duration' in record.param_specs) {
+    if (input.durationS != null && !('duration' in merged)) merged.duration = videoDurationArg(record, input.durationS);
+    seconds = numericSeconds(merged.duration);
+  }
+  const quantities = videoPriceQuantities(record, seconds, merged.resolution as string | undefined);
+  return makeCallPlan({
+    tool,
+    application: record.id,
+    arguments: merged,
+    outputKind: 'video',
+    estimatedCostUsd: estimateCallCost(record, quantities),
+    metadata: input.metadata,
+    costBasis: catalogueCostBasis(record.id, quantities),
+  });
+}
+
+export interface ImageToVideoInput extends VideoInput {
+  /** The still to animate — a URL, or `"<from N>"` to chain onto call N of the same plan. */
+  readonly imageUrl: string;
+  readonly prompt?: string;
+}
+
 /** Plan an image-to-video call (`falaw.plan_image_to_video`). */
 export function planImageToVideo(input: ImageToVideoInput): CallPlan {
-  const record = resolveModel(input.modelId, 'image_to_video', input.quality ?? 'high');
-  const args: Record<string, unknown> = { image_url: input.imageUrl, ...(input.extra ?? {}) };
+  const args: Record<string, unknown> = { image_url: input.imageUrl };
   if (input.prompt) args.prompt = input.prompt;
-  return makeCallPlan({
-    tool: 'image_to_video',
-    application: record.id,
-    arguments: args,
-    outputKind: 'video',
-    estimatedCostUsd: estimateCallCost(record, { seconds: input.durationS ?? null }),
-    metadata: input.metadata,
-    costBasis: catalogueCostBasis(record.id, { seconds: input.durationS ?? null }),
-  });
+  return planVideo('image_to_video', args, input);
+}
+
+export interface TextToVideoInput extends VideoInput {
+  readonly prompt: string;
+}
+
+/** Plan a text-to-video call (`falaw.plan_text_to_video`). */
+export function planTextToVideo(input: TextToVideoInput): CallPlan {
+  return planVideo('text_to_video', { prompt: input.prompt }, input);
 }
 
 export function makePlan(calls: readonly CallPlan[]): Plan {

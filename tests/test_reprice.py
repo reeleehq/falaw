@@ -123,11 +123,12 @@ def test_cost_basis_round_trips_through_the_wire_shape():
 
 def test_the_quantity_hints_survive_serialization():
     """The whole point: ``duration_s`` never enters ``arguments``, so without
-    the basis a persisted per-second call cannot be re-quoted at all."""
+    the basis a persisted quantity-priced call cannot be re-quoted at all."""
     call = falaw.plan_image_to_video("u", duration_s=6.0, consult_cache=False)
     assert "duration_s" not in call.arguments
+    # Seedance bills per video token: 1080p x 6 s x 24/1024 tokens per pixel-second.
     revived = plan_from_dict(plan_to_dict(Plan(calls=(call,)))).calls[0]
-    assert revived.cost_basis.quantities == {"seconds": 6.0}
+    assert revived.cost_basis.quantities == {"tokens": 291600}
     out = reprice_plan(Plan(calls=(revived,)))
     assert out.calls[0].status == "unchanged"
     assert out.calls[0].new_cost_usd == call.estimated_cost_usd
