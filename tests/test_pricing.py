@@ -93,6 +93,29 @@ class TestRefresh:
 
         assert summary["rate_factors_to_review"] == ["m/t"]
 
+    def test_a_kept_empirical_price_does_not_flag_its_factors_but_a_new_one_does(
+        self, tmp_path
+    ):
+        empirical = {"kind": "per_second", "amount": 0.1, "source": "empirical"}
+        factors = {"4k": 0.5}
+        path = _catalogue(
+            tmp_path,
+            [
+                _record(
+                    "m/kept",
+                    cost_estimate=empirical,
+                    resolution_rate_factors=factors,
+                ),
+                _record("m/new", resolution_rate_factors=factors),
+            ],
+        )
+        row = {"unit_price": 0.2, "unit": "video_second"}
+        http = _stub_http({"m/kept": dict(row), "m/new": dict(row)})
+
+        summary = refresh_model_prices(api_key="k", http_get=http, models_path=path)
+
+        assert summary["rate_factors_to_review"] == ["m/new"]
+
     def test_an_unmapped_unit_is_recorded_not_guessed_and_keeps_the_old_price(
         self, tmp_path
     ):

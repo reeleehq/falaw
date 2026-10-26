@@ -120,11 +120,11 @@ class ModelRecord:
     plan time quote an honest cost from a resolution and a duration
     (:func:`falaw.cost.video_price_quantities`). ``None`` for every other
     model."""
-    typical_duration_s: Optional[tuple[float, float]] = None
+    typical_wall_time_s: Optional[tuple[float, float]] = None
     """Measured wall-clock range ``(low, high)`` in seconds of one call, for a
     model whose latency is worth telling the caller about (Seedance 2.0: minutes,
     barely proportional to clip length). A video plan copies it to
-    ``CallPlan.expected_duration_s``. ``None`` when not measured."""
+    ``CallPlan.expected_wall_time_s``. ``None`` when not measured."""
     resolution_rate_factors: Mapping[str, float] = field(
         default_factory=dict, hash=False
     )

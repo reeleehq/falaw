@@ -192,6 +192,12 @@ class CallPlan:
     requested duration fits this range and raise :class:`FalDurationOutOfRange`
     *before* the call instead of letting it silently truncate."""
 
+    expected_wall_time_s: Optional[tuple[float, float]] = None
+    """``(low, high)`` seconds the call is expected to take to come back (not
+    the clip length: see :attr:`expected_duration_s`). From the catalogue's
+    measured ``typical_wall_time_s``; ``None`` when not measured. Left out of
+    :func:`call_plan_to_dict` when ``None``."""
+
     metadata: dict = field(default_factory=dict)
     """Free-form labels for downstream consumers. Conventional keys:
     ``shot_id``, ``beat_id``, ``character_name``, ``strategy``."""
@@ -392,6 +398,8 @@ def call_plan_to_dict(call: CallPlan) -> dict:
         "metadata": call.metadata,
         "key_extra": call.key_extra,
     }
+    if call.expected_wall_time_s is not None:
+        out["expected_wall_time_s"] = list(call.expected_wall_time_s)
     if call.local_files:
         out["local_files"] = [list(p) for p in call.local_files]
     if call.cost_basis is not None:
@@ -443,6 +451,7 @@ def call_plan_from_dict(d: dict) -> CallPlan:
     that is still current.
     """
     duration = d.get("expected_duration_s")
+    wall = d.get("expected_wall_time_s")
     return CallPlan(
         tool=d["tool"],
         application=d["application"],
@@ -452,6 +461,7 @@ def call_plan_from_dict(d: dict) -> CallPlan:
         estimated_cost_usd=d.get("estimated_cost_usd"),
         cache_status=d.get("cache_status", "unknown"),
         expected_duration_s=(tuple(duration) if duration is not None else None),
+        expected_wall_time_s=(tuple(wall) if wall is not None else None),
         metadata=dict(d.get("metadata") or {}),
         key_extra=dict(d.get("key_extra") or {}),
         local_files=tuple(tuple(p) for p in d.get("local_files") or ()),
@@ -584,6 +594,7 @@ def make_call_plan(
     backend: str = DFLT_BACKEND,
     estimated_cost_usd: Optional[float] = None,
     expected_duration_s: Optional[tuple[float, float]] = None,
+    expected_wall_time_s: Optional[tuple[float, float]] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     cost_basis: Optional[CostBasis] = None,
@@ -669,6 +680,7 @@ def make_call_plan(
         estimated_cost_usd=estimated_cost_usd,
         cache_status=status,
         expected_duration_s=expected_duration_s,
+        expected_wall_time_s=expected_wall_time_s,
         metadata=metadata or {},
         local_files=local_files,
         cost_basis=cost_basis,

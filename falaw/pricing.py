@@ -357,7 +357,8 @@ def refresh_model_prices(
         # resolution_rate_factors are fractions of cost_estimate.amount, so a
         # moved rate moves these quotes too: the caller should re-check them.
         "rate_factors_to_review": sorted(
-            d["id"] for d in overwritten if d["id"] in carries_factors
+            carries_factors
+            & (set(newly_priced) | {d["id"] for d in overwritten if "kept" not in d})
         ),
         "rejected_rows": rejected_rows,
         "unmapped_units": unmapped,
@@ -388,6 +389,7 @@ def refresh_model_prices(
             context={
                 "newly_priced": sorted(newly_priced)[:10],
                 "price_deltas": overwritten[:10],
+                "rate_factors_to_review": summary["rate_factors_to_review"],
                 "unmapped_units": unmapped,
             },
         )

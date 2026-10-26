@@ -416,13 +416,19 @@ def test_reference_videos_are_not_discounted_until_fal_billing_is_verified():
     assert videos.estimated_cost_usd == images.estimated_cost_usd
 
 
-def test_a_measured_latency_reaches_the_plan_as_the_expected_duration():
+def test_a_measured_latency_reaches_the_plan_as_the_expected_wall_time():
     kw = dict(duration_s=5, consult_cache=False)
-    seedance = falaw.plan_text_to_video("x", model_id="seedance2-t2v", **kw)
-    assert seedance.expected_duration_s == (240.0, 420.0)
-    assert falaw.plan_reference_to_video("x", model_id="seedance2-ref", **kw)
-    # a model with no measurement says nothing rather than guessing
-    assert (
-        falaw.plan_text_to_video("x", model_id="seedance-t2v", **kw).expected_duration_s
-        is None
-    )
+    for plan in (
+        falaw.plan_text_to_video("x", model_id="seedance2-t2v", **kw),
+        falaw.plan_image_to_video("u", model_id="seedance2-i2v", **kw),
+        falaw.plan_reference_to_video("x", model_id="seedance2-ref", **kw),
+    ):
+        assert plan.expected_wall_time_s == (240.0, 420.0)
+        assert plan.expected_duration_s is None  # the clip-length contract, untouched
+        again = falaw.call_plan_from_dict(falaw.call_plan_to_dict(plan))
+        assert again.expected_wall_time_s == (240.0, 420.0)
+    # a model with no measurement says nothing rather than guessing, and the
+    # serialised plan is the shape it always had
+    bare = falaw.plan_text_to_video("x", model_id="seedance-t2v", **kw)
+    assert bare.expected_wall_time_s is None
+    assert "expected_wall_time_s" not in falaw.call_plan_to_dict(bare)

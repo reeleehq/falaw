@@ -1152,7 +1152,7 @@
     "resolution_rate_factors": {
       "4k": 0.572
     },
-    "typical_duration_s": [
+    "typical_wall_time_s": [
       240,
       420
     ]
@@ -1236,7 +1236,7 @@
     "resolution_rate_factors": {
       "4k": 0.572
     },
-    "typical_duration_s": [
+    "typical_wall_time_s": [
       240,
       420
     ]
@@ -1328,7 +1328,7 @@
     "resolution_rate_factors": {
       "4k": 0.572
     },
-    "typical_duration_s": [
+    "typical_wall_time_s": [
       240,
       420
     ]

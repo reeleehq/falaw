@@ -170,7 +170,7 @@
       "default": null,
       "title": "Tokens Per Pixel Second"
     },
-    "typical_duration_s": {
+    "typical_wall_time_s": {
       "anyOf": [
         {
           "items": {
@@ -185,7 +185,7 @@
         }
       ],
       "default": null,
-      "title": "Typical Duration S"
+      "title": "Typical Wall Time S"
     }
   },
   "required": [
