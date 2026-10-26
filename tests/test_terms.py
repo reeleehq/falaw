@@ -345,6 +345,9 @@ def test_the_ambient_context_refuses_cached_and_non_fal_executions(monkeypatch):
         output_kind="json",
     )
     plan = Plan(calls=(call,))
+    from falaw.cache import cache_put
+
+    cache_put("nobody/reviewed-this", {}, {"cached": True}, backend="elsewhere")
     with using_terms_context(TermsContext()):
         with pytest.raises(FalTermsViolation, match="no terms row"):
             execute_plan(plan, use_cache=False)
