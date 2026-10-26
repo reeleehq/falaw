@@ -1,4 +1,4 @@
-> built 2026-10-26 13:20 UTC from 43a0ccb (main) · falaw 0.0.68. Details: build_info.json
+> built 2026-10-26 14:35 UTC from 473e7f9 (main) · falaw 0.0.70. Details: build_info.json
 
 # index.html.md
 
@@ -113,6 +113,8 @@ usd, known = llm_call_cost_usd("anthropic", "claude-opus-4-7", response.usage)
 ```
 
 `usage` is the vendor’s own (a dict or the SDK object; OpenAI’s Responses and Chat Completions shapes both work, cached tokens included). A model the table does not list is priced at the provider’s dearest listed rates with `known=False`: never a free call, but not a ceiling either (an older model can cost more), so a caller that must never under-count refuses when `known` is false.
+
+To record the token counts beside the cost, use `llm_token_counts("anthropic", response.usage)`: it returns the very counts the cost was computed from (`fresh_input`, `cache_read`, `cache_write`, `output`, `reasoning`, and `input` for the total), so the two cannot disagree.
 
 ### Re-pricing a saved plan
 
@@ -570,7 +572,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -605,6 +607,16 @@ Discoverable per-model parameters that matter for choosing well, as
 `{name: {"enum": [...], "default": ...}}` — e.g. Recraft’s `style`,
 whose photoreal default silently overrides a woodcut prompt. See
 [`falaw.model_params()`](_autosummary/falaw.html.md#falaw.model_params).
+
+#### resolution_rate_factors *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+Per-resolution discounts off the recorded per-token rate, for a model
+whose higher resolutions bill less per token (Seedance 2.0 at `"4k"`).
+Each value is in (0, 1]: the fraction of the recorded rate fal bills, rounded
+up so a quote stays a ceiling. The recorded rate is relative, so a price
+refresh that moves it moves these quotes with it. A quote’s
+`cost_basis.quantities["tokens"]` is then rate-equivalent tokens, not the
+tokens fal counts. See [`falaw.cost.video_price_quantities()`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities).
 
 #### single_character_recommended *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -2400,6 +2412,7 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 |-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | [`estimate_scene_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
 | [`frame_pixels`](_autosummary/falaw.cost.html.md#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).        |
+| [`quote_aspect`](_autosummary/falaw.cost.html.md#falaw.cost.quote_aspect)(record[, aspect_ratio])               | The aspect ratio a quote assumes, so that it stays a ceiling.          |
 | [`video_call_arguments`](_autosummary/falaw.cost.html.md#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.           |
 | [`video_duration_arg`](_autosummary/falaw.cost.html.md#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
 | [`video_price_quantities`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
@@ -2506,6 +2519,18 @@ sides to codec-friendly multiples): `short_side ** 2 * long / short`.
 * **Return type:**
   [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
+### falaw.cost.quote_aspect(record, aspect_ratio=None)
+
+The aspect ratio a quote assumes, so that it stays a ceiling.
+
+An explicit ratio is used as given. When it is absent or `"auto"` (fal
+derives it from the input image) and the record lists a `"W:H"` enum, the
+widest ratio listed, which has the most pixels; without an enum,
+[`DFLT_VIDEO_ASPECT`](_autosummary/falaw.cost.html.md#falaw.cost.DFLT_VIDEO_ASPECT).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### falaw.cost.video_call_arguments(record, arguments, , duration_s, extra)
 
 `(wire arguments, seconds the call bills)` for a video call.
@@ -2540,7 +2565,10 @@ The quantity hints that price one video call against `record`.
 `tokens_per_pixel_second` is set), else `{"seconds": s}`; `{}` when
 `seconds` is unknown, so the call stays unpriceable rather than free.
 `resolution` defaults to the model’s recorded default; `aspect_ratio`
-to [`DFLT_VIDEO_ASPECT`](_autosummary/falaw.cost.html.md#falaw.cost.DFLT_VIDEO_ASPECT).
+to [`quote_aspect()`](_autosummary/falaw.cost.html.md#falaw.cost.quote_aspect)’s ceiling. The record’s
+`resolution_rate_factors` entry for `resolution` scales the tokens, so
+they are rate-equivalent tokens at the recorded rate: the quote stays
+`rate x tokens`.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
@@ -2994,156 +3022,158 @@ Leave notes for future sessions:
 
 ### Functions
 
-| [`get_llm_price`](_autosummary/falaw.html.md#falaw.get_llm_price)(provider, model, \*[, prices])       | The row for `model` (exact id), or `None` when the table does not list it.                                                                                                                                 |
-|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`list_llm_prices`](_autosummary/falaw.html.md#falaw.list_llm_prices)([provider, prices])                | Every row, or the rows of one `provider`.                                                                                                                                                                  |
-| [`llm_call_cost_usd`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd)(provider, model, usage, \*)      | `(USD, known)` for one first-party call from the vendor's reported `usage`.                                                                                                                                |
-| [`llm_prices_table_version`](_autosummary/falaw.html.md#falaw.llm_prices_table_version)()                         | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version)).                                           |
-| [`call_plan_from_dict`](_autosummary/falaw.html.md#falaw.call_plan_from_dict)(d)                             | Rebuild a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) from a [`call_plan_to_dict()`](_autosummary/falaw.html.md#falaw.call_plan_to_dict) dict.                                                      |
-| [`call_plan_to_dict`](_autosummary/falaw.html.md#falaw.call_plan_to_dict)(call)                            | Convert a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) to a plain JSON-serializable dict.                                                                                                     |
-| [`plan_dependencies`](_autosummary/falaw.html.md#falaw.plan_dependencies)(plan)                            | Per-call set of the call indices it references via `"<from N>"`.                                                                                                                                           |
-| [`plan_from_dict`](_autosummary/falaw.html.md#falaw.plan_from_dict)(d)                                  | Rebuild a [`Plan`](_autosummary/falaw.html.md#falaw.Plan) from a [`plan_to_dict()`](_autosummary/falaw.html.md#falaw.plan_to_dict) dict.                                                               |
-| [`plan_hash`](_autosummary/falaw.html.md#falaw.plan_hash)(plan)                                    | Stable, plan-scoped **structural idempotency key** for a whole [`Plan`](_autosummary/falaw.html.md#falaw.Plan).                                                                                      |
-| [`plan_to_dict`](_autosummary/falaw.html.md#falaw.plan_to_dict)(plan)                                 | Convert a [`Plan`](_autosummary/falaw.html.md#falaw.Plan) to a plain JSON-serializable dict.                                                                                                         |
-| [`catalogue_cost_basis`](_autosummary/falaw.html.md#falaw.catalogue_cost_basis)(model_id, \*\*quantities)     | A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a call priced from `models.json`.                                                                                                   |
-| [`cost_basis_from_dict`](_autosummary/falaw.html.md#falaw.cost_basis_from_dict)(d)                            | Rebuild a [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) from a [`cost_basis_to_dict()`](_autosummary/falaw.html.md#falaw.cost_basis_to_dict) dict.                                                    |
-| [`cost_basis_to_dict`](_autosummary/falaw.html.md#falaw.cost_basis_to_dict)(basis)                          | Convert a [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) to a plain JSON-serializable dict.                                                                                                    |
-| [`llm_cost_basis`](_autosummary/falaw.html.md#falaw.llm_cost_basis)(routed_model, \*[, ...])            | A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a routed LLM call priced from the rate table.                                                                                       |
-| [`reprice_plan`](_autosummary/falaw.html.md#falaw.reprice_plan)(plan, \*[, pricers])                  | Re-quote every call in `plan` against today's rate tables.                                                                                                                                                 |
-| [`upload`](_autosummary/falaw.html.md#falaw.upload)(path, \*[, uploader, index, ttl_s, ...])    | A fal-fetchable URL for the local file at `path`.                                                                                                                                                          |
-| [`using_uploader`](_autosummary/falaw.html.md#falaw.using_uploader)(uploader, \*[, namespace])          | Make `uploader` the transfer for every [`upload()`](_autosummary/falaw.html.md#falaw.upload) (and every local file in an executed Plan) for the duration: an S3 uploader, or a fake in a test suite.   |
-| [`clear_subscribers`](_autosummary/falaw.html.md#falaw.clear_subscribers)()                                | Drop all registered subscribers.                                                                                                                                                                           |
-| [`estimate_call_cost`](_autosummary/falaw.html.md#falaw.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                                                                                                                                                     |
-| [`estimate_scene_cost`](_autosummary/falaw.html.md#falaw.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full [`render_scene()`](_autosummary/falaw.html.md#falaw.render_scene) invocation.                                                                                                |
-| [`get_llm_rate`](_autosummary/falaw.html.md#falaw.get_llm_rate)(model, \*[, rates])                   | The row for `model`, or `None` when the table does not price it.                                                                                                                                           |
-| [`list_llm_rates`](_autosummary/falaw.html.md#falaw.list_llm_rates)(\*[, rates])                        | Every row in the table, in file order — the catalogue view.                                                                                                                                                |
-| [`llm_ceiling_usd`](_autosummary/falaw.html.md#falaw.llm_ceiling_usd)(model, \*[, input_tokens, ...])    | Ceiling cost in USD of `count` calls routing `model`, or `None`.                                                                                                                                           |
-| [`subscribe`](_autosummary/falaw.html.md#falaw.subscribe)(callback)                                | Register `callback` to receive every emitted ProgressEvent.                                                                                                                                                |
-| [`unsubscribe`](_autosummary/falaw.html.md#falaw.unsubscribe)(callback)                              | Remove a previously [`subscribe()`](_autosummary/falaw.html.md#falaw.subscribe)'d callback.                                                                                                               |
-| [`animate_face`](_autosummary/falaw.html.md#falaw.animate_face)(image_url, audio_url, \*[, ...])      | Animate a still face from audio.                                                                                                                                                                           |
-| [`apply_note_to_beat`](_autosummary/falaw.html.md#falaw.apply_note_to_beat)(beat, note, \*[, model])        | Use the LLM to apply a directorial note to a Beat.                                                                                                                                                         |
-| [`apply_note_to_scene`](_autosummary/falaw.html.md#falaw.apply_note_to_scene)(scene, note, \*[, model])      | Apply a cross-cutting note: LLM proposes per-beat edits, we apply them.                                                                                                                                    |
-| [`beat_content_hash`](_autosummary/falaw.html.md#falaw.beat_content_hash)(beat, \*[, character])           | Hash everything that affects how the beat *renders*.                                                                                                                                                       |
-| [`cache_get`](_autosummary/falaw.html.md#falaw.cache_get)(application, arguments, \*[, ...])       | Return the raw fal response if cached, else None.                                                                                                                                                          |
-| [`cache_put`](_autosummary/falaw.html.md#falaw.cache_put)(application, arguments, raw, \*[, ...])  | Persist a fal response.                                                                                                                                                                                    |
-| [`cache_stats`](_autosummary/falaw.html.md#falaw.cache_stats)()                                      | Quick summary of the cache: entry count, disk usage, and where it went.                                                                                                                                    |
-| [`cache_usage`](_autosummary/falaw.html.md#falaw.cache_usage)()                                      | Disk usage of the falaw cache, broken down by area.                                                                                                                                                        |
-| [`prune_assets`](_autosummary/falaw.html.md#falaw.prune_assets)(\*[, older_than, max_bytes, ...])     | Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22).                                                                                                                             |
-| [`prune_uploads`](_autosummary/falaw.html.md#falaw.prune_uploads)(\*[, older_than, max_bytes, ...])    | Drop upload-index entries (falaw#92): digest -> fal URL hints.                                                                                                                                             |
-| [`prune_content`](_autosummary/falaw.html.md#falaw.prune_content)(\*[, older_than, max_bytes, ...])    | Reclaim content-addressed blobs — the gigabytes (falaw#22).                                                                                                                                                |
-| [`prune_manifests`](_autosummary/falaw.html.md#falaw.prune_manifests)(\*[, older_than, max_bytes, ...])  | Reclaim cache entries — the fal responses themselves (falaw#22).                                                                                                                                           |
-| [`drop_cache_entry`](_autosummary/falaw.html.md#falaw.drop_cache_entry)(application, arguments, \*)       | Delete the cache entry for `(application, arguments)`.                                                                                                                                                     |
-| [`cached_call_fal`](_autosummary/falaw.html.md#falaw.cached_call_fal)(application, arguments, \*[, ...]) | Call a fal model, but reuse the cached response when present.                                                                                                                                              |
-| [`content_ref_for_url`](_autosummary/falaw.html.md#falaw.content_ref_for_url)(url, \*[, store, ...])         | Materialize `url`'s bytes into `store` and return their content hash.                                                                                                                                      |
-| [`default_content_store`](_autosummary/falaw.html.md#falaw.default_content_store)()                            | The falaw-cache-rooted `lacing.ArtifactStore`.                                                                                                                                                             |
-| [`default_url_fetcher`](_autosummary/falaw.html.md#falaw.default_url_fetcher)()                              | The transport used when no `fetcher=` argument is given.                                                                                                                                                   |
-| [`using_url_fetcher`](_autosummary/falaw.html.md#falaw.using_url_fetcher)(fetcher)                         | Make `fetcher` falaw's default asset transport for the duration.                                                                                                                                           |
-| [`call_fal`](_autosummary/falaw.html.md#falaw.call_fal)(application, arguments, \*[, ...])        | Call a fal model via fal_client.subscribe.                                                                                                                                                                 |
-| [`cast_character`](_autosummary/falaw.html.md#falaw.cast_character)(name, description, \*[, ...])       | Create a Character with a canonical face (and optional voice).                                                                                                                                             |
-| [`current_fal_key`](_autosummary/falaw.html.md#falaw.current_fal_key)()                                  | The fal API key bound for the current context, or `None`.                                                                                                                                                  |
-| [`cast_voice`](_autosummary/falaw.html.md#falaw.cast_voice)(character, \*[, voice_id, ...])         | Attach or update the Voice on a Character.                                                                                                                                                                 |
-| [`composite_character_in_environment`](_autosummary/falaw.html.md#falaw.composite_character_in_environment)(...[, ...])     | Place a character into an environment as one composited still.                                                                                                                                             |
-| [`edit_image`](_autosummary/falaw.html.md#falaw.edit_image)(image_url, prompt, \*[, quality, ...])  | Edit an image with a natural-language instruction.                                                                                                                                                         |
-| [`establish_environment`](_autosummary/falaw.html.md#falaw.establish_environment)(name, description, \*)       | Create an Environment with a canonical establishing image.                                                                                                                                                 |
-| [`execute_plan`](_autosummary/falaw.html.md#falaw.execute_plan)(plan, \*[, on_event, dry_run, ...])   | Execute a Plan, returning a list of materialized :class:<br/><br/>```<br/>`<br/>```<br/><br/>lacing.Artifact\`s.                                                                                           |
-| [`execute_plan_isolated`](_autosummary/falaw.html.md#falaw.execute_plan_isolated)(plan, \*[, on_event, ...])   | Execute a Plan with **per-call failure isolation**, returning a report.                                                                                                                                    |
-| [`extract_models_from_corpus`](_autosummary/falaw.html.md#falaw.extract_models_from_corpus)(path)                   | Yield ModelRecord-shaped dicts parsed from llms-full.txt.                                                                                                                                                  |
-| [`generate_image`](_autosummary/falaw.html.md#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                      |
-| [`generate_image_with_refs`](_autosummary/falaw.html.md#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                          |
-| `get_model`(id)                                                                                     |                                                                                                                                                                                                            |
-| `get_tool`(name)                                                                                    |                                                                                                                                                                                                            |
-| [`image_to_video`](_autosummary/falaw.html.md#falaw.image_to_video)(image_url[, prompt, quality, ...])  | Animate a still image into a video.                                                                                                                                                                        |
-| [`iter_render_scene`](_autosummary/falaw.html.md#falaw.iter_render_scene)(scene, \*[, tts_quality, ...])   | Yield `(kind, result)` pairs as each shot/beat finishes.                                                                                                                                                   |
-| [`lipsync`](_autosummary/falaw.html.md#falaw.lipsync)(video_url, audio_url, \*[, quality, ...])  | Re-sync mouth motion in an existing video to a new audio track.                                                                                                                                            |
-| `list_models`(\*[, category, quality_tier])                                                         |                                                                                                                                                                                                            |
-| `list_tools`(\*[, tag])                                                                             |                                                                                                                                                                                                            |
-| [`llm_complete`](_autosummary/falaw.html.md#falaw.llm_complete)(prompt, \*[, system, model, ...])     | Single-shot LLM completion.                                                                                                                                                                                |
-| [`llm_complete_with_receipt`](_autosummary/falaw.html.md#falaw.llm_complete_with_receipt)(prompt, \*[, ...])       | Single-shot LLM completion that also reports what it cost.                                                                                                                                                 |
-| `load_scene`(path)                                                                                  |                                                                                                                                                                                                            |
-| `make_beat`(speaker[, line, action, emotion, ...])                                                  |                                                                                                                                                                                                            |
-| [`make_call_plan`](_autosummary/falaw.html.md#falaw.make_call_plan)(\*, tool, application, ...[, ...])  | Build a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) and (optionally) check the cache.                                                                                                        |
-| `make_shot`(description, \*[, framing, ...])                                                        |                                                                                                                                                                                                            |
-| [`materialize_asset`](_autosummary/falaw.html.md#falaw.materialize_asset)(url, \*[, key_hint, store, ...]) | Download a remote asset to the cache and return the local path.                                                                                                                                            |
-| [`parse_response`](_autosummary/falaw.html.md#falaw.parse_response)(raw, \*, application, arguments)    | Best-effort parser over the common fal response shapes.                                                                                                                                                    |
-| [`parse_screenplay`](_autosummary/falaw.html.md#falaw.parse_screenplay)(text, \*[, title, style, model])  | Convert prose screenplay text into a Scene IR via an LLM call.                                                                                                                                             |
-| [`pick_model`](_autosummary/falaw.html.md#falaw.pick_model)(\*, category[, quality_tier])           | Pick a sensible fal model for a (category, quality) request.                                                                                                                                               |
-| [`model_constraints`](_autosummary/falaw.html.md#falaw.model_constraints)(id)                              | The capability/limit fields for a model — the "static reminder of limitations" a shot-list builder surfaces.                                                                                               |
-| [`model_params`](_autosummary/falaw.html.md#falaw.model_params)(id)                                   | Per-model parameters worth knowing before a call, `{name: spec}`.                                                                                                                                          |
-| [`video_model_constraints`](_autosummary/falaw.html.md#falaw.video_model_constraints)()                          | `model_constraints` for every video model in the catalog — the data a shot-list builder shows as its model-limits reference.                                                                               |
-| [`plan_animate_face`](_autosummary/falaw.html.md#falaw.plan_animate_face)(image_url, audio_url, \*[, ...]) | Plan a [`falaw.animate_face()`](_autosummary/falaw.html.md#falaw.animate_face) call (image + audio → talking video).                                                                                         |
-| [`plan_composite_character_in_environment`](_autosummary/falaw.html.md#falaw.plan_composite_character_in_environment)(...)       | Plan a [`falaw.composite_character_in_environment()`](_autosummary/falaw.html.md#falaw.composite_character_in_environment) call.                                                                                                   |
-| [`plan_edit_image`](_autosummary/falaw.html.md#falaw.plan_edit_image)(image_url, prompt, \*[, ...])      | Plan a [`falaw.edit_image()`](_autosummary/falaw.html.md#falaw.edit_image) call (Flux Kontext / SeedEdit / OmniGen).                                                                                       |
-| [`plan_generate_image`](_autosummary/falaw.html.md#falaw.plan_generate_image)(prompt, \*[, quality, ...])    | Plan a [`falaw.generate_image()`](_autosummary/falaw.html.md#falaw.generate_image) call without executing it.                                                                                                  |
-| [`plan_generate_image_with_refs`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_refs)(prompt, ...[, ...])  | Plan a [`falaw.generate_image_with_refs()`](_autosummary/falaw.html.md#falaw.generate_image_with_refs) call.                                                                                                             |
-| [`plan_image_to_video`](_autosummary/falaw.html.md#falaw.plan_image_to_video)(image_url[, prompt, ...])      | Plan a [`falaw.image_to_video()`](_autosummary/falaw.html.md#falaw.image_to_video) call.                                                                                                                       |
-| [`plan_reference_to_video`](_autosummary/falaw.html.md#falaw.plan_reference_to_video)(prompt, \*[, ...])         | Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.                                                                                                     |
-| [`plan_text_to_video`](_autosummary/falaw.html.md#falaw.plan_text_to_video)(prompt, \*[, quality, ...])     | Plan a [`falaw.text_to_video()`](_autosummary/falaw.html.md#falaw.text_to_video) call — the sibling of [`plan_image_to_video()`](_autosummary/falaw.html.md#falaw.plan_image_to_video) (same duration and cost rules). |
-| [`plan_lipsync`](_autosummary/falaw.html.md#falaw.plan_lipsync)(video_url, audio_url, \*[, ...])      | Plan a [`falaw.lipsync()`](_autosummary/falaw.html.md#falaw.lipsync) call (existing video + new audio → re-synced video).                                                                               |
-| [`plan_llm_complete`](_autosummary/falaw.html.md#falaw.plan_llm_complete)(prompt, \*[, system, ...])       | Plan a [`falaw.llm_complete()`](_autosummary/falaw.html.md#falaw.llm_complete) call without executing it.                                                                                                    |
-| [`plan_generate_audio`](_autosummary/falaw.html.md#falaw.plan_generate_audio)(prompt, \*[, kind, ...])       | Plan a [`falaw.generate_audio()`](_autosummary/falaw.html.md#falaw.generate_audio) call (prompt → ambient/SFX/music).                                                                                          |
-| [`plan_text_to_speech`](_autosummary/falaw.html.md#falaw.plan_text_to_speech)(text, \*[, quality, ...])      | Plan a [`falaw.text_to_speech()`](_autosummary/falaw.html.md#falaw.text_to_speech) call (text → audio Artifact).                                                                                               |
-| [`refresh_full_docs`](_autosummary/falaw.html.md#falaw.refresh_full_docs)(\*[, docs_dir, ...])             | Re-crawl per-page docs and rebuild `fal_ai_docs_full.md`.                                                                                                                                                  |
-| [`refresh_llms`](_autosummary/falaw.html.md#falaw.refresh_llms)(\*[, docs_dir, journal])              | Refresh `llms.txt` and `llms-full.txt`; return a summary dict.                                                                                                                                             |
-| [`refresh_models_from_corpus`](_autosummary/falaw.html.md#falaw.refresh_models_from_corpus)(\*[, path, write])      | Merge corpus-discovered models into models.json (additive).                                                                                                                                                |
-| [`refresh_model_prices`](_autosummary/falaw.html.md#falaw.refresh_model_prices)(\*[, write, api_key, ...])    | Refresh `models.json` cost estimates from fal's pricing API.                                                                                                                                               |
-| [`check_model_liveness`](_autosummary/falaw.html.md#falaw.check_model_liveness)([ids, status_of])             | `{endpoint_id: is_live}` for `ids` (default: every catalogued model).                                                                                                                                      |
-| [`dead_models`](_autosummary/falaw.html.md#falaw.dead_models)([ids, status_of])                      | The ids from [`check_model_liveness()`](_autosummary/falaw.html.md#falaw.check_model_liveness) that are no longer deployed.                                                                                          |
-| [`fetch_model_prices`](_autosummary/falaw.html.md#falaw.fetch_model_prices)(endpoint_ids, \*[, ...])        | `{endpoint_id: {"unit_price", "unit", "currency"}}` from fal's API.                                                                                                                                        |
-| [`refresh_llm_rates`](_autosummary/falaw.html.md#falaw.refresh_llm_rates)(\*[, write, ...])                | Fetch both sources, propose a fresh table, diff it — never overwrite.                                                                                                                                      |
-| [`refresh_state`](_autosummary/falaw.html.md#falaw.refresh_state)()                                    | Return the saved per-source refresh state (etags, last fetch times).                                                                                                                                       |
-| [`register_tool`](_autosummary/falaw.html.md#falaw.register_tool)(\*\*spec_kwargs)                     | Decorator: register the wrapped function as a falaw tool.                                                                                                                                                  |
-| [`remove_background`](_autosummary/falaw.html.md#falaw.remove_background)(image_url, \*[, quality, ...])   | Remove the background from an image.                                                                                                                                                                       |
-| [`render_beat`](_autosummary/falaw.html.md#falaw.render_beat)(beat, character, \*[, ...])            | Render one Beat to a lipsynced video.                                                                                                                                                                      |
-| [`render_scene`](_autosummary/falaw.html.md#falaw.render_scene)(scene, \*[, tts_quality, ...])        | Render every shot and beat.                                                                                                                                                                                |
-| [`render_shot`](_autosummary/falaw.html.md#falaw.render_shot)(shot, \*[, environment, ...])          | Render a Shot as a still (default) or a short clip.                                                                                                                                                        |
-| `save_scene`(scene, path)                                                                           |                                                                                                                                                                                                            |
-| [`scene_from_dict`](_autosummary/falaw.html.md#falaw.scene_from_dict)(d)                                 | Inverse of asdict: reconstruct a Scene from a plain dict.                                                                                                                                                  |
-| `scene_to_dict`(scene)                                                                              |                                                                                                                                                                                                            |
-| `shot_content_hash`(shot, \*[, environment])                                                        |                                                                                                                                                                                                            |
-| [`storyboard_shot`](_autosummary/falaw.html.md#falaw.storyboard_shot)(shot, \*[, environment, ...])      | Render a storyboard still for a Shot.                                                                                                                                                                      |
-| [`talking_avatar_from_text`](_autosummary/falaw.html.md#falaw.talking_avatar_from_text)(text, image_url, \*)      | text + face image → talking video.                                                                                                                                                                         |
-| [`generate_audio`](_autosummary/falaw.html.md#falaw.generate_audio)(prompt, \*[, kind, ...])            | Generate ambient/SFX/music from a prompt.                                                                                                                                                                  |
-| [`text_to_speech`](_autosummary/falaw.html.md#falaw.text_to_speech)(text, \*[, quality, voice, ...])    | Synthesize speech.                                                                                                                                                                                         |
-| [`text_to_video`](_autosummary/falaw.html.md#falaw.text_to_video)(prompt, \*[, quality, ...])          | Generate a video from a text prompt.                                                                                                                                                                       |
-| [`upscale_image`](_autosummary/falaw.html.md#falaw.upscale_image)(image_url, \*[, scale, ...])         | Upscale an image.                                                                                                                                                                                          |
-| [`using_fal_credentials`](_autosummary/falaw.html.md#falaw.using_fal_credentials)(key)                         | Bind `key` as the fal credential for every [`call_fal()`](_autosummary/falaw.html.md#falaw.call_fal) in this context.                                                                                    |
-| [`voice_clone`](_autosummary/falaw.html.md#falaw.voice_clone)(reference_audio_url, text, \*[, ...])  | Generate speech in a cloned voice.                                                                                                                                                                         |
+| [`get_llm_price`](_autosummary/falaw.html.md#falaw.get_llm_price)(provider, model, \*[, prices])       | The row for `model` (exact id), or `None` when the table does not list it.                                                                                                                                        |
+|-----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`list_llm_prices`](_autosummary/falaw.html.md#falaw.list_llm_prices)([provider, prices])                | Every row, or the rows of one `provider`.                                                                                                                                                                         |
+| [`llm_call_cost_usd`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd)(provider, model, usage, \*)      | `(USD, known)` for one first-party call from the vendor's reported `usage`.                                                                                                                                       |
+| [`llm_token_counts`](_autosummary/falaw.html.md#falaw.llm_token_counts)(provider, usage)                  | The [`LlmTokenCounts`](_autosummary/falaw.html.md#falaw.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd) accepts (a mapping or an SDK object). |
+| [`llm_prices_table_version`](_autosummary/falaw.html.md#falaw.llm_prices_table_version)()                         | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version)).                                                  |
+| [`call_plan_from_dict`](_autosummary/falaw.html.md#falaw.call_plan_from_dict)(d)                             | Rebuild a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) from a [`call_plan_to_dict()`](_autosummary/falaw.html.md#falaw.call_plan_to_dict) dict.                                                             |
+| [`call_plan_to_dict`](_autosummary/falaw.html.md#falaw.call_plan_to_dict)(call)                            | Convert a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) to a plain JSON-serializable dict.                                                                                                            |
+| [`plan_dependencies`](_autosummary/falaw.html.md#falaw.plan_dependencies)(plan)                            | Per-call set of the call indices it references via `"<from N>"`.                                                                                                                                                  |
+| [`plan_from_dict`](_autosummary/falaw.html.md#falaw.plan_from_dict)(d)                                  | Rebuild a [`Plan`](_autosummary/falaw.html.md#falaw.Plan) from a [`plan_to_dict()`](_autosummary/falaw.html.md#falaw.plan_to_dict) dict.                                                                      |
+| [`plan_hash`](_autosummary/falaw.html.md#falaw.plan_hash)(plan)                                    | Stable, plan-scoped **structural idempotency key** for a whole [`Plan`](_autosummary/falaw.html.md#falaw.Plan).                                                                                             |
+| [`plan_to_dict`](_autosummary/falaw.html.md#falaw.plan_to_dict)(plan)                                 | Convert a [`Plan`](_autosummary/falaw.html.md#falaw.Plan) to a plain JSON-serializable dict.                                                                                                                |
+| [`catalogue_cost_basis`](_autosummary/falaw.html.md#falaw.catalogue_cost_basis)(model_id, \*\*quantities)     | A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a call priced from `models.json`.                                                                                                          |
+| [`cost_basis_from_dict`](_autosummary/falaw.html.md#falaw.cost_basis_from_dict)(d)                            | Rebuild a [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) from a [`cost_basis_to_dict()`](_autosummary/falaw.html.md#falaw.cost_basis_to_dict) dict.                                                           |
+| [`cost_basis_to_dict`](_autosummary/falaw.html.md#falaw.cost_basis_to_dict)(basis)                          | Convert a [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) to a plain JSON-serializable dict.                                                                                                           |
+| [`llm_cost_basis`](_autosummary/falaw.html.md#falaw.llm_cost_basis)(routed_model, \*[, ...])            | A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a routed LLM call priced from the rate table.                                                                                              |
+| [`reprice_plan`](_autosummary/falaw.html.md#falaw.reprice_plan)(plan, \*[, pricers])                  | Re-quote every call in `plan` against today's rate tables.                                                                                                                                                        |
+| [`upload`](_autosummary/falaw.html.md#falaw.upload)(path, \*[, uploader, index, ttl_s, ...])    | A fal-fetchable URL for the local file at `path`.                                                                                                                                                                 |
+| [`using_uploader`](_autosummary/falaw.html.md#falaw.using_uploader)(uploader, \*[, namespace])          | Make `uploader` the transfer for every [`upload()`](_autosummary/falaw.html.md#falaw.upload) (and every local file in an executed Plan) for the duration: an S3 uploader, or a fake in a test suite.          |
+| [`clear_subscribers`](_autosummary/falaw.html.md#falaw.clear_subscribers)()                                | Drop all registered subscribers.                                                                                                                                                                                  |
+| [`estimate_call_cost`](_autosummary/falaw.html.md#falaw.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                                                                                                                                                            |
+| [`estimate_scene_cost`](_autosummary/falaw.html.md#falaw.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full [`render_scene()`](_autosummary/falaw.html.md#falaw.render_scene) invocation.                                                                                                       |
+| [`get_llm_rate`](_autosummary/falaw.html.md#falaw.get_llm_rate)(model, \*[, rates])                   | The row for `model`, or `None` when the table does not price it.                                                                                                                                                  |
+| [`list_llm_rates`](_autosummary/falaw.html.md#falaw.list_llm_rates)(\*[, rates])                        | Every row in the table, in file order — the catalogue view.                                                                                                                                                       |
+| [`llm_ceiling_usd`](_autosummary/falaw.html.md#falaw.llm_ceiling_usd)(model, \*[, input_tokens, ...])    | Ceiling cost in USD of `count` calls routing `model`, or `None`.                                                                                                                                                  |
+| [`subscribe`](_autosummary/falaw.html.md#falaw.subscribe)(callback)                                | Register `callback` to receive every emitted ProgressEvent.                                                                                                                                                       |
+| [`unsubscribe`](_autosummary/falaw.html.md#falaw.unsubscribe)(callback)                              | Remove a previously [`subscribe()`](_autosummary/falaw.html.md#falaw.subscribe)'d callback.                                                                                                                      |
+| [`animate_face`](_autosummary/falaw.html.md#falaw.animate_face)(image_url, audio_url, \*[, ...])      | Animate a still face from audio.                                                                                                                                                                                  |
+| [`apply_note_to_beat`](_autosummary/falaw.html.md#falaw.apply_note_to_beat)(beat, note, \*[, model])        | Use the LLM to apply a directorial note to a Beat.                                                                                                                                                                |
+| [`apply_note_to_scene`](_autosummary/falaw.html.md#falaw.apply_note_to_scene)(scene, note, \*[, model])      | Apply a cross-cutting note: LLM proposes per-beat edits, we apply them.                                                                                                                                           |
+| [`beat_content_hash`](_autosummary/falaw.html.md#falaw.beat_content_hash)(beat, \*[, character])           | Hash everything that affects how the beat *renders*.                                                                                                                                                              |
+| [`cache_get`](_autosummary/falaw.html.md#falaw.cache_get)(application, arguments, \*[, ...])       | Return the raw fal response if cached, else None.                                                                                                                                                                 |
+| [`cache_put`](_autosummary/falaw.html.md#falaw.cache_put)(application, arguments, raw, \*[, ...])  | Persist a fal response.                                                                                                                                                                                           |
+| [`cache_stats`](_autosummary/falaw.html.md#falaw.cache_stats)()                                      | Quick summary of the cache: entry count, disk usage, and where it went.                                                                                                                                           |
+| [`cache_usage`](_autosummary/falaw.html.md#falaw.cache_usage)()                                      | Disk usage of the falaw cache, broken down by area.                                                                                                                                                               |
+| [`prune_assets`](_autosummary/falaw.html.md#falaw.prune_assets)(\*[, older_than, max_bytes, ...])     | Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22).                                                                                                                                    |
+| [`prune_uploads`](_autosummary/falaw.html.md#falaw.prune_uploads)(\*[, older_than, max_bytes, ...])    | Drop upload-index entries (falaw#92): digest -> fal URL hints.                                                                                                                                                    |
+| [`prune_content`](_autosummary/falaw.html.md#falaw.prune_content)(\*[, older_than, max_bytes, ...])    | Reclaim content-addressed blobs — the gigabytes (falaw#22).                                                                                                                                                       |
+| [`prune_manifests`](_autosummary/falaw.html.md#falaw.prune_manifests)(\*[, older_than, max_bytes, ...])  | Reclaim cache entries — the fal responses themselves (falaw#22).                                                                                                                                                  |
+| [`drop_cache_entry`](_autosummary/falaw.html.md#falaw.drop_cache_entry)(application, arguments, \*)       | Delete the cache entry for `(application, arguments)`.                                                                                                                                                            |
+| [`cached_call_fal`](_autosummary/falaw.html.md#falaw.cached_call_fal)(application, arguments, \*[, ...]) | Call a fal model, but reuse the cached response when present.                                                                                                                                                     |
+| [`content_ref_for_url`](_autosummary/falaw.html.md#falaw.content_ref_for_url)(url, \*[, store, ...])         | Materialize `url`'s bytes into `store` and return their content hash.                                                                                                                                             |
+| [`default_content_store`](_autosummary/falaw.html.md#falaw.default_content_store)()                            | The falaw-cache-rooted `lacing.ArtifactStore`.                                                                                                                                                                    |
+| [`default_url_fetcher`](_autosummary/falaw.html.md#falaw.default_url_fetcher)()                              | The transport used when no `fetcher=` argument is given.                                                                                                                                                          |
+| [`using_url_fetcher`](_autosummary/falaw.html.md#falaw.using_url_fetcher)(fetcher)                         | Make `fetcher` falaw's default asset transport for the duration.                                                                                                                                                  |
+| [`call_fal`](_autosummary/falaw.html.md#falaw.call_fal)(application, arguments, \*[, ...])        | Call a fal model via fal_client.subscribe.                                                                                                                                                                        |
+| [`cast_character`](_autosummary/falaw.html.md#falaw.cast_character)(name, description, \*[, ...])       | Create a Character with a canonical face (and optional voice).                                                                                                                                                    |
+| [`current_fal_key`](_autosummary/falaw.html.md#falaw.current_fal_key)()                                  | The fal API key bound for the current context, or `None`.                                                                                                                                                         |
+| [`cast_voice`](_autosummary/falaw.html.md#falaw.cast_voice)(character, \*[, voice_id, ...])         | Attach or update the Voice on a Character.                                                                                                                                                                        |
+| [`composite_character_in_environment`](_autosummary/falaw.html.md#falaw.composite_character_in_environment)(...[, ...])     | Place a character into an environment as one composited still.                                                                                                                                                    |
+| [`edit_image`](_autosummary/falaw.html.md#falaw.edit_image)(image_url, prompt, \*[, quality, ...])  | Edit an image with a natural-language instruction.                                                                                                                                                                |
+| [`establish_environment`](_autosummary/falaw.html.md#falaw.establish_environment)(name, description, \*)       | Create an Environment with a canonical establishing image.                                                                                                                                                        |
+| [`execute_plan`](_autosummary/falaw.html.md#falaw.execute_plan)(plan, \*[, on_event, dry_run, ...])   | Execute a Plan, returning a list of materialized :class:<br/><br/>```<br/>`<br/>```<br/><br/>lacing.Artifact\`s.                                                                                                  |
+| [`execute_plan_isolated`](_autosummary/falaw.html.md#falaw.execute_plan_isolated)(plan, \*[, on_event, ...])   | Execute a Plan with **per-call failure isolation**, returning a report.                                                                                                                                           |
+| [`extract_models_from_corpus`](_autosummary/falaw.html.md#falaw.extract_models_from_corpus)(path)                   | Yield ModelRecord-shaped dicts parsed from llms-full.txt.                                                                                                                                                         |
+| [`generate_image`](_autosummary/falaw.html.md#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                             |
+| [`generate_image_with_refs`](_autosummary/falaw.html.md#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                                 |
+| `get_model`(id)                                                                                     |                                                                                                                                                                                                                   |
+| `get_tool`(name)                                                                                    |                                                                                                                                                                                                                   |
+| [`image_to_video`](_autosummary/falaw.html.md#falaw.image_to_video)(image_url[, prompt, quality, ...])  | Animate a still image into a video.                                                                                                                                                                               |
+| [`iter_render_scene`](_autosummary/falaw.html.md#falaw.iter_render_scene)(scene, \*[, tts_quality, ...])   | Yield `(kind, result)` pairs as each shot/beat finishes.                                                                                                                                                          |
+| [`lipsync`](_autosummary/falaw.html.md#falaw.lipsync)(video_url, audio_url, \*[, quality, ...])  | Re-sync mouth motion in an existing video to a new audio track.                                                                                                                                                   |
+| `list_models`(\*[, category, quality_tier])                                                         |                                                                                                                                                                                                                   |
+| `list_tools`(\*[, tag])                                                                             |                                                                                                                                                                                                                   |
+| [`llm_complete`](_autosummary/falaw.html.md#falaw.llm_complete)(prompt, \*[, system, model, ...])     | Single-shot LLM completion.                                                                                                                                                                                       |
+| [`llm_complete_with_receipt`](_autosummary/falaw.html.md#falaw.llm_complete_with_receipt)(prompt, \*[, ...])       | Single-shot LLM completion that also reports what it cost.                                                                                                                                                        |
+| `load_scene`(path)                                                                                  |                                                                                                                                                                                                                   |
+| `make_beat`(speaker[, line, action, emotion, ...])                                                  |                                                                                                                                                                                                                   |
+| [`make_call_plan`](_autosummary/falaw.html.md#falaw.make_call_plan)(\*, tool, application, ...[, ...])  | Build a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) and (optionally) check the cache.                                                                                                               |
+| `make_shot`(description, \*[, framing, ...])                                                        |                                                                                                                                                                                                                   |
+| [`materialize_asset`](_autosummary/falaw.html.md#falaw.materialize_asset)(url, \*[, key_hint, store, ...]) | Download a remote asset to the cache and return the local path.                                                                                                                                                   |
+| [`parse_response`](_autosummary/falaw.html.md#falaw.parse_response)(raw, \*, application, arguments)    | Best-effort parser over the common fal response shapes.                                                                                                                                                           |
+| [`parse_screenplay`](_autosummary/falaw.html.md#falaw.parse_screenplay)(text, \*[, title, style, model])  | Convert prose screenplay text into a Scene IR via an LLM call.                                                                                                                                                    |
+| [`pick_model`](_autosummary/falaw.html.md#falaw.pick_model)(\*, category[, quality_tier])           | Pick a sensible fal model for a (category, quality) request.                                                                                                                                                      |
+| [`model_constraints`](_autosummary/falaw.html.md#falaw.model_constraints)(id)                              | The capability/limit fields for a model — the "static reminder of limitations" a shot-list builder surfaces.                                                                                                      |
+| [`model_params`](_autosummary/falaw.html.md#falaw.model_params)(id)                                   | Per-model parameters worth knowing before a call, `{name: spec}`.                                                                                                                                                 |
+| [`video_model_constraints`](_autosummary/falaw.html.md#falaw.video_model_constraints)()                          | `model_constraints` for every video model in the catalog — the data a shot-list builder shows as its model-limits reference.                                                                                      |
+| [`plan_animate_face`](_autosummary/falaw.html.md#falaw.plan_animate_face)(image_url, audio_url, \*[, ...]) | Plan a [`falaw.animate_face()`](_autosummary/falaw.html.md#falaw.animate_face) call (image + audio → talking video).                                                                                                |
+| [`plan_composite_character_in_environment`](_autosummary/falaw.html.md#falaw.plan_composite_character_in_environment)(...)       | Plan a [`falaw.composite_character_in_environment()`](_autosummary/falaw.html.md#falaw.composite_character_in_environment) call.                                                                                                          |
+| [`plan_edit_image`](_autosummary/falaw.html.md#falaw.plan_edit_image)(image_url, prompt, \*[, ...])      | Plan a [`falaw.edit_image()`](_autosummary/falaw.html.md#falaw.edit_image) call (Flux Kontext / SeedEdit / OmniGen).                                                                                              |
+| [`plan_generate_image`](_autosummary/falaw.html.md#falaw.plan_generate_image)(prompt, \*[, quality, ...])    | Plan a [`falaw.generate_image()`](_autosummary/falaw.html.md#falaw.generate_image) call without executing it.                                                                                                         |
+| [`plan_generate_image_with_refs`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_refs)(prompt, ...[, ...])  | Plan a [`falaw.generate_image_with_refs()`](_autosummary/falaw.html.md#falaw.generate_image_with_refs) call.                                                                                                                    |
+| [`plan_image_to_video`](_autosummary/falaw.html.md#falaw.plan_image_to_video)(image_url[, prompt, ...])      | Plan a [`falaw.image_to_video()`](_autosummary/falaw.html.md#falaw.image_to_video) call.                                                                                                                              |
+| [`plan_reference_to_video`](_autosummary/falaw.html.md#falaw.plan_reference_to_video)(prompt, \*[, ...])         | Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.                                                                                                            |
+| [`plan_text_to_video`](_autosummary/falaw.html.md#falaw.plan_text_to_video)(prompt, \*[, quality, ...])     | Plan a [`falaw.text_to_video()`](_autosummary/falaw.html.md#falaw.text_to_video) call — the sibling of [`plan_image_to_video()`](_autosummary/falaw.html.md#falaw.plan_image_to_video) (same duration and cost rules).        |
+| [`plan_lipsync`](_autosummary/falaw.html.md#falaw.plan_lipsync)(video_url, audio_url, \*[, ...])      | Plan a [`falaw.lipsync()`](_autosummary/falaw.html.md#falaw.lipsync) call (existing video + new audio → re-synced video).                                                                                      |
+| [`plan_llm_complete`](_autosummary/falaw.html.md#falaw.plan_llm_complete)(prompt, \*[, system, ...])       | Plan a [`falaw.llm_complete()`](_autosummary/falaw.html.md#falaw.llm_complete) call without executing it.                                                                                                           |
+| [`plan_generate_audio`](_autosummary/falaw.html.md#falaw.plan_generate_audio)(prompt, \*[, kind, ...])       | Plan a [`falaw.generate_audio()`](_autosummary/falaw.html.md#falaw.generate_audio) call (prompt → ambient/SFX/music).                                                                                                 |
+| [`plan_text_to_speech`](_autosummary/falaw.html.md#falaw.plan_text_to_speech)(text, \*[, quality, ...])      | Plan a [`falaw.text_to_speech()`](_autosummary/falaw.html.md#falaw.text_to_speech) call (text → audio Artifact).                                                                                                      |
+| [`refresh_full_docs`](_autosummary/falaw.html.md#falaw.refresh_full_docs)(\*[, docs_dir, ...])             | Re-crawl per-page docs and rebuild `fal_ai_docs_full.md`.                                                                                                                                                         |
+| [`refresh_llms`](_autosummary/falaw.html.md#falaw.refresh_llms)(\*[, docs_dir, journal])              | Refresh `llms.txt` and `llms-full.txt`; return a summary dict.                                                                                                                                                    |
+| [`refresh_models_from_corpus`](_autosummary/falaw.html.md#falaw.refresh_models_from_corpus)(\*[, path, write])      | Merge corpus-discovered models into models.json (additive).                                                                                                                                                       |
+| [`refresh_model_prices`](_autosummary/falaw.html.md#falaw.refresh_model_prices)(\*[, write, api_key, ...])    | Refresh `models.json` cost estimates from fal's pricing API.                                                                                                                                                      |
+| [`check_model_liveness`](_autosummary/falaw.html.md#falaw.check_model_liveness)([ids, status_of])             | `{endpoint_id: is_live}` for `ids` (default: every catalogued model).                                                                                                                                             |
+| [`dead_models`](_autosummary/falaw.html.md#falaw.dead_models)([ids, status_of])                      | The ids from [`check_model_liveness()`](_autosummary/falaw.html.md#falaw.check_model_liveness) that are no longer deployed.                                                                                                 |
+| [`fetch_model_prices`](_autosummary/falaw.html.md#falaw.fetch_model_prices)(endpoint_ids, \*[, ...])        | `{endpoint_id: {"unit_price", "unit", "currency"}}` from fal's API.                                                                                                                                               |
+| [`refresh_llm_rates`](_autosummary/falaw.html.md#falaw.refresh_llm_rates)(\*[, write, ...])                | Fetch both sources, propose a fresh table, diff it — never overwrite.                                                                                                                                             |
+| [`refresh_state`](_autosummary/falaw.html.md#falaw.refresh_state)()                                    | Return the saved per-source refresh state (etags, last fetch times).                                                                                                                                              |
+| [`register_tool`](_autosummary/falaw.html.md#falaw.register_tool)(\*\*spec_kwargs)                     | Decorator: register the wrapped function as a falaw tool.                                                                                                                                                         |
+| [`remove_background`](_autosummary/falaw.html.md#falaw.remove_background)(image_url, \*[, quality, ...])   | Remove the background from an image.                                                                                                                                                                              |
+| [`render_beat`](_autosummary/falaw.html.md#falaw.render_beat)(beat, character, \*[, ...])            | Render one Beat to a lipsynced video.                                                                                                                                                                             |
+| [`render_scene`](_autosummary/falaw.html.md#falaw.render_scene)(scene, \*[, tts_quality, ...])        | Render every shot and beat.                                                                                                                                                                                       |
+| [`render_shot`](_autosummary/falaw.html.md#falaw.render_shot)(shot, \*[, environment, ...])          | Render a Shot as a still (default) or a short clip.                                                                                                                                                               |
+| `save_scene`(scene, path)                                                                           |                                                                                                                                                                                                                   |
+| [`scene_from_dict`](_autosummary/falaw.html.md#falaw.scene_from_dict)(d)                                 | Inverse of asdict: reconstruct a Scene from a plain dict.                                                                                                                                                         |
+| `scene_to_dict`(scene)                                                                              |                                                                                                                                                                                                                   |
+| `shot_content_hash`(shot, \*[, environment])                                                        |                                                                                                                                                                                                                   |
+| [`storyboard_shot`](_autosummary/falaw.html.md#falaw.storyboard_shot)(shot, \*[, environment, ...])      | Render a storyboard still for a Shot.                                                                                                                                                                             |
+| [`talking_avatar_from_text`](_autosummary/falaw.html.md#falaw.talking_avatar_from_text)(text, image_url, \*)      | text + face image → talking video.                                                                                                                                                                                |
+| [`generate_audio`](_autosummary/falaw.html.md#falaw.generate_audio)(prompt, \*[, kind, ...])            | Generate ambient/SFX/music from a prompt.                                                                                                                                                                         |
+| [`text_to_speech`](_autosummary/falaw.html.md#falaw.text_to_speech)(text, \*[, quality, voice, ...])    | Synthesize speech.                                                                                                                                                                                                |
+| [`text_to_video`](_autosummary/falaw.html.md#falaw.text_to_video)(prompt, \*[, quality, ...])          | Generate a video from a text prompt.                                                                                                                                                                              |
+| [`upscale_image`](_autosummary/falaw.html.md#falaw.upscale_image)(image_url, \*[, scale, ...])         | Upscale an image.                                                                                                                                                                                                 |
+| [`using_fal_credentials`](_autosummary/falaw.html.md#falaw.using_fal_credentials)(key)                         | Bind `key` as the fal credential for every [`call_fal()`](_autosummary/falaw.html.md#falaw.call_fal) in this context.                                                                                           |
+| [`voice_clone`](_autosummary/falaw.html.md#falaw.voice_clone)(reference_audio_url, text, \*[, ...])  | Generate speech in a cloned voice.                                                                                                                                                                                |
 
 ### Classes
 
-| [`LlmPrice`](_autosummary/falaw.html.md#falaw.LlmPrice)(\*, provider, model, rates[, ...])        | One row of the first-party table: a model's rates and where they came from.                                        |
-|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------|
-| [`AccountStatus`](_autosummary/falaw.html.md#falaw.AccountStatus)(ok, locked, unauthorized, ...)       | Outcome of `health_check()`.                                                                                       |
-| [`Asset`](_autosummary/falaw.html.md#falaw.Asset)(url, kind[, content_type, width, ...])       | A single piece of generated media.                                                                                 |
-| [`Beat`](_autosummary/falaw.html.md#falaw.Beat)(\*, id[, speaker, line, action, ...])         | The atomic unit of a scene: who, says what, with what intent.                                                      |
-| [`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome)(\*, index, call, status[, ...])        | What happened to one [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan), at its position in the Plan.       |
-| [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan)(\*, tool, application[, backend, ...])    | A single planned fal call.                                                                                         |
-| [`Character`](_autosummary/falaw.html.md#falaw.Character)(\*, name[, description, ...])            | A reusable character: stable face, stable voice, stable style.                                                     |
-| [`ContentRef`](_autosummary/falaw.html.md#falaw.ContentRef)(content_hash, bytes_size)               | A content-addressed handle on some bytes falaw has materialized.                                                   |
-| [`Environment`](_autosummary/falaw.html.md#falaw.Environment)(\*, name[, description, ...])          | A reusable location/setting.                                                                                       |
-| [`ExecutionReport`](_autosummary/falaw.html.md#falaw.ExecutionReport)([outcomes])                        | The result of running a Plan: one [`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome) per call, in order. |
-| [`ModelRecord`](_autosummary/falaw.html.md#falaw.ModelRecord)(\*, id, category[, description, ...])  | One entry in the fal model catalog.                                                                                |
-| [`Plan`](_autosummary/falaw.html.md#falaw.Plan)([calls])                                      | An ordered sequence of [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) — a render plan, in essence.      |
-| [`CallRepricing`](_autosummary/falaw.html.md#falaw.CallRepricing)(\*, index, call, old_cost_usd, ...)  | The before/after for one call in a re-priced plan.                                                                 |
-| [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis)(\*, pricer, priced[, quantities, ...])   | How a [`CallPlan.estimated_cost_usd`](_autosummary/falaw.html.md#falaw.CallPlan.estimated_cost_usd) was arrived at (falaw#60).      |
-| [`Pricer`](_autosummary/falaw.html.md#falaw.Pricer)(\*, quote, table[, version])                | One pricing rule, and the table that backs it.                                                                     |
-| [`RepricedPlan`](_autosummary/falaw.html.md#falaw.RepricedPlan)(\*, plan[, calls])                    | Result of [`reprice_plan()`](_autosummary/falaw.html.md#falaw.reprice_plan) — the new Plan plus the per-call diff.   |
-| [`Result`](_autosummary/falaw.html.md#falaw.Result)([assets, raw, application, arguments])      | A fal call result with parsed assets and the original raw response.                                                |
-| [`CostEstimate`](_autosummary/falaw.html.md#falaw.CostEstimate)(\*, kind, amount[, currency, ...])    | Quantitative cost of one fal call against this model.                                                              |
-| [`CostLine`](_autosummary/falaw.html.md#falaw.CostLine)(\*, kind, item_id, model_id, amount, ...) | One line item in a scene rollup.                                                                                   |
-| [`CostRollup`](_autosummary/falaw.html.md#falaw.CostRollup)(\*, total_amount[, currency, ...])      | Result of [`estimate_scene_cost()`](_autosummary/falaw.html.md#falaw.estimate_scene_cost).                                  |
-| [`ProgressEvent`](_autosummary/falaw.html.md#falaw.ProgressEvent)(\*, kind, application, call_id)      | One step in the lifecycle of a fal call.                                                                           |
-| [`Scene`](_autosummary/falaw.html.md#falaw.Scene)(\*, title[, style, characters, ...])         | The whole editable structure: cast, locations, shots, beats.                                                       |
-| [`Session`](_autosummary/falaw.html.md#falaw.Session)([output_dir, journal, history])            | A working session for a sequence of falaw operations.                                                              |
-| [`Shot`](_autosummary/falaw.html.md#falaw.Shot)(\*, id[, description, framing, ...])          | A visual frame: framing + environment + characters in view.                                                        |
-| [`ToolSpec`](_autosummary/falaw.html.md#falaw.ToolSpec)(\*, name, description, func[, ...])       | Single source of truth for a tool exposed by falaw.                                                                |
-| [`Voice`](_autosummary/falaw.html.md#falaw.Voice)(\*, name[, voice_id, ...])                   | A character's voice spec.                                                                                          |
-| [`LlmRate`](_autosummary/falaw.html.md#falaw.LlmRate)(\*, model, tier, per_call_usd[, ...])      | What one routed model costs, on every basis the table knows.                                                       |
-| [`AreaUsage`](_autosummary/falaw.html.md#falaw.AreaUsage)(name, path, entries, bytes)              | Disk usage of one cache area.                                                                                      |
-| [`CacheUsage`](_autosummary/falaw.html.md#falaw.CacheUsage)(root, areas)                            | Where the falaw cache's disk is going, by area.                                                                    |
-| [`PruneCandidate`](_autosummary/falaw.html.md#falaw.PruneCandidate)(key, path, bytes[, last_modified])  | One thing a prune would delete (or did).                                                                           |
-| [`PruneReport`](_autosummary/falaw.html.md#falaw.PruneReport)(area, dry_run[, candidates, ...])      | What a prune removed, or — with `dry_run=True` — would remove.                                                     |
-| [`LlmReceipt`](_autosummary/falaw.html.md#falaw.LlmReceipt)(application, model, cache_hit, ...)     | What one eager LLM call cost — the record the eager path never kept.                                               |
+| [`LlmPrice`](_autosummary/falaw.html.md#falaw.LlmPrice)(\*, provider, model, rates[, ...])        | One row of the first-party table: a model's rates and where they came from.                                                                                                                                                                                         |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`LlmTokenCounts`](_autosummary/falaw.html.md#falaw.LlmTokenCounts)(\*[, fresh_input, cache_read, ...]) | The token counts a first-party call's `usage` reports, normalized across providers: the very counts [`llm_call_cost_usd()`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd) prices, so a caller that records them next to the cost cannot disagree with it (falaw#89). |
+| [`AccountStatus`](_autosummary/falaw.html.md#falaw.AccountStatus)(ok, locked, unauthorized, ...)       | Outcome of `health_check()`.                                                                                                                                                                                                                                        |
+| [`Asset`](_autosummary/falaw.html.md#falaw.Asset)(url, kind[, content_type, width, ...])       | A single piece of generated media.                                                                                                                                                                                                                                  |
+| [`Beat`](_autosummary/falaw.html.md#falaw.Beat)(\*, id[, speaker, line, action, ...])         | The atomic unit of a scene: who, says what, with what intent.                                                                                                                                                                                                       |
+| [`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome)(\*, index, call, status[, ...])        | What happened to one [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan), at its position in the Plan.                                                                                                                                                        |
+| [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan)(\*, tool, application[, backend, ...])    | A single planned fal call.                                                                                                                                                                                                                                          |
+| [`Character`](_autosummary/falaw.html.md#falaw.Character)(\*, name[, description, ...])            | A reusable character: stable face, stable voice, stable style.                                                                                                                                                                                                      |
+| [`ContentRef`](_autosummary/falaw.html.md#falaw.ContentRef)(content_hash, bytes_size)               | A content-addressed handle on some bytes falaw has materialized.                                                                                                                                                                                                    |
+| [`Environment`](_autosummary/falaw.html.md#falaw.Environment)(\*, name[, description, ...])          | A reusable location/setting.                                                                                                                                                                                                                                        |
+| [`ExecutionReport`](_autosummary/falaw.html.md#falaw.ExecutionReport)([outcomes])                        | The result of running a Plan: one [`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome) per call, in order.                                                                                                                                                  |
+| [`ModelRecord`](_autosummary/falaw.html.md#falaw.ModelRecord)(\*, id, category[, description, ...])  | One entry in the fal model catalog.                                                                                                                                                                                                                                 |
+| [`Plan`](_autosummary/falaw.html.md#falaw.Plan)([calls])                                      | An ordered sequence of [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) — a render plan, in essence.                                                                                                                                                       |
+| [`CallRepricing`](_autosummary/falaw.html.md#falaw.CallRepricing)(\*, index, call, old_cost_usd, ...)  | The before/after for one call in a re-priced plan.                                                                                                                                                                                                                  |
+| [`CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis)(\*, pricer, priced[, quantities, ...])   | How a [`CallPlan.estimated_cost_usd`](_autosummary/falaw.html.md#falaw.CallPlan.estimated_cost_usd) was arrived at (falaw#60).                                                                                                                                                       |
+| [`Pricer`](_autosummary/falaw.html.md#falaw.Pricer)(\*, quote, table[, version])                | One pricing rule, and the table that backs it.                                                                                                                                                                                                                      |
+| [`RepricedPlan`](_autosummary/falaw.html.md#falaw.RepricedPlan)(\*, plan[, calls])                    | Result of [`reprice_plan()`](_autosummary/falaw.html.md#falaw.reprice_plan) — the new Plan plus the per-call diff.                                                                                                                                                    |
+| [`Result`](_autosummary/falaw.html.md#falaw.Result)([assets, raw, application, arguments])      | A fal call result with parsed assets and the original raw response.                                                                                                                                                                                                 |
+| [`CostEstimate`](_autosummary/falaw.html.md#falaw.CostEstimate)(\*, kind, amount[, currency, ...])    | Quantitative cost of one fal call against this model.                                                                                                                                                                                                               |
+| [`CostLine`](_autosummary/falaw.html.md#falaw.CostLine)(\*, kind, item_id, model_id, amount, ...) | One line item in a scene rollup.                                                                                                                                                                                                                                    |
+| [`CostRollup`](_autosummary/falaw.html.md#falaw.CostRollup)(\*, total_amount[, currency, ...])      | Result of [`estimate_scene_cost()`](_autosummary/falaw.html.md#falaw.estimate_scene_cost).                                                                                                                                                                                   |
+| [`ProgressEvent`](_autosummary/falaw.html.md#falaw.ProgressEvent)(\*, kind, application, call_id)      | One step in the lifecycle of a fal call.                                                                                                                                                                                                                            |
+| [`Scene`](_autosummary/falaw.html.md#falaw.Scene)(\*, title[, style, characters, ...])         | The whole editable structure: cast, locations, shots, beats.                                                                                                                                                                                                        |
+| [`Session`](_autosummary/falaw.html.md#falaw.Session)([output_dir, journal, history])            | A working session for a sequence of falaw operations.                                                                                                                                                                                                               |
+| [`Shot`](_autosummary/falaw.html.md#falaw.Shot)(\*, id[, description, framing, ...])          | A visual frame: framing + environment + characters in view.                                                                                                                                                                                                         |
+| [`ToolSpec`](_autosummary/falaw.html.md#falaw.ToolSpec)(\*, name, description, func[, ...])       | Single source of truth for a tool exposed by falaw.                                                                                                                                                                                                                 |
+| [`Voice`](_autosummary/falaw.html.md#falaw.Voice)(\*, name[, voice_id, ...])                   | A character's voice spec.                                                                                                                                                                                                                                           |
+| [`LlmRate`](_autosummary/falaw.html.md#falaw.LlmRate)(\*, model, tier, per_call_usd[, ...])      | What one routed model costs, on every basis the table knows.                                                                                                                                                                                                        |
+| [`AreaUsage`](_autosummary/falaw.html.md#falaw.AreaUsage)(name, path, entries, bytes)              | Disk usage of one cache area.                                                                                                                                                                                                                                       |
+| [`CacheUsage`](_autosummary/falaw.html.md#falaw.CacheUsage)(root, areas)                            | Where the falaw cache's disk is going, by area.                                                                                                                                                                                                                     |
+| [`PruneCandidate`](_autosummary/falaw.html.md#falaw.PruneCandidate)(key, path, bytes[, last_modified])  | One thing a prune would delete (or did).                                                                                                                                                                                                                            |
+| [`PruneReport`](_autosummary/falaw.html.md#falaw.PruneReport)(area, dry_run[, candidates, ...])      | What a prune removed, or — with `dry_run=True` — would remove.                                                                                                                                                                                                      |
+| [`LlmReceipt`](_autosummary/falaw.html.md#falaw.LlmReceipt)(application, model, cache_hit, ...)     | What one eager LLM call cost — the record the eager path never kept.                                                                                                                                                                                                |
 
 ### Exceptions
 
@@ -3989,7 +4019,24 @@ Field semantics, honest by construction:
   `"rate_table:per_call"`, `"registry:<kind>"` (the fallback for a
   model the table does not price), or `"unknown"`.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.LlmTokenCounts(, fresh_input=0, cache_read=0, cache_write=0, cache_write_1h=0, output=0, reasoning=0)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+The token counts a first-party call’s `usage` reports, normalized across
+providers: the very counts [`llm_call_cost_usd()`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd) prices, so a caller that
+records them next to the cost cannot disagree with it (falaw#89).
+
+`fresh_input` is billed at the input rate, `cache_read` and
+`cache_write` at their own; `cache_write_1h` is the part of
+`cache_write` on the 1-hour tier (already included in it: do not add the two). `reasoning` is informational: it is
+already inside `output`.
+
+#### *property* input *: [int](https://docs.python.org/3/builtins/functions.html#int)*
+
+Every prompt token, cached or not.
+
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -4024,6 +4071,16 @@ Discoverable per-model parameters that matter for choosing well, as
 `{name: {"enum": [...], "default": ...}}` — e.g. Recraft’s `style`,
 whose photoreal default silently overrides a woodcut prompt. See
 [`falaw.model_params()`](_autosummary/falaw.html.md#falaw.model_params).
+
+#### resolution_rate_factors *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+Per-resolution discounts off the recorded per-token rate, for a model
+whose higher resolutions bill less per token (Seedance 2.0 at `"4k"`).
+Each value is in (0, 1]: the fraction of the recorded rate fal bills, rounded
+up so a quote stays a ceiling. The recorded rate is relative, so a price
+refresh that moves it moves these quotes with it. A quote’s
+`cost_basis.quantities["tokens"]` is then rate-equivalent tokens, not the
+tokens fal counts. See [`falaw.cost.video_price_quantities()`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities).
 
 #### single_character_recommended *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -5293,6 +5350,25 @@ The table’s version, a digest of its bytes (see [`falaw.base.data_table_versio
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
+### falaw.llm_token_counts(provider, usage)
+
+The [`LlmTokenCounts`](_autosummary/falaw.html.md#falaw.LlmTokenCounts) of a vendor `usage`, in the shapes
+[`llm_call_cost_usd()`](_autosummary/falaw.html.md#falaw.llm_call_cost_usd) accepts (a mapping or an SDK object).
+
+```pycon
+>>> llm_token_counts("openai", {"prompt_tokens": 1000, "completion_tokens": 100,
+...     "prompt_tokens_details": {"cached_tokens": 400}})
+LlmTokenCounts(fresh_input=600, cache_read=400, cache_write=0, cache_write_1h=0, output=100, reasoning=0)
+```
+
+A key that is present but `None` falls through to the next shape’s key
+(`{"input_tokens": None, "prompt_tokens": 7}` counts 7).
+
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – `provider` is not one of `PROVIDERS`.
+* **Return type:**
+  [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts)
+
 ### falaw.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, metadata=None, consult_cache=True, cost_basis=None)
 
 Build a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) and (optionally) check the cache.
@@ -5679,8 +5755,8 @@ reference images, videos and audio.
 The counts are checked against the model’s recorded limits
 (`model_constraints(id)["max_references"]`) by [`make_call_plan()`](_autosummary/falaw.html.md#falaw.make_call_plan), while
 planning is free, whatever route (`extra` included) they arrive by. The
-quote is the standard rate, a ceiling: fal bills about 0.6x when video
-references are supplied.
+quote is the standard rate, a ceiling for the no-video case: fal bills
+reference videos differently (falaw#99, unverified), so none is discounted.
 
 * **Return type:**
   [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)
@@ -6391,18 +6467,20 @@ priced as its family, because older snapshots can cost more.
 
 ### Functions
 
-| [`get_llm_price`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.get_llm_price)(provider, model, \*[, prices])   | The row for `model` (exact id), or `None` when the table does not list it.                                                                                       |
-|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`list_llm_prices`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.list_llm_prices)([provider, prices])            | Every row, or the rows of one `provider`.                                                                                                                        |
-| [`llm_call_cost_usd`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd)(provider, model, usage, \*)  | `(USD, known)` for one first-party call from the vendor's reported `usage`.                                                                                      |
-| [`llm_prices_table_version`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_prices_table_version)()                     | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version)). |
-| [`load_llm_prices`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.load_llm_prices)()                              | The committed table, keyed by `(provider, model)`.                                                                                                               |
+| [`get_llm_price`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.get_llm_price)(provider, model, \*[, prices])   | The row for `model` (exact id), or `None` when the table does not list it.                                                                                                                                        |
+|-------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`list_llm_prices`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.list_llm_prices)([provider, prices])            | Every row, or the rows of one `provider`.                                                                                                                                                                         |
+| [`llm_call_cost_usd`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd)(provider, model, usage, \*)  | `(USD, known)` for one first-party call from the vendor's reported `usage`.                                                                                                                                       |
+| [`llm_prices_table_version`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_prices_table_version)()                     | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version)).                                                  |
+| [`llm_token_counts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_token_counts)(provider, usage)              | The [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd) accepts (a mapping or an SDK object). |
+| [`load_llm_prices`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.load_llm_prices)()                              | The committed table, keyed by `(provider, model)`.                                                                                                                                                                |
 
 ### Classes
 
-| [`LlmPrice`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPrice)(\*, provider, model, rates[, ...])       | One row of the first-party table: a model's rates and where they came from.   |
-|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| [`LlmPriceRates`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)(\*, input_usd_per_mtok, ...[, ...]) | USD per million tokens for one prompt-length regime of one model.             |
+| [`LlmPrice`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPrice)(\*, provider, model, rates[, ...])        | One row of the first-party table: a model's rates and where they came from.                                                                                                                                                                                         |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`LlmPriceRates`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)(\*, input_usd_per_mtok, ...[, ...])  | USD per million tokens for one prompt-length regime of one model.                                                                                                                                                                                                   |
+| [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts)(\*[, fresh_input, cache_read, ...]) | The token counts a first-party call's `usage` reports, normalized across providers: the very counts [`llm_call_cost_usd()`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd) prices, so a caller that records them next to the cost cannot disagree with it (falaw#89). |
 
 ### falaw.llm_prices.COST_DECIMALS *= 9*
 
@@ -6419,6 +6497,23 @@ One row of the first-party table: a model’s rates and where they came from.
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 USD per million tokens for one prompt-length regime of one model.
+
+### *class* falaw.llm_prices.LlmTokenCounts(, fresh_input=0, cache_read=0, cache_write=0, cache_write_1h=0, output=0, reasoning=0)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+The token counts a first-party call’s `usage` reports, normalized across
+providers: the very counts [`llm_call_cost_usd()`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd) prices, so a caller that
+records them next to the cost cannot disagree with it (falaw#89).
+
+`fresh_input` is billed at the input rate, `cache_read` and
+`cache_write` at their own; `cache_write_1h` is the part of
+`cache_write` on the 1-hour tier (already included in it: do not add the two). `reasoning` is informational: it is
+already inside `output`.
+
+#### *property* input *: [int](https://docs.python.org/3/builtins/functions.html#int)*
+
+Every prompt token, cached or not.
 
 ### falaw.llm_prices.PRICES_FILENAME *= 'first_party_llm_prices.json'*
 
@@ -6474,6 +6569,25 @@ The table’s version, a digest of its bytes (see [`falaw.base.data_table_versio
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.llm_prices.llm_token_counts(provider, usage)
+
+The [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts) of a vendor `usage`, in the shapes
+[`llm_call_cost_usd()`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd) accepts (a mapping or an SDK object).
+
+```pycon
+>>> llm_token_counts("openai", {"prompt_tokens": 1000, "completion_tokens": 100,
+...     "prompt_tokens_details": {"cached_tokens": 400}})
+LlmTokenCounts(fresh_input=600, cache_read=400, cache_write=0, cache_write_1h=0, output=100, reasoning=0)
+```
+
+A key that is present but `None` falls through to the next shape’s key
+(`{"input_tokens": None, "prompt_tokens": 7}` counts 7).
+
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – `provider` is not one of [`PROVIDERS`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.PROVIDERS).
+* **Return type:**
+  [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts)
 
 ### falaw.llm_prices.load_llm_prices()
 
@@ -10282,18 +10396,18 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-26 13:20 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/43a0ccb70862a0b3f940335a6dc2a692638fac2b"><code>43a0ccb</code></a> on branch <code>main</code>, for **falaw 0.0.68** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 14:35 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/473e7f9eefe7fdbed725da207ad76a8f9ce3b339"><code>473e7f9</code></a> on branch <code>main</code>, for **falaw 0.0.70** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.68) is behind the latest release on PyPI (0.0.69): `pip install falaw` gives newer code than these docs describe.
+- The documented version (0.0.70) is behind the latest release on PyPI (0.0.71): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/43a0ccb70862a0b3f940335a6dc2a692638fac2b"><code>43a0ccb70862a0b3f940335a6dc2a692638fac2b</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/473e7f9eefe7fdbed725da207ad76a8f9ce3b339"><code>473e7f9eefe7fdbed725da207ad76a8f9ce3b339</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10304,9 +10418,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40329403213">40329403213</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40340781861">40340781861</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>43a0ccb70862a0b3f940335a6dc2a692638fac2b</code> (in the history of the built commit) |
+| Event commit | <code>473e7f9eefe7fdbed725da207ad76a8f9ce3b339</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -10331,13 +10445,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.69/">0.0.69</a>, newer than the documented version (0.0.68).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.71/">0.0.71</a>, newer than the documented version (0.0.70).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 43a0ccb70862a0b3f940335a6dc2a692638fac2b
+git checkout 473e7f9eefe7fdbed725da207ad76a8f9ce3b339
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

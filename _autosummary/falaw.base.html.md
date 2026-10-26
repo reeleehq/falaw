@@ -72,7 +72,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -107,6 +107,16 @@ Discoverable per-model parameters that matter for choosing well, as
 `{name: {"enum": [...], "default": ...}}` — e.g. Recraft’s `style`,
 whose photoreal default silently overrides a woodcut prompt. See
 [`falaw.model_params()`](falaw.html.md#falaw.model_params).
+
+#### resolution_rate_factors *: [Mapping](https://docs.python.org/3/library/typing.html#typing.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+Per-resolution discounts off the recorded per-token rate, for a model
+whose higher resolutions bill less per token (Seedance 2.0 at `"4k"`).
+Each value is in (0, 1]: the fraction of the recorded rate fal bills, rounded
+up so a quote stays a ceiling. The recorded rate is relative, so a price
+refresh that moves it moves these quotes with it. A quote’s
+`cost_basis.quantities["tokens"]` is then rate-equivalent tokens, not the
+tokens fal counts. See [`falaw.cost.video_price_quantities()`](falaw.cost.html.md#falaw.cost.video_price_quantities).
 
 #### single_character_recommended *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 

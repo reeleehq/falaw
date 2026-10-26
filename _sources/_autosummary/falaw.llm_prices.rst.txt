@@ -21,6 +21,7 @@ falaw.llm\_prices
       list_llm_prices
       llm_call_cost_usd
       llm_prices_table_version
+      llm_token_counts
       load_llm_prices
    
    .. rubric:: Classes
@@ -29,4 +30,5 @@ falaw.llm\_prices
    
       LlmPrice
       LlmPriceRates
+      LlmTokenCounts
    

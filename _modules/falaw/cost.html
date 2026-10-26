@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=6eb1e6b8"></script>
+    <script src="../../_static/documentation_options.js?v=29ed05f3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.68" />
+  <meta name="docsearch:version" content="0.0.70" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -802,6 +802,25 @@ window.runMermaid = runMermaid;</script>
 <span class="n">_ASPECT</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"\s*(\d+)\s*:\s*(\d+)\s*"</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="quote_aspect">
+<a class="viewcode-back" href="../../_autosummary/falaw.cost.html#falaw.quote_aspect">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">quote_aspect</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">ModelRecord</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The aspect ratio a quote assumes, so that it stays a ceiling.</span>
+
+<span class="sd">    An explicit ratio is used as given. When it is absent or ``"auto"`` (fal</span>
+<span class="sd">    derives it from the input image) and the record lists a ``"W:H"`` enum, the</span>
+<span class="sd">    widest ratio listed, which has the most pixels; without an enum,</span>
+<span class="sd">    :data:`DFLT_VIDEO_ASPECT`.</span>
+<span class="sd">    """</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"aspect_ratio"</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">aspect_ratio</span> <span class="o">=</span> <span class="n">aspect_ratio</span> <span class="ow">or</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">aspect_ratio</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="s2">"auto"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">aspect_ratio</span>
+    <span class="n">ratios</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"enum"</span><span class="p">,</span> <span class="p">())</span> <span class="k">if</span> <span class="n">_ASPECT</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">))]</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">ratios</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">r</span><span class="p">:</span> <span class="n">frame_pixels</span><span class="p">(</span><span class="s2">"480p"</span><span class="p">,</span> <span class="n">r</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">DFLT_VIDEO_ASPECT</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="frame_pixels">
 <a class="viewcode-back" href="../../_autosummary/falaw.cost.html#falaw.frame_pixels">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">frame_pixels</span><span class="p">(</span><span class="n">resolution</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
@@ -835,7 +854,10 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ``tokens_per_pixel_second`` is set), else ``{"seconds": s}``; ``{}`` when</span>
 <span class="sd">    ``seconds`` is unknown, so the call stays unpriceable rather than free.</span>
 <span class="sd">    ``resolution`` defaults to the model's recorded default; ``aspect_ratio``</span>
-<span class="sd">    to :data:`DFLT_VIDEO_ASPECT`.</span>
+<span class="sd">    to :func:`quote_aspect`'s ceiling. The record's</span>
+<span class="sd">    ``resolution_rate_factors`` entry for ``resolution`` scales the tokens, so</span>
+<span class="sd">    they are rate-equivalent tokens at the recorded rate: the quote stays</span>
+<span class="sd">    ``rate x tokens``.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">seconds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{}</span>
@@ -850,8 +872,15 @@ window.runMermaid = runMermaid;</script>
             <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> does not offer resolution </span><span class="si">{</span><span class="n">resolution</span><span class="si">!r}</span><span class="s2">; "</span>
             <span class="sa">f</span><span class="s2">"expected one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">allowed</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span>
-    <span class="n">pixels</span> <span class="o">=</span> <span class="n">frame_pixels</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">"tokens"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">pixels</span> <span class="o">*</span> <span class="n">seconds</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)}</span></div>
+    <span class="n">pixels</span> <span class="o">=</span> <span class="n">frame_pixels</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="n">quote_aspect</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">aspect_ratio</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"tokens"</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span>
+            <span class="n">pixels</span>
+            <span class="o">*</span> <span class="n">seconds</span>
+            <span class="o">*</span> <span class="n">factor</span>
+            <span class="o">*</span> <span class="n">record</span><span class="o">.</span><span class="n">resolution_rate_factors</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">resolution</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">}</span></div>
 
 
 

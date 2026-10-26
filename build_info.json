@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-26T13:20:07Z",
+  "built_at": "2026-10-26T14:35:59Z",
   "package": {
     "name": "falaw",
-    "version": "0.0.68",
+    "version": "0.0.70",
     "display_name": "falaw",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "43a0ccb70862a0b3f940335a6dc2a692638fac2b",
-    "short_commit": "43a0ccb",
+    "commit": "473e7f9eefe7fdbed725da207ad76a8f9ce3b339",
+    "short_commit": "473e7f9",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/reeleehq/falaw",
-    "commit_url": "https://github.com/reeleehq/falaw/commit/43a0ccb70862a0b3f940335a6dc2a692638fac2b",
+    "commit_url": "https://github.com/reeleehq/falaw/commit/473e7f9eefe7fdbed725da207ad76a8f9ce3b339",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "reeleehq/falaw",
-    "sha": "43a0ccb70862a0b3f940335a6dc2a692638fac2b",
+    "sha": "473e7f9eefe7fdbed725da207ad76a8f9ce3b339",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "40329403213",
-    "run_url": "https://github.com/reeleehq/falaw/actions/runs/40329403213",
+    "run_id": "40340781861",
+    "run_url": "https://github.com/reeleehq/falaw/actions/runs/40340781861",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -56,20 +56,20 @@
   },
   "site": {
     "modules_documented": 50,
-    "objects_documented": 670
+    "objects_documented": 679
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.69",
+    "latest": "0.0.71",
     "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout 43a0ccb70862a0b3f940335a6dc2a692638fac2b\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout 473e7f9eefe7fdbed725da207ad76a8f9ce3b339\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": false,
     "notes": [
-      "The documented version (0.0.68) is behind the latest release on PyPI (0.0.69): `pip install falaw` gives newer code than these docs describe."
+      "The documented version (0.0.70) is behind the latest release on PyPI (0.0.71): `pip install falaw` gives newer code than these docs describe."
     ]
   }
 }

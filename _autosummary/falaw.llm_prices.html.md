@@ -51,18 +51,20 @@ priced as its family, because older snapshots can cost more.
 
 ### Functions
 
-| [`get_llm_price`](#falaw.llm_prices.get_llm_price)(provider, model, \*[, prices])   | The row for `model` (exact id), or `None` when the table does not list it.                                                                                       |
-|-------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`list_llm_prices`](#falaw.llm_prices.list_llm_prices)([provider, prices])            | Every row, or the rows of one `provider`.                                                                                                                        |
-| [`llm_call_cost_usd`](#falaw.llm_prices.llm_call_cost_usd)(provider, model, usage, \*)  | `(USD, known)` for one first-party call from the vendor's reported `usage`.                                                                                      |
-| [`llm_prices_table_version`](#falaw.llm_prices.llm_prices_table_version)()                     | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version)). |
-| [`load_llm_prices`](#falaw.llm_prices.load_llm_prices)()                              | The committed table, keyed by `(provider, model)`.                                                                                                               |
+| [`get_llm_price`](#falaw.llm_prices.get_llm_price)(provider, model, \*[, prices])   | The row for `model` (exact id), or `None` when the table does not list it.                                                                                                                                        |
+|-------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`list_llm_prices`](#falaw.llm_prices.list_llm_prices)([provider, prices])            | Every row, or the rows of one `provider`.                                                                                                                                                                         |
+| [`llm_call_cost_usd`](#falaw.llm_prices.llm_call_cost_usd)(provider, model, usage, \*)  | `(USD, known)` for one first-party call from the vendor's reported `usage`.                                                                                                                                       |
+| [`llm_prices_table_version`](#falaw.llm_prices.llm_prices_table_version)()                     | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version)).                                                  |
+| [`llm_token_counts`](#falaw.llm_prices.llm_token_counts)(provider, usage)              | The [`LlmTokenCounts`](#falaw.llm_prices.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](#falaw.llm_prices.llm_call_cost_usd) accepts (a mapping or an SDK object). |
+| [`load_llm_prices`](#falaw.llm_prices.load_llm_prices)()                              | The committed table, keyed by `(provider, model)`.                                                                                                                                                                |
 
 ### Classes
 
-| [`LlmPrice`](#falaw.llm_prices.LlmPrice)(\*, provider, model, rates[, ...])       | One row of the first-party table: a model's rates and where they came from.   |
-|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
-| [`LlmPriceRates`](#falaw.llm_prices.LlmPriceRates)(\*, input_usd_per_mtok, ...[, ...]) | USD per million tokens for one prompt-length regime of one model.             |
+| [`LlmPrice`](#falaw.llm_prices.LlmPrice)(\*, provider, model, rates[, ...])        | One row of the first-party table: a model's rates and where they came from.                                                                                                                                                                                         |
+|-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`LlmPriceRates`](#falaw.llm_prices.LlmPriceRates)(\*, input_usd_per_mtok, ...[, ...])  | USD per million tokens for one prompt-length regime of one model.                                                                                                                                                                                                   |
+| [`LlmTokenCounts`](#falaw.llm_prices.LlmTokenCounts)(\*[, fresh_input, cache_read, ...]) | The token counts a first-party call's `usage` reports, normalized across providers: the very counts [`llm_call_cost_usd()`](#falaw.llm_prices.llm_call_cost_usd) prices, so a caller that records them next to the cost cannot disagree with it (falaw#89). |
 
 ### falaw.llm_prices.COST_DECIMALS *= 9*
 
@@ -79,6 +81,23 @@ One row of the first-party table: a model’s rates and where they came from.
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 USD per million tokens for one prompt-length regime of one model.
+
+### *class* falaw.llm_prices.LlmTokenCounts(, fresh_input=0, cache_read=0, cache_write=0, cache_write_1h=0, output=0, reasoning=0)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+The token counts a first-party call’s `usage` reports, normalized across
+providers: the very counts [`llm_call_cost_usd()`](#falaw.llm_prices.llm_call_cost_usd) prices, so a caller that
+records them next to the cost cannot disagree with it (falaw#89).
+
+`fresh_input` is billed at the input rate, `cache_read` and
+`cache_write` at their own; `cache_write_1h` is the part of
+`cache_write` on the 1-hour tier (already included in it: do not add the two). `reasoning` is informational: it is
+already inside `output`.
+
+#### *property* input *: [int](https://docs.python.org/3/builtins/functions.html#int)*
+
+Every prompt token, cached or not.
 
 ### falaw.llm_prices.PRICES_FILENAME *= 'first_party_llm_prices.json'*
 
@@ -134,6 +153,25 @@ The table’s version, a digest of its bytes (see [`falaw.base.data_table_versio
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.llm_prices.llm_token_counts(provider, usage)
+
+The [`LlmTokenCounts`](#falaw.llm_prices.LlmTokenCounts) of a vendor `usage`, in the shapes
+[`llm_call_cost_usd()`](#falaw.llm_prices.llm_call_cost_usd) accepts (a mapping or an SDK object).
+
+```pycon
+>>> llm_token_counts("openai", {"prompt_tokens": 1000, "completion_tokens": 100,
+...     "prompt_tokens_details": {"cached_tokens": 400}})
+LlmTokenCounts(fresh_input=600, cache_read=400, cache_write=0, cache_write_1h=0, output=100, reasoning=0)
+```
+
+A key that is present but `None` falls through to the next shape’s key
+(`{"input_tokens": None, "prompt_tokens": 7}` counts 7).
+
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – `provider` is not one of [`PROVIDERS`](#falaw.llm_prices.PROVIDERS).
+* **Return type:**
+  [`LlmTokenCounts`](#falaw.llm_prices.LlmTokenCounts)
 
 ### falaw.llm_prices.load_llm_prices()
 

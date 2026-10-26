@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=6eb1e6b8"></script>
+    <script src="../../_static/documentation_options.js?v=29ed05f3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.68" />
+  <meta name="docsearch:version" content="0.0.70" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -907,62 +907,118 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Raises:</span>
 <span class="sd">        ValueError: ``provider`` is not one of :data:`PROVIDERS`.</span>
 <span class="sd">    """</span>
+    <span class="n">_check_provider</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">load_llm_prices</span><span class="p">()</span> <span class="k">if</span> <span class="n">prices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">prices</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">provider</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
+    <span class="n">known</span> <span class="o">=</span> <span class="n">price</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">rates</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">rates</span> <span class="k">if</span> <span class="n">price</span> <span class="k">else</span> <span class="n">_dearest_rates</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">llm_token_counts</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">price</span>
+        <span class="ow">and</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span>
+        <span class="ow">and</span> <span class="n">counts</span><span class="o">.</span><span class="n">input</span> <span class="o">&gt;</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span>
+    <span class="p">):</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span>
+    <span class="n">usd</span> <span class="o">=</span> <span class="n">_usd</span><span class="p">(</span><span class="n">rates</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">usd</span><span class="p">,</span> <span class="n">COST_DECIMALS</span><span class="p">),</span> <span class="n">known</span></div>
+
+
+
+<div class="viewcode-block" id="LlmTokenCounts">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.LlmTokenCounts">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LlmTokenCounts</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The token counts a first-party call's ``usage`` reports, normalized across</span>
+<span class="sd">    providers: the very counts :func:`llm_call_cost_usd` prices, so a caller that</span>
+<span class="sd">    records them next to the cost cannot disagree with it (falaw#89).</span>
+
+<span class="sd">    ``fresh_input`` is billed at the input rate, ``cache_read`` and</span>
+<span class="sd">    ``cache_write`` at their own; ``cache_write_1h`` is the part of</span>
+<span class="sd">    ``cache_write`` on the 1-hour tier (already included in it: do not add the two). ``reasoning`` is informational: it is</span>
+<span class="sd">    already inside ``output``.</span>
+<span class="sd">    """</span>
+
+    <span class="n">fresh_input</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cache_read</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cache_write</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cache_write_1h</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">output</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Every prompt token, cached or not."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fresh_input</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_read</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_write</span></div>
+
+
+
+<div class="viewcode-block" id="llm_token_counts">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.llm_token_counts">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">llm_token_counts</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LlmTokenCounts</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The :class:`LlmTokenCounts` of a vendor ``usage``, in the shapes</span>
+<span class="sd">    :func:`llm_call_cost_usd` accepts (a mapping or an SDK object).</span>
+
+<span class="sd">    &gt;&gt;&gt; llm_token_counts("openai", {"prompt_tokens": 1000, "completion_tokens": 100,</span>
+<span class="sd">    ...     "prompt_tokens_details": {"cached_tokens": 400}})</span>
+<span class="sd">    LlmTokenCounts(fresh_input=600, cache_read=400, cache_write=0, cache_write_1h=0, output=100, reasoning=0)</span>
+
+<span class="sd">    A key that is present but ``None`` falls through to the next shape's key</span>
+<span class="sd">    (``{"input_tokens": None, "prompt_tokens": 7}`` counts 7).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: ``provider`` is not one of :data:`PROVIDERS`.</span>
+<span class="sd">    """</span>
+    <span class="n">_check_provider</span><span class="p">(</span><span class="n">provider</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">"anthropic"</span><span class="p">:</span>
+        <span class="n">cache_write</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_creation_input_tokens"</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">LlmTokenCounts</span><span class="p">(</span>
+            <span class="n">fresh_input</span><span class="o">=</span><span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens"</span><span class="p">)),</span>
+            <span class="n">cache_read</span><span class="o">=</span><span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_read_input_tokens"</span><span class="p">)),</span>
+            <span class="n">cache_write</span><span class="o">=</span><span class="n">cache_write</span><span class="p">,</span>
+            <span class="n">cache_write_1h</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span>
+                <span class="n">cache_write</span><span class="p">,</span>
+                <span class="n">_count</span><span class="p">(</span>
+                    <span class="n">_get</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_creation"</span><span class="p">),</span> <span class="s2">"ephemeral_1h_input_tokens"</span><span class="p">)</span>
+                <span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">output</span><span class="o">=</span><span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"output_tokens"</span><span class="p">)),</span>
+        <span class="p">)</span>
+    <span class="n">total_in</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens"</span><span class="p">,</span> <span class="s2">"prompt_tokens"</span><span class="p">))</span>
+    <span class="n">cached</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span>
+        <span class="n">_get</span><span class="p">(</span>
+            <span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens_details"</span><span class="p">,</span> <span class="s2">"prompt_tokens_details"</span><span class="p">),</span>
+            <span class="s2">"cached_tokens"</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">details_out</span> <span class="o">=</span> <span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"output_tokens_details"</span><span class="p">,</span> <span class="s2">"completion_tokens_details"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">LlmTokenCounts</span><span class="p">(</span>
+        <span class="n">fresh_input</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_in</span> <span class="o">-</span> <span class="n">cached</span><span class="p">),</span>
+        <span class="n">cache_read</span><span class="o">=</span><span class="n">cached</span><span class="p">,</span>
+        <span class="n">output</span><span class="o">=</span><span class="n">_count</span><span class="p">(</span><span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"output_tokens"</span><span class="p">,</span> <span class="s2">"completion_tokens"</span><span class="p">)),</span>
+        <span class="n">reasoning</span><span class="o">=</span><span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">details_out</span><span class="p">,</span> <span class="s2">"reasoning_tokens"</span><span class="p">)),</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_usd</span><span class="p">(</span><span class="n">rates</span><span class="p">:</span> <span class="n">LlmPriceRates</span><span class="p">,</span> <span class="n">counts</span><span class="p">:</span> <span class="n">LlmTokenCounts</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">cache_read_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_read_usd_per_mtok</span><span class="p">,</span> <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">)</span>
+    <span class="n">cache_write_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_write_usd_per_mtok</span><span class="p">,</span> <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">)</span>
+    <span class="n">cache_write_1h_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_write_1h_usd_per_mtok</span><span class="p">,</span> <span class="n">cache_write_rate</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span> <span class="o">*</span> <span class="n">counts</span><span class="o">.</span><span class="n">fresh_input</span>
+        <span class="o">+</span> <span class="n">cache_read_rate</span> <span class="o">*</span> <span class="n">counts</span><span class="o">.</span><span class="n">cache_read</span>
+        <span class="o">+</span> <span class="n">cache_write_rate</span> <span class="o">*</span> <span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">cache_write</span> <span class="o">-</span> <span class="n">counts</span><span class="o">.</span><span class="n">cache_write_1h</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">cache_write_1h_rate</span> <span class="o">*</span> <span class="n">counts</span><span class="o">.</span><span class="n">cache_write_1h</span>
+        <span class="o">+</span> <span class="n">rates</span><span class="o">.</span><span class="n">output_usd_per_mtok</span> <span class="o">*</span> <span class="n">counts</span><span class="o">.</span><span class="n">output</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="n">TOKENS_PER_PRICE_UNIT</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_provider</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">if</span> <span class="n">provider</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">PROVIDERS</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">"No first-party price table for provider </span><span class="si">{</span><span class="n">provider</span><span class="si">!r}</span><span class="s2">; "</span>
             <span class="sa">f</span><span class="s2">"known providers: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">PROVIDERS</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
         <span class="p">)</span>
-    <span class="n">table</span> <span class="o">=</span> <span class="n">load_llm_prices</span><span class="p">()</span> <span class="k">if</span> <span class="n">prices</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">prices</span>
-    <span class="n">price</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">provider</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">model</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()))</span>
-    <span class="n">known</span> <span class="o">=</span> <span class="n">price</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-    <span class="n">rates</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">rates</span> <span class="k">if</span> <span class="n">price</span> <span class="k">else</span> <span class="n">_dearest_rates</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">"anthropic"</span><span class="p">:</span>
-        <span class="n">usd</span> <span class="o">=</span> <span class="n">_anthropic_usd</span><span class="p">(</span><span class="n">price</span><span class="p">,</span> <span class="n">rates</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">usd</span> <span class="o">=</span> <span class="n">_openai_usd</span><span class="p">(</span><span class="n">rates</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">usd</span><span class="p">,</span> <span class="n">COST_DECIMALS</span><span class="p">),</span> <span class="n">known</span></div>
-
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_anthropic_usd</span><span class="p">(</span>
-    <span class="n">price</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPrice</span><span class="p">],</span> <span class="n">rates</span><span class="p">:</span> <span class="n">LlmPriceRates</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">Any</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="n">fresh</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens"</span><span class="p">))</span>
-    <span class="n">cache_read</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_read_input_tokens"</span><span class="p">))</span>
-    <span class="n">cache_write</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_creation_input_tokens"</span><span class="p">))</span>
-    <span class="n">write_1h</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
-        <span class="n">cache_write</span><span class="p">,</span>
-        <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"cache_creation"</span><span class="p">),</span> <span class="s2">"ephemeral_1h_input_tokens"</span><span class="p">)),</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="n">price</span>
-        <span class="ow">and</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span>
-        <span class="ow">and</span> <span class="n">fresh</span> <span class="o">+</span> <span class="n">cache_read</span> <span class="o">+</span> <span class="n">cache_write</span> <span class="o">&gt;</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span>
-    <span class="p">):</span>
-        <span class="n">rates</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span>
-    <span class="n">cache_read_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_read_usd_per_mtok</span><span class="p">,</span> <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">)</span>
-    <span class="n">cache_write_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_write_usd_per_mtok</span><span class="p">,</span> <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">)</span>
-    <span class="n">cache_write_1h_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_write_1h_usd_per_mtok</span><span class="p">,</span> <span class="n">cache_write_rate</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span> <span class="o">*</span> <span class="n">fresh</span>
-        <span class="o">+</span> <span class="n">cache_read_rate</span> <span class="o">*</span> <span class="n">cache_read</span>
-        <span class="o">+</span> <span class="n">cache_write_rate</span> <span class="o">*</span> <span class="p">(</span><span class="n">cache_write</span> <span class="o">-</span> <span class="n">write_1h</span><span class="p">)</span>
-        <span class="o">+</span> <span class="n">cache_write_1h_rate</span> <span class="o">*</span> <span class="n">write_1h</span>
-        <span class="o">+</span> <span class="n">rates</span><span class="o">.</span><span class="n">output_usd_per_mtok</span> <span class="o">*</span> <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"output_tokens"</span><span class="p">))</span>
-    <span class="p">)</span> <span class="o">/</span> <span class="n">TOKENS_PER_PRICE_UNIT</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_openai_usd</span><span class="p">(</span><span class="n">rates</span><span class="p">:</span> <span class="n">LlmPriceRates</span><span class="p">,</span> <span class="n">usage</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="n">total_in</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens"</span><span class="p">,</span> <span class="s2">"prompt_tokens"</span><span class="p">))</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"output_tokens"</span><span class="p">,</span> <span class="s2">"completion_tokens"</span><span class="p">))</span>
-    <span class="n">details</span> <span class="o">=</span> <span class="n">_first</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="s2">"input_tokens_details"</span><span class="p">,</span> <span class="s2">"prompt_tokens_details"</span><span class="p">)</span>
-    <span class="n">cached</span> <span class="o">=</span> <span class="n">_count</span><span class="p">(</span><span class="n">_get</span><span class="p">(</span><span class="n">details</span><span class="p">,</span> <span class="s2">"cached_tokens"</span><span class="p">))</span>
-    <span class="n">cached_rate</span> <span class="o">=</span> <span class="n">_or</span><span class="p">(</span><span class="n">rates</span><span class="o">.</span><span class="n">cache_read_usd_per_mtok</span><span class="p">,</span> <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="n">rates</span><span class="o">.</span><span class="n">input_usd_per_mtok</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">total_in</span> <span class="o">-</span> <span class="n">cached</span><span class="p">)</span>
-        <span class="o">+</span> <span class="n">cached_rate</span> <span class="o">*</span> <span class="n">cached</span>
-        <span class="o">+</span> <span class="n">rates</span><span class="o">.</span><span class="n">output_usd_per_mtok</span> <span class="o">*</span> <span class="n">output</span>
-    <span class="p">)</span> <span class="o">/</span> <span class="n">TOKENS_PER_PRICE_UNIT</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_dearest_rates</span><span class="p">(</span><span class="n">provider</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">LlmPriceTable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LlmPriceRates</span><span class="p">:</span>

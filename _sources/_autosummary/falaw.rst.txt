@@ -11,6 +11,7 @@
       get_llm_price
       list_llm_prices
       llm_call_cost_usd
+      llm_token_counts
       llm_prices_table_version
       call_plan_from_dict
       call_plan_to_dict
@@ -127,6 +128,7 @@
    .. autosummary::
    
       LlmPrice
+      LlmTokenCounts
       AccountStatus
       Asset
       Beat

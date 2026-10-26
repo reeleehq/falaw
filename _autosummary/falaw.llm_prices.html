@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=6eb1e6b8"></script>
+    <script src="../_static/documentation_options.js?v=29ed05f3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.68" />
+  <meta name="docsearch:version" content="0.0.70" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -508,7 +508,10 @@ priced as its family, because older snapshots can cost more.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.llm_prices_table_version" title="falaw.llm_prices.llm_prices_table_version"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_prices_table_version</span></code></a>()</p></td>
 <td><p>The table's version, a digest of its bytes (see <a class="reference internal" href="falaw.base.html#falaw.base.data_table_version" title="falaw.base.data_table_version"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.base.data_table_version()</span></code></a>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_prices.load_llm_prices" title="falaw.llm_prices.load_llm_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_llm_prices</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_prices.llm_token_counts" title="falaw.llm_prices.llm_token_counts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_token_counts</span></code></a>(provider, usage)</p></td>
+<td><p>The <a class="reference internal" href="#falaw.llm_prices.LlmTokenCounts" title="falaw.llm_prices.LlmTokenCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a> of a vendor <code class="docutils literal notranslate"><span class="pre">usage</span></code>, in the shapes <a class="reference internal" href="#falaw.llm_prices.llm_call_cost_usd" title="falaw.llm_prices.llm_call_cost_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_call_cost_usd()</span></code></a> accepts (a mapping or an SDK object).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.load_llm_prices" title="falaw.llm_prices.load_llm_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_llm_prices</span></code></a>()</p></td>
 <td><p>The committed table, keyed by <code class="docutils literal notranslate"><span class="pre">(provider,</span> <span class="pre">model)</span></code>.</p></td>
 </tr>
 </tbody>
@@ -522,6 +525,9 @@ priced as its family, because older snapshots can cost more.</p>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.LlmPriceRates" title="falaw.llm_prices.LlmPriceRates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a>(*, input_usd_per_mtok, ...[, ...])</p></td>
 <td><p>USD per million tokens for one prompt-length regime of one model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_prices.LlmTokenCounts" title="falaw.llm_prices.LlmTokenCounts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a>(*[, fresh_input, cache_read, ...])</p></td>
+<td><p>The token counts a first-party call's <code class="docutils literal notranslate"><span class="pre">usage</span></code> reports, normalized across providers: the very counts <a class="reference internal" href="#falaw.llm_prices.llm_call_cost_usd" title="falaw.llm_prices.llm_call_cost_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_call_cost_usd()</span></code></a> prices, so a caller that records them next to the cost cannot disagree with it (falaw#89).</p></td>
 </tr>
 </tbody>
 </table>
@@ -548,6 +554,27 @@ priced as its family, because older snapshots can cost more.</p>
 <p>USD per million tokens for one prompt-length regime of one model.</p>
 <dl class="field-list simple">
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="falaw.llm_prices.LlmTokenCounts">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">LlmTokenCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">fresh_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_write</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_write_1h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reasoning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#LlmTokenCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.LlmTokenCounts" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The token counts a first-party call’s <code class="docutils literal notranslate"><span class="pre">usage</span></code> reports, normalized across
+providers: the very counts <a class="reference internal" href="#falaw.llm_prices.llm_call_cost_usd" title="falaw.llm_prices.llm_call_cost_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_call_cost_usd()</span></code></a> prices, so a caller that
+records them next to the cost cannot disagree with it (falaw#89).</p>
+<p><code class="docutils literal notranslate"><span class="pre">fresh_input</span></code> is billed at the input rate, <code class="docutils literal notranslate"><span class="pre">cache_read</span></code> and
+<code class="docutils literal notranslate"><span class="pre">cache_write</span></code> at their own; <code class="docutils literal notranslate"><span class="pre">cache_write_1h</span></code> is the part of
+<code class="docutils literal notranslate"><span class="pre">cache_write</span></code> on the 1-hour tier (already included in it: do not add the two). <code class="docutils literal notranslate"><span class="pre">reasoning</span></code> is informational: it is
+already inside <code class="docutils literal notranslate"><span class="pre">output</span></code>.</p>
+<dl class="field-list simple">
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.llm_prices.LlmTokenCounts.input">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">input</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><span class="pre">int</span></a></span><a class="headerlink" href="#falaw.llm_prices.LlmTokenCounts.input" title="Link to this definition">#</a></dt>
+<dd><p>Every prompt token, cached or not.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py data">
@@ -629,6 +656,28 @@ own table, e.g. one reconciled against an invoice.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="falaw.llm_prices.llm_token_counts">
+<span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">llm_token_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usage</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#llm_token_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.llm_token_counts" title="Link to this definition">#</a></dt>
+<dd><p>The <a class="reference internal" href="#falaw.llm_prices.LlmTokenCounts" title="falaw.llm_prices.LlmTokenCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a> of a vendor <code class="docutils literal notranslate"><span class="pre">usage</span></code>, in the shapes
+<a class="reference internal" href="#falaw.llm_prices.llm_call_cost_usd" title="falaw.llm_prices.llm_call_cost_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_call_cost_usd()</span></code></a> accepts (a mapping or an SDK object).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">llm_token_counts</span><span class="p">(</span><span class="s2">"openai"</span><span class="p">,</span> <span class="p">{</span><span class="s2">"prompt_tokens"</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="s2">"completion_tokens"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">"prompt_tokens_details"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"cached_tokens"</span><span class="p">:</span> <span class="mi">400</span><span class="p">}})</span>
+<span class="go">LlmTokenCounts(fresh_input=600, cache_read=400, cache_write=0, cache_write_1h=0, output=100, reasoning=0)</span>
+</pre></div>
+</div>
+<p>A key that is present but <code class="docutils literal notranslate"><span class="pre">None</span></code> falls through to the next shape’s key
+(<code class="docutils literal notranslate"><span class="pre">{&quot;input_tokens&quot;:</span> <span class="pre">None,</span> <span class="pre">&quot;prompt_tokens&quot;:</span> <span class="pre">7}</span></code> counts 7).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – <code class="docutils literal notranslate"><span class="pre">provider</span></code> is not one of <a class="reference internal" href="#falaw.llm_prices.PROVIDERS" title="falaw.llm_prices.PROVIDERS"><code class="xref py py-data docutils literal notranslate"><span class="pre">PROVIDERS</span></code></a>.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.llm_prices.LlmTokenCounts" title="falaw.llm_prices.LlmTokenCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="falaw.llm_prices.load_llm_prices">
 <span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">load_llm_prices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#load_llm_prices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.load_llm_prices" title="Link to this definition">#</a></dt>
 <dd><p>The committed table, keyed by <code class="docutils literal notranslate"><span class="pre">(provider,</span> <span class="pre">model)</span></code>. Read once per process.</p>
@@ -691,6 +740,10 @@ own table, e.g. one reconciled against an invoice.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.COST_DECIMALS"><code class="docutils literal notranslate"><span class="pre">COST_DECIMALS</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmPrice"><code class="docutils literal notranslate"><span class="pre">LlmPrice</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmPriceRates"><code class="docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmTokenCounts"><code class="docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmTokenCounts.input"><code class="docutils literal notranslate"><span class="pre">LlmTokenCounts.input</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.PRICES_FILENAME"><code class="docutils literal notranslate"><span class="pre">PRICES_FILENAME</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.PROVIDERS"><code class="docutils literal notranslate"><span class="pre">PROVIDERS</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.TOKENS_PER_PRICE_UNIT"><code class="docutils literal notranslate"><span class="pre">TOKENS_PER_PRICE_UNIT</span></code></a></li>
@@ -698,6 +751,7 @@ own table, e.g. one reconciled against an invoice.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.list_llm_prices"><code class="docutils literal notranslate"><span class="pre">list_llm_prices()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.llm_call_cost_usd"><code class="docutils literal notranslate"><span class="pre">llm_call_cost_usd()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.llm_prices_table_version"><code class="docutils literal notranslate"><span class="pre">llm_prices_table_version()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.llm_token_counts"><code class="docutils literal notranslate"><span class="pre">llm_token_counts()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.load_llm_prices"><code class="docutils literal notranslate"><span class="pre">load_llm_prices()</span></code></a></li>
 </ul>
   </nav></div>

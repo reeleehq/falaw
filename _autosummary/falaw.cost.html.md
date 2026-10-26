@@ -32,6 +32,7 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 |-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 | [`estimate_scene_cost`](#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
 | [`frame_pixels`](#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).        |
+| [`quote_aspect`](#falaw.cost.quote_aspect)(record[, aspect_ratio])               | The aspect ratio a quote assumes, so that it stays a ceiling.          |
 | [`video_call_arguments`](#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.           |
 | [`video_duration_arg`](#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
 | [`video_price_quantities`](#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
@@ -138,6 +139,18 @@ sides to codec-friendly multiples): `short_side ** 2 * long / short`.
 * **Return type:**
   [`float`](https://docs.python.org/3/builtins/functions.html#float)
 
+### falaw.cost.quote_aspect(record, aspect_ratio=None)
+
+The aspect ratio a quote assumes, so that it stays a ceiling.
+
+An explicit ratio is used as given. When it is absent or `"auto"` (fal
+derives it from the input image) and the record lists a `"W:H"` enum, the
+widest ratio listed, which has the most pixels; without an enum,
+[`DFLT_VIDEO_ASPECT`](#falaw.cost.DFLT_VIDEO_ASPECT).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### falaw.cost.video_call_arguments(record, arguments, , duration_s, extra)
 
 `(wire arguments, seconds the call bills)` for a video call.
@@ -172,7 +185,10 @@ The quantity hints that price one video call against `record`.
 `tokens_per_pixel_second` is set), else `{"seconds": s}`; `{}` when
 `seconds` is unknown, so the call stays unpriceable rather than free.
 `resolution` defaults to the model’s recorded default; `aspect_ratio`
-to [`DFLT_VIDEO_ASPECT`](#falaw.cost.DFLT_VIDEO_ASPECT).
+to [`quote_aspect()`](#falaw.cost.quote_aspect)’s ceiling. The record’s
+`resolution_rate_factors` entry for `resolution` scales the tokens, so
+they are rate-equivalent tokens at the recorded rate: the quote stays
+`rate x tokens`.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)

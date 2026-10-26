@@ -20,6 +20,7 @@ falaw.cost
       estimate_call_cost
       estimate_scene_cost
       frame_pixels
+      quote_aspect
       video_call_arguments
       video_duration_arg
       video_price_quantities
