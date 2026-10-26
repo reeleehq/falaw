@@ -50,7 +50,7 @@ from typing import Optional
 
 from .errors import FalTermsViolation
 from .licences import validate_licence
-from .llm_rates import ROUTERS  # noqa: F401  (re-exported: the one routers table)
+from .routing import ROUTERS, routed_model  # noqa: F401  (ROUTERS re-exported)
 
 TERMS_PATH = Path(__file__).parent / "data" / "model_terms.json"
 """The ledger — separate from ``models.json`` so it refreshes on its own
@@ -58,6 +58,16 @@ cadence and is reviewed as a legal artifact."""
 
 TRI_STATE = frozenset({"yes", "no", "unknown"})
 PERMISSION = frozenset({"allowed", "forbidden", "unknown"})
+
+DECISIVE_FIELDS = (
+    "license",
+    "license_binds_us",
+    "commercial_use",
+    "third_party_tenancy",
+    "c2pa_compatible",
+    "provenance_constraint",
+)
+"""The ledger fields :func:`_refusal` reads: a change to one can change a verdict."""
 
 ROW_DIGEST_CHARS = 16
 """Hex characters of a row's digest kept in a clearance stamp."""
@@ -179,10 +189,9 @@ def effective_terms_context(explicit: Optional[TermsContext]) -> Optional[TermsC
 
 def terms_subject(application: str, arguments: Optional[Mapping] = None) -> str:
     """The model id the ledger judges for this call: the routed model for a
-    router such as ``fal-ai/any-llm``, else *application* itself."""
-    arg = ROUTERS.get(application)
-    routed = (arguments or {}).get(arg) if arg else None
-    return routed if isinstance(routed, str) and routed else application
+    router such as ``fal-ai/any-llm`` (:func:`falaw.routing.routed_model`), else
+    *application* itself."""
+    return routed_model(application, arguments)
 
 
 def _refusal(row: Optional[ModelTerms], context: TermsContext) -> Optional[str]:
@@ -246,12 +255,15 @@ def check_terms(
 
 
 def row_digest(row: Optional[ModelTerms]) -> str:
-    """A short digest of every field of a ledger row (``""`` for no row): the
-    version of the terms a clearance was granted under, so an edit to the row
-    shows up even when nobody bumped its ``observed_on``."""
+    """A short digest of the fields of a ledger row that decide a clearance
+    (``""`` for no row): the version of the terms a clearance was granted
+    under, so an edit to a verdict shows up even when nobody bumped
+    ``observed_on``. Prose fields (notes, source) and new fields do not move it."""
     if row is None:
         return ""
-    blob = json.dumps(asdict(row), sort_keys=True).encode("utf-8")
+    blob = json.dumps(
+        {name: getattr(row, name) for name in DECISIVE_FIELDS}, sort_keys=True
+    ).encode("utf-8")
     return sha256(blob).hexdigest()[:ROW_DIGEST_CHARS]
 
 
@@ -284,7 +296,9 @@ def is_cleared(
     row as it reads now. A call re-targeted after planning
     (``dataclasses.replace(call, backend=...)``, a replayed or repriced plan) or
     whose row was edited since fails this, so it must be re-checked, never
-    trusted."""
+    trusted. Stamps are issued against the default ledger; pass ``ledger=`` to
+    verify against another. A stamp from before the row digest existed has no
+    ``row`` and reads as not cleared."""
     stamp = call.metadata.get(CLEARANCE_KEY)
     return stamp == clearance(
         call.application, call.backend, context, call.arguments, ledger=ledger

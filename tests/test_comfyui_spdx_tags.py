@@ -28,3 +28,24 @@ def test_an_agpl_tag_is_still_restricted(tmp_path):
     assert _screen(tmp_path, "SPDX-License-Identifier: AGPL-3.0-only\n").agpl_packs == (
         "pack",
     )
+
+
+def test_a_licenseref_tag_is_not_a_determinable_licence(tmp_path):
+    screen = _screen(tmp_path, "SPDX-License-Identifier: LicenseRef-Proprietary-NC\n")
+    assert screen.undeterminable == ("pack",)
+
+
+def test_a_tag_in_a_comment_and_a_with_exception_are_read(tmp_path):
+    assert _screen(
+        tmp_path, "/* SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception */\n"
+    ).passed
+
+
+def test_a_tag_overrides_a_title_that_matched_before(tmp_path):
+    assert _screen(
+        tmp_path, "MIT License\nSPDX-License-Identifier: LicenseRef-Proprietary\n"
+    ).undeterminable == ("pack",)
+
+
+def test_tag_ids_are_case_insensitive(tmp_path):
+    assert _screen(tmp_path, "SPDX-License-Identifier: mit\n").passed

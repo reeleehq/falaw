@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-from ..licences import UNKNOWN, is_valid_licence
+from ..licences import SPDX_IDS, UNKNOWN, is_valid_licence
 from .problems import Problem
 
 LICENCE_FILE_PREFIXES = ("LICENSE", "LICENCE", "COPYING")
@@ -43,7 +43,14 @@ AGPL_TITLE = "GNU AFFERO GENERAL PUBLIC LICENSE"
 """The AGPL's own upper-case title, flagged wherever it sits in a file. GPLv3
 section 13 names the licence in mixed case, so this does not flag GPLv3."""
 
-SPDX_TAG = re.compile(r"SPDX-License-Identifier:\s*(.+)", re.IGNORECASE)
+SPDX_TAG = re.compile(
+    r"SPDX-License-Identifier:[ \t]*([^\r\n*]+?)[ \t]*(?:\*/|-->)?[ \t]*$",
+    re.IGNORECASE | re.MULTILINE,
+)
+"""A tag's expression, up to the end of its line or a closing comment marker."""
+
+EXCEPTION = re.compile(r"\s+WITH\s+\S+", re.IGNORECASE)
+"""An SPDX ``WITH <exception>`` suffix: the exception does not change which licence it is."""
 
 KNOWN_LICENCES = {
     "MIT": r"\bMIT License\b|Permission is hereby granted, free of charge",
@@ -124,14 +131,28 @@ def _is_restricted(text: str) -> bool:
     )
 
 
+def _is_known_tag(tag: str) -> bool:
+    """A tag naming standard SPDX ids only: ``unknown`` and ``LicenseRef-*`` are
+    the vocabulary's words for terms nobody has read, so they cannot make a
+    licence determinable here."""
+    if tag.lower() == UNKNOWN or "licenseref-" in tag.lower():
+        return False
+    canonical = {i.lower(): i for i in SPDX_IDS}
+    words = [
+        canonical.get(w.lower(), w)
+        for w in tag.replace("(", " ( ").replace(")", " ) ").split()
+    ]
+    return is_valid_licence(" ".join(words).replace("( ", "(").replace(" )", ")"))
+
+
 def _is_determinable(text: str) -> bool:
     """Whether the file's licence can be read: SPDX tags, when it has any, must
     all be in the shared vocabulary (:func:`falaw.licences.is_valid_licence`);
     one that is not makes it undeterminable, whatever the text says. Without a
     tag, the title must match a :data:`KNOWN_LICENCES` pattern."""
-    tags = [t.strip() for t in SPDX_TAG.findall(text)]
+    tags = [EXCEPTION.sub("", t).strip() for t in SPDX_TAG.findall(text)]
     if tags:
-        return all(t != UNKNOWN and is_valid_licence(t) for t in tags)
+        return all(_is_known_tag(t) for t in tags)
     title = _title(text)
     return any(re.search(p, title, re.IGNORECASE) for p in KNOWN_LICENCES.values())
 
