@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=d59c1f54"></script>
+    <script src="../../_static/documentation_options.js?v=71e49b4d"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.74" />
+  <meta name="docsearch:version" content="0.0.75" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1053,11 +1053,12 @@ window.runMermaid = runMermaid;</script>
 
     <span class="k">if</span> <span class="n">shots_as_video</span><span class="p">:</span>
         <span class="n">v_record</span> <span class="o">=</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="s2">"image_to_video"</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span>
-        <span class="n">v_cost</span><span class="p">,</span> <span class="n">problem</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">""</span>
+        <span class="n">v_cost</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">billed</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">billed</span> <span class="o">=</span> <span class="n">duration</span>
-            <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"duration"</span> <span class="ow">in</span> <span class="n">v_record</span><span class="o">.</span><span class="n">param_specs</span><span class="p">:</span>
-                <span class="n">billed</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">video_duration_arg</span><span class="p">(</span><span class="n">v_record</span><span class="p">,</span> <span class="n">duration</span><span class="p">))</span>  <span class="c1"># as sent</span>
+            <span class="c1"># the planner's own rule: as sent, else the model's declared default</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">billed</span> <span class="o">=</span> <span class="n">video_call_arguments</span><span class="p">(</span>
+                <span class="n">v_record</span><span class="p">,</span> <span class="p">{},</span> <span class="n">duration_s</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="kc">None</span>
+            <span class="p">)</span>
             <span class="n">v_cost</span> <span class="o">=</span> <span class="n">estimate_call_cost</span><span class="p">(</span>
                 <span class="n">v_record</span><span class="p">,</span> <span class="o">**</span><span class="n">video_price_quantities</span><span class="p">(</span><span class="n">v_record</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">billed</span><span class="p">)</span>
             <span class="p">)</span>
@@ -1066,7 +1067,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="n">v_cost</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">why</span> <span class="o">=</span> <span class="n">problem</span> <span class="ow">or</span> <span class="p">(</span>
                 <span class="s2">"no duration on the Shot, and the model is priced per second or per token"</span>
-                <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">billed</span> <span class="ow">is</span> <span class="kc">None</span>
                 <span class="k">else</span> <span class="sa">f</span><span class="s2">"no cost_estimate on </span><span class="si">{</span><span class="n">v_record</span><span class="o">.</span><span class="n">id</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
             <span class="n">skipped</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"shot </span><span class="si">{</span><span class="n">shot</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> i2v: </span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
@@ -1082,7 +1083,7 @@ window.runMermaid = runMermaid;</script>
                         <span class="k">if</span> <span class="n">v_record</span><span class="o">.</span><span class="n">cost_estimate</span>
                         <span class="k">else</span> <span class="s2">"USD"</span>
                     <span class="p">),</span>
-                    <span class="n">note</span><span class="o">=</span><span class="sa">f</span><span class="s2">"image_to_video × </span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s"</span><span class="p">,</span>
+                    <span class="n">note</span><span class="o">=</span><span class="sa">f</span><span class="s2">"image_to_video × </span><span class="si">{</span><span class="n">billed</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s"</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
     <span class="k">return</span> <span class="n">out</span>
