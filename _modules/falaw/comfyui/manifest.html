@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="alternate" type="text/markdown" href="manifest.html.md">
+<link rel="describedby" href="../../../llms.txt" type="text/markdown">
+    <title>falaw.comfyui.manifest &#8212; falaw</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d75fae25" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx_autodoc_typehints.css?v=057ac668" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/epythet.css?v=f0eeacdc" />
+  
+  <!-- So that users can add custom icons -->
+  <script defer src="../../../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+
+    <script src="../../../_static/documentation_options.js?v=22d3c163"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=fd10adb8"></script>
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/falaw/comfyui/manifest';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="color-scheme" content="light dark"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="0.0.66" />
+  
+    
+    <script src="../../../_static/searchtools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script src="../../../searchindex.js"></script>
+  
+  </head>
+  <body data-default-mode="">
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+  
+  
+  
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">falaw</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../ai-agents.html">
+    For AI agents
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/thorwhalen/falaw" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api.html">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../ai-agents.html">
+    For AI agents
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/thorwhalen/falaw" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i><span class="visually-hidden">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">falaw.comfyui.manifest</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for falaw.comfyui.manifest</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""The deployment-manifest checker (checklist rows 1-4, 6-9, L).</span>
+
+<span class="sd">A manifest is one committed file; this reads it as a dict. Two rules: a missing</span>
+<span class="sd">field is a failure, and **a bare boolean is not evidence** — a claim is checked</span>
+<span class="sd">against what backs it (a file digest, a pinned commit proven to sit at or after</span>
+<span class="sd">the floor tag, an allowlist of arguments). Everything the checker would have to</span>
+<span class="sd">reach for is a keyword argument: ``base_dir`` (where evidence files live),</span>
+<span class="sd">``commit_floor`` (the git ancestry test), ``allowed_args`` and the blocked</span>
+<span class="sd">endpoint set. A wrong-typed field is a :class:`Problem`, never an exception.</span>
+
+<span class="sd">Limit worth knowing: a proxy config's digest proves the file is the one the</span>
+<span class="sd">manifest names, not that it enforces ``client_endpoints``. The endpoint lists</span>
+<span class="sd">are claims about that config until a parser for the deployment's proxy is</span>
+<span class="sd">plugged in.</span>
+
+<span class="sd">&gt;&gt;&gt; from falaw.comfyui import check_manifest</span>
+<span class="sd">&gt;&gt;&gt; [str(p) for p in check_manifest({})][:1]</span>
+<span class="sd">['2: comfyui.commit must be a 40-hex commit sha']</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ipaddress</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">posixpath</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.parse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Mapping</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.licences</span><span class="w"> </span><span class="kn">import</span> <span class="n">RESTRICTED_FAMILY</span><span class="p">,</span> <span class="n">LicenceScreen</span><span class="p">,</span> <span class="n">nodes_digest</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.problems</span><span class="w"> </span><span class="kn">import</span> <span class="n">Problem</span>
+
+<span class="n">FLOOR_TAG</span> <span class="o">=</span> <span class="s2">"v0.28.0"</span>
+<span class="sd">"""The ComfyUI release a pinned commit must be at or after (it carries the</span>
+<span class="sd">CVE-2026-68771 fix and PR #14939; see reelee's deployment checklist row 2)."""</span>
+
+<span class="n">_SHA1</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[0-9a-f]</span><span class="si">{40}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">_SHA256</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[0-9a-f]</span><span class="si">{64}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">_HOSTNAME</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+<span class="p">)</span>
+<span class="n">_INTERNAL_HOST</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="sa">r</span><span class="s2">"(^|\.)(internal|local|localhost|localdomain)$"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span>
+<span class="p">)</span>
+
+<span class="n">BLOCKED_ENDPOINTS</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">"/internal"</span><span class="p">,</span>
+    <span class="s2">"/userdata"</span><span class="p">,</span>
+    <span class="s2">"/v2/userdata"</span><span class="p">,</span>
+    <span class="s2">"/users"</span><span class="p">,</span>
+    <span class="s2">"/settings"</span><span class="p">,</span>
+    <span class="s2">"/system_stats"</span><span class="p">,</span>
+    <span class="s2">"/experiment"</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="sd">"""Prefixes no caller of ComfyUI may reach, through any proxy list."""</span>
+
+<span class="n">FACADE_ONLY_ENDPOINTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"/object_info"</span><span class="p">,)</span>
+<span class="sd">"""Reachable by the facade's identity only: never in ``client_endpoints``."""</span>
+
+<span class="n">API_PREFIX</span> <span class="o">=</span> <span class="s2">"/api"</span>
+<span class="sd">"""ComfyUI serves every route again under this prefix; both spellings are one."""</span>
+
+<span class="n">DEFAULT_ALLOWED_ARGS</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"--listen"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">"--port"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">"--disable-all-custom-nodes"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="s2">"--whitelist-custom-nodes"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span>
+    <span class="s2">"--output-directory"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">"--temp-directory"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">"--input-directory"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="s2">"--cpu"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="s2">"--disable-auto-launch"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="s2">"--disable-metadata"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="s2">"--dont-print-server"</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="s2">"--max-upload-size"</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="sd">"""Arguments a deployment may pass, each with its ``(min, max)`` value count.</span>
+<span class="sd">An allowlist, not a secret-shaped scan: ``/system_stats`` returns ``sys.argv``,</span>
+<span class="sd">so a stray value after a flag that takes none (``--cpu sk-...``) is as much a</span>
+<span class="sd">leak as a ``--api-key`` flag. A bare ``--listen`` is refused by its count: in</span>
+<span class="sd">ComfyUI it means every interface."""</span>
+
+<span class="c1">#: flag -&gt; (checklist row, why). Named so the failure says *why*.</span>
+<span class="n">EXPLICITLY_FORBIDDEN_ARGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"--enable-manager"</span><span class="p">:</span> <span class="p">(</span>
+        <span class="s2">"4"</span><span class="p">,</span>
+        <span class="s2">"installs arbitrary code from HTTP requests (CVSS 10.0 RCE of its own)"</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="s2">"--enable-cors-header"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"7"</span><span class="p">,</span> <span class="s2">"lets any web page drive the unauthenticated API"</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">DIRECTORY_FLAGS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"--output-directory"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"/output"</span><span class="p">,),</span>
+    <span class="s2">"--temp-directory"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"/temp"</span><span class="p">,),</span>
+    <span class="s2">"--input-directory"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"/temp"</span><span class="p">,),</span>
+<span class="p">}</span>
+<span class="sd">"""Directory flags may only point at the quota'd mounts, never at host paths."""</span>
+
+<span class="n">HOST_SYSTEM_DIRS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span><span class="s2">"etc"</span><span class="p">,</span> <span class="s2">"proc"</span><span class="p">,</span> <span class="s2">"sys"</span><span class="p">,</span> <span class="s2">"root"</span><span class="p">,</span> <span class="s2">"home"</span><span class="p">,</span> <span class="s2">"var"</span><span class="p">,</span> <span class="s2">"usr"</span><span class="p">,</span> <span class="s2">"bin"</span><span class="p">,</span> <span class="s2">"dev"</span><span class="p">,</span> <span class="s2">"boot"</span><span class="p">,</span> <span class="s2">"run"</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="sd">"""First path segments a mount ``source`` may not start with."""</span>
+
+<span class="n">REQUIRED_MOUNTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"/models"</span><span class="p">,</span> <span class="s2">"/output"</span><span class="p">,</span> <span class="s2">"/temp"</span><span class="p">)</span>
+<span class="sd">"""The only paths a deployment may mount (row 6: no other host path)."""</span>
+
+
+<span class="c1"># --- shape normalisation ------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mapping</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_mappings</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Mapping</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The mapping entries of a list; wrong-typed entries are reported by the</span>
+<span class="sd">    caller's own presence checks (they simply contribute nothing)."""</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_strings</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">)]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+
+
+<span class="c1"># --- evidence -----------------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_digest_of</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">read_bytes</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="git_commit_floor">
+<a class="viewcode-back" href="../../../_autosummary/falaw.comfyui.manifest.html#falaw.comfyui.git_commit_floor">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">git_commit_floor</span><span class="p">(</span>
+    <span class="n">repo</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">FLOOR_TAG</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""A ``commit_floor`` that asks a local ComfyUI checkout whether the tag is</span>
+<span class="sd">    an ancestor of (or equal to) the commit: ``git merge-base --is-ancestor``."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">at_or_after</span><span class="p">(</span><span class="n">commit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+            <span class="p">[</span><span class="s2">"git"</span><span class="p">,</span> <span class="s2">"-C"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">repo</span><span class="p">),</span> <span class="s2">"merge-base"</span><span class="p">,</span> <span class="s2">"--is-ancestor"</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">commit</span><span class="p">],</span>
+            <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">done</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">at_or_after</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_evidence</span><span class="p">(</span>
+    <span class="n">item</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">evidence</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">base</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Path</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""``{"path", "sha256"}`` evidence: a file inside ``base`` matching its digest."""</span>
+    <span class="n">ev</span> <span class="o">=</span> <span class="n">_mapping</span><span class="p">(</span><span class="n">evidence</span><span class="p">)</span>
+    <span class="n">path</span><span class="p">,</span> <span class="n">claimed</span> <span class="o">=</span> <span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">ev</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sha256"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">path</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_SHA256</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">claimed</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> must be </span><span class="se">{{</span><span class="s2">path, sha256</span><span class="se">}}</span><span class="s2"> evidence"</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">base</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: no base_dir given to verify </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="p">(</span><span class="n">base</span> <span class="o">/</span> <span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">is_relative_to</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">resolve</span><span class="p">()):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> points outside base_dir"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">target</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> not found under base_dir"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_digest_of</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">!=</span> <span class="n">claimed</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2"> does not match its sha256"</span><span class="p">)</span>
+
+
+<span class="c1"># --- arguments ----------------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_flags</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="nb">list</span><span class="p">[</span><span class="n">Problem</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Group argv into ``{flag: [values]}``; shape errors come back as Problems."""</span>
+    <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">problems</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Problem</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"--"</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s2">"="</span> <span class="ow">in</span> <span class="n">token</span><span class="p">:</span>
+                <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">Problem</span><span class="p">(</span>
+                        <span class="s2">"7"</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">token</span><span class="si">!r}</span><span class="s2">: write a flag and its value as separate arguments"</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
+                <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Problem</span><span class="p">(</span><span class="s2">"7"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2"> is given twice"</span><span class="p">))</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="n">token</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">elif</span> <span class="n">flag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Problem</span><span class="p">(</span><span class="s2">"7"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">token</span><span class="si">!r}</span><span class="s2"> is a value with no flag"</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">problems</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_args</span><span class="p">(</span>
+    <span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">allowed</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"args"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">raw</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"7"</span><span class="p">,</span> <span class="s2">"args must be a list of strings"</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">flags</span><span class="p">,</span> <span class="n">problems</span> <span class="o">=</span> <span class="n">_flags</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">problems</span>
+    <span class="k">if</span> <span class="s2">"--disable-all-custom-nodes"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"4"</span><span class="p">,</span> <span class="s2">"--disable-all-custom-nodes is required"</span><span class="p">)</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">_mappings</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"custom_nodes"</span><span class="p">))}</span>
+    <span class="k">for</span> <span class="n">flag</span><span class="p">,</span> <span class="n">values</span> <span class="ow">in</span> <span class="n">flags</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">EXPLICITLY_FORBIDDEN_ARGS</span><span class="p">:</span>
+            <span class="n">item</span><span class="p">,</span> <span class="n">why</span> <span class="o">=</span> <span class="n">EXPLICITLY_FORBIDDEN_ARGS</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"never </span><span class="si">{</span><span class="n">flag</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">why</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">flag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"7"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"argument </span><span class="si">{</span><span class="n">flag</span><span class="si">!r}</span><span class="s2"> is not on the allowlist"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">allowed</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lo</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">hi</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"7"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">flag</span><span class="si">}</span><span class="s2"> takes </span><span class="si">{</span><span class="n">lo</span><span class="si">}</span><span class="s2">..</span><span class="si">{</span><span class="n">hi</span><span class="si">}</span><span class="s2"> values, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="s2">"--whitelist-custom-nodes"</span> <span class="ow">in</span> <span class="n">flags</span>
+        <span class="ow">and</span> <span class="nb">set</span><span class="p">(</span><span class="n">flags</span><span class="p">[</span><span class="s2">"--whitelist-custom-nodes"</span><span class="p">])</span> <span class="o">!=</span> <span class="n">names</span>
+    <span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"4"</span><span class="p">,</span> <span class="s2">"--whitelist-custom-nodes must equal custom_nodes names"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">flag</span><span class="p">,</span> <span class="n">mounts</span> <span class="ow">in</span> <span class="n">DIRECTORY_FLAGS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">flags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mounts</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"6"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">flag</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> must be one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">mounts</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">flags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"--port"</span><span class="p">,</span> <span class="p">()):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">port</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"--port </span><span class="si">{</span><span class="n">port</span><span class="si">!r}</span><span class="s2"> is not a number"</span><span class="p">)</span>
+
+
+<span class="c1"># --- rows ---------------------------------------------------------------------</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_commits</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">commit_floor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">commit</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">_mapping</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"comfyui"</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"commit"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_SHA1</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">commit</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"2"</span><span class="p">,</span> <span class="s2">"comfyui.commit must be a 40-hex commit sha"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">commit_floor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+            <span class="s2">"2"</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"cannot verify the commit is at or after </span><span class="si">{</span><span class="n">FLOOR_TAG</span><span class="si">}</span><span class="s2"> (no commit_floor given)"</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">commit_floor</span><span class="p">(</span><span class="n">commit</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"2"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"comfyui.commit is not at or after </span><span class="si">{</span><span class="n">FLOOR_TAG</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_custom_nodes</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"custom_nodes"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">nodes</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"4"</span><span class="p">,</span> <span class="s2">"custom_nodes must be a list"</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">_mapping</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"?"</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"repo"</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"4"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"custom node </span><span class="si">{</span><span class="n">label</span><span class="si">!r}</span><span class="s2"> needs name and repo"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_SHA1</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"commit"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"4"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"custom node </span><span class="si">{</span><span class="n">label</span><span class="si">!r}</span><span class="s2"> is not pinned by commit"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_listen</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">flags</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_flags</span><span class="p">(</span><span class="n">_strings</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"args"</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">_mapping</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"network"</span><span class="p">))</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"public_ingress"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"network.public_ingress must be false"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">flags</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"--listen"</span><span class="p">,</span> <span class="p">()):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ip</span> <span class="o">=</span> <span class="n">ipaddress</span><span class="o">.</span><span class="n">ip_address</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"--listen </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2"> is not an IP address"</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">ip</span><span class="o">.</span><span class="n">is_unspecified</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">ip</span><span class="o">.</span><span class="n">is_loopback</span> <span class="ow">or</span> <span class="n">ip</span><span class="o">.</span><span class="n">is_private</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"--listen </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> is not a private address"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalise_endpoint</span><span class="p">(</span><span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``//API/./%49nternal/`` -&gt; ``/internal``: what the engine would route it as."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">unquote</span><span class="p">(</span><span class="n">endpoint</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"?"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">posixpath</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="s2">"/"</span> <span class="o">+</span> <span class="n">path</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">))</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"//"</span><span class="p">,</span> <span class="s2">"/"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="n">API_PREFIX</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">API_PREFIX</span> <span class="o">+</span> <span class="s2">"/"</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">API_PREFIX</span><span class="p">)</span> <span class="p">:]</span> <span class="ow">or</span> <span class="s2">"/"</span>
+    <span class="k">return</span> <span class="n">path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_under</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">path</span> <span class="o">==</span> <span class="n">prefix</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="s2">"/"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_proxy</span><span class="p">(</span>
+    <span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">blocked</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">base</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">_mapping</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"proxy"</span><span class="p">))</span>
+    <span class="k">yield from</span> <span class="n">_evidence</span><span class="p">(</span><span class="s2">"3"</span><span class="p">,</span> <span class="s2">"proxy.config"</span><span class="p">,</span> <span class="n">proxy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"config"</span><span class="p">),</span> <span class="n">base</span><span class="p">)</span>
+    <span class="n">facade</span><span class="p">,</span> <span class="n">client</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_strings</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"facade_only_endpoints"</span><span class="p">)),</span>
+        <span class="n">_strings</span><span class="p">(</span><span class="n">proxy</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"client_endpoints"</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"3"</span><span class="p">,</span> <span class="s2">"proxy.client_endpoints must list the allowed endpoints"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="p">(</span><span class="o">*</span><span class="n">facade</span><span class="p">,</span> <span class="o">*</span><span class="n">client</span><span class="p">):</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">_normalise_endpoint</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">"*"</span> <span class="ow">in</span> <span class="n">ep</span> <span class="ow">or</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">"/"</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"3"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"endpoint </span><span class="si">{</span><span class="n">ep</span><span class="si">!r}</span><span class="s2"> must name a route (no wildcard, no root)"</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">_under</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">blocked</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"3"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"endpoint </span><span class="si">{</span><span class="n">ep</span><span class="si">!r}</span><span class="s2"> must not be exposed"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ep</span> <span class="ow">in</span> <span class="n">client</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">_under</span><span class="p">(</span><span class="n">_normalise_endpoint</span><span class="p">(</span><span class="n">ep</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">FACADE_ONLY_ENDPOINTS</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"3"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">ep</span><span class="si">!r}</span><span class="s2"> may be reachable by the facade only"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_bad_source</span><span class="p">(</span><span class="n">source</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether a mount ``source`` could expose the host: not a string, or the</span>
+<span class="sd">    root, a parent escape, or a system directory."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">source</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">posixpath</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">source</span><span class="p">)</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">norm</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="s2">"."</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">norm</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">".."</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="p">(</span><span class="n">norm</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">first</span> <span class="ow">in</span> <span class="n">HOST_SYSTEM_DIRS</span><span class="p">)</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_mounts</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mounts"</span><span class="p">)</span>
+    <span class="n">entries</span> <span class="o">=</span> <span class="n">raw</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"6"</span><span class="p">,</span> <span class="s2">"mounts must be a list of mappings"</span><span class="p">)</span>
+    <span class="n">mounts</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">entries</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">mount</span> <span class="ow">in</span> <span class="n">mounts</span><span class="p">:</span>
+        <span class="n">path</span><span class="p">,</span> <span class="n">quota</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">mount</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)),</span> <span class="n">mount</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"quota_gb"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">REQUIRED_MOUNTS</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"6"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"mount </span><span class="si">{</span><span class="n">path</span><span class="si">!r}</span><span class="s2">: no host path other than </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">REQUIRED_MOUNTS</span><span class="p">)</span><span class="si">}</span><span class="s2"> may be mounted"</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">_bad_source</span><span class="p">(</span><span class="n">mount</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source"</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"6"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"mount </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: source must name a dedicated volume or directory (not '/', '..' or a system directory)"</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="o">==</span> <span class="s2">"/models"</span> <span class="ow">and</span> <span class="n">mount</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"mode"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"ro"</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"6"</span><span class="p">,</span> <span class="s2">"/models must be mounted read-only"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">path</span> <span class="o">!=</span> <span class="s2">"/models"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">quota</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">quota</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">quota</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"6"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> needs a quota_gb"</span><span class="p">)</span>
+    <span class="n">present</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"path"</span><span class="p">))</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">mounts</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">required</span> <span class="ow">in</span> <span class="n">REQUIRED_MOUNTS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">required</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">present</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"6"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"missing mount </span><span class="si">{</span><span class="n">required</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_egress</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">_mapping</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"network"</span><span class="p">))</span>
+    <span class="n">hosts</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"egress_allow"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hosts</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">hosts</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"8"</span><span class="p">,</span> <span class="s2">"network.egress_allow must name the allowed hosts"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="n">hosts</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hosts</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">():</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">_HOSTNAME</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"8"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"egress host </span><span class="si">{</span><span class="n">host</span><span class="si">!r}</span><span class="s2"> must be a named host (no '*', CIDR or bare IP)"</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">_INTERNAL_HOST</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"8"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"egress host </span><span class="si">{</span><span class="n">host</span><span class="si">!r}</span><span class="s2"> is an internal name (cloud metadata lives there)"</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">yield from</span> <span class="n">_evidence</span><span class="p">(</span>
+        <span class="s2">"8"</span><span class="p">,</span> <span class="s2">"network.metadata_blocked_by"</span><span class="p">,</span> <span class="n">net</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"metadata_blocked_by"</span><span class="p">),</span> <span class="n">base</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_tenancy</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">allow_shared</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">tenancy</span> <span class="o">=</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tenancy"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tenancy</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"per_tenant"</span><span class="p">,</span> <span class="s2">"shared"</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"9"</span><span class="p">,</span> <span class="s2">"tenancy must be recorded (per_tenant | shared)"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">tenancy</span> <span class="o">==</span> <span class="s2">"shared"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_shared</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+            <span class="s2">"9"</span><span class="p">,</span>
+            <span class="s2">"tenancy 'shared' is incompatible with a multi-tenant host (pass allow_shared=True for a single-owner dev instance)"</span><span class="p">,</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_licences</span><span class="p">(</span>
+    <span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+    <span class="n">licence_screen</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">LicenceScreen</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+    <span class="n">screen</span> <span class="o">=</span> <span class="n">_mapping</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"licence_screen"</span><span class="p">))</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="n">_mappings</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"custom_nodes"</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">screen</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"checked_at"</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span><span class="s2">"L"</span><span class="p">,</span> <span class="s2">"the licence screen has not been run"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">screen</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"agpl_packs"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">screen</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"undeterminable"</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+            <span class="s2">"L"</span><span class="p">,</span> <span class="s2">"the licence screen found AGPL-family or undeterminable packs"</span>
+        <span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">nodes_digest</span><span class="p">((</span><span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">),</span> <span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"commit"</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">screen</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"nodes_digest"</span><span class="p">)</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+            <span class="s2">"L"</span><span class="p">,</span> <span class="s2">"licence_screen.nodes_digest does not match the current custom_nodes"</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">licence_screen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+            <span class="s2">"L"</span><span class="p">,</span>
+            <span class="s2">"the licence screen is self-asserted: pass licence_screen= to re-run it on the pinned checkout"</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fresh</span> <span class="o">=</span> <span class="n">licence_screen</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">])</span>
+        <span class="k">yield from</span> <span class="n">fresh</span><span class="o">.</span><span class="n">problems</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">fresh</span><span class="o">.</span><span class="n">nodes_digest</span> <span class="o">!=</span> <span class="n">expected</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"L"</span><span class="p">,</span>
+                <span class="s2">"the pinned checkout does not match custom_nodes (names/commits differ)"</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">for</span> <span class="n">worker</span> <span class="ow">in</span> <span class="n">_mappings</span><span class="p">(</span><span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"third_party_workers"</span><span class="p">)):</span>
+        <span class="n">restricted</span> <span class="o">=</span> <span class="n">RESTRICTED_FAMILY</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">worker</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"licence"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">restricted</span> <span class="ow">and</span> <span class="n">worker</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"use"</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">"black box only"</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Problem</span><span class="p">(</span>
+                <span class="s2">"L"</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">"AGPL-family worker </span><span class="si">{</span><span class="n">worker</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> may only be used as a black box"</span><span class="p">,</span>
+            <span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_manifest">
+<a class="viewcode-back" href="../../../_autosummary/falaw.comfyui.manifest.html#falaw.comfyui.check_manifest">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_manifest</span><span class="p">(</span>
+    <span class="n">manifest</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">base_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">commit_floor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">allowed_args</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="n">DEFAULT_ALLOWED_ARGS</span><span class="p">,</span>
+    <span class="n">blocked_endpoints</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">BLOCKED_ENDPOINTS</span><span class="p">,</span>
+    <span class="n">allow_shared</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">licence_screen</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Collection</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">LicenceScreen</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Problem</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Problems with a deployment manifest; an empty list means it passes.</span>
+
+<span class="sd">    ``base_dir`` is where evidence files (proxy config, network policy) are</span>
+<span class="sd">    resolved and their sha256 verified; ``commit_floor(commit) -&gt; bool`` answers</span>
+<span class="sd">    whether the commit is at or after :data:`FLOOR_TAG` (see</span>
+<span class="sd">    :func:`git_commit_floor`); ``licence_screen(names) -&gt; LicenceScreen``</span>
+<span class="sd">    re-runs the screen on the pinned checkout (e.g.</span>
+<span class="sd">    ``lambda names: screen_licences(nodes_dir, only=names)``). Without</span>
+<span class="sd">    them those claims cannot be verified, which is a problem, not a pass.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">Problem</span><span class="p">(</span><span class="s2">"*"</span><span class="p">,</span> <span class="s2">"the manifest must be a JSON object"</span><span class="p">)]</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">base_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">base_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">checks</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Iterator</span><span class="p">[</span><span class="n">Problem</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_check_commits</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">commit_floor</span><span class="p">),</span>
+        <span class="n">_check_listen</span><span class="p">(</span><span class="n">manifest</span><span class="p">),</span>
+        <span class="n">_check_proxy</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">blocked_endpoints</span><span class="p">,</span> <span class="n">base</span><span class="p">),</span>
+        <span class="n">_check_custom_nodes</span><span class="p">(</span><span class="n">manifest</span><span class="p">),</span>
+        <span class="n">_check_args</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">allowed_args</span><span class="p">),</span>
+        <span class="n">_check_mounts</span><span class="p">(</span><span class="n">manifest</span><span class="p">),</span>
+        <span class="n">_check_egress</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">base</span><span class="p">),</span>
+        <span class="n">_check_tenancy</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">allow_shared</span><span class="p">),</span>
+        <span class="n">_check_licences</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">licence_screen</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">problem</span> <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">checks</span> <span class="k">for</span> <span class="n">problem</span> <span class="ow">in</span> <span class="n">check</span><span class="p">]</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

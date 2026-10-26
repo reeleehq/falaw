@@ -16,6 +16,12 @@
 - [falaw.bridges.skill](falaw.bridges.skill.html.md): Render a Claude SKILL.md (and references) from the falaw tool registry.
 - [falaw.cache](falaw.cache.html.md): Content-addressed cache for fal calls.
 - [falaw.canonical](falaw.canonical.html.md): One canonical byte-form for everything falaw hashes (falaw#17).
+- [falaw.comfyui](falaw.comfyui.html.md): The ComfyUI deployment gate, executable (falaw#94, from reelee#241).
+- [falaw.comfyui.audit](falaw.comfyui.audit.html.md): Facade item 10: every submitted graph is audited before it leaves the process.
+- [falaw.comfyui.graph](falaw.comfyui.graph.html.md): Facade item 5: no graph parameter reaches a path unsanitised.
+- [falaw.comfyui.licences](falaw.comfyui.licences.html.md): Licence screen for ComfyUI node packs (checklist row L).
+- [falaw.comfyui.manifest](falaw.comfyui.manifest.html.md): The deployment-manifest checker (checklist rows 1-4, 6-9, L).
+- [falaw.comfyui.problems](falaw.comfyui.problems.html.md): The one result type every gate check returns.
 - [falaw.content](falaw.content.html.md): Content addressing for fal-produced media — identify a file by &#42;what it is&#42;.
 - [falaw.core](falaw.core.html.md): Wrapper over &#96;fal_client.subscribe&#96; with progress events and auto-journaling.
 - [falaw.corpus](falaw.corpus.html.md): Extract model records from &#96;misc/docs/llms-full.txt&#96;.

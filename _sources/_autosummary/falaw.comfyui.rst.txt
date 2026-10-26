@@ -1,0 +1,44 @@
+falaw.comfyui
+=============
+
+.. automodule:: falaw.comfyui
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      assert_safe_graph
+      check_graph_paths
+      check_manifest
+      git_commit_floor
+      nodes_digest
+      screen_licences
+      submit_graph
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      FileAuditSink
+      GraphAuditSink
+      LicenceScreen
+      Problem
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      UnsafeGraphError
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   audit
+   graph
+   licences
+   manifest
+   problems

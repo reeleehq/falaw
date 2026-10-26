@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=152b4b09"></script>
+    <script src="../_static/documentation_options.js?v=22d3c163"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.65" />
+  <meta name="docsearch:version" content="0.0.66" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -332,6 +332,14 @@
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.cache.html">falaw.cache</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.canonical.html">falaw.canonical</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="falaw.comfyui.html">falaw.comfyui</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="falaw.comfyui.audit.html">falaw.comfyui.audit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="falaw.comfyui.graph.html">falaw.comfyui.graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="falaw.comfyui.licences.html">falaw.comfyui.licences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="falaw.comfyui.manifest.html">falaw.comfyui.manifest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="falaw.comfyui.problems.html">falaw.comfyui.problems</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.content.html">falaw.content</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.core.html">falaw.core</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.corpus.html">falaw.corpus</a></li>
@@ -4608,79 +4616,82 @@ shot-list builder shows as its model-limits reference.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="falaw.canonical.html#module-falaw.canonical" title="falaw.canonical"><code class="xref py py-obj docutils literal notranslate"><span class="pre">canonical</span></code></a></p></td>
 <td><p>One canonical byte-form for everything falaw hashes (falaw#17).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.content.html#module-falaw.content" title="falaw.content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.comfyui.html#module-falaw.comfyui" title="falaw.comfyui"><code class="xref py py-obj docutils literal notranslate"><span class="pre">comfyui</span></code></a></p></td>
+<td><p>The ComfyUI deployment gate, executable (falaw#94, from reelee#241).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.content.html#module-falaw.content" title="falaw.content"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content</span></code></a></p></td>
 <td><p>Content addressing for fal-produced media — identify a file by <em>what it is</em>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.core.html#module-falaw.core" title="falaw.core"><code class="xref py py-obj docutils literal notranslate"><span class="pre">core</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.core.html#module-falaw.core" title="falaw.core"><code class="xref py py-obj docutils literal notranslate"><span class="pre">core</span></code></a></p></td>
 <td><p>Wrapper over <code class="code docutils literal notranslate"><span class="pre">fal_client.subscribe</span></code> with progress events and auto-journaling.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.corpus.html#module-falaw.corpus" title="falaw.corpus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corpus</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.corpus.html#module-falaw.corpus" title="falaw.corpus"><code class="xref py py-obj docutils literal notranslate"><span class="pre">corpus</span></code></a></p></td>
 <td><p>Extract model records from <code class="code docutils literal notranslate"><span class="pre">misc/docs/llms-full.txt</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.cost.html#module-falaw.cost" title="falaw.cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cost</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.cost.html#module-falaw.cost" title="falaw.cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cost</span></code></a></p></td>
 <td><p>Cost estimation: ModelRecord.cost_estimate + Scene rollups.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.degrade.html#module-falaw.degrade" title="falaw.degrade"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degrade</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.degrade.html#module-falaw.degrade" title="falaw.degrade"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degrade</span></code></a></p></td>
 <td><p>Where falaw sends &quot;I carried on, but you should know&quot; — one collection point.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.errors.html#module-falaw.errors" title="falaw.errors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.errors.html#module-falaw.errors" title="falaw.errors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">errors</span></code></a></p></td>
 <td><p>Typed exceptions for falaw operations.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.events.html#module-falaw.events" title="falaw.events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">events</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.events.html#module-falaw.events" title="falaw.events"><code class="xref py py-obj docutils literal notranslate"><span class="pre">events</span></code></a></p></td>
 <td><p>Structured progress events for fal calls.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.liveness.html#module-falaw.liveness" title="falaw.liveness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">liveness</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.liveness.html#module-falaw.liveness" title="falaw.liveness"><code class="xref py py-obj docutils literal notranslate"><span class="pre">liveness</span></code></a></p></td>
 <td><p>Is a catalogued endpoint still deployed? (falaw#76)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.llm_prices.html#module-falaw.llm_prices" title="falaw.llm_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_prices</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.llm_prices.html#module-falaw.llm_prices" title="falaw.llm_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_prices</span></code></a></p></td>
 <td><p>One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.llm_rates.html#module-falaw.llm_rates" title="falaw.llm_rates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_rates</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.llm_rates.html#module-falaw.llm_rates" title="falaw.llm_rates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_rates</span></code></a></p></td>
 <td><p>Per-routed-model LLM rates: the data behind a <em>ceiling</em> quote (falaw#50, option A).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.llm_rates_refresh.html#module-falaw.llm_rates_refresh" title="falaw.llm_rates_refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_rates_refresh</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.llm_rates_refresh.html#module-falaw.llm_rates_refresh" title="falaw.llm_rates_refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_rates_refresh</span></code></a></p></td>
 <td><p>Refresh proposals for the LLM rate table, never a silent overwrite (falaw#56).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.local.html#module-falaw.local" title="falaw.local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.local.html#module-falaw.local" title="falaw.local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local</span></code></a></p></td>
 <td><p>Local utilities: ffmpeg + PIL glue for stitching fal outputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.operations.html#module-falaw.operations" title="falaw.operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operations</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.operations.html#module-falaw.operations" title="falaw.operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operations</span></code></a></p></td>
 <td><p>Task-level verbs: stable, agent-friendly entry points.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.outcomes.html#module-falaw.outcomes" title="falaw.outcomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">outcomes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.outcomes.html#module-falaw.outcomes" title="falaw.outcomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">outcomes</span></code></a></p></td>
 <td><p>Per-call outcomes of running a <a class="reference internal" href="#falaw.Plan" title="falaw.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.Plan</span></code></a> — the partial-result type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.plan.html#module-falaw.plan" title="falaw.plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.plan.html#module-falaw.plan" title="falaw.plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan</span></code></a></p></td>
 <td><p>Plan / Execute primitives — separate planning (data) from execution (effects).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.pricing.html#module-falaw.pricing" title="falaw.pricing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pricing</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.pricing.html#module-falaw.pricing" title="falaw.pricing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pricing</span></code></a></p></td>
 <td><p>Read fal's pricing API into <code class="docutils literal notranslate"><span class="pre">models.json</span></code> cost estimates (falaw#18).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.prune.html#module-falaw.prune" title="falaw.prune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.prune.html#module-falaw.prune" title="falaw.prune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune</span></code></a></p></td>
 <td><p>Capacity management for the falaw cache: see what is on disk, and reclaim it.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.refresh.html#module-falaw.refresh" title="falaw.refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.refresh.html#module-falaw.refresh" title="falaw.refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh</span></code></a></p></td>
 <td><p>Refresh fal.ai docs locally with conditional GETs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.registry.html#module-falaw.registry" title="falaw.registry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">registry</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.registry.html#module-falaw.registry" title="falaw.registry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">registry</span></code></a></p></td>
 <td><p>Tool and model registries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.reprice.html#module-falaw.reprice" title="falaw.reprice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reprice</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.reprice.html#module-falaw.reprice" title="falaw.reprice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reprice</span></code></a></p></td>
 <td><p>Re-quote a persisted <a class="reference internal" href="#falaw.Plan" title="falaw.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.Plan</span></code></a> at today's rates (falaw#60).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.results.html#module-falaw.results" title="falaw.results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">results</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.results.html#module-falaw.results" title="falaw.results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">results</span></code></a></p></td>
 <td><p>Result wrapper: parse fal responses into typed assets, lazy download.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.scene.html#module-falaw.scene" title="falaw.scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.scene.html#module-falaw.scene" title="falaw.scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene</span></code></a></p></td>
 <td><p>Scene IR: the editable structure that survives all the way to the pixels.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.schema_export.html#module-falaw.schema_export" title="falaw.schema_export"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema_export</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.schema_export.html#module-falaw.schema_export" title="falaw.schema_export"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema_export</span></code></a></p></td>
 <td><p>Export the Python SSOT as committed JSON for the TypeScript twin (<code class="docutils literal notranslate"><span class="pre">ts/</span></code>).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.session.html#module-falaw.session" title="falaw.session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.session.html#module-falaw.session" title="falaw.session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session</span></code></a></p></td>
 <td><p>Session: optional stateful controller over a sequence of falaw operations.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.testing.html#module-falaw.testing" title="falaw.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">testing</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.testing.html#module-falaw.testing" title="falaw.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">testing</span></code></a></p></td>
 <td><p>Make a suite that uses falaw genuinely offline — the fake asset transport.</p></td>
 </tr>
 </tbody>

@@ -1,0 +1,30 @@
+falaw.comfyui.licences
+======================
+
+.. automodule:: falaw.comfyui.licences
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      LICENCE_FILE_PREFIXES
+      TITLE_LINES
+      RESTRICTED_FAMILY
+      AGPL_TITLE
+      KNOWN_LICENCES
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      git_head
+      nodes_digest
+      screen_licences
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LicenceScreen
+   

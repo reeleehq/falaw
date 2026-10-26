@@ -1,4 +1,4 @@
-> built 2026-10-26 12:24 UTC from 6d35494 (main) · falaw 0.0.65. Details: build_info.json
+> built 2026-10-26 12:45 UTC from 366d44c (main) · falaw 0.0.66. Details: build_info.json
 
 # index.html.md
 
@@ -1241,6 +1241,560 @@ adjacent so adding a field to one is an explicit decision about the other.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+
+# _autosummary/falaw.comfyui.audit.html.md
+
+# falaw.comfyui.audit
+
+Facade item 10: every submitted graph is audited before it leaves the process.
+
+ComfyUI’s `/history` is in-process, capped at 10 000 entries, writable by
+prompt handlers and gone on restart, so it is not an audit record. The record
+is made here, on the caller’s side, in a sink the *caller owns* and has made
+durable, **before** the request is sent: if the sink raises, nothing is sent.
+A graph that fails the path screen ([`falaw.comfyui.graph`](_autosummary/falaw.comfyui.graph.html.md#module-falaw.comfyui.graph)) is audited too
+(marked rejected) — an attempt is exactly what an audit log is for.
+
+### Module Attributes
+
+| [`REPR_LIMIT`](_autosummary/falaw.comfyui.audit.html.md#falaw.comfyui.audit.REPR_LIMIT)   | Characters of an un-serialisable graph's `repr` kept in its audit record.   |
+|---------------------------------------------------------------|-----------------------------------------------------------------------------|
+
+### Functions
+
+| [`submit_graph`](_autosummary/falaw.comfyui.audit.html.md#falaw.comfyui.audit.submit_graph)(graph, \*, send, sink, object_info)   | Screen, audit, then send `graph`; returns whatever `send` returns.   |
+|-----------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+
+### Classes
+
+| [`FileAuditSink`](_autosummary/falaw.comfyui.audit.html.md#falaw.comfyui.audit.FileAuditSink)(directory, \*[, filename])   | A durable JSON-lines sink: one record per line, `fsync` before return.   |
+|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| [`GraphAuditSink`](_autosummary/falaw.comfyui.audit.html.md#falaw.comfyui.audit.GraphAuditSink)(\*args, \*\*kwargs)         | Where audit records go.                                                  |
+
+### *class* falaw.comfyui.audit.FileAuditSink(directory, , filename='graphs.jsonl')
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A durable JSON-lines sink: one record per line, `fsync` before return.
+
+### *class* falaw.comfyui.audit.GraphAuditSink(\*args, \*\*kwargs)
+
+Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protocol)
+
+Where audit records go. `write` must not return until the record is
+durable (or must raise): the caller sends the graph only after it returns.
+
+### falaw.comfyui.audit.REPR_LIMIT *= 4000*
+
+Characters of an un-serialisable graph’s `repr` kept in its audit record.
+
+### falaw.comfyui.audit.submit_graph(graph, \*, send, sink, object_info, context=None, free_text=frozenset({}), clock=<function <lambda>>)
+
+Screen, audit, then send `graph`; returns whatever `send` returns.
+
+Order is the contract: the graph is frozen to a private copy, the path
+screen runs, the record (graph, its sha256, time, `context` and the
+verdict) is written to `sink`, and only then — if the screen passed — is
+`send(copy)` called. A raising sink stops everything. A graph that fails
+the screen, or is not even canonical JSON, is recorded and raises
+`UnsafeGraphError`.
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+
+# _autosummary/falaw.comfyui.graph.html.md
+
+# falaw.comfyui.graph
+
+Facade item 5: no graph parameter reaches a path unsanitised.
+
+ComfyUI’s own input validation is not a defence: a node that defines
+`VALIDATE_INPUTS` switches the engine’s checks off for that node, and
+CVE-2026-56673 is an arbitrary file read through a `LoadImage` parameter. So
+the facade checks every literal parameter of a submitted graph itself, against
+the `/object_info` the engine declared, before anything is sent:
+
+* a **combo** input (a closed list of choices) must hold one of its options;
+* any other **string** must carry no path hazard: a NUL, a backslash, a drive
+  letter, a leading `/`, or a `..` path segment (leading whitespace is
+  ignored, dictionary keys are screened too).
+
+Prose boxes legitimately contain such characters, so a **multiline** `STRING`
+input (the engine’s own marker for a text area) is exempt, as is anything in
+the `free_text` seam (`(class_type, input)` pairs). The exemption is
+withdrawn for a node whose output is wired into any non-exempt input: a prompt
+node feeding a path is a path. The default is the safe one: any other string is
+screened, because which strings reach a filesystem is the custom node’s secret,
+not the schema’s.
+
+The facade must re-fetch `/object_info` after each `/upload/image`, or every
+newly uploaded `LoadImage` filename is (correctly) absent from its combo.
+
+### Module Attributes
+
+| [`FREE_TEXT`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.FREE_TEXT)   | Extra `(class_type, input)` pairs to exempt beyond multiline strings.   |
+|--------------------------------------------------------------|-------------------------------------------------------------------------|
+
+### Functions
+
+| [`assert_safe_graph`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.assert_safe_graph)(graph, object_info, \*[, ...])   | Raise [`UnsafeGraphError`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.UnsafeGraphError) unless [`check_graph_paths()`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.check_graph_paths) is empty.   |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`check_graph_paths`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.check_graph_paths)(graph, object_info, \*[, ...])   | Problems that make `graph` unsafe to submit; empty means it may go.                                                                                             |
+
+### Exceptions
+
+| [`UnsafeGraphError`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.UnsafeGraphError)(problems)   | A graph failed the path screen; `.problems` lists why.   |
+|-------------------------------------------------------------------------------|----------------------------------------------------------|
+
+### falaw.comfyui.graph.FREE_TEXT *: [frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [str](https://docs.python.org/3/builtins/stdtypes.html#str)]]* *= frozenset({})*
+
+Extra `(class_type, input)` pairs to exempt beyond multiline strings.
+
+### *exception* falaw.comfyui.graph.UnsafeGraphError(problems)
+
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
+
+A graph failed the path screen; `.problems` lists why.
+
+### falaw.comfyui.graph.assert_safe_graph(graph, object_info, , free_text=frozenset({}))
+
+Raise [`UnsafeGraphError`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.UnsafeGraphError) unless [`check_graph_paths()`](_autosummary/falaw.comfyui.graph.html.md#falaw.comfyui.graph.check_graph_paths) is empty.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.comfyui.graph.check_graph_paths(graph, object_info, , free_text=frozenset({}))
+
+Problems that make `graph` unsafe to submit; empty means it may go.
+
+`graph` is ComfyUI’s API format `{node_id: {"class_type", "inputs"}}`;
+`object_info` is the engine’s `GET /object_info` (the facade is the one
+identity allowed to read it).
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Problem`](_autosummary/falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)]
+
+
+# _autosummary/falaw.comfyui.html.md
+
+# falaw.comfyui
+
+The ComfyUI deployment gate, executable (falaw#94, from reelee#241).
+
+ComfyUI has no authentication and a code-execution surface, so standing one up
+safely is a checklist. Nothing above `falaw.Plan` may know ComfyUI exists
+(working rule 1), so the checks live here, next to the backend:
+
+* [`check_manifest()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.check_manifest) — a deployment manifest against the checklist, asking
+  for *evidence* (file digests, a pinned commit proven to be at or after the
+  floor tag), never bare booleans;
+* [`screen_licences()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.screen_licences) — read each pinned node pack’s own `LICENSE`/
+  `COPYING` and fail on AGPL-family or undeterminable; [`nodes_digest()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.nodes_digest)
+  ties the screen to the manifest’s `custom_nodes`;
+* [`check_graph_paths()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.check_graph_paths) / [`assert_safe_graph()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.assert_safe_graph) — facade item 5: no
+  graph parameter reaches a path unsanitised, even after schema validation;
+* [`submit_graph()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.submit_graph) + [`GraphAuditSink`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.GraphAuditSink) — facade item 10: every graph
+  is written to a caller-owned durable sink *before* the request leaves the
+  process.
+
+Every check returns [`Problem`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.Problem) s (empty list = passes); the `assert_*`
+forms raise. Each external fact (file reads, the git ancestry test, the clock,
+the transport) is a keyword argument, so none of this touches a network.
+
+### Functions
+
+| [`assert_safe_graph`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.assert_safe_graph)(graph, object_info, \*[, ...])   | Raise [`UnsafeGraphError`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.UnsafeGraphError) unless [`check_graph_paths()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.check_graph_paths) is empty.   |
+|-----------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`check_graph_paths`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.check_graph_paths)(graph, object_info, \*[, ...])   | Problems that make `graph` unsafe to submit; empty means it may go.                                                                                             |
+| [`check_manifest`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.check_manifest)(manifest, \*[, base_dir, ...])      | Problems with a deployment manifest; an empty list means it passes.                                                                                             |
+| [`git_commit_floor`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.git_commit_floor)(repo, \*[, tag])                  | A `commit_floor` that asks a local ComfyUI checkout whether the tag is an ancestor of (or equal to) the commit: `git merge-base --is-ancestor`.                 |
+| [`nodes_digest`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.nodes_digest)(nodes)                                | SHA-256 over the `(pack name, commit)` pairs, order-independent.                                                                                                |
+| [`screen_licences`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.screen_licences)(nodes_dir, \*[, only, ...])        | Screen every node pack (a directory, or a single `.py` file) under `nodes_dir`.                                                                                 |
+| [`submit_graph`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.submit_graph)(graph, \*, send, sink, object_info)   | Screen, audit, then send `graph`; returns whatever `send` returns.                                                                                              |
+
+### Classes
+
+| [`FileAuditSink`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.FileAuditSink)(directory, \*[, filename])       | A durable JSON-lines sink: one record per line, `fsync` before return.                                |
+|-------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| [`GraphAuditSink`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.GraphAuditSink)(\*args, \*\*kwargs)             | Where audit records go.                                                                               |
+| [`LicenceScreen`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.LicenceScreen)(checked_at, nodes_digest[, ...]) | The outcome of [`screen_licences()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.screen_licences), in manifest shape. |
+| [`Problem`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.Problem)(item, message)                         | One reason a deployment or a graph does not pass.                                                     |
+
+### Exceptions
+
+| [`UnsafeGraphError`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.UnsafeGraphError)(problems)   | A graph failed the path screen; `.problems` lists why.   |
+|-------------------------------------------------------------------------------|----------------------------------------------------------|
+
+### *class* falaw.comfyui.FileAuditSink(directory, , filename='graphs.jsonl')
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+A durable JSON-lines sink: one record per line, `fsync` before return.
+
+### *class* falaw.comfyui.GraphAuditSink(\*args, \*\*kwargs)
+
+Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protocol)
+
+Where audit records go. `write` must not return until the record is
+durable (or must raise): the caller sends the graph only after it returns.
+
+### *class* falaw.comfyui.LicenceScreen(checked_at, nodes_digest, agpl_packs=(), undeterminable=())
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+The outcome of [`screen_licences()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.screen_licences), in manifest shape.
+
+#### to_dict()
+
+The `licence_screen` block of the deployment manifest.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### *class* falaw.comfyui.Problem(item, message)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+One reason a deployment or a graph does not pass.
+
+`item` is the checklist row it belongs to (`"1"`..\`\`”11”`, ``"L"`),
+so a failure points back at the requirement it breaks.
+
+### *exception* falaw.comfyui.UnsafeGraphError(problems)
+
+Bases: [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError)
+
+A graph failed the path screen; `.problems` lists why.
+
+### falaw.comfyui.assert_safe_graph(graph, object_info, , free_text=frozenset({}))
+
+Raise [`UnsafeGraphError`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.UnsafeGraphError) unless [`check_graph_paths()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.check_graph_paths) is empty.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.comfyui.check_graph_paths(graph, object_info, , free_text=frozenset({}))
+
+Problems that make `graph` unsafe to submit; empty means it may go.
+
+`graph` is ComfyUI’s API format `{node_id: {"class_type", "inputs"}}`;
+`object_info` is the engine’s `GET /object_info` (the facade is the one
+identity allowed to read it).
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Problem`](_autosummary/falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)]
+
+### falaw.comfyui.check_manifest(manifest, , base_dir=None, commit_floor=None, allowed_args={'--cpu': (0, 0), '--disable-all-custom-nodes': (0, 0), '--disable-auto-launch': (0, 0), '--disable-metadata': (0, 0), '--dont-print-server': (0, 0), '--input-directory': (1, 1), '--listen': (1, 1), '--max-upload-size': (1, 1), '--output-directory': (1, 1), '--port': (1, 1), '--temp-directory': (1, 1), '--whitelist-custom-nodes': (1, 1000)}, blocked_endpoints=('/internal', '/userdata', '/v2/userdata', '/users', '/settings', '/system_stats', '/experiment'), allow_shared=False, licence_screen=None)
+
+Problems with a deployment manifest; an empty list means it passes.
+
+`base_dir` is where evidence files (proxy config, network policy) are
+resolved and their sha256 verified; `commit_floor(commit) -> bool` answers
+whether the commit is at or after `FLOOR_TAG` (see
+[`git_commit_floor()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.git_commit_floor)); `licence_screen(names) -> LicenceScreen`
+re-runs the screen on the pinned checkout (e.g.
+`lambda names: screen_licences(nodes_dir, only=names)`). Without
+them those claims cannot be verified, which is a problem, not a pass.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Problem`](_autosummary/falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)]
+
+### falaw.comfyui.git_commit_floor(repo, , tag='v0.28.0')
+
+A `commit_floor` that asks a local ComfyUI checkout whether the tag is
+an ancestor of (or equal to) the commit: `git merge-base --is-ancestor`.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
+### falaw.comfyui.nodes_digest(nodes)
+
+SHA-256 over the `(pack name, commit)` pairs, order-independent.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.comfyui.screen_licences(nodes_dir, \*, only=None, commit_of=<function git_head>, clock=<function <lambda>>)
+
+Screen every node pack (a directory, or a single `.py` file) under `nodes_dir`.
+
+`only` restricts the screen to the manifest’s declared packs (a stock
+ComfyUI checkout also carries unrelated example nodes under
+`custom_nodes/`). `commit_of` reads each pack’s pinned commit (default: its git `HEAD`)
+so the returned `nodes_digest` matches
+[`nodes_digest()`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.nodes_digest) of the manifest’s `custom_nodes`.
+
+* **Return type:**
+  [`LicenceScreen`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.LicenceScreen)
+
+### falaw.comfyui.submit_graph(graph, \*, send, sink, object_info, context=None, free_text=frozenset({}), clock=<function <lambda>>)
+
+Screen, audit, then send `graph`; returns whatever `send` returns.
+
+Order is the contract: the graph is frozen to a private copy, the path
+screen runs, the record (graph, its sha256, time, `context` and the
+verdict) is written to `sink`, and only then — if the screen passed — is
+`send(copy)` called. A raising sink stops everything. A graph that fails
+the screen, or is not even canonical JSON, is recorded and raises
+[`UnsafeGraphError`](_autosummary/falaw.comfyui.html.md#falaw.comfyui.UnsafeGraphError).
+
+* **Return type:**
+  [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### Modules
+
+| [`audit`](_autosummary/falaw.comfyui.audit.html.md#module-falaw.comfyui.audit)       | Facade item 10: every submitted graph is audited before it leaves the process.   |
+|-----------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [`graph`](_autosummary/falaw.comfyui.graph.html.md#module-falaw.comfyui.graph)       | Facade item 5: no graph parameter reaches a path unsanitised.                    |
+| [`licences`](_autosummary/falaw.comfyui.licences.html.md#module-falaw.comfyui.licences) | Licence screen for ComfyUI node packs (checklist row L).                         |
+| [`manifest`](_autosummary/falaw.comfyui.manifest.html.md#module-falaw.comfyui.manifest) | The deployment-manifest checker (checklist rows 1-4, 6-9, L).                    |
+| [`problems`](_autosummary/falaw.comfyui.problems.html.md#module-falaw.comfyui.problems) | The one result type every gate check returns.                                    |
+
+
+# _autosummary/falaw.comfyui.licences.html.md
+
+# falaw.comfyui.licences
+
+Licence screen for ComfyUI node packs (checklist row L).
+
+Reads each pack’s own `LICENSE` / `LICENCE` / `COPYING` file in the
+pinned checkout — never registry metadata, which 85.5% of packs leave empty —
+and fails on AGPL-family or *undeterminable*. The screen records a digest of
+the screened set ([`nodes_digest()`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.nodes_digest)) so a manifest can prove the screen was
+run on the nodes it actually deploys.
+
+AGPL is recognised from the licence’s **title** (its first lines) or an SPDX
+tag, not from the word “Affero” anywhere in the text: GPLv3 section 13 names
+the AGPL, so a substring scan would reject every GPLv3 pack.
+
+### Module Attributes
+
+| [`LICENCE_FILE_PREFIXES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.LICENCE_FILE_PREFIXES)   | any root-level file whose name starts with one.                                                                            |
+|--------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| [`TITLE_LINES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.TITLE_LINES)             | How many leading non-blank lines count as a licence's title (room for a copyright line or three above the licence's name). |
+| [`RESTRICTED_FAMILY`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.RESTRICTED_FAMILY)       | The AGPL family plus SSPL (same network-copyleft reach).                                                                   |
+| [`AGPL_TITLE`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.AGPL_TITLE)              | The AGPL's own upper-case title, flagged wherever it sits in a file.                                                       |
+| [`KNOWN_LICENCES`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.KNOWN_LICENCES)          | Licences recognised as *determinable*, looked for in a file's title lines.                                                 |
+
+### Functions
+
+| [`git_head`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.git_head)(pack)                              | The commit checked out in `pack` (`git rev-parse HEAD`); `""` when `pack` is not a git checkout (it cannot be pinned, so it cannot pass).   |
+|----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| [`nodes_digest`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.nodes_digest)(nodes)                         | SHA-256 over the `(pack name, commit)` pairs, order-independent.                                                                            |
+| [`screen_licences`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.screen_licences)(nodes_dir, \*[, only, ...]) | Screen every node pack (a directory, or a single `.py` file) under `nodes_dir`.                                                             |
+
+### Classes
+
+| [`LicenceScreen`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.LicenceScreen)(checked_at, nodes_digest[, ...])   | The outcome of [`screen_licences()`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.screen_licences), in manifest shape.   |
+|---------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|
+
+### falaw.comfyui.licences.AGPL_TITLE *= 'GNU AFFERO GENERAL PUBLIC LICENSE'*
+
+The AGPL’s own upper-case title, flagged wherever it sits in a file. GPLv3
+section 13 names the licence in mixed case, so this does not flag GPLv3.
+
+### falaw.comfyui.licences.KNOWN_LICENCES *= {'Apache-2.0': 'Apache License,?\\\\s+Version 2', 'BSD': 'Redistribution and use in source and binary forms', 'CC0': 'CC0 1\\\\.0|Creative Commons Zero', 'GPL': 'GNU (?:LESSER |LIBRARY )?GENERAL PUBLIC LICENSE', 'ISC': '\\\\bISC License\\\\b|Permission to use, copy, modify, and/or distribute', 'MIT': '\\\\bMIT License\\\\b|Permission is hereby granted, free of charge', 'MPL-2.0': 'Mozilla Public License', 'Unlicense': 'This is free and unencumbered software', 'WTFPL': 'DO WHAT THE FUCK YOU WANT'}*
+
+Licences recognised as *determinable*, looked for in a file’s title lines.
+Text matching none of these is undeterminable, which fails the screen: terms
+we cannot read are not a pass. A heuristic by design; what it cannot place
+goes to a human.
+
+### falaw.comfyui.licences.LICENCE_FILE_PREFIXES *= ('LICENSE', 'LICENCE', 'COPYING')*
+
+any root-level file whose name starts with one.
+
+* **Type:**
+  A pack’s licence files
+
+### *class* falaw.comfyui.licences.LicenceScreen(checked_at, nodes_digest, agpl_packs=(), undeterminable=())
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+The outcome of [`screen_licences()`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.screen_licences), in manifest shape.
+
+#### to_dict()
+
+The `licence_screen` block of the deployment manifest.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.comfyui.licences.RESTRICTED_FAMILY *= re.compile('AGPL|AFFERO|\\\\bSSPL\\\\b|SERVER SIDE PUBLIC LICENSE', re.IGNORECASE)*
+
+The AGPL family plus SSPL (same network-copyleft reach). Matched against a
+file’s title lines and SPDX tags, not its whole text; see `_is_restricted()`.
+
+### falaw.comfyui.licences.TITLE_LINES *= 12*
+
+How many leading non-blank lines count as a licence’s title (room for a
+copyright line or three above the licence’s name).
+
+### falaw.comfyui.licences.git_head(pack)
+
+The commit checked out in `pack` (`git rev-parse HEAD`); `""` when
+`pack` is not a git checkout (it cannot be pinned, so it cannot pass).
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.comfyui.licences.nodes_digest(nodes)
+
+SHA-256 over the `(pack name, commit)` pairs, order-independent.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.comfyui.licences.screen_licences(nodes_dir, \*, only=None, commit_of=<function git_head>, clock=<function <lambda>>)
+
+Screen every node pack (a directory, or a single `.py` file) under `nodes_dir`.
+
+`only` restricts the screen to the manifest’s declared packs (a stock
+ComfyUI checkout also carries unrelated example nodes under
+`custom_nodes/`). `commit_of` reads each pack’s pinned commit (default: its git `HEAD`)
+so the returned `nodes_digest` matches
+[`nodes_digest()`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.nodes_digest) of the manifest’s `custom_nodes`.
+
+* **Return type:**
+  [`LicenceScreen`](_autosummary/falaw.comfyui.licences.html.md#falaw.comfyui.licences.LicenceScreen)
+
+
+# _autosummary/falaw.comfyui.manifest.html.md
+
+# falaw.comfyui.manifest
+
+The deployment-manifest checker (checklist rows 1-4, 6-9, L).
+
+A manifest is one committed file; this reads it as a dict. Two rules: a missing
+field is a failure, and **a bare boolean is not evidence** — a claim is checked
+against what backs it (a file digest, a pinned commit proven to sit at or after
+the floor tag, an allowlist of arguments). Everything the checker would have to
+reach for is a keyword argument: `base_dir` (where evidence files live),
+`commit_floor` (the git ancestry test), `allowed_args` and the blocked
+endpoint set. A wrong-typed field is a `Problem`, never an exception.
+
+Limit worth knowing: a proxy config’s digest proves the file is the one the
+manifest names, not that it enforces `client_endpoints`. The endpoint lists
+are claims about that config until a parser for the deployment’s proxy is
+plugged in.
+
+```pycon
+>>> from falaw.comfyui import check_manifest
+>>> [str(p) for p in check_manifest({})][:1]
+['2: comfyui.commit must be a 40-hex commit sha']
+```
+
+### Module Attributes
+
+| [`FLOOR_TAG`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.FLOOR_TAG)                 | The ComfyUI release a pinned commit must be at or after (it carries the CVE-2026-68771 fix and PR #14939; see reelee's deployment checklist row 2).   |
+|----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`BLOCKED_ENDPOINTS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.BLOCKED_ENDPOINTS)         | Prefixes no caller of ComfyUI may reach, through any proxy list.                                                                                      |
+| [`FACADE_ONLY_ENDPOINTS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.FACADE_ONLY_ENDPOINTS)     | never in `client_endpoints`.                                                                                                                          |
+| [`API_PREFIX`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.API_PREFIX)                | ComfyUI serves every route again under this prefix; both spellings are one.                                                                           |
+| [`DEFAULT_ALLOWED_ARGS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.DEFAULT_ALLOWED_ARGS)      | Arguments a deployment may pass, each with its `(min, max)` value count.                                                                              |
+| [`EXPLICITLY_FORBIDDEN_ARGS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.EXPLICITLY_FORBIDDEN_ARGS) | flag -> (checklist row, why).                                                                                                                         |
+| [`DIRECTORY_FLAGS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.DIRECTORY_FLAGS)           | Directory flags may only point at the quota'd mounts, never at host paths.                                                                            |
+| [`HOST_SYSTEM_DIRS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.HOST_SYSTEM_DIRS)          | First path segments a mount `source` may not start with.                                                                                              |
+| [`REQUIRED_MOUNTS`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.REQUIRED_MOUNTS)           | no other host path).                                                                                                                                  |
+
+### Functions
+
+| [`check_manifest`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.check_manifest)(manifest, \*[, base_dir, ...])   | Problems with a deployment manifest; an empty list means it passes.                                                                             |
+|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`git_commit_floor`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.git_commit_floor)(repo, \*[, tag])               | A `commit_floor` that asks a local ComfyUI checkout whether the tag is an ancestor of (or equal to) the commit: `git merge-base --is-ancestor`. |
+
+### falaw.comfyui.manifest.API_PREFIX *= '/api'*
+
+ComfyUI serves every route again under this prefix; both spellings are one.
+
+### falaw.comfyui.manifest.BLOCKED_ENDPOINTS *= ('/internal', '/userdata', '/v2/userdata', '/users', '/settings', '/system_stats', '/experiment')*
+
+Prefixes no caller of ComfyUI may reach, through any proxy list.
+
+### falaw.comfyui.manifest.DEFAULT_ALLOWED_ARGS *: [Mapping](https://docs.python.org/3/library/collections.abc.html#collections.abc.Mapping)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[int](https://docs.python.org/3/builtins/functions.html#int), [int](https://docs.python.org/3/builtins/functions.html#int)]]* *= {'--cpu': (0, 0), '--disable-all-custom-nodes': (0, 0), '--disable-auto-launch': (0, 0), '--disable-metadata': (0, 0), '--dont-print-server': (0, 0), '--input-directory': (1, 1), '--listen': (1, 1), '--max-upload-size': (1, 1), '--output-directory': (1, 1), '--port': (1, 1), '--temp-directory': (1, 1), '--whitelist-custom-nodes': (1, 1000)}*
+
+Arguments a deployment may pass, each with its `(min, max)` value count.
+An allowlist, not a secret-shaped scan: `/system_stats` returns `sys.argv`,
+so a stray value after a flag that takes none (`--cpu sk-...`) is as much a
+leak as a `--api-key` flag. A bare `--listen` is refused by its count: in
+ComfyUI it means every interface.
+
+### falaw.comfyui.manifest.DIRECTORY_FLAGS *= {'--input-directory': ('/temp',), '--output-directory': ('/output',), '--temp-directory': ('/temp',)}*
+
+Directory flags may only point at the quota’d mounts, never at host paths.
+
+### falaw.comfyui.manifest.EXPLICITLY_FORBIDDEN_ARGS *= {'--enable-cors-header': ('7', 'lets any web page drive the unauthenticated API'), '--enable-manager': ('4', 'installs arbitrary code from HTTP requests (CVSS 10.0 RCE of its own)')}*
+
+flag -> (checklist row, why). Named so the failure says *why*.
+
+### falaw.comfyui.manifest.FACADE_ONLY_ENDPOINTS *= ('/object_info',)*
+
+never in `client_endpoints`.
+
+* **Type:**
+  Reachable by the facade’s identity only
+
+### falaw.comfyui.manifest.FLOOR_TAG *= 'v0.28.0'*
+
+The ComfyUI release a pinned commit must be at or after (it carries the
+CVE-2026-68771 fix and PR #14939; see reelee’s deployment checklist row 2).
+
+### falaw.comfyui.manifest.HOST_SYSTEM_DIRS *= frozenset({'bin', 'boot', 'dev', 'etc', 'home', 'proc', 'root', 'run', 'sys', 'usr', 'var'})*
+
+First path segments a mount `source` may not start with.
+
+### falaw.comfyui.manifest.REQUIRED_MOUNTS *= ('/models', '/output', '/temp')*
+
+no other host path).
+
+* **Type:**
+  The only paths a deployment may mount (row 6
+
+### falaw.comfyui.manifest.check_manifest(manifest, , base_dir=None, commit_floor=None, allowed_args={'--cpu': (0, 0), '--disable-all-custom-nodes': (0, 0), '--disable-auto-launch': (0, 0), '--disable-metadata': (0, 0), '--dont-print-server': (0, 0), '--input-directory': (1, 1), '--listen': (1, 1), '--max-upload-size': (1, 1), '--output-directory': (1, 1), '--port': (1, 1), '--temp-directory': (1, 1), '--whitelist-custom-nodes': (1, 1000)}, blocked_endpoints=('/internal', '/userdata', '/v2/userdata', '/users', '/settings', '/system_stats', '/experiment'), allow_shared=False, licence_screen=None)
+
+Problems with a deployment manifest; an empty list means it passes.
+
+`base_dir` is where evidence files (proxy config, network policy) are
+resolved and their sha256 verified; `commit_floor(commit) -> bool` answers
+whether the commit is at or after [`FLOOR_TAG`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.FLOOR_TAG) (see
+[`git_commit_floor()`](_autosummary/falaw.comfyui.manifest.html.md#falaw.comfyui.manifest.git_commit_floor)); `licence_screen(names) -> LicenceScreen`
+re-runs the screen on the pinned checkout (e.g.
+`lambda names: screen_licences(nodes_dir, only=names)`). Without
+them those claims cannot be verified, which is a problem, not a pass.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Problem`](_autosummary/falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)]
+
+### falaw.comfyui.manifest.git_commit_floor(repo, , tag='v0.28.0')
+
+A `commit_floor` that asks a local ComfyUI checkout whether the tag is
+an ancestor of (or equal to) the commit: `git merge-base --is-ancestor`.
+
+* **Return type:**
+  [`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
+
+
+# _autosummary/falaw.comfyui.problems.html.md
+
+# falaw.comfyui.problems
+
+The one result type every gate check returns.
+
+### Classes
+
+| [`Problem`](_autosummary/falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)(item, message)   | One reason a deployment or a graph does not pass.   |
+|---------------------------------------------------------------------------|-----------------------------------------------------|
+
+### *class* falaw.comfyui.problems.Problem(item, message)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+One reason a deployment or a graph does not pass.
+
+`item` is the checklist row it belongs to (`"1"`..\`\`”11”`, ``"L"`),
+so a failure points back at the requirement it breaks.
 
 
 # _autosummary/falaw.content.html.md
@@ -5528,6 +6082,7 @@ Generate speech in a cloned voice.
 | [`bridges`](_autosummary/falaw.bridges.html.md#module-falaw.bridges)                     | Bridges: derive auxiliary surfaces (skill, MCP, HTTP service) from the tool registry.                                 |
 | [`cache`](_autosummary/falaw.cache.html.md#module-falaw.cache)                         | Content-addressed cache for fal calls.                                                                                |
 | [`canonical`](_autosummary/falaw.canonical.html.md#module-falaw.canonical)                 | One canonical byte-form for everything falaw hashes (falaw#17).                                                       |
+| [`comfyui`](_autosummary/falaw.comfyui.html.md#module-falaw.comfyui)                     | The ComfyUI deployment gate, executable (falaw#94, from reelee#241).                                                  |
 | [`content`](_autosummary/falaw.content.html.md#module-falaw.content)                     | Content addressing for fal-produced media — identify a file by *what it is*.                                          |
 | [`core`](_autosummary/falaw.core.html.md#module-falaw.core)                           | Wrapper over `fal_client.subscribe` with progress events and auto-journaling.                                         |
 | [`corpus`](_autosummary/falaw.corpus.html.md#module-falaw.corpus)                       | Extract model records from `misc/docs/llms-full.txt`.                                                                 |
@@ -9552,7 +10107,7 @@ False
 
 # About this build
 
-This documentation was built on **2026-10-26 12:24 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/6d35494418a90d3675f9dbd867142eee6eb4100b"><code>6d35494</code></a> on branch <code>main</code>, for **falaw 0.0.65** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 12:45 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/366d44c0151b8cafded7329428fabbbc1af534e0"><code>366d44c</code></a> on branch <code>main</code>, for **falaw 0.0.66** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -9561,7 +10116,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/6d35494418a90d3675f9dbd867142eee6eb4100b"><code>6d35494418a90d3675f9dbd867142eee6eb4100b</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/366d44c0151b8cafded7329428fabbbc1af534e0"><code>366d44c0151b8cafded7329428fabbbc1af534e0</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -9572,9 +10127,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40321895696">40321895696</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40324692130">40324692130</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>6d35494418a90d3675f9dbd867142eee6eb4100b</code> (in the history of the built commit) |
+| Event commit | <code>366d44c0151b8cafded7329428fabbbc1af534e0</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -9599,13 +10154,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.65/">0.0.65</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.66/">0.0.66</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 6d35494418a90d3675f9dbd867142eee6eb4100b
+git checkout 366d44c0151b8cafded7329428fabbbc1af534e0
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

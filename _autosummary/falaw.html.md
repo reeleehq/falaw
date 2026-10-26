@@ -3155,6 +3155,7 @@ Generate speech in a cloned voice.
 | [`bridges`](falaw.bridges.html.md#module-falaw.bridges)                     | Bridges: derive auxiliary surfaces (skill, MCP, HTTP service) from the tool registry.                                 |
 | [`cache`](falaw.cache.html.md#module-falaw.cache)                         | Content-addressed cache for fal calls.                                                                                |
 | [`canonical`](falaw.canonical.html.md#module-falaw.canonical)                 | One canonical byte-form for everything falaw hashes (falaw#17).                                                       |
+| [`comfyui`](falaw.comfyui.html.md#module-falaw.comfyui)                     | The ComfyUI deployment gate, executable (falaw#94, from reelee#241).                                                  |
 | [`content`](falaw.content.html.md#module-falaw.content)                     | Content addressing for fal-produced media — identify a file by *what it is*.                                          |
 | [`core`](falaw.core.html.md#module-falaw.core)                           | Wrapper over `fal_client.subscribe` with progress events and auto-journaling.                                         |
 | [`corpus`](falaw.corpus.html.md#module-falaw.corpus)                       | Extract model records from `misc/docs/llms-full.txt`.                                                                 |

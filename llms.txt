@@ -18,6 +18,12 @@
 - [falaw.bridges.skill](_autosummary/falaw.bridges.skill.html.md): Render a Claude SKILL.md (and references) from the falaw tool registry.
 - [falaw.cache](_autosummary/falaw.cache.html.md): Content-addressed cache for fal calls.
 - [falaw.canonical](_autosummary/falaw.canonical.html.md): One canonical byte-form for everything falaw hashes (falaw#17).
+- [falaw.comfyui](_autosummary/falaw.comfyui.html.md): The ComfyUI deployment gate, executable (falaw#94, from reelee#241).
+- [falaw.comfyui.audit](_autosummary/falaw.comfyui.audit.html.md): Facade item 10: every submitted graph is audited before it leaves the process.
+- [falaw.comfyui.graph](_autosummary/falaw.comfyui.graph.html.md): Facade item 5: no graph parameter reaches a path unsanitised.
+- [falaw.comfyui.licences](_autosummary/falaw.comfyui.licences.html.md): Licence screen for ComfyUI node packs (checklist row L).
+- [falaw.comfyui.manifest](_autosummary/falaw.comfyui.manifest.html.md): The deployment-manifest checker (checklist rows 1-4, 6-9, L).
+- [falaw.comfyui.problems](_autosummary/falaw.comfyui.problems.html.md): The one result type every gate check returns.
 - [falaw.content](_autosummary/falaw.content.html.md): Content addressing for fal-produced media — identify a file by &#42;what it is&#42;.
 - [falaw.core](_autosummary/falaw.core.html.md): Wrapper over &#96;fal_client.subscribe&#96; with progress events and auto-journaling.
 - [falaw.corpus](_autosummary/falaw.corpus.html.md): Extract model records from &#96;misc/docs/falaw.md&#96;.
@@ -51,7 +57,7 @@
 - [falaw.session](_autosummary/falaw.session.html.md): Session: optional stateful controller over a sequence of falaw operations.
 - [falaw.testing](_autosummary/falaw.testing.html.md): Make a suite that uses falaw genuinely offline — the fake asset transport.
 - [For AI agents](ai-agents.html.md): &#96;falaw&#96; ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-26 12:24 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-10-26 12:45 UTC&#42;&#42; from commit &lt;a href="https://github.com/ree...
 
 ## Optional
 

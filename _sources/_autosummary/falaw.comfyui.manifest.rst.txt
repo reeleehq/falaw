@@ -1,0 +1,27 @@
+falaw.comfyui.manifest
+======================
+
+.. automodule:: falaw.comfyui.manifest
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      FLOOR_TAG
+      BLOCKED_ENDPOINTS
+      FACADE_ONLY_ENDPOINTS
+      API_PREFIX
+      DEFAULT_ALLOWED_ARGS
+      EXPLICITLY_FORBIDDEN_ARGS
+      DIRECTORY_FLAGS
+      HOST_SYSTEM_DIRS
+      REQUIRED_MOUNTS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      check_manifest
+      git_commit_floor
+   
