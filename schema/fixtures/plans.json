@@ -882,6 +882,44 @@
       "has_unknown_costs": false,
       "plan_hash": "a5ac9060ff83af35fe616d393e25a4773848f9fc8e708356fb23db3582351f42",
       "total_cost_usd": 0.0036
+    },
+    {
+      "calls": [
+        12
+      ],
+      "expected": {
+        "calls": [
+          {
+            "application": "bytedance/seedance-2.0/text-to-video",
+            "arguments": {
+              "prompt": "a tiger walks"
+            },
+            "backend": "fal",
+            "cache_status": "unknown",
+            "cost_basis": {
+              "priced": "bytedance/seedance-2.0/text-to-video",
+              "pricer": "model_catalogue",
+              "quantities": {},
+              "table": "falaw/data/models.json",
+              "table_version": "f0b3aec5a3e8"
+            },
+            "estimated_cost_usd": null,
+            "expected_duration_s": null,
+            "expected_wall_time_s": [
+              240,
+              420
+            ],
+            "key_extra": {},
+            "metadata": {},
+            "output_kind": "video",
+            "tool": "text_to_video"
+          }
+        ],
+        "schema": "falaw.plan/v1"
+      },
+      "has_unknown_costs": true,
+      "plan_hash": "3807e9bdc21331bb7d5eff1d766833295ada2f8232a6f079c0b7894acda30c76",
+      "total_cost_usd": 0.0
     }
   ]
 }

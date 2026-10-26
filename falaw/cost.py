@@ -312,11 +312,12 @@ def _shot_pricing_lines(
 
     if shots_as_video:
         v_record = pick_model(category="image_to_video", quality_tier=quality)
-        v_cost, problem = None, ""
+        v_cost, problem, billed = None, "", None
         try:
-            billed = duration
-            if duration is not None and "duration" in v_record.param_specs:
-                billed = float(video_duration_arg(v_record, duration))  # as sent
+            # the planner's own rule: as sent, else the model's declared default
+            _, billed = video_call_arguments(
+                v_record, {}, duration_s=duration, extra=None
+            )
             v_cost = estimate_call_cost(
                 v_record, **video_price_quantities(v_record, seconds=billed)
             )
@@ -325,7 +326,7 @@ def _shot_pricing_lines(
         if v_cost is None:
             why = problem or (
                 "no duration on the Shot, and the model is priced per second or per token"
-                if duration is None
+                if billed is None
                 else f"no cost_estimate on {v_record.id!r}"
             )
             skipped.append(f"shot {shot.id} i2v: {why}")
@@ -341,7 +342,7 @@ def _shot_pricing_lines(
                         if v_record.cost_estimate
                         else "USD"
                     ),
-                    note=f"image_to_video × {duration:.1f}s",
+                    note=f"image_to_video × {billed:.1f}s",
                 )
             )
     return out

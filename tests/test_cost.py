@@ -73,7 +73,7 @@ def test_cost_estimate_per_token_is_unknown_without_a_token_count():
     assert estimate_call_cost(record, tokens=1000) == pytest.approx(2.0)
 
 
-def test_unknown_per_second_cost_lights_up_plan_has_unknown_costs():
+def test_unknown_video_cost_lights_up_plan_has_unknown_costs():
     """The end of the wire: an unknown duration must reach the gate.
 
     ``total_cost_usd`` alone reads $0.00 either way (``billable_cost_usd``
@@ -387,3 +387,20 @@ def test_omnihuman_per_second_pricing_matches_empirical():
     assert cost is not None
     # Allow ±25% wiggle: this is ground for fluctuation in fal pricing.
     assert 0.6 < cost < 1.0
+
+
+def test_the_scene_rollup_prices_a_durationless_shot_like_the_planner():
+    """The rollup and ``plan_image_to_video`` agree on a shot with no duration (#108)."""
+    from falaw.operations._plan import plan_image_to_video
+    from falaw.scene import Scene, Shot
+
+    rollup = estimate_scene_cost(
+        Scene(title="t", shots=(Shot(id="s1", description="x"),)),
+        shots_as_video=True,
+        shot_quality="high",
+    )
+    planned = plan_image_to_video("u", quality="high", consult_cache=False)
+    video = [ln for ln in rollup.lines if ln.kind != "shot.image"]
+    assert planned.estimated_cost_usd is not None
+    assert [ln.amount for ln in video] == [pytest.approx(planned.estimated_cost_usd)]
+    assert not any("i2v" in why for why in rollup.skipped)
