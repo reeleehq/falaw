@@ -9,7 +9,7 @@
 
 import { canonicalBlob, ensureCanonical, planIdentityPayload, sha256Hex } from './canonical';
 import { FalError } from './errors';
-import { catalogueCostBasis, estimateCallCost, roundHalfEven, videoPriceQuantities, type CostBasis } from './cost';
+import { catalogueCostBasis, estimateCallCost, numericSeconds, videoDurationArg, videoPriceQuantities, type CostBasis } from './cost';
 import { CONSTANTS } from './generated/constants';
 import type { CallPlan } from './generated/call-plan';
 import type { ModelRecord } from './generated/model-record';
@@ -110,14 +110,10 @@ interface VideoInput {
 function planVideo(tool: string, args: Record<string, unknown>, input: VideoInput): CallPlan {
   const record = resolveModel(input.modelId, tool, input.quality ?? 'high');
   const merged: Record<string, unknown> = { ...args, ...(input.extra ?? {}) };
-  const takesDuration = 'duration' in record.param_specs;
-  if (input.durationS != null && takesDuration && !('duration' in merged)) {
-    merged.duration = String(Math.max(1, roundHalfEven(input.durationS)));
-  }
   let seconds = input.durationS ?? null;
-  if (takesDuration) {
-    const n = merged.duration == null ? NaN : Number(merged.duration);
-    seconds = Number.isFinite(n) ? n : null; // absent, or fal's "auto"
+  if ('duration' in record.param_specs) {
+    if (input.durationS != null && !('duration' in merged)) merged.duration = videoDurationArg(record, input.durationS);
+    seconds = numericSeconds(merged.duration);
   }
   const quantities = videoPriceQuantities(record, seconds, merged.resolution as string | undefined);
   return makeCallPlan({

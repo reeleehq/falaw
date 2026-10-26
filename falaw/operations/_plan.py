@@ -19,10 +19,11 @@ to work in the meantime.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Optional
 
-from ..cost import estimate_call_cost, video_price_quantities
+from ..cost import estimate_call_cost, video_duration_arg, video_price_quantities
 from ..llm_rates import LlmRateTable, llm_ceiling_usd
 from ..plan import CallPlan, CostBasis, make_call_plan
 from ..registry import get_model, pick_model
@@ -255,6 +256,18 @@ def plan_composite_character_in_environment(
 # ---------------------------------------------------------------------------
 
 
+def _numeric_seconds(value: Any) -> Optional[float]:
+    """A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk
+    (unknown, so the call stays unpriced rather than free)."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None
+    try:
+        seconds = float(value)
+    except ValueError:
+        return None
+    return seconds if math.isfinite(seconds) else None
+
+
 def _plan_video(
     tool: str,
     category: str,
@@ -279,14 +292,11 @@ def _plan_video(
         model_id=model_id, category=category, quality_tier=quality
     )
     arguments = {**arguments, **(extra or {})}
-    if duration_s is not None and "duration" in record.param_specs:
-        arguments.setdefault("duration", str(max(1, int(round(duration_s)))))
     seconds = duration_s
     if "duration" in record.param_specs:
-        try:
-            seconds = float(arguments["duration"])
-        except (KeyError, TypeError, ValueError):  # absent, or fal's "auto"
-            seconds = None
+        if duration_s is not None and "duration" not in arguments:
+            arguments["duration"] = video_duration_arg(record, duration_s)
+        seconds = _numeric_seconds(arguments.get("duration"))
     cost, basis = _catalogue_price(
         record,
         **video_price_quantities(

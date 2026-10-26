@@ -19,6 +19,7 @@ enough to gate on (e.g. ``--budget=1.00``) and to surface in
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -93,17 +94,36 @@ def video_price_quantities(
     factor = record.tokens_per_pixel_second
     if factor is None:
         return {"seconds": seconds}
-    resolution = (
-        resolution
-        or record.param_specs.get("resolution", {}).get("default")
-        or DFLT_VIDEO_RESOLUTION
-    )
-    if resolution not in RESOLUTION_PIXELS:
+    spec = record.param_specs.get("resolution", {})
+    resolution = resolution or spec.get("default") or DFLT_VIDEO_RESOLUTION
+    allowed = spec.get("enum") or sorted(RESOLUTION_PIXELS)
+    if resolution not in allowed or resolution not in RESOLUTION_PIXELS:
         raise ValueError(
-            f"{record.id}: unknown resolution {resolution!r}; "
-            f"expected one of {sorted(RESOLUTION_PIXELS)}"
+            f"{record.id} does not offer resolution {resolution!r}; "
+            f"expected one of {list(allowed)}"
         )
     return {"tokens": round(RESOLUTION_PIXELS[resolution] * seconds * factor)}
+
+
+def video_duration_arg(record: ModelRecord, duration_s: float) -> str:
+    """``duration_s`` as the string fal's duration enum wants, or ``ValueError``.
+
+    The one rule the planner (what is sent and quoted) and the scene rollup
+    share, so neither prices a call fal would reject: whole seconds (halves to
+    even), and within the record's ``duration`` enum when it lists numbers
+    (``"auto"`` aside).
+    """
+    if not math.isfinite(duration_s):
+        raise ValueError(f"{record.id}: duration must be finite, got {duration_s!r}")
+    seconds = round(duration_s)
+    enum = record.param_specs.get("duration", {}).get("enum") or ()
+    allowed = sorted(int(v) for v in enum if str(v).isdigit())
+    if allowed and seconds not in allowed:
+        raise ValueError(
+            f"{record.id} accepts durations of {allowed[0]} to {allowed[-1]} s; "
+            f"got {duration_s}"
+        )
+    return str(seconds)
 
 
 def estimate_call_cost(
@@ -204,12 +224,19 @@ def _shot_pricing_lines(
 
     if shots_as_video:
         v_record = pick_model(category="image_to_video", quality_tier=quality)
-        v_cost = estimate_call_cost(
-            v_record, **video_price_quantities(v_record, seconds=duration)
-        )
+        v_cost, problem = None, ""
+        try:
+            billed = duration
+            if duration is not None and "duration" in v_record.param_specs:
+                billed = float(video_duration_arg(v_record, duration))  # as sent
+            v_cost = estimate_call_cost(
+                v_record, **video_price_quantities(v_record, seconds=billed)
+            )
+        except ValueError as e:  # a duration the model would reject
+            problem = str(e)
         if v_cost is None:
-            why = (
-                "no duration on the Shot, and the model is priced per second"
+            why = problem or (
+                "no duration on the Shot, and the model is priced per second or per token"
                 if duration is None
                 else f"no cost_estimate on {v_record.id!r}"
             )

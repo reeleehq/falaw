@@ -1076,7 +1076,7 @@
   {
     "id": "bytedance/seedance-2.0/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-t2v"
     ],
@@ -1145,7 +1145,7 @@
   {
     "id": "bytedance/seedance-2.0/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-i2v"
     ],
@@ -1292,7 +1292,7 @@
   {
     "id": "bytedance/seedance-2.0/fast/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only.",
+    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only. Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-fast-t2v"
     ],
@@ -1357,7 +1357,7 @@
   {
     "id": "bytedance/seedance-2.0/fast/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only.",
+    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only. Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-fast-i2v"
     ],
@@ -1496,7 +1496,7 @@
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio).",
+    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance15-t2v"
     ],
@@ -1559,7 +1559,7 @@
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio).",
+    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance15-i2v"
     ],
@@ -1622,7 +1622,7 @@
   {
     "id": "fal-ai/bytedance/seedream/v4.5/text-to-image",
     "category": "image",
-    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096).",
+    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedream45"
     ],
@@ -1658,7 +1658,7 @@
   {
     "id": "fal-ai/bytedance/seedream/v4.5/edit",
     "category": "image_edit",
-    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096).",
+    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedream45-edit"
     ],

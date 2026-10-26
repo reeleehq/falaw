@@ -44,7 +44,7 @@ export const CONSTANTS = {
     ]
   ],
   "model_catalogue_table": "falaw/data/models.json",
-  "models_table_version": "9be6314344bd",
+  "models_table_version": "ed9eb733484c",
   "output_kinds": [
     "image",
     "video",

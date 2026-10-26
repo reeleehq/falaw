@@ -30,13 +30,14 @@ def test_fast_is_eighty_percent_and_resolution_follows_extra():
         "u", model_id="bytedance/seedance-2.0/fast/image-to-video", **kw
     )
     assert fast.estimated_cost_usd == pytest.approx(0.8 * full.estimated_cost_usd)
+    assert full.cost_basis.quantities == {"tokens": 86400}  # 1280*720*4*24/1024
     p480 = falaw.plan_image_to_video(
         "u",
         model_id="bytedance/seedance-2.0/image-to-video",
         extra={"resolution": "480p"},
         **kw,
     )
-    assert p480.estimated_cost_usd < full.estimated_cost_usd
+    assert p480.cost_basis.quantities == {"tokens": round(854 * 480 * 4 * 24 / 1024)}
 
 
 def test_auto_duration_is_unknown_not_free():
@@ -67,7 +68,7 @@ def test_default_text_to_video_pick_is_stable_and_priced():
 
 def test_unknown_resolution_is_refused():
     rec = falaw.get_model("seedance2-i2v")
-    with pytest.raises(ValueError, match="unknown resolution"):
+    with pytest.raises(ValueError, match="does not offer resolution"):
         video_price_quantities(rec, seconds=5, resolution="9000p")
 
 
@@ -93,3 +94,61 @@ def test_seedream_45_priced_per_image_and_minimum_size_documented():
     assert falaw.get_model("seedream45-edit").category == "image_edit"
     p = falaw.plan_generate_image("a fox", model_id="seedream45", consult_cache=False)
     assert p.estimated_cost_usd == pytest.approx(0.04)
+
+
+@pytest.mark.parametrize("seconds", [2, 30, float("nan")])
+def test_a_duration_the_model_would_reject_is_refused_not_quoted(seconds):
+    with pytest.raises(ValueError):
+        falaw.plan_image_to_video(
+            "u",
+            model_id="bytedance/seedance-2.0/image-to-video",
+            duration_s=seconds,
+            consult_cache=False,
+        )
+
+
+def test_a_resolution_the_model_does_not_offer_is_refused():
+    with pytest.raises(ValueError, match="does not offer resolution"):
+        falaw.plan_image_to_video(
+            "u",
+            model_id="bytedance/seedance-2.0/fast/image-to-video",
+            duration_s=5,
+            extra={"resolution": "1080p"},
+            consult_cache=False,
+        )
+
+
+def test_empty_or_auto_duration_is_unknown_not_free():
+    for bad in ("", "auto", True):
+        p = falaw.plan_text_to_video(
+            "x",
+            model_id="seedance2-t2v",
+            extra={"duration": bad},
+            consult_cache=False,
+        )
+        assert p.estimated_cost_usd is None
+
+
+def test_half_seconds_round_to_even_like_the_ts_twin():
+    kw = dict(model_id="seedance2-t2v", consult_cache=False)
+    assert (
+        falaw.plan_text_to_video("x", duration_s=4.5, **kw).arguments["duration"] == "4"
+    )
+    assert (
+        falaw.plan_text_to_video("x", duration_s=5.5, **kw).arguments["duration"] == "6"
+    )
+
+
+def test_duration_rule_rejects_what_the_default_model_would():
+    from falaw.cost import video_duration_arg
+
+    with pytest.raises(ValueError):
+        video_duration_arg(
+            falaw.get_model("fal-ai/bytedance/seedance/v1/pro/image-to-video"), 30
+        )
+
+
+def test_reference_limits_surface_through_model_constraints():
+    c = falaw.model_constraints("seedance2-ref")
+    assert c["max_references"] == {"image_urls": 9, "video_urls": 3, "audio_urls": 3}
+    assert falaw.model_constraints("seedance2-i2v")["max_references"] == {}

@@ -168,6 +168,14 @@ PLAN_CASES: tuple[dict, ...] = (
         "tool": "text_to_video",
         "input": {"prompt": "a tiger walks", "model_id": "seedance2-t2v"},
     },
+    {  # an empty duration is unknown, not zero seconds (free)
+        "tool": "text_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-t2v",
+            "extra": {"duration": ""},
+        },
+    },
 )
 
 #: Multi-call plans (by ``PLAN_CASES`` index) whose ``plan_hash`` and totals the

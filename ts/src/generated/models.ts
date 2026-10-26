@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "9be6314344bd";
+export const MODELS_TABLE_VERSION = "ed9eb733484c";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -1087,7 +1087,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "bytedance/seedance-2.0/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "description": "ByteDance Seedance 2.0 text-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-t2v"
     ],
@@ -1156,7 +1156,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "bytedance/seedance-2.0/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration).",
+    "description": "ByteDance Seedance 2.0 image-to-video (with audio). Typical latency ~5-6 min for 4-15 s at 720p (not proportional to duration). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-i2v"
     ],
@@ -1303,7 +1303,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "bytedance/seedance-2.0/fast/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only.",
+    "description": "ByteDance Seedance 2.0 Fast text-to-video: 0.8x the price, 480p/720p only. Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-fast-t2v"
     ],
@@ -1368,7 +1368,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "bytedance/seedance-2.0/fast/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only.",
+    "description": "ByteDance Seedance 2.0 Fast image-to-video: 0.8x the price, 480p/720p only. Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance2-fast-i2v"
     ],
@@ -1507,7 +1507,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
     "category": "text_to_video",
-    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio).",
+    "description": "ByteDance Seedance 1.5 Pro text-to-video (with audio). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance15-t2v"
     ],
@@ -1570,7 +1570,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
     "category": "image_to_video",
-    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio).",
+    "description": "ByteDance Seedance 1.5 Pro image-to-video (with audio). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedance15-i2v"
     ],
@@ -1633,7 +1633,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "fal-ai/bytedance/seedream/v4.5/text-to-image",
     "category": "image",
-    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096).",
+    "description": "ByteDance Seedream 4.5 text-to-image. An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedream45"
     ],
@@ -1669,7 +1669,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "fal-ai/bytedance/seedream/v4.5/edit",
     "category": "image_edit",
-    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096).",
+    "description": "ByteDance Seedream 4.5 image edit (image_urls). An explicit width x height must total at least 2560x1440 pixels (and at most 4096x4096). Tier 'unranked': priced and usable by id/alias, never a default pick (falaw#86).",
     "aliases": [
       "seedream45-edit"
     ],
