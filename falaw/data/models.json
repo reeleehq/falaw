@@ -1151,7 +1151,11 @@
     "default_pick": false,
     "resolution_rate_factors": {
       "4k": 0.572
-    }
+    },
+    "typical_wall_time_s": [
+      240,
+      420
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/image-to-video",
@@ -1231,7 +1235,11 @@
     "default_pick": false,
     "resolution_rate_factors": {
       "4k": 0.572
-    }
+    },
+    "typical_wall_time_s": [
+      240,
+      420
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/reference-to-video",
@@ -1319,7 +1327,11 @@
     },
     "resolution_rate_factors": {
       "4k": 0.572
-    }
+    },
+    "typical_wall_time_s": [
+      240,
+      420
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/fast/text-to-video",

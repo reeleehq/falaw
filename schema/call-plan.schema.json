@@ -101,6 +101,23 @@
       "default": null,
       "title": "Expected Duration S"
     },
+    "expected_wall_time_s": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Wall Time S"
+    },
     "key_extra": {
       "additionalProperties": true,
       "default": {},
