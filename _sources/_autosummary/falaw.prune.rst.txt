@@ -12,6 +12,7 @@ falaw.prune
       prune_assets
       prune_content
       prune_manifests
+      prune_uploads
    
    .. rubric:: Classes
 

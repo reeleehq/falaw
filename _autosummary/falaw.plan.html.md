@@ -120,7 +120,7 @@ Whether the cache will short-circuit this call.
 
 alias of [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[‘hit’, ‘miss’, ‘stale’, ‘unknown’]
 
-### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
+### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -196,6 +196,19 @@ deliberately identity-free labelling, putting something here says “a
 cached result minted without this value must not be reused”. First
 customer: nw’s Transform `impl_version` (nw#27) — “same interface,
 changed behaviour” must miss the cache without renaming anything.
+
+#### local_files *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)*
+
+one pointer
+(a tuple of dict keys / list indices) per `os.PathLike` the caller passed.
+Only these are resolved at execute time (uploaded on a cache miss, keyed on
+the file’s sha256), so a string that merely looks like a marker is inert.
+Omit-when-empty on the wire (like `cost_basis`): a plan with no local
+file serializes to the bytes it did before the field existed; absent reads
+as empty.
+
+* **Type:**
+  Where [`arguments`](#falaw.plan.CallPlan.arguments) holds local-file markers (falaw#92)
 
 #### metadata *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 

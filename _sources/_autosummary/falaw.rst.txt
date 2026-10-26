@@ -24,6 +24,7 @@
       llm_cost_basis
       reprice_plan
       upload
+      using_uploader
       clear_subscribers
       estimate_call_cost
       estimate_scene_cost
@@ -41,6 +42,7 @@
       cache_stats
       cache_usage
       prune_assets
+      prune_uploads
       prune_content
       prune_manifests
       drop_cache_entry

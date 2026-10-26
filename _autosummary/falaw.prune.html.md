@@ -81,6 +81,7 @@ ValueError: prune_content needs a bound: pass older_than= and/or max_bytes=...
 | [`prune_assets`](#falaw.prune.prune_assets)(\*[, older_than, max_bytes, ...])    | Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22). |
 | [`prune_content`](#falaw.prune.prune_content)(\*[, older_than, max_bytes, ...])   | Reclaim content-addressed blobs — the gigabytes (falaw#22).                    |
 | [`prune_manifests`](#falaw.prune.prune_manifests)(\*[, older_than, max_bytes, ...]) | Reclaim cache entries — the fal responses themselves (falaw#22).               |
+| [`prune_uploads`](#falaw.prune.prune_uploads)(\*[, older_than, max_bytes, ...])   | Drop upload-index entries (falaw#92): digest -> fal URL hints.                 |
 
 ### Classes
 
@@ -312,3 +313,24 @@ equals the candidate count.
 Only the manifest is removed; blobs are shared by content hash across
 entries and are never dropped from here — the same rule
 [`falaw.drop_cache_entry()`](falaw.html.md#falaw.drop_cache_entry) follows.
+
+### falaw.prune.prune_uploads(, older_than=None, max_bytes=None, dry_run=True)
+
+Drop upload-index entries (falaw#92): digest -> fal URL hints.
+
+An entry older than `falaw.upload.DEFAULT_UPLOAD_TTL_S` is dead by
+definition ([`falaw.upload()`](falaw.html.md#falaw.upload) re-uploads past its `ttl_s`), so pass
+`older_than=` at least that. Dropping one costs a re-upload, which is
+free, so `rebillable_entries` is always 0.
+
+* **Parameters:**
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries written more than this ago — seconds, or a
+    [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
+  * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
+* **Returns:**
+  with `area="uploads"`.
+* **Return type:**
+  [`PruneReport`](#falaw.prune.PruneReport)
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – neither bound was given.

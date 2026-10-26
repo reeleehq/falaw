@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=22d3c163"></script>
+    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.66" />
+  <meta name="docsearch:version" content="0.0.67" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -802,6 +802,7 @@ window.runMermaid = runMermaid;</script>
     <span class="s2">"prune_assets"</span><span class="p">,</span>
     <span class="s2">"prune_content"</span><span class="p">,</span>
     <span class="s2">"prune_manifests"</span><span class="p">,</span>
+    <span class="s2">"prune_uploads"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -1631,7 +1632,13 @@ window.runMermaid = runMermaid;</script>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_asset_candidates</span><span class="p">(</span><span class="n">root</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PruneCandidate</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Materialized asset copies, excluding writes still in flight.</span>
+<span class="w">    </span><span class="sd">"""Materialized asset copies, excluding writes still in flight (see</span>
+<span class="sd">    :func:`_file_candidates`)."""</span>
+    <span class="k">return</span> <span class="n">_file_candidates</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">ASSETS_DIRNAME</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_file_candidates</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PruneCandidate</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The plain files of one cache directory, excluding writes still in flight.</span>
 
 <span class="sd">    ``.part`` files are skipped, and that is a correctness requirement rather</span>
 <span class="sd">    than tidiness: :func:`falaw.content.write_blob_to_file` writes</span>
@@ -1642,7 +1649,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    They would also be counted as orphaned copies, since a ``.part`` name</span>
 <span class="sd">    carries no content hash.</span>
 <span class="sd">    """</span>
-    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">ASSETS_DIRNAME</span><span class="p">)</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">names</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -1730,6 +1736,56 @@ window.runMermaid = runMermaid;</script>
         <span class="n">kept_entries</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">survivors</span><span class="p">),</span>
         <span class="n">kept_bytes</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">bytes</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">survivors</span><span class="p">),</span>
         <span class="n">rebillable_entries</span><span class="o">=</span><span class="n">orphaned</span><span class="p">,</span>
+        <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="prune_uploads">
+<a class="viewcode-back" href="../../_autosummary/falaw.prune.html#falaw.prune_uploads">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">prune_uploads</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">older_than</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Age</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_bytes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PruneReport</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Drop upload-index entries (falaw#92): digest -&gt; fal URL hints.</span>
+
+<span class="sd">    An entry older than :data:`falaw.upload.DEFAULT_UPLOAD_TTL_S` is dead by</span>
+<span class="sd">    definition (:func:`falaw.upload` re-uploads past its ``ttl_s``), so pass</span>
+<span class="sd">    ``older_than=`` at least that. Dropping one costs a re-upload, which is</span>
+<span class="sd">    free, so ``rebillable_entries`` is always 0.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        older_than: drop entries written more than this ago — seconds, or a</span>
+<span class="sd">            :class:`~datetime.timedelta`.</span>
+<span class="sd">        max_bytes: drop oldest-first until the area fits in this budget.</span>
+<span class="sd">        dry_run: report without deleting. Default, deliberately.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        PruneReport: with ``area="uploads"``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: neither bound was given.</span>
+<span class="sd">    """</span>
+    <span class="n">_require_a_bound</span><span class="p">(</span><span class="s2">"prune_uploads"</span><span class="p">,</span> <span class="n">older_than</span><span class="p">,</span> <span class="n">max_bytes</span><span class="p">)</span>
+    <span class="n">doomed</span><span class="p">,</span> <span class="n">survivors</span> <span class="o">=</span> <span class="n">_select</span><span class="p">(</span>
+        <span class="n">_file_candidates</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_cache_dir</span><span class="p">(),</span> <span class="n">UPLOAD_INDEX_DIRNAME</span><span class="p">)),</span>
+        <span class="n">older_than</span><span class="o">=</span><span class="n">older_than</span><span class="p">,</span>
+        <span class="n">max_bytes</span><span class="o">=</span><span class="n">max_bytes</span><span class="p">,</span>
+        <span class="n">now</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span>
+    <span class="p">)</span>
+    <span class="n">deleted</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PruneCandidate</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">doomed</span><span class="p">)</span>
+    <span class="n">errors</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dry_run</span><span class="p">:</span>
+        <span class="n">deleted</span><span class="p">,</span> <span class="n">errors</span> <span class="o">=</span> <span class="n">_delete</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">path</span><span class="p">),</span> <span class="n">doomed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PruneReport</span><span class="p">(</span>
+        <span class="n">area</span><span class="o">=</span><span class="n">UPLOADS_AREA</span><span class="p">,</span>
+        <span class="n">dry_run</span><span class="o">=</span><span class="n">dry_run</span><span class="p">,</span>
+        <span class="n">candidates</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">doomed</span><span class="p">),</span>
+        <span class="n">deleted</span><span class="o">=</span><span class="n">deleted</span><span class="p">,</span>
+        <span class="n">kept_entries</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">survivors</span><span class="p">),</span>
+        <span class="n">kept_bytes</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">bytes</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">survivors</span><span class="p">),</span>
         <span class="n">errors</span><span class="o">=</span><span class="n">errors</span><span class="p">,</span>
     <span class="p">)</span></div>
 

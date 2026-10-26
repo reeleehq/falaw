@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=22d3c163"></script>
+    <script src="../_static/documentation_options.js?v=86ab457a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.66" />
+  <meta name="docsearch:version" content="0.0.67" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -517,6 +517,9 @@ the caller’s real cache, which on the production box is a multi-gigabyte walk 
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.prune.prune_manifests" title="falaw.prune.prune_manifests"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune_manifests</span></code></a>(*[, older_than, max_bytes, ...])</p></td>
 <td><p>Reclaim cache entries — the fal responses themselves (falaw#22).</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.prune.prune_uploads" title="falaw.prune.prune_uploads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune_uploads</span></code></a>(*[, older_than, max_bytes, ...])</p></td>
+<td><p>Drop upload-index entries (falaw#92): digest -&gt; fal URL hints.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -807,6 +810,35 @@ entries and are never dropped from here — the same rule
 <a class="reference internal" href="falaw.html#falaw.drop_cache_entry" title="falaw.drop_cache_entry"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.drop_cache_entry()</span></code></a> follows.</p>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.prune.prune_uploads">
+<span class="sig-prename descclassname"><span class="pre">falaw.prune.</span></span><span class="sig-name descname"><span class="pre">prune_uploads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">older_than</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/prune.html#prune_uploads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.prune.prune_uploads" title="Link to this definition">#</a></dt>
+<dd><p>Drop upload-index entries (falaw#92): digest -&gt; fal URL hints.</p>
+<p>An entry older than <code class="xref py py-data docutils literal notranslate"><span class="pre">falaw.upload.DEFAULT_UPLOAD_TTL_S</span></code> is dead by
+definition (<a class="reference internal" href="falaw.html#falaw.upload" title="falaw.upload"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.upload()</span></code></a> re-uploads past its <code class="docutils literal notranslate"><span class="pre">ttl_s</span></code>), so pass
+<code class="docutils literal notranslate"><span class="pre">older_than=</span></code> at least that. Dropping one costs a re-upload, which is
+free, so <code class="docutils literal notranslate"><span class="pre">rebillable_entries</span></code> is always 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>older_than</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>, <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span>) – drop entries written more than this ago — seconds, or a
+<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.timedelta" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">timedelta</span></code></a>.</p></li>
+<li><p><strong>max_bytes</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span>) – drop oldest-first until the area fits in this budget.</p></li>
+<li><p><strong>dry_run</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span>) – report without deleting. Default, deliberately.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>with <code class="docutils literal notranslate"><span class="pre">area=&quot;uploads&quot;</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.prune.PruneReport" title="falaw.prune.PruneReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">PruneReport</span></code></a></span></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.15)"><strong>ValueError</strong></a> – neither bound was given.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -873,6 +905,7 @@ entries and are never dropped from here — the same rule
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.prune_assets"><code class="docutils literal notranslate"><span class="pre">prune_assets()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.prune_content"><code class="docutils literal notranslate"><span class="pre">prune_content()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.prune_manifests"><code class="docutils literal notranslate"><span class="pre">prune_manifests()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.prune_uploads"><code class="docutils literal notranslate"><span class="pre">prune_uploads()</span></code></a></li>
 </ul>
   </nav></div>
 

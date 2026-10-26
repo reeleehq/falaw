@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=22d3c163"></script>
+    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.66" />
+  <meta name="docsearch:version" content="0.0.67" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -925,6 +925,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    customer: nw's Transform ``impl_version`` (nw#27) — "same interface,</span>
 <span class="sd">    changed behaviour" must miss the cache without renaming anything."""</span>
 
+    <span class="n">local_files</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">()</span>
+<span class="w">    </span><span class="sd">"""Where :attr:`arguments` holds local-file markers (falaw#92): one pointer</span>
+<span class="sd">    (a tuple of dict keys / list indices) per ``os.PathLike`` the caller passed.</span>
+<span class="sd">    Only these are resolved at execute time (uploaded on a cache miss, keyed on</span>
+<span class="sd">    the file's sha256), so a string that merely looks like a marker is inert.</span>
+<span class="sd">    Omit-when-empty on the wire (like ``cost_basis``): a plan with no local</span>
+<span class="sd">    file serializes to the bytes it did before the field existed; absent reads</span>
+<span class="sd">    as empty."""</span>
+
     <span class="n">cost_basis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CostBasis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">"""How :attr:`estimated_cost_usd` was computed, or ``None`` when nothing</span>
 <span class="sd">    recorded it (falaw#60). Present, the quote can be re-run against today's</span>
@@ -1111,6 +1120,8 @@ window.runMermaid = runMermaid;</script>
         <span class="s2">"metadata"</span><span class="p">:</span> <span class="n">call</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
         <span class="s2">"key_extra"</span><span class="p">:</span> <span class="n">call</span><span class="o">.</span><span class="n">key_extra</span><span class="p">,</span>
     <span class="p">}</span>
+    <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">local_files</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"local_files"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">call</span><span class="o">.</span><span class="n">local_files</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">cost_basis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">out</span><span class="p">[</span><span class="s2">"cost_basis"</span><span class="p">]</span> <span class="o">=</span> <span class="n">cost_basis_to_dict</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">cost_basis</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">out</span></div>
@@ -1180,6 +1191,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">expected_duration_s</span><span class="o">=</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"metadata"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}),</span>
         <span class="n">key_extra</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_extra"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}),</span>
+        <span class="n">local_files</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"local_files"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">()),</span>
         <span class="n">cost_basis</span><span class="o">=</span><span class="p">(</span>
             <span class="n">cost_basis_from_dict</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">basis</span> <span class="o">:=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cost_basis"</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
@@ -1345,6 +1357,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            key-composition time on the way to the network (falaw#17).</span>
 <span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.canonical</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_canonical</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.upload</span><span class="w"> </span><span class="kn">import</span> <span class="n">localize_paths</span><span class="p">,</span> <span class="n">resolve_local_files</span>
+
+    <span class="c1"># A local file (``os.PathLike``) becomes a "&lt;file ...&gt;" marker: the Plan</span>
+    <span class="c1"># stays pure data, and execute() uploads it on a miss and keys on its bytes</span>
+    <span class="c1"># (falaw#92).</span>
+    <span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span> <span class="o">=</span> <span class="n">localize_paths</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
 
     <span class="c1"># Validate before the cache peek: the peek's `except Exception` fallback</span>
     <span class="c1"># (best-effort by design) would otherwise swallow the refusal into a</span>
@@ -1366,9 +1384,10 @@ window.runMermaid = runMermaid;</script>
             <span class="k">try</span><span class="p">:</span>
                 <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_get</span>  <span class="c1"># type: ignore[import-not-found]</span>
 
+                <span class="n">peek</span> <span class="o">=</span> <span class="n">resolve_local_files</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"key"</span><span class="p">)</span>
                 <span class="n">status</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="s2">"hit"</span>
-                    <span class="k">if</span> <span class="n">cache_get</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="n">cache_get</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">peek</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                     <span class="k">else</span> <span class="s2">"miss"</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -1386,6 +1405,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">cache_status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
         <span class="n">expected_duration_s</span><span class="o">=</span><span class="n">expected_duration_s</span><span class="p">,</span>
         <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span> <span class="ow">or</span> <span class="p">{},</span>
+        <span class="n">local_files</span><span class="o">=</span><span class="n">local_files</span><span class="p">,</span>
         <span class="n">cost_basis</span><span class="o">=</span><span class="n">cost_basis</span><span class="p">,</span>
     <span class="p">)</span></div>
 
@@ -1801,6 +1821,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        succeeded but produced no URL — and that is this call's failure, not the</span>
 <span class="sd">        run's.</span>
 <span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.upload</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_local_files</span>
+
         <span class="n">call</span> <span class="o">=</span> <span class="n">plan</span><span class="o">.</span><span class="n">calls</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="n">wire_args</span> <span class="o">=</span> <span class="n">_resolve_placeholders</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="n">artifacts</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="n">_wire_ref</span><span class="p">)</span>
         <span class="c1"># Only resolved when it will be used — the key ref is stricter than the</span>
@@ -1811,6 +1833,18 @@ window.runMermaid = runMermaid;</script>
             <span class="k">if</span> <span class="n">use_cache</span>
             <span class="k">else</span> <span class="n">wire_args</span>
         <span class="p">)</span>
+        <span class="n">resolve_wire</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">local_files</span><span class="p">:</span>
+            <span class="c1"># Key on the files' bytes; upload only if the call misses the cache.</span>
+            <span class="n">template</span><span class="p">,</span> <span class="n">pointers</span> <span class="o">=</span> <span class="n">wire_args</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">local_files</span>
+            <span class="n">key_args</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">resolve_local_files</span><span class="p">(</span><span class="n">key_args</span><span class="p">,</span> <span class="n">pointers</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"key"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">use_cache</span>
+                <span class="k">else</span> <span class="n">template</span>
+            <span class="p">)</span>
+            <span class="n">resolve_wire</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">resolve_local_files</span><span class="p">(</span>  <span class="c1"># noqa: E731</span>
+                <span class="n">template</span><span class="p">,</span> <span class="n">pointers</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wire"</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">_execute_call</span><span class="p">(</span>
             <span class="n">call</span><span class="p">,</span>
             <span class="n">wire_args</span><span class="p">,</span>
@@ -1820,6 +1854,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">use_cache</span><span class="o">=</span><span class="n">use_cache</span><span class="p">,</span>
             <span class="n">refresh</span><span class="o">=</span><span class="n">refresh</span><span class="p">,</span>
             <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span><span class="p">,</span>
+            <span class="n">resolve_wire</span><span class="o">=</span><span class="n">resolve_wire</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="k">with</span> <span class="n">_bounded_executor</span><span class="p">(</span><span class="n">concurrency</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
@@ -2011,8 +2046,13 @@ window.runMermaid = runMermaid;</script>
     <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">on_event</span><span class="p">,</span>
+    <span class="n">resolve_wire</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Run one :class:`CallPlan`, returning ``(artifact, cache_hit)``.</span>
+
+<span class="sd">    ``resolve_wire``, when given, produces the wire arguments lazily (a local</span>
+<span class="sd">    file is uploaded only when the call actually goes out, never on a cache</span>
+<span class="sd">    hit); ``wire_args`` is then the unresolved template.</span>
 
 <span class="sd">    ``cache_hit`` is *observed*, not predicted: it says this call was served</span>
 <span class="sd">    from a cache entry that proved usable, which is what run-level cost</span>
@@ -2037,6 +2077,7 @@ window.runMermaid = runMermaid;</script>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_call_fal</span><span class="p">,</span> <span class="n">drop_cache_entry</span><span class="p">,</span> <span class="n">emit_cache_hit</span>
 
     <span class="n">key_arguments</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">key_args</span> <span class="ow">is</span> <span class="n">wire_args</span> <span class="k">else</span> <span class="n">key_args</span>
+    <span class="n">wire</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">resolve_wire</span><span class="p">()</span> <span class="k">if</span> <span class="n">resolve_wire</span> <span class="k">else</span> <span class="n">wire_args</span>  <span class="c1"># noqa: E731</span>
     <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_get</span>
 
@@ -2079,7 +2120,7 @@ window.runMermaid = runMermaid;</script>
             <span class="p">)</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="n">cached_call_fal</span><span class="p">(</span>
             <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span>
-            <span class="n">wire_args</span><span class="p">,</span>
+            <span class="n">wire</span><span class="p">(),</span>
             <span class="n">key_arguments</span><span class="o">=</span><span class="n">key_arguments</span><span class="p">,</span>
             <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span><span class="p">,</span>
@@ -2088,7 +2129,7 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">raw</span> <span class="o">=</span> <span class="n">get_backend_executor</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">)(</span>
-            <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">wire_args</span><span class="p">,</span> <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span>
+            <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">wire</span><span class="p">(),</span> <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">_stamp_observed_cost</span><span class="p">(</span><span class="n">converter</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">call</span><span class="p">),</span> <span class="n">call</span><span class="p">,</span> <span class="n">cache_hit</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="kc">False</span>
 

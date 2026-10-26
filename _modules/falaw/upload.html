@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=22d3c163"></script>
+    <script src="../../_static/documentation_options.js?v=86ab457a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.66" />
+  <meta name="docsearch:version" content="0.0.67" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -731,9 +731,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">digest -&gt; ``{"url", "uploaded_at"}`` — default a directory of JSON files under</span>
 <span class="sd">the falaw cache dir, so it moves with ``$FALAW_CACHE_DIR``).</span>
 
-<span class="sd">Whether a *Plan* should accept a local path directly and upload at execute time</span>
-<span class="sd">(keeping the Plan pure data, with the digest in the cache key) is left open;</span>
-<span class="sd">:func:`upload` is the building block either way.</span>
+<span class="sd">A *Plan* may also name a local file directly (falaw#92): ``make_call_plan``</span>
+<span class="sd">turns any ``os.PathLike`` argument into a ``"&lt;file /abs/path&gt;"`` marker, so the</span>
+<span class="sd">Plan stays pure data. At execute time the marker becomes the uploaded URL on the</span>
+<span class="sd">wire (uploaded only on a cache miss) and ``sha256:&lt;digest of the bytes&gt;`` in the</span>
+<span class="sd">cache key, so an unchanged file hits the cache and an edited one cannot.</span>
+<span class="sd">:func:`using_uploader` replaces the transfer for the whole process.</span>
 
 <span class="sd">&gt;&gt;&gt; upload("keyframe.png", uploader=lambda p: "https://v3b.fal.media/x.png", index={})  # doctest: +SKIP</span>
 <span class="sd">'https://v3b.fal.media/x.png'</span>
@@ -745,16 +748,25 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">MutableMapping</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">_cache_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">fal_client_for</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"FILE_PREFIX"</span><span class="p">,</span>
     <span class="s2">"UPLOAD_INDEX_DIRNAME"</span><span class="p">,</span>
+    <span class="s2">"current_uploader"</span><span class="p">,</span>
+    <span class="s2">"derive_namespace"</span><span class="p">,</span>
+    <span class="s2">"file_marker"</span><span class="p">,</span>
+    <span class="s2">"localize_paths"</span><span class="p">,</span>
+    <span class="s2">"resolve_local_files"</span><span class="p">,</span>
+    <span class="s2">"using_uploader"</span><span class="p">,</span>
     <span class="s2">"DEFAULT_UPLOAD_TTL_S"</span><span class="p">,</span>
     <span class="s2">"default_upload_index"</span><span class="p">,</span>
     <span class="s2">"default_uploader"</span><span class="p">,</span>
@@ -811,9 +823,66 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">_AtomicJsonFiles</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">default_uploader</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Upload with ``fal_client`` under the credentials falaw resolves."""</span>
-    <span class="k">return</span> <span class="n">fal_client_for</span><span class="p">(</span><span class="n">api_key</span><span class="p">)</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_uploader</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">expires_in_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Upload with ``fal_client`` under the credentials falaw resolves.</span>
+
+<span class="sd">    ``expires_in_s`` asks fal to keep the object at least that long (its</span>
+<span class="sd">    ``lifecycle`` setting), which is what turns :func:`upload`'s ``ttl_s`` from</span>
+<span class="sd">    a guess into a guarantee.</span>
+<span class="sd">    """</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">fal_client_for</span><span class="p">(</span><span class="n">api_key</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">expires_in_s</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_fal_client</span>
+
+    <span class="n">lifecycle</span> <span class="o">=</span> <span class="n">import_fal_client</span><span class="p">()</span><span class="o">.</span><span class="n">StorageSettings</span><span class="p">(</span><span class="n">expires_in</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">expires_in_s</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">client</span><span class="o">.</span><span class="n">upload_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">lifecycle</span><span class="o">=</span><span class="n">lifecycle</span><span class="p">)</span>
+
+
+<span class="n">_DEFAULT_UPLOADER</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="sd">"""Process-wide override of the transfer, with its index namespace (a plain</span>
+<span class="sd">global, like the URL fetcher in :mod:`falaw.content`: it must be visible from</span>
+<span class="sd">worker threads)."""</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">current_uploader</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""The uploader installed by :func:`using_uploader`, or ``None`` for fal's."""</span>
+    <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">_DEFAULT_UPLOADER</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_DEFAULT_UPLOADER</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">derive_namespace</span><span class="p">(</span><span class="n">uploader</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The index namespace of a custom uploader: its ``namespace`` attribute if</span>
+<span class="sd">    it has one, else a short hash of its qualified name, so two different</span>
+<span class="sd">    uploaders never share remembered URLs by accident."""</span>
+    <span class="n">named</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">uploader</span><span class="p">,</span> <span class="s2">"namespace"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">named</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">named</span><span class="p">)</span>
+    <span class="n">qualname</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">uploader</span><span class="p">,</span> <span class="s2">"__qualname__"</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">uploader</span><span class="p">)</span><span class="o">.</span><span class="vm">__qualname__</span><span class="p">)</span>
+    <span class="n">ident</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">getattr</span><span class="p">(</span><span class="n">uploader</span><span class="p">,</span><span class="w"> </span><span class="s1">'__module__'</span><span class="p">,</span><span class="w"> </span><span class="s1">''</span><span class="p">)</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">qualname</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">return</span> <span class="s2">"custom-"</span> <span class="o">+</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha1</span><span class="p">(</span><span class="n">ident</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()[:</span><span class="mi">8</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="using_uploader">
+<a class="viewcode-back" href="../../_autosummary/falaw.html#falaw.using_uploader">[docs]</a>
+<span class="nd">@contextmanager</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">using_uploader</span><span class="p">(</span>
+    <span class="n">uploader</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Make ``uploader`` the transfer for every :func:`upload` (and every local</span>
+<span class="sd">    file in an executed Plan) for the duration: an S3 uploader, or a fake in a</span>
+<span class="sd">    test suite. An explicit ``uploader=`` argument still wins. ``namespace``</span>
+<span class="sd">    keys its URLs in the index (default :func:`derive_namespace`). Nests and</span>
+<span class="sd">    restores."""</span>
+    <span class="k">global</span> <span class="n">_DEFAULT_UPLOADER</span>
+    <span class="n">previous</span> <span class="o">=</span> <span class="n">_DEFAULT_UPLOADER</span>
+    <span class="n">_DEFAULT_UPLOADER</span> <span class="o">=</span> <span class="p">(</span><span class="n">uploader</span><span class="p">,</span> <span class="n">namespace</span> <span class="ow">or</span> <span class="n">derive_namespace</span><span class="p">(</span><span class="n">uploader</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">uploader</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">_DEFAULT_UPLOADER</span> <span class="o">=</span> <span class="n">previous</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fresh_url</span><span class="p">(</span><span class="n">entry</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">ttl_s</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -825,9 +894,11 @@ window.runMermaid = runMermaid;</script>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">age</span> <span class="o">=</span> <span class="n">now</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">entry</span><span class="p">[</span><span class="s2">"uploaded_at"</span><span class="p">])</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="s2">"url"</span><span class="p">]</span>
+        <span class="n">expires_at</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expires_at"</span><span class="p">)</span>
+        <span class="n">alive</span> <span class="o">=</span> <span class="n">expires_at</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="nb">float</span><span class="p">(</span><span class="n">expires_at</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">url</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="n">ttl_s</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">url</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">age</span> <span class="o">&lt;</span> <span class="n">ttl_s</span> <span class="ow">and</span> <span class="n">alive</span> <span class="k">else</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="upload">
@@ -838,33 +909,136 @@ window.runMermaid = runMermaid;</script>
     <span class="n">uploader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">ttl_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_UPLOAD_TTL_S</span><span class="p">,</span>
+    <span class="n">namespace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">api_key</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">clock</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""A fal-fetchable URL for the local file at ``path``.</span>
 
 <span class="sd">    Cached by content: an unchanged file within ``ttl_s`` of its last upload</span>
-<span class="sd">    returns the remembered URL without any transfer. ``api_key`` is used by the</span>
-<span class="sd">    default uploader only (see :func:`falaw.core.fal_client_for`).</span>
+<span class="sd">    returns the remembered URL without any transfer. With the default fal</span>
+<span class="sd">    uploader the object is uploaded with a lifecycle of ``ttl_s`` and the entry</span>
+<span class="sd">    records when it dies, so a remembered URL is never trusted past that.</span>
+<span class="sd">    ``namespace`` keeps URLs from different backends apart in a shared index</span>
+<span class="sd">    (default: ``"fal"``, or :func:`derive_namespace` for another uploader).</span>
+<span class="sd">    ``api_key`` is used by the default uploader only (see</span>
+<span class="sd">    :func:`falaw.core.fal_client_for`).</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">ttl_s</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ttl_s must be &gt;= 0, got </span><span class="si">{</span><span class="n">ttl_s</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">digest</span> <span class="o">=</span> <span class="n">file_digest</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">installed</span> <span class="o">=</span> <span class="n">_DEFAULT_UPLOADER</span>
+    <span class="n">lifetime_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">uploader</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">installed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">uploader</span><span class="p">,</span> <span class="n">namespace</span> <span class="o">=</span> <span class="n">installed</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">namespace</span> <span class="ow">or</span> <span class="n">installed</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">uploader</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">uploader</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">default_uploader</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">)</span>
+        <span class="n">lifetime_s</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">ttl_s</span><span class="p">))</span>
+        <span class="n">uploader</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span>
+            <span class="n">default_uploader</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">api_key</span><span class="p">,</span> <span class="n">expires_in_s</span><span class="o">=</span><span class="n">lifetime_s</span>
+        <span class="p">)</span>
+        <span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span> <span class="ow">or</span> <span class="s2">"fal"</span>
+    <span class="n">namespace</span> <span class="o">=</span> <span class="n">namespace</span> <span class="ow">or</span> <span class="n">derive_namespace</span><span class="p">(</span><span class="n">uploader</span><span class="p">)</span>
+    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">namespace</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">file_digest</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">index</span> <span class="o">=</span> <span class="n">default_upload_index</span><span class="p">()</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">index</span>
     <span class="n">now</span> <span class="o">=</span> <span class="n">clock</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">entry</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">digest</span><span class="p">)</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># noqa: BLE001 — an unreadable entry is a miss</span>
         <span class="n">entry</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">_fresh_url</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">now</span><span class="p">,</span> <span class="n">ttl_s</span><span class="p">)</span> <span class="k">if</span> <span class="n">entry</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">url</span> <span class="o">=</span> <span class="n">uploader</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="n">index</span><span class="p">[</span><span class="n">digest</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"url"</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s2">"uploaded_at"</span><span class="p">:</span> <span class="n">now</span><span class="p">}</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"url"</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s2">"uploaded_at"</span><span class="p">:</span> <span class="n">now</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">lifetime_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">record</span><span class="p">[</span><span class="s2">"expires_at"</span><span class="p">]</span> <span class="o">=</span> <span class="n">now</span> <span class="o">+</span> <span class="n">lifetime_s</span>
+        <span class="n">index</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">record</span>
     <span class="k">return</span> <span class="n">url</span></div>
 
+
+
+<span class="c1"># --- local files inside a Plan --------------------------------------------------</span>
+
+<span class="n">FILE_PREFIX</span> <span class="o">=</span> <span class="s2">"&lt;file "</span>
+<span class="sd">"""Marks a local file where a Plan argument would hold a URL:</span>
+<span class="sd">``"&lt;file sha256:&lt;hex&gt; /abs/x.png&gt;"``. The digest makes the Plan's identity (and</span>
+<span class="sd">the cache key) follow the file's bytes; the path says where to read them."""</span>
+
+<span class="n">_MARKER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"&lt;file sha256:([0-9a-f]</span><span class="si">{64}</span><span class="s2">) (.+)&gt;"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+
+<span class="n">Pointer</span> <span class="o">=</span> <span class="nb">tuple</span>  <span class="c1"># of dict keys / list indices leading to one argument</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">file_marker</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The marker for ``path``, digesting its bytes now (``FileNotFoundError``</span>
+<span class="sd">    if it is not there — refused while planning is still free)."""</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">fspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">FILE_PREFIX</span><span class="si">}</span><span class="s2">sha256:</span><span class="si">{</span><span class="n">file_digest</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&gt;"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">localize_paths</span><span class="p">(</span><span class="n">arguments</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Pointer</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``(arguments', pointers)``: every ``os.PathLike`` replaced by its marker,</span>
+<span class="sd">    and where each one sits. The Plan stays pure data, and **only the declared</span>
+<span class="sd">    pointers are ever resolved** — a prompt that happens to look like a marker</span>
+<span class="sd">    is just text and can never make falaw read a file."""</span>
+    <span class="n">pointers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Pointer</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">walk</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">at</span><span class="p">:</span> <span class="n">Pointer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">):</span>
+            <span class="n">pointers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">file_marker</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">walk</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="o">*</span><span class="n">at</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">walk</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="o">*</span><span class="n">at</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="n">items</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">walk</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="p">()),</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pointers</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_replace_at</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">pointer</span><span class="p">:</span> <span class="n">Pointer</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``node`` with ``fn`` applied at ``pointer`` (containers copied on the way)."""</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pointer</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">head</span><span class="p">,</span> <span class="n">rest</span> <span class="o">=</span> <span class="n">pointer</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pointer</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">node</span><span class="p">,</span> <span class="n">head</span><span class="p">:</span> <span class="n">_replace_at</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="n">head</span><span class="p">],</span> <span class="n">rest</span><span class="p">,</span> <span class="n">fn</span><span class="p">)}</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="n">items</span><span class="p">[</span><span class="n">head</span><span class="p">]</span> <span class="o">=</span> <span class="n">_replace_at</span><span class="p">(</span><span class="n">items</span><span class="p">[</span><span class="n">head</span><span class="p">],</span> <span class="n">rest</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">items</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">resolve_local_files</span><span class="p">(</span>
+    <span class="n">arguments</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="n">pointers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Pointer</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"wire"</span><span class="p">,</span> <span class="s2">"key"</span><span class="p">],</span>
+    <span class="n">uploader</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MutableMapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Resolve the declared file markers: ``"wire"`` uploads (:func:`upload`) and</span>
+<span class="sd">    yields the URL fal fetches, refusing a file that changed since planning;</span>
+<span class="sd">    ``"key"`` yields ``sha256:&lt;digest&gt;``, the identity the cache keys on (no</span>
+<span class="sd">    file is read)."""</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.plan</span><span class="w"> </span><span class="kn">import</span> <span class="n">CONTENT_REF_PREFIX</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">leaf</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">_MARKER</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">match</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"declared local file is not a file marker: </span><span class="si">{</span><span class="n">value</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">digest</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">"key"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">CONTENT_REF_PREFIX</span><span class="si">}{</span><span class="n">digest</span><span class="si">}</span><span class="s2">"</span>
+        <span class="k">if</span> <span class="n">file_digest</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">!=</span> <span class="n">digest</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> changed since the Plan was made (its sha256 no longer "</span>
+                <span class="s2">"matches); re-plan so the cache key names the bytes that are sent."</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">upload</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">uploader</span><span class="o">=</span><span class="n">uploader</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">pointer</span> <span class="ow">in</span> <span class="n">pointers</span><span class="p">:</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="n">_replace_at</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pointer</span><span class="p">),</span> <span class="n">leaf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arguments</span>
 </pre></div>
 
                 </article>

@@ -1,4 +1,4 @@
-> built 2026-10-26 12:45 UTC from 366d44c (main) · falaw 0.0.66. Details: build_info.json
+> built 2026-10-26 13:00 UTC from 8738ae1 (main) · falaw 0.0.67. Details: build_info.json
 
 # index.html.md
 
@@ -2973,6 +2973,7 @@ Leave notes for future sessions:
 | [`llm_cost_basis`](_autosummary/falaw.html.md#falaw.llm_cost_basis)(routed_model, \*[, ...])            | A [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) for a routed LLM call priced from the rate table.                                                                                       |
 | [`reprice_plan`](_autosummary/falaw.html.md#falaw.reprice_plan)(plan, \*[, pricers])                  | Re-quote every call in `plan` against today's rate tables.                                                                                                                                                 |
 | [`upload`](_autosummary/falaw.html.md#falaw.upload)(path, \*[, uploader, index, ttl_s, ...])    | A fal-fetchable URL for the local file at `path`.                                                                                                                                                          |
+| [`using_uploader`](_autosummary/falaw.html.md#falaw.using_uploader)(uploader, \*[, namespace])          | Make `uploader` the transfer for every [`upload()`](_autosummary/falaw.html.md#falaw.upload) (and every local file in an executed Plan) for the duration: an S3 uploader, or a fake in a test suite.   |
 | [`clear_subscribers`](_autosummary/falaw.html.md#falaw.clear_subscribers)()                                | Drop all registered subscribers.                                                                                                                                                                           |
 | [`estimate_call_cost`](_autosummary/falaw.html.md#falaw.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                                                                                                                                                     |
 | [`estimate_scene_cost`](_autosummary/falaw.html.md#falaw.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full [`render_scene()`](_autosummary/falaw.html.md#falaw.render_scene) invocation.                                                                                                |
@@ -2990,6 +2991,7 @@ Leave notes for future sessions:
 | [`cache_stats`](_autosummary/falaw.html.md#falaw.cache_stats)()                                      | Quick summary of the cache: entry count, disk usage, and where it went.                                                                                                                                    |
 | [`cache_usage`](_autosummary/falaw.html.md#falaw.cache_usage)()                                      | Disk usage of the falaw cache, broken down by area.                                                                                                                                                        |
 | [`prune_assets`](_autosummary/falaw.html.md#falaw.prune_assets)(\*[, older_than, max_bytes, ...])     | Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22).                                                                                                                             |
+| [`prune_uploads`](_autosummary/falaw.html.md#falaw.prune_uploads)(\*[, older_than, max_bytes, ...])    | Drop upload-index entries (falaw#92): digest -> fal URL hints.                                                                                                                                             |
 | [`prune_content`](_autosummary/falaw.html.md#falaw.prune_content)(\*[, older_than, max_bytes, ...])    | Reclaim content-addressed blobs — the gigabytes (falaw#22).                                                                                                                                                |
 | [`prune_manifests`](_autosummary/falaw.html.md#falaw.prune_manifests)(\*[, older_than, max_bytes, ...])  | Reclaim cache entries — the fal responses themselves (falaw#22).                                                                                                                                           |
 | [`drop_cache_entry`](_autosummary/falaw.html.md#falaw.drop_cache_entry)(application, arguments, \*)       | Delete the cache entry for `(application, arguments)`.                                                                                                                                                     |
@@ -3304,7 +3306,7 @@ Human-readable explanation. Required for `blocked`; free otherwise.
 
 `"succeeded"` / `"failed"` / `"blocked"`. See the module docstring.
 
-### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
+### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3380,6 +3382,19 @@ deliberately identity-free labelling, putting something here says “a
 cached result minted without this value must not be reused”. First
 customer: nw’s Transform `impl_version` (nw#27) — “same interface,
 changed behaviour” must miss the cache without renaming anything.
+
+#### local_files *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)*
+
+one pointer
+(a tuple of dict keys / list indices) per `os.PathLike` the caller passed.
+Only these are resolved at execute time (uploaded on a cache miss, keyed on
+the file’s sha256), so a string that merely looks like a marker is inert.
+Omit-when-empty on the wire (like `cost_basis`): a plan with no local
+file serializes to the bytes it did before the field existed; absent reads
+as empty.
+
+* **Type:**
+  Where [`arguments`](_autosummary/falaw.html.md#falaw.CallPlan.arguments) holds local-file markers (falaw#92)
 
 #### metadata *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -5750,6 +5765,27 @@ Only the manifest is removed; blobs are shared by content hash across
 entries and are never dropped from here — the same rule
 [`falaw.drop_cache_entry()`](_autosummary/falaw.html.md#falaw.drop_cache_entry) follows.
 
+### falaw.prune_uploads(, older_than=None, max_bytes=None, dry_run=True)
+
+Drop upload-index entries (falaw#92): digest -> fal URL hints.
+
+An entry older than `falaw.upload.DEFAULT_UPLOAD_TTL_S` is dead by
+definition ([`falaw.upload()`](_autosummary/falaw.html.md#falaw.upload) re-uploads past its `ttl_s`), so pass
+`older_than=` at least that. Dropping one costs a re-upload, which is
+free, so `rebillable_entries` is always 0.
+
+* **Parameters:**
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries written more than this ago — seconds, or a
+    [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
+  * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
+* **Returns:**
+  with `area="uploads"`.
+* **Return type:**
+  [`PruneReport`](_autosummary/falaw.prune.html.md#falaw.prune.PruneReport)
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – neither bound was given.
+
 ### falaw.refresh_full_docs(, docs_dir=None, max_workers=16, force=False, journal=True)
 
 Re-crawl per-page docs and rebuild `fal_ai_docs_full.md`.
@@ -5982,13 +6018,18 @@ Remove a previously [`subscribe()`](_autosummary/falaw.html.md#falaw.subscribe)�
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### falaw.upload(path, \*, uploader=None, index=None, ttl_s=86400, api_key=None, clock=<built-in function time>)
+### falaw.upload(path, \*, uploader=None, index=None, ttl_s=86400, namespace=None, api_key=None, clock=<built-in function time>)
 
 A fal-fetchable URL for the local file at `path`.
 
 Cached by content: an unchanged file within `ttl_s` of its last upload
-returns the remembered URL without any transfer. `api_key` is used by the
-default uploader only (see [`falaw.core.fal_client_for()`](_autosummary/falaw.core.html.md#falaw.core.fal_client_for)).
+returns the remembered URL without any transfer. With the default fal
+uploader the object is uploaded with a lifecycle of `ttl_s` and the entry
+records when it dies, so a remembered URL is never trusted past that.
+`namespace` keeps URLs from different backends apart in a shared index
+(default: `"fal"`, or `derive_namespace()` for another uploader).
+`api_key` is used by the default uploader only (see
+[`falaw.core.fal_client_for()`](_autosummary/falaw.core.html.md#falaw.core.fal_client_for)).
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
@@ -6021,6 +6062,17 @@ requests.
 
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
+
+### falaw.using_uploader(uploader, , namespace=None)
+
+Make `uploader` the transfer for every [`upload()`](_autosummary/falaw.html.md#falaw.upload) (and every local
+file in an executed Plan) for the duration: an S3 uploader, or a fake in a
+test suite. An explicit `uploader=` argument still wins. `namespace`
+keys its URLs in the index (default `derive_namespace()`). Nests and
+restores.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
 
 ### falaw.using_url_fetcher(fetcher)
 
@@ -7802,7 +7854,7 @@ Whether the cache will short-circuit this call.
 
 alias of [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[‘hit’, ‘miss’, ‘stale’, ‘unknown’]
 
-### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
+### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -7878,6 +7930,19 @@ deliberately identity-free labelling, putting something here says “a
 cached result minted without this value must not be reused”. First
 customer: nw’s Transform `impl_version` (nw#27) — “same interface,
 changed behaviour” must miss the cache without renaming anything.
+
+#### local_files *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)*
+
+one pointer
+(a tuple of dict keys / list indices) per `os.PathLike` the caller passed.
+Only these are resolved at execute time (uploaded on a cache miss, keyed on
+the file’s sha256), so a string that merely looks like a marker is inert.
+Omit-when-empty on the wire (like `cost_basis`): a plan with no local
+file serializes to the bytes it did before the field existed; absent reads
+as empty.
+
+* **Type:**
+  Where [`arguments`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan.arguments) holds local-file markers (falaw#92)
 
 #### metadata *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -8628,6 +8693,7 @@ ValueError: prune_content needs a bound: pass older_than= and/or max_bytes=...
 | [`prune_assets`](_autosummary/falaw.prune.html.md#falaw.prune.prune_assets)(\*[, older_than, max_bytes, ...])    | Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22). |
 | [`prune_content`](_autosummary/falaw.prune.html.md#falaw.prune.prune_content)(\*[, older_than, max_bytes, ...])   | Reclaim content-addressed blobs — the gigabytes (falaw#22).                    |
 | [`prune_manifests`](_autosummary/falaw.prune.html.md#falaw.prune.prune_manifests)(\*[, older_than, max_bytes, ...]) | Reclaim cache entries — the fal responses themselves (falaw#22).               |
+| [`prune_uploads`](_autosummary/falaw.prune.html.md#falaw.prune.prune_uploads)(\*[, older_than, max_bytes, ...])   | Drop upload-index entries (falaw#92): digest -> fal URL hints.                 |
 
 ### Classes
 
@@ -8859,6 +8925,27 @@ equals the candidate count.
 Only the manifest is removed; blobs are shared by content hash across
 entries and are never dropped from here — the same rule
 [`falaw.drop_cache_entry()`](_autosummary/falaw.html.md#falaw.drop_cache_entry) follows.
+
+### falaw.prune.prune_uploads(, older_than=None, max_bytes=None, dry_run=True)
+
+Drop upload-index entries (falaw#92): digest -> fal URL hints.
+
+An entry older than `falaw.upload.DEFAULT_UPLOAD_TTL_S` is dead by
+definition ([`falaw.upload()`](_autosummary/falaw.html.md#falaw.upload) re-uploads past its `ttl_s`), so pass
+`older_than=` at least that. Dropping one costs a re-upload, which is
+free, so `rebillable_entries` is always 0.
+
+* **Parameters:**
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries written more than this ago — seconds, or a
+    [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
+  * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
+* **Returns:**
+  with `area="uploads"`.
+* **Return type:**
+  [`PruneReport`](_autosummary/falaw.prune.html.md#falaw.prune.PruneReport)
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – neither bound was given.
 
 
 # _autosummary/falaw.refresh.html.md
@@ -10107,7 +10194,7 @@ False
 
 # About this build
 
-This documentation was built on **2026-10-26 12:45 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/366d44c0151b8cafded7329428fabbbc1af534e0"><code>366d44c</code></a> on branch <code>main</code>, for **falaw 0.0.66** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 13:00 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/8738ae18b9657a8ebb6df622e1e52bf9fb17d442"><code>8738ae1</code></a> on branch <code>main</code>, for **falaw 0.0.67** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -10116,7 +10203,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/366d44c0151b8cafded7329428fabbbc1af534e0"><code>366d44c0151b8cafded7329428fabbbc1af534e0</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/8738ae18b9657a8ebb6df622e1e52bf9fb17d442"><code>8738ae18b9657a8ebb6df622e1e52bf9fb17d442</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10127,9 +10214,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40324692130">40324692130</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40326634417">40326634417</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>366d44c0151b8cafded7329428fabbbc1af534e0</code> (in the history of the built commit) |
+| Event commit | <code>8738ae18b9657a8ebb6df622e1e52bf9fb17d442</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -10154,13 +10241,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.66/">0.0.66</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.67/">0.0.67</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 366d44c0151b8cafded7329428fabbbc1af534e0
+git checkout 8738ae18b9657a8ebb6df622e1e52bf9fb17d442
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

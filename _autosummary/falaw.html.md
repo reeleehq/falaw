@@ -46,6 +46,7 @@ Leave notes for future sessions:
 | [`llm_cost_basis`](#falaw.llm_cost_basis)(routed_model, \*[, ...])            | A [`falaw.CostBasis`](#falaw.CostBasis) for a routed LLM call priced from the rate table.                                                                                       |
 | [`reprice_plan`](#falaw.reprice_plan)(plan, \*[, pricers])                  | Re-quote every call in `plan` against today's rate tables.                                                                                                                                                 |
 | [`upload`](#falaw.upload)(path, \*[, uploader, index, ttl_s, ...])    | A fal-fetchable URL for the local file at `path`.                                                                                                                                                          |
+| [`using_uploader`](#falaw.using_uploader)(uploader, \*[, namespace])          | Make `uploader` the transfer for every [`upload()`](#falaw.upload) (and every local file in an executed Plan) for the duration: an S3 uploader, or a fake in a test suite.   |
 | [`clear_subscribers`](#falaw.clear_subscribers)()                                | Drop all registered subscribers.                                                                                                                                                                           |
 | [`estimate_call_cost`](#falaw.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                                                                                                                                                     |
 | [`estimate_scene_cost`](#falaw.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full [`render_scene()`](#falaw.render_scene) invocation.                                                                                                |
@@ -63,6 +64,7 @@ Leave notes for future sessions:
 | [`cache_stats`](#falaw.cache_stats)()                                      | Quick summary of the cache: entry count, disk usage, and where it went.                                                                                                                                    |
 | [`cache_usage`](#falaw.cache_usage)()                                      | Disk usage of the falaw cache, broken down by area.                                                                                                                                                        |
 | [`prune_assets`](#falaw.prune_assets)(\*[, older_than, max_bytes, ...])     | Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22).                                                                                                                             |
+| [`prune_uploads`](#falaw.prune_uploads)(\*[, older_than, max_bytes, ...])    | Drop upload-index entries (falaw#92): digest -> fal URL hints.                                                                                                                                             |
 | [`prune_content`](#falaw.prune_content)(\*[, older_than, max_bytes, ...])    | Reclaim content-addressed blobs — the gigabytes (falaw#22).                                                                                                                                                |
 | [`prune_manifests`](#falaw.prune_manifests)(\*[, older_than, max_bytes, ...])  | Reclaim cache entries — the fal responses themselves (falaw#22).                                                                                                                                           |
 | [`drop_cache_entry`](#falaw.drop_cache_entry)(application, arguments, \*)       | Delete the cache entry for `(application, arguments)`.                                                                                                                                                     |
@@ -377,7 +379,7 @@ Human-readable explanation. Required for `blocked`; free otherwise.
 
 `"succeeded"` / `"failed"` / `"blocked"`. See the module docstring.
 
-### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), cost_basis=None)
+### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -453,6 +455,19 @@ deliberately identity-free labelling, putting something here says “a
 cached result minted without this value must not be reused”. First
 customer: nw’s Transform `impl_version` (nw#27) — “same interface,
 changed behaviour” must miss the cache without renaming anything.
+
+#### local_files *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)*
+
+one pointer
+(a tuple of dict keys / list indices) per `os.PathLike` the caller passed.
+Only these are resolved at execute time (uploaded on a cache miss, keyed on
+the file’s sha256), so a string that merely looks like a marker is inert.
+Omit-when-empty on the wire (like `cost_basis`): a plan with no local
+file serializes to the bytes it did before the field existed; absent reads
+as empty.
+
+* **Type:**
+  Where [`arguments`](#falaw.CallPlan.arguments) holds local-file markers (falaw#92)
 
 #### metadata *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -2823,6 +2838,27 @@ Only the manifest is removed; blobs are shared by content hash across
 entries and are never dropped from here — the same rule
 [`falaw.drop_cache_entry()`](#falaw.drop_cache_entry) follows.
 
+### falaw.prune_uploads(, older_than=None, max_bytes=None, dry_run=True)
+
+Drop upload-index entries (falaw#92): digest -> fal URL hints.
+
+An entry older than `falaw.upload.DEFAULT_UPLOAD_TTL_S` is dead by
+definition ([`falaw.upload()`](#falaw.upload) re-uploads past its `ttl_s`), so pass
+`older_than=` at least that. Dropping one costs a re-upload, which is
+free, so `rebillable_entries` is always 0.
+
+* **Parameters:**
+  * **older_than** ([`Union`](https://docs.python.org/3/library/typing.html#typing.Union)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`int`](https://docs.python.org/3/builtins/functions.html#int), [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta), [`None`](https://docs.python.org/3/builtins/constants.html#None)]) – drop entries written more than this ago — seconds, or a
+    [`timedelta`](https://docs.python.org/3/library/datetime.html#datetime.timedelta).
+  * **max_bytes** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]) – drop oldest-first until the area fits in this budget.
+  * **dry_run** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – report without deleting. Default, deliberately.
+* **Returns:**
+  with `area="uploads"`.
+* **Return type:**
+  [`PruneReport`](falaw.prune.html.md#falaw.prune.PruneReport)
+* **Raises:**
+  [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – neither bound was given.
+
 ### falaw.refresh_full_docs(, docs_dir=None, max_workers=16, force=False, journal=True)
 
 Re-crawl per-page docs and rebuild `fal_ai_docs_full.md`.
@@ -3055,13 +3091,18 @@ Remove a previously [`subscribe()`](#falaw.subscribe)’d callback. No-op if abs
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### falaw.upload(path, \*, uploader=None, index=None, ttl_s=86400, api_key=None, clock=<built-in function time>)
+### falaw.upload(path, \*, uploader=None, index=None, ttl_s=86400, namespace=None, api_key=None, clock=<built-in function time>)
 
 A fal-fetchable URL for the local file at `path`.
 
 Cached by content: an unchanged file within `ttl_s` of its last upload
-returns the remembered URL without any transfer. `api_key` is used by the
-default uploader only (see [`falaw.core.fal_client_for()`](falaw.core.html.md#falaw.core.fal_client_for)).
+returns the remembered URL without any transfer. With the default fal
+uploader the object is uploaded with a lifecycle of `ttl_s` and the entry
+records when it dies, so a remembered URL is never trusted past that.
+`namespace` keeps URLs from different backends apart in a shared index
+(default: `"fal"`, or `derive_namespace()` for another uploader).
+`api_key` is used by the default uploader only (see
+[`falaw.core.fal_client_for()`](falaw.core.html.md#falaw.core.fal_client_for)).
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
@@ -3094,6 +3135,17 @@ requests.
 
 * **Return type:**
   [`Iterator`](https://docs.python.org/3/library/typing.html#typing.Iterator)[[`None`](https://docs.python.org/3/builtins/constants.html#None)]
+
+### falaw.using_uploader(uploader, , namespace=None)
+
+Make `uploader` the transfer for every [`upload()`](#falaw.upload) (and every local
+file in an executed Plan) for the duration: an S3 uploader, or a fake in a
+test suite. An explicit `uploader=` argument still wins. `namespace`
+keys its URLs in the index (default `derive_namespace()`). Nests and
+restores.
+
+* **Return type:**
+  [`Iterator`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator)[[`Callable`](https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable)[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]]
 
 ### falaw.using_url_fetcher(fetcher)
 
