@@ -245,7 +245,7 @@ PLAN_ERROR_CASES: tuple[dict, ...] = (
 
 #: Multi-call plans (by ``PLAN_CASES`` index) whose ``plan_hash`` and totals the
 #: TS side must reproduce — the second one chains a video onto an image.
-MULTI_PLAN_CASES: tuple[tuple[int, ...], ...] = ((0, 5), (3, 8), (1, 1))
+MULTI_PLAN_CASES: tuple[tuple[int, ...], ...] = ((0, 5), (3, 8), (1, 1), (12,))
 
 #: Raw fal responses → what ``parse_response`` makes of them.
 RESPONSE_CASES: tuple[dict, ...] = (
