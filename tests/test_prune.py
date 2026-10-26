@@ -53,7 +53,15 @@ DAY = 86_400
 # --- usage ------------------------------------------------------------------
 
 
-ALL_AREAS = ["assets", "content", "manifests", "other", "scenes", "url_index"]
+ALL_AREAS = [
+    "assets",
+    "content",
+    "manifests",
+    "other",
+    "scenes",
+    "uploads",
+    "url_index",
+]
 
 
 def _du(root: str) -> int:

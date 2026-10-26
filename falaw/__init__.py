@@ -196,6 +196,7 @@ from .scene import (
     shot_content_hash,
 )
 from .session import Session
+from .upload import upload
 
 __all__ = [
     "LlmPrice",
@@ -253,6 +254,7 @@ __all__ = [
     "ProgressEvent",
     "Scene",
     "Session",
+    "upload",
     "Shot",
     "ToolSpec",
     "Voice",
