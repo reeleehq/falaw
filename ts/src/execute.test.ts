@@ -172,4 +172,9 @@ describe('review-driven edges', () => {
       execute([planGenerateImage({ prompt: 'x' })], { transport: queueTransport({ key: 'k' }) }),
     ).rejects.toThrow(/offline test/);
   });
+
+  it('refuses a plan that names local files instead of sending a marker to fal', async () => {
+    const call = { ...planImageToVideo({ imageUrl: 'x' }), local_files: [['image_url']] };
+    await expect(execute([call], { transport: async () => ({ raw: {} }) as never })).rejects.toThrow(/local files/);
+  });
 });

@@ -13,6 +13,7 @@ export const CONSTANTS = {
   "default_megapixels": 0.6,
   "default_video_resolution": "720p",
   "dflt_backend": "fal",
+  "file_prefix": "<file ",
   "kind_keys": [
     [
       "images",

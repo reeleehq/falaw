@@ -58,6 +58,7 @@ from .cost import (
     RESOLUTION_PIXELS,
     estimate_call_cost,
 )
+from .upload import FILE_PREFIX
 from .operations._plan import (
     plan_generate_image,
     plan_image_to_video,
@@ -461,6 +462,7 @@ def _constants() -> dict:
         "tier_order": list(_TIER_ORDER),
         "kind_keys": [list(pair) for pair in _KIND_KEYS],
         "placeholder_prefix": _PLACEHOLDER_PREFIX,
+        "file_prefix": FILE_PREFIX,
         "content_ref_prefix": CONTENT_REF_PREFIX,
         "default_megapixels": DFLT_MEGAPIXELS,
         "default_video_resolution": DFLT_VIDEO_RESOLUTION,

@@ -107,6 +107,12 @@
       "title": "Key Extra",
       "type": "object"
     },
+    "local_files": {
+      "default": [],
+      "items": {},
+      "title": "Local Files",
+      "type": "array"
+    },
     "metadata": {
       "additionalProperties": true,
       "default": {},
