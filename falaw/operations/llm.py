@@ -18,11 +18,11 @@ from typing import Any, Optional
 
 from ..cache import cached_call_fal
 from ..cost import estimate_call_cost
-from ..llm_rates import llm_ceiling_usd
+from ..llm_rates import ANY_LLM, ROUTERS, llm_ceiling_usd
 from ..registry import get_model, register_tool
 from ..scene import Beat, Scene, beat_id, make_beat, make_shot, shot_id
 
-_DEFAULT_LLM = "fal-ai/any-llm"
+_DEFAULT_LLM = ANY_LLM
 # Valid any-llm OpenRouter ids (as of mid-2026); see fal-ai/any-llm schema.
 # Sonnet 4.5 is the strongest balanced default for structured-output tasks.
 _DEFAULT_MODEL = "anthropic/claude-sonnet-4.5"
@@ -187,7 +187,7 @@ def llm_complete_with_receipt(
     tokens_in, tokens_out = _extract_llm_usage(raw)
 
     cache_hit = bool(hit_seen)
-    routed_model = str(arguments.get("model", model))
+    routed_model = str(arguments.get(ROUTERS[_DEFAULT_LLM], model))
     cost, source = (0.0, "cache_hit") if cache_hit else _billed_cost_of(routed_model)
 
     return text, LlmReceipt(

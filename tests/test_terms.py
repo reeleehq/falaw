@@ -389,3 +389,33 @@ def test_a_scene_render_cache_hit_is_not_served_under_a_terms_context(monkeypatc
         with pytest.raises(FalTermsViolation):
             render.render_shot(shot, quality="high")
     assert served == []
+
+
+def test_a_clearance_goes_stale_when_its_ledger_row_is_edited():
+    import dataclasses
+
+    from falaw.terms import is_cleared, load_terms
+
+    ctx = TermsContext(third_party=True)
+    call = falaw.plan.make_call_plan(
+        tool="generate_image",
+        application="fal-ai/flux/schnell",
+        arguments={"prompt": "p"},
+        output_kind="image",
+        backend=SELF_HOSTED,
+        consult_cache=False,
+        terms_context=ctx,
+    )
+    ledger = dict(load_terms())
+    assert is_cleared(call, ctx, ledger=ledger)
+    key = ("fal-ai/flux/schnell", SELF_HOSTED)
+    ledger[key] = dataclasses.replace(ledger[key], notes="edited after planning")
+    assert not is_cleared(call, ctx, ledger=ledger)
+
+
+def test_one_routers_table_serves_terms_and_llm_rates():
+    from falaw import llm_rates, terms
+    from falaw.operations import llm
+
+    assert terms.ROUTERS is llm_rates.ROUTERS
+    assert llm._DEFAULT_LLM in llm_rates.ROUTERS

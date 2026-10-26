@@ -23,6 +23,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from ..licences import UNKNOWN, is_valid_licence
 from .problems import Problem
 
 LICENCE_FILE_PREFIXES = ("LICENSE", "LICENCE", "COPYING")
@@ -124,6 +125,13 @@ def _is_restricted(text: str) -> bool:
 
 
 def _is_determinable(text: str) -> bool:
+    """Whether the file's licence can be read: SPDX tags, when it has any, must
+    all be in the shared vocabulary (:func:`falaw.licences.is_valid_licence`);
+    one that is not makes it undeterminable, whatever the text says. Without a
+    tag, the title must match a :data:`KNOWN_LICENCES` pattern."""
+    tags = [t.strip() for t in SPDX_TAG.findall(text)]
+    if tags:
+        return all(t != UNKNOWN and is_valid_licence(t) for t in tags)
     title = _title(text)
     return any(re.search(p, title, re.IGNORECASE) for p in KNOWN_LICENCES.values())
 

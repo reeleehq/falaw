@@ -51,9 +51,18 @@ import os
 import warnings
 from dataclasses import dataclass
 from functools import lru_cache
+from types import MappingProxyType
 from typing import Mapping, Optional
 
 from .base import data_table_version
+
+ANY_LLM = "fal-ai/any-llm"
+"""The application that routes an LLM call to one of many upstream models."""
+
+ROUTERS = MappingProxyType({ANY_LLM: "model", f"{ANY_LLM}/vision": "model"})
+"""Applications that route to another model, mapped to the argument naming it.
+The routed model is who actually serves (and prices, and licenses) the call, so
+it is the subject of the rate table and of the terms ledger (falaw#115)."""
 
 RATES_FILENAME = "llm_rates.json"
 """Basename of the rate table under ``falaw/data``."""

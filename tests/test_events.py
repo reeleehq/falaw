@@ -179,7 +179,9 @@ def _install_fake_fal_client_with_queue(updates):
             on_queue_update(make(_Queued, _InProgress))
         return {"ok": True}
 
-    fake = types.SimpleNamespace(Queued=_Queued, InProgress=_InProgress, subscribe=subscribe)
+    fake = types.SimpleNamespace(
+        Queued=_Queued, InProgress=_InProgress, subscribe=subscribe
+    )
     sys.modules["fal_client"] = fake
     return fake
 
