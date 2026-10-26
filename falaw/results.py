@@ -158,10 +158,12 @@ def parse_response(
     """
     assets: list[Asset] = []
     if isinstance(raw, dict):
+        seen_kinds: set[str] = set()
         for key, kind in _KIND_KEYS:
             val = raw.get(key)
-            if val is None:
+            if val is None or kind in seen_kinds:  # Sonilo: audios + audio
                 continue
+            seen_kinds.add(kind)
             for item in val if isinstance(val, list) else [val]:
                 assets.append(_to_asset(item, kind))
     return Result(

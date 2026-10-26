@@ -1896,6 +1896,14 @@ def _materialize_text_to_cache(content: str, kind: str) -> tuple[str, str]:
     return path, asset_id
 
 
+def _first_media(raw: dict, key: str) -> Any:
+    """``raw[key]`` as one file: the entry itself, or the first of a list."""
+    v = raw.get(key)
+    if isinstance(v, list):
+        return v[0] if v else None
+    return v
+
+
 def extract_first_url(raw: dict) -> Optional[str]:
     """Find the first asset URL in a fal response, regardless of shape.
 
@@ -1906,23 +1914,15 @@ def extract_first_url(raw: dict) -> Optional[str]:
     """
     if not isinstance(raw, dict):
         return None
-    images = raw.get("images")
-    if isinstance(images, list) and images:
-        first = images[0]
-        if isinstance(first, dict):
-            return first.get("url")
-        if isinstance(first, str):
-            return first
-    for key in ("video", "audio", "image"):
-        v = raw.get(key)
+    for key in ("images", "video", "audio", "image"):
+        v = _first_media(raw, key)
         if isinstance(v, dict) and "url" in v:
             return v["url"]
-    if isinstance(raw.get("audio_url"), str):
-        return raw["audio_url"]
-    if isinstance(raw.get("video_url"), str):
-        return raw["video_url"]
-    if isinstance(raw.get("image_url"), str):
-        return raw["image_url"]
+        if isinstance(v, str):
+            return v
+    for key in ("audio_url", "video_url", "image_url"):
+        if isinstance(raw.get(key), str):
+            return raw[key]
     return None
 
 
@@ -1930,7 +1930,7 @@ def _extract_duration_s(raw: dict) -> Optional[float]:
     if not isinstance(raw, dict):
         return None
     for key in ("video", "audio"):
-        v = raw.get(key)
+        v = _first_media(raw, key)
         if isinstance(v, dict):
             d = v.get("duration") or v.get("duration_s")
             if isinstance(d, (int, float)):
@@ -1942,7 +1942,7 @@ def _extract_content_type(raw: dict) -> Optional[str]:
     if not isinstance(raw, dict):
         return None
     for key in ("video", "audio", "image"):
-        v = raw.get(key)
+        v = _first_media(raw, key)
         if isinstance(v, dict) and isinstance(v.get("content_type"), str):
             return v["content_type"]
     images = raw.get("images")

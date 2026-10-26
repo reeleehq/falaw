@@ -22,9 +22,13 @@ def test_the_issue_acceptance_case_plans_costed_with_no_network():
     p = plan_generate_audio("rain on a tin roof", kind="ambient", duration_s=12)
     assert p.tool == "generate_audio"
     assert p.output_kind == "audio"
-    assert p.application == "fal-ai/mmaudio-v2/text-to-audio"
-    assert p.arguments == {"prompt": "rain on a tin roof", "duration": 12}
-    assert p.estimated_cost_usd is not None and p.estimated_cost_usd > 0
+    assert p.application == "fal-ai/stable-audio-3/small/sfx/text-to-audio"
+    assert p.arguments == {
+        "prompt": "rain on a tin roof",
+        "duration": 12.0,
+        "enable_prompt_expansion": False,  # the audio must match the recorded prompt
+    }
+    assert p.estimated_cost_usd == pytest.approx(0.0206)
 
 
 def test_kinds_route_to_prompt_driven_models_only():
@@ -32,7 +36,7 @@ def test_kinds_route_to_prompt_driven_models_only():
     bare prompt reaches — model_id= is the door for callers who bring the
     right arguments."""
     assert plan_generate_audio("x", kind="sfx").application == (
-        "fal-ai/mmaudio-v2/text-to-audio"
+        "fal-ai/stable-audio-3/small/sfx/text-to-audio"
     )
     music = plan_generate_audio("gentle acoustic guitar", kind="music")
     assert music.application == "fal-ai/lyria2"
@@ -43,7 +47,11 @@ def test_kinds_route_to_prompt_driven_models_only():
 
 def test_duration_reaches_only_models_that_take_one():
     ambient = plan_generate_audio("wind", kind="ambient", duration_s=7.4)
-    assert ambient.arguments["duration"] == 7  # the model takes integer seconds
+    assert ambient.arguments["duration"] == 7.4
+    mm = plan_generate_audio(
+        "wind", kind="sfx", duration_s=7.4, model_id="fal-ai/mmaudio-v2/text-to-audio"
+    )
+    assert mm.arguments["duration"] == 7  # mmaudio takes integer seconds
     music = plan_generate_audio("waltz", kind="music", duration_s=30)
     assert "duration" not in music.arguments  # estimator-only for lyria2
     assert music.estimated_cost_usd == pytest.approx(30 * 0.0033333, rel=0.01)
@@ -105,3 +113,77 @@ def test_the_generative_audio_models_are_all_priced():
         "fal-ai/diffrhythm",
     ):
         assert get_model(mid).cost_estimate is not None, mid
+
+
+def test_default_sfx_is_not_non_commercial():
+    """falaw#88: MMAudio's weights are CC BY-NC; it must stay opt-in."""
+    assert "mmaudio" not in GENERATE_AUDIO_DEFAULTS["sfx"]
+    assert "mmaudio" not in GENERATE_AUDIO_DEFAULTS["ambient"]
+
+
+@pytest.mark.parametrize(
+    "model_id, prompt_key, duration_key, price",
+    [
+        ("fal-ai/stable-audio-3/medium/text-to-audio", "prompt", "duration", 0.0376),
+        ("mirelo-ai/sfx2.0/text-to-audio", "prompt", "duration", 0.010 * 4),
+        ("fal-ai/elevenlabs/sound-effects/v2", "text", "duration_seconds", 0.002 * 4),
+        ("sonilo/v1.1/text-to-sound-effects", "prompt", "duration", 0.0018 * 4),
+    ],
+)
+def test_sfx_endpoints_are_priced_and_spelled_per_vendor(
+    model_id, prompt_key, duration_key, price
+):
+    p = plan_generate_audio("door slam", kind="sfx", duration_s=4, model_id=model_id)
+    assert p.arguments[prompt_key] == "door slam"
+    assert p.arguments[duration_key] == 4
+    assert p.estimated_cost_usd == pytest.approx(price)
+
+
+def test_mirelo_quote_matches_the_bill_by_pinning_one_sample():
+    p = plan_generate_audio(
+        "x", kind="sfx", duration_s=2, model_id="mirelo-ai/sfx2.0/text-to-audio"
+    )
+    assert p.arguments["num_samples"] == 1
+
+
+def test_extract_first_url_reads_list_shaped_audio():
+    from falaw.plan import extract_first_url
+
+    raw = {"audio": [{"url": "https://x/a.wav"}, {"url": "https://x/b.wav"}]}
+    assert extract_first_url(raw) == "https://x/a.wav"
+    assert extract_first_url({"audio": [], "audios": []}) is None
+
+
+def test_no_duration_still_quotes_per_second_models_at_the_duration_sent():
+    p = plan_generate_audio("x", kind="sfx", model_id="mirelo-ai/sfx2.0/text-to-audio")
+    assert p.arguments["duration"] == 10.0  # not fal's 30 s default
+    assert p.estimated_cost_usd == pytest.approx(0.10)
+
+
+def test_extra_sample_count_is_billed():
+    p = plan_generate_audio(
+        "x",
+        kind="sfx",
+        duration_s=2,
+        model_id="mirelo-ai/sfx2.0/text-to-audio",
+        extra={"num_samples": 3},
+    )
+    assert p.estimated_cost_usd == pytest.approx(0.010 * 2 * 3)
+
+
+def test_every_audio_spec_names_a_catalogued_model():
+    from falaw import get_model
+    from falaw.operations._plan import _AUDIO_ARGS
+
+    for model_id in _AUDIO_ARGS:
+        get_model(model_id)
+
+
+def test_sonilo_response_yields_one_asset_not_two():
+    from falaw.results import parse_response
+
+    clip = {"url": "https://x/a.aac"}
+    r = parse_response(
+        {"audio": clip, "audios": [clip]}, application="sonilo", arguments={}
+    )
+    assert len(r.assets) == 1
