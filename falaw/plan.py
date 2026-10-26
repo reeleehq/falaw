@@ -596,6 +596,12 @@ def make_call_plan(
             key-composition time on the way to the network (falaw#17).
     """
     from .canonical import ensure_canonical
+    from .upload import has_local_files, localize_paths, resolve_local_files
+
+    # A local file (``os.PathLike``) becomes a "<file ...>" marker: the Plan
+    # stays pure data, and execute() uploads it on a miss and keys on its bytes
+    # (falaw#92).
+    arguments = localize_paths(arguments)
 
     # Validate before the cache peek: the peek's `except Exception` fallback
     # (best-effort by design) would otherwise swallow the refusal into a
@@ -617,9 +623,14 @@ def make_call_plan(
             try:
                 from .cache import cache_get  # type: ignore[import-not-found]
 
+                peek = (
+                    resolve_local_files(arguments, mode="key")
+                    if has_local_files(arguments)
+                    else arguments
+                )
                 status = (
                     "hit"
-                    if cache_get(application, arguments, backend=backend) is not None
+                    if cache_get(application, peek, backend=backend) is not None
                     else "miss"
                 )
             except Exception:
@@ -1045,6 +1056,8 @@ def _run_plan(
         succeeded but produced no URL — and that is this call's failure, not the
         run's.
         """
+        from .upload import has_local_files, resolve_local_files
+
         call = plan.calls[index]
         wire_args = _resolve_placeholders(call.arguments, artifacts, ref=_wire_ref)
         # Only resolved when it will be used — the key ref is stricter than the
@@ -1055,6 +1068,13 @@ def _run_plan(
             if use_cache
             else wire_args
         )
+        if has_local_files(wire_args):
+            # Key on the files' bytes; upload only if the call misses the cache.
+            template = wire_args
+            key_args = (
+                resolve_local_files(key_args, mode="key") if use_cache else template
+            )
+            wire_args = lambda: resolve_local_files(template, mode="wire")  # noqa: E731
         return _execute_call(
             call,
             wire_args,
@@ -1281,6 +1301,9 @@ def _execute_call(
     from .cache import cached_call_fal, drop_cache_entry, emit_cache_hit
 
     key_arguments = None if key_args is wire_args else key_args
+    # A callable stands for wire arguments not yet resolved (a local file is
+    # uploaded only when the call actually goes out, not on a cache hit).
+    wire = lambda: wire_args() if callable(wire_args) else wire_args  # noqa: E731
     if use_cache:
         from .cache import cache_get
 
@@ -1323,7 +1346,7 @@ def _execute_call(
             )
         raw = cached_call_fal(
             call.application,
-            wire_args,
+            wire(),
             key_arguments=key_arguments,
             refresh=True,
             on_event=on_event,
@@ -1332,7 +1355,7 @@ def _execute_call(
         )
     else:
         raw = get_backend_executor(call.backend)(
-            call.application, wire_args, on_event=on_event
+            call.application, wire(), on_event=on_event
         )
     return _stamp_observed_cost(converter(raw, call), call, cache_hit=False), False
 

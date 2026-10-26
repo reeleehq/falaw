@@ -50,6 +50,7 @@ from .prune import (
     PruneReport,
     cache_usage,
     prune_assets,
+    prune_uploads,
     prune_content,
     prune_manifests,
 )
@@ -197,7 +198,7 @@ from .scene import (
     shot_content_hash,
 )
 from .session import Session
-from .upload import upload
+from .upload import upload, using_uploader
 
 __all__ = [
     "LlmPrice",
@@ -256,6 +257,7 @@ __all__ = [
     "Scene",
     "Session",
     "upload",
+    "using_uploader",
     "Shot",
     "ToolSpec",
     "Voice",
@@ -281,6 +283,7 @@ __all__ = [
     "cache_stats",
     "cache_usage",
     "prune_assets",
+    "prune_uploads",
     "prune_content",
     "prune_manifests",
     "drop_cache_entry",

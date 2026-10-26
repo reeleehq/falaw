@@ -88,6 +88,7 @@ __all__ = [
     "prune_assets",
     "prune_content",
     "prune_manifests",
+    "prune_uploads",
 ]
 
 
@@ -887,7 +888,13 @@ def _content_hash_in_asset_name(filename: str) -> Optional[str]:
 
 
 def _asset_candidates(root: str) -> list[PruneCandidate]:
-    """Materialized asset copies, excluding writes still in flight.
+    """Materialized asset copies, excluding writes still in flight (see
+    :func:`_file_candidates`)."""
+    return _file_candidates(os.path.join(root, ASSETS_DIRNAME))
+
+
+def _file_candidates(path: str) -> list[PruneCandidate]:
+    """The plain files of one cache directory, excluding writes still in flight.
 
     ``.part`` files are skipped, and that is a correctness requirement rather
     than tidiness: :func:`falaw.content.write_blob_to_file` writes
@@ -898,7 +905,6 @@ def _asset_candidates(root: str) -> list[PruneCandidate]:
     They would also be counted as orphaned copies, since a ``.part`` name
     carries no content hash.
     """
-    path = os.path.join(root, ASSETS_DIRNAME)
     out = []
     try:
         names = os.listdir(path)
@@ -984,5 +990,52 @@ def prune_assets(
         kept_entries=len(survivors),
         kept_bytes=sum(c.bytes for c in survivors),
         rebillable_entries=orphaned,
+        errors=errors,
+    )
+
+
+def prune_uploads(
+    *,
+    older_than: Optional[Age] = None,
+    max_bytes: Optional[int] = None,
+    dry_run: bool = True,
+) -> PruneReport:
+    """Drop upload-index entries (falaw#92): digest -> fal URL hints.
+
+    An entry older than :data:`falaw.upload.DEFAULT_UPLOAD_TTL_S` is dead by
+    definition (:func:`falaw.upload` re-uploads past its ``ttl_s``), so pass
+    ``older_than=`` at least that. Dropping one costs a re-upload, which is
+    free, so ``rebillable_entries`` is always 0.
+
+    Args:
+        older_than: drop entries written more than this ago — seconds, or a
+            :class:`~datetime.timedelta`.
+        max_bytes: drop oldest-first until the area fits in this budget.
+        dry_run: report without deleting. Default, deliberately.
+
+    Returns:
+        PruneReport: with ``area="uploads"``.
+
+    Raises:
+        ValueError: neither bound was given.
+    """
+    _require_a_bound("prune_uploads", older_than, max_bytes)
+    doomed, survivors = _select(
+        _file_candidates(os.path.join(_cache_dir(), UPLOAD_INDEX_DIRNAME)),
+        older_than=older_than,
+        max_bytes=max_bytes,
+        now=time.time(),
+    )
+    deleted: tuple[PruneCandidate, ...] = tuple(doomed)
+    errors: tuple[str, ...] = ()
+    if not dry_run:
+        deleted, errors = _delete(lambda c: os.remove(c.path), doomed)
+    return PruneReport(
+        area=UPLOADS_AREA,
+        dry_run=dry_run,
+        candidates=tuple(doomed),
+        deleted=deleted,
+        kept_entries=len(survivors),
+        kept_bytes=sum(c.bytes for c in survivors),
         errors=errors,
     )

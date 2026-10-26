@@ -17,9 +17,12 @@ Two seams, both keyword arguments: ``uploader`` (the transfer — default
 digest -> ``{"url", "uploaded_at"}`` — default a directory of JSON files under
 the falaw cache dir, so it moves with ``$FALAW_CACHE_DIR``).
 
-Whether a *Plan* should accept a local path directly and upload at execute time
-(keeping the Plan pure data, with the digest in the cache key) is left open;
-:func:`upload` is the building block either way.
+A *Plan* may also name a local file directly (falaw#92): ``make_call_plan``
+turns any ``os.PathLike`` argument into a ``"<file /abs/path>"`` marker, so the
+Plan stays pure data. At execute time the marker becomes the uploaded URL on the
+wire (uploaded only on a cache miss) and ``sha256:<digest of the bytes>`` in the
+cache key, so an unchanged file hits the cache and an edited one cannot.
+:func:`using_uploader` replaces the transfer for the whole process.
 
 >>> upload("keyframe.png", uploader=lambda p: "https://v3b.fal.media/x.png", index={})  # doctest: +SKIP
 'https://v3b.fal.media/x.png'
@@ -33,14 +36,22 @@ import json
 import os
 import time
 import uuid
-from collections.abc import Callable, MutableMapping
-from typing import Any, Optional
+from collections.abc import Callable, Iterator, MutableMapping
+from contextlib import contextmanager
+from typing import Any, Literal, Optional
 
 from .cache import _cache_dir
 from .core import fal_client_for
 
 __all__ = [
+    "FILE_PREFIX",
     "UPLOAD_INDEX_DIRNAME",
+    "current_uploader",
+    "file_marker",
+    "has_local_files",
+    "localize_paths",
+    "resolve_local_files",
+    "using_uploader",
     "DEFAULT_UPLOAD_TTL_S",
     "default_upload_index",
     "default_uploader",
@@ -97,9 +108,45 @@ def default_upload_index() -> MutableMapping[str, Any]:
     return _AtomicJsonFiles(root)
 
 
-def default_uploader(path: str, *, api_key: Optional[str] = None) -> str:
-    """Upload with ``fal_client`` under the credentials falaw resolves."""
-    return fal_client_for(api_key).upload_file(path)
+def default_uploader(
+    path: str, *, api_key: Optional[str] = None, expires_in_s: Optional[int] = None
+) -> str:
+    """Upload with ``fal_client`` under the credentials falaw resolves.
+
+    ``expires_in_s`` asks fal to keep the object at least that long (its
+    ``lifecycle`` setting), which is what turns :func:`upload`'s ``ttl_s`` from
+    a guess into a guarantee.
+    """
+    client = fal_client_for(api_key)
+    if expires_in_s is None:
+        return client.upload_file(path)
+    from .errors import import_fal_client
+
+    lifecycle = import_fal_client().StorageSettings(expires_in=int(expires_in_s))
+    return client.upload_file(path, lifecycle=lifecycle)
+
+
+_DEFAULT_UPLOADER: Optional[Callable[[str], str]] = None
+"""Process-wide override of the transfer (a plain global, like the URL fetcher
+in :mod:`falaw.content`: it must be visible from worker threads)."""
+
+
+def current_uploader() -> Optional[Callable[[str], str]]:
+    """The uploader installed by :func:`using_uploader`, or ``None`` for fal's."""
+    return _DEFAULT_UPLOADER
+
+
+@contextmanager
+def using_uploader(uploader: Callable[[str], str]) -> Iterator[Callable[[str], str]]:
+    """Make ``uploader`` the transfer for every :func:`upload` (and every local
+    file in an executed Plan) for the duration: an S3 uploader, or a fake in a
+    test suite. An explicit ``uploader=`` argument still wins. Nests and restores."""
+    global _DEFAULT_UPLOADER
+    previous, _DEFAULT_UPLOADER = _DEFAULT_UPLOADER, uploader
+    try:
+        yield uploader
+    finally:
+        _DEFAULT_UPLOADER = previous
 
 
 def _fresh_url(entry: Any, now: float, ttl_s: float) -> Optional[str]:
@@ -122,29 +169,108 @@ def upload(
     uploader: Optional[Callable[[str], str]] = None,
     index: Optional[MutableMapping[str, Any]] = None,
     ttl_s: float = DEFAULT_UPLOAD_TTL_S,
+    namespace: Optional[str] = None,
     api_key: Optional[str] = None,
     clock: Callable[[], float] = time.time,
 ) -> str:
     """A fal-fetchable URL for the local file at ``path``.
 
     Cached by content: an unchanged file within ``ttl_s`` of its last upload
-    returns the remembered URL without any transfer. ``api_key`` is used by the
+    returns the remembered URL without any transfer. With the default fal
+    uploader the object is also uploaded with a lifecycle of ``ttl_s``, so a
+    remembered URL is still alive when it is trusted. ``namespace`` (default
+    ``"fal"`` for fal's uploader, ``"custom"`` for another) keeps URLs from
+    different backends apart in a shared index. ``api_key`` is used by the
     default uploader only (see :func:`falaw.core.fal_client_for`).
     """
     if ttl_s < 0:
         raise ValueError(f"ttl_s must be >= 0, got {ttl_s}")
     path = os.fspath(path)
-    digest = file_digest(path)
+    uploader = uploader or current_uploader()
     if uploader is None:
-        uploader = functools.partial(default_uploader, api_key=api_key)
+        uploader = functools.partial(
+            default_uploader, api_key=api_key, expires_in_s=max(1, int(ttl_s))
+        )
+        namespace = namespace or "fal"
+    namespace = namespace or "custom"
+    key = f"{namespace}-{file_digest(path)}"
     index = default_upload_index() if index is None else index
     now = clock()
     try:
-        entry = index.get(digest)
+        entry = index.get(key)
     except Exception:  # noqa: BLE001 — an unreadable entry is a miss
         entry = None
     url = _fresh_url(entry, now, ttl_s) if entry else None
     if url is None:
         url = uploader(path)
-        index[digest] = {"url": url, "uploaded_at": now}
+        index[key] = {"url": url, "uploaded_at": now}
     return url
+
+
+# --- local files inside a Plan --------------------------------------------------
+
+FILE_PREFIX = "<file "
+"""Marks a local file where a Plan argument would hold a URL: ``"<file /abs/x.png>"``."""
+
+
+def file_marker(path: str | os.PathLike) -> str:
+    return f"{FILE_PREFIX}{os.path.abspath(os.fspath(path))}>"
+
+
+def _marked_path(value: Any) -> Optional[str]:
+    if isinstance(value, str) and value.startswith(FILE_PREFIX) and value.endswith(">"):
+        return value[len(FILE_PREFIX) : -1]
+    return None
+
+
+def has_local_files(value: Any) -> bool:
+    """Whether ``value`` (an arguments tree) holds a ``"<file ...>"`` marker."""
+    if _marked_path(value) is not None:
+        return True
+    if isinstance(value, dict):
+        return any(has_local_files(v) for v in value.values())
+    if isinstance(value, (list, tuple)):
+        return any(has_local_files(v) for v in value)
+    return False
+
+
+def _map_tree(value: Any, fn: Callable[[Any], Any]) -> Any:
+    """``fn`` applied to every leaf of a dict/list/tuple tree (structure kept)."""
+    if isinstance(value, dict):
+        return {k: _map_tree(v, fn) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_map_tree(v, fn) for v in value]
+    if isinstance(value, tuple):
+        return tuple(_map_tree(v, fn) for v in value)
+    return fn(value)
+
+
+def localize_paths(arguments: Any) -> Any:
+    """Replace every ``os.PathLike`` in an arguments tree with its file marker,
+    so a Plan built from local files is still pure, JSON-native data."""
+    return _map_tree(
+        arguments, lambda v: file_marker(v) if isinstance(v, os.PathLike) else v
+    )
+
+
+def resolve_local_files(
+    arguments: Any,
+    *,
+    mode: Literal["wire", "key"],
+    uploader: Optional[Callable[[str], str]] = None,
+    index: Optional[MutableMapping[str, Any]] = None,
+) -> Any:
+    """Resolve file markers: ``"wire"`` uploads (:func:`upload`) and yields the
+    URL fal fetches; ``"key"`` yields ``sha256:<digest>`` of the file's bytes,
+    the identity the cache keys on."""
+    from .plan import CONTENT_REF_PREFIX
+
+    def leaf(value: Any) -> Any:
+        path = _marked_path(value)
+        if path is None:
+            return value
+        if mode == "key":
+            return f"{CONTENT_REF_PREFIX}{file_digest(path)}"
+        return upload(path, uploader=uploader, index=index)
+
+    return _map_tree(arguments, leaf)
