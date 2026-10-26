@@ -30,6 +30,7 @@ cost estimation/repricing, and an agent journal for cross-session notes.
 - `journal.py` — append-only agent notes log.
 - `degrade.py` — the one collection point for "carried on, but you should know".
 - `testing.py` — **the fake asset transport** (see Invariants).
+- `comfyui/` — the executable ComfyUI deployment gate (falaw#94): `check_manifest`, `screen_licences`, `check_graph_paths`, `submit_graph` + audit sink. Pure checks; every external fact is a keyword seam.
 - `bridges/` — `mcp.py`, `service.py`, `skill.py` — non-Python-import surfaces.
 
 ## Tests & lint (verified)
