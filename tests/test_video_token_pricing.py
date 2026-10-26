@@ -205,6 +205,42 @@ def test_new_models_state_their_real_tier_but_are_never_default_picks():
     assert falaw.pick_model(category="reference_to_video").default_pick
 
 
+def test_an_opted_out_only_category_still_answers_and_others_skip_opted_out(
+    monkeypatch,
+):
+    import falaw.registry as registry
+    from falaw.base import ModelRecord
+
+    only_hidden = [
+        ModelRecord(id="h", category="c", quality_tier="high", default_pick=False)
+    ]
+    mixed = [
+        ModelRecord(id="hidden", category="c", quality_tier="high", default_pick=False),
+        ModelRecord(id="shown", category="c", quality_tier="high"),
+    ]
+    monkeypatch.setattr(
+        registry, "list_models", lambda category=None, **kw: only_hidden
+    )
+    assert registry.pick_model(category="c", quality_tier="high").id == "h"
+    monkeypatch.setattr(registry, "list_models", lambda category=None, **kw: mixed)
+    assert registry.pick_model(category="c", quality_tier="high").id == "shown"
+
+
+def test_default_picks_are_stable_under_the_refresh_sort_in_every_category():
+    for category in {m.category for m in falaw.list_models()}:
+        ms = sorted(
+            (m for m in falaw.list_models(category=category) if m.default_pick),
+            key=lambda m: (m.quality_tier, m.id),
+        )
+        for tier in ("fast", "balanced", "high", "ultra"):
+            first = next((m for m in ms if m.quality_tier == tier), None)
+            if first is not None:
+                assert (
+                    first.id
+                    == falaw.pick_model(category=category, quality_tier=tier).id
+                )
+
+
 def test_seedream_explicit_sizes_are_checked_while_planning_is_free():
     ok = falaw.plan_generate_image(
         "x",
@@ -213,8 +249,13 @@ def test_seedream_explicit_sizes_are_checked_while_planning_is_free():
         consult_cache=False,
     )
     assert ok.arguments["image_size"] == {"width": 2560, "height": 1440}
-    for size in ({"width": 1024, "height": 1024}, {"width": 4097, "height": 4097}):
-        with pytest.raises(ValueError, match="total pixels"):
+    for size in (
+        {"width": 1024, "height": 1024},
+        {"width": 4097, "height": 4097},
+        {"width": "2560", "height": 1440},
+        {"width": 2560.0, "height": 1440},
+    ):
+        with pytest.raises(ValueError, match="total pixels|integer width"):
             falaw.plan_generate_image(
                 "x",
                 model_id="seedream45",
@@ -262,3 +303,50 @@ def test_eager_video_duration_matches_the_planners(monkeypatch):
     with pytest.raises(ValueError, match="duration_s is only sent"):
         falaw.text_to_video("x", model_id="fal-ai/veo3", duration_s=5)
     falaw.image_to_video("u", model_id="seedance2-i2v")  # no duration: untouched
+
+
+def test_the_size_limit_holds_for_the_edit_verbs_and_the_eager_call(monkeypatch):
+    bad = {"image_size": {"width": 100, "height": 100}}
+    with pytest.raises(ValueError):
+        falaw.plan_edit_image("u", "x", model_id="seedream45-edit", extra=bad)
+    monkeypatch.setattr(
+        "falaw.core._import_fal_client", lambda: pytest.fail("reached the network")
+    )
+    with pytest.raises(ValueError, match="total pixels"):
+        falaw.generate_image("x", model_id="seedream45", extra=bad)
+
+
+def test_reference_limits_hold_however_the_urls_arrive():
+    with pytest.raises(ValueError, match="at most 3 video_urls"):
+        falaw.plan_reference_to_video(
+            "x", extra={"video_urls": ["v"] * 9}, consult_cache=False
+        )
+    with pytest.raises(TypeError, match="not one string"):
+        falaw.plan_reference_to_video("x", image_urls="ab", consult_cache=False)
+    with pytest.raises(ValueError, match="must be a list"):
+        falaw.plan_reference_to_video(
+            "x", extra={"image_urls": "ab"}, consult_cache=False
+        )
+
+
+def test_eager_resolves_aliases_like_the_planner_with_or_without_a_duration(
+    monkeypatch,
+):
+    sent = []
+    monkeypatch.setattr(
+        "falaw.operations.video.call_fal",
+        lambda model, arguments, **kw: sent.append((model, arguments)) or {},
+    )
+    falaw.text_to_video("x", model_id="seedance2-t2v")
+    planned = falaw.plan_text_to_video(
+        "x", model_id="seedance2-t2v", consult_cache=False
+    )
+    assert sent[0] == (planned.application, planned.arguments)
+
+
+@pytest.mark.parametrize("ratio", ["+16:9", "1_6:9", "0:0", "1.5:1", "16:9:1"])
+def test_aspect_ratios_parse_strictly(ratio):
+    from falaw.cost import frame_pixels
+
+    with pytest.raises(ValueError, match="aspect_ratio"):
+        frame_pixels("720p", ratio)

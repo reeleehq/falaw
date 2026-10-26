@@ -269,7 +269,14 @@ RESPONSE_CASES: tuple[dict, ...] = (
 #: (including the neighbouring-tier fallback and an unknown tier).
 PICK_MODEL_CASES: tuple[tuple[str, str], ...] = tuple(
     (category, tier)
-    for category in ("image", "image_edit", "image_to_video", "text_to_video", "tts")
+    for category in (
+        "image",
+        "image_edit",
+        "image_to_video",
+        "text_to_video",
+        "reference_to_video",
+        "tts",
+    )
     for tier in (*_TIER_ORDER, "weird")
 )
 

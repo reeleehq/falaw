@@ -120,6 +120,36 @@
     "quality_tier": "weird"
   },
   {
+    "category": "reference_to_video",
+    "error": null,
+    "expected": "bytedance/seedance-2.0/fast/reference-to-video",
+    "quality_tier": "fast"
+  },
+  {
+    "category": "reference_to_video",
+    "error": null,
+    "expected": "bytedance/seedance-2.0/fast/reference-to-video",
+    "quality_tier": "balanced"
+  },
+  {
+    "category": "reference_to_video",
+    "error": null,
+    "expected": "bytedance/seedance-2.0/reference-to-video",
+    "quality_tier": "high"
+  },
+  {
+    "category": "reference_to_video",
+    "error": null,
+    "expected": "bytedance/seedance-2.0/reference-to-video",
+    "quality_tier": "ultra"
+  },
+  {
+    "category": "reference_to_video",
+    "error": null,
+    "expected": "bytedance/seedance-2.0/reference-to-video",
+    "quality_tier": "weird"
+  },
+  {
     "category": "tts",
     "error": null,
     "expected": "fal-ai/elevenlabs/tts/multilingual-v2",

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "fccd6f3beb94";
+export const MODELS_TABLE_VERSION = "ace08bcba966";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -1565,7 +1565,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "amount": 0.0000024,
       "currency": "USD",
       "notes": "fal model page, checked 2026-10-26: $2.40 per 1M video tokens with audio (the default, generate_audio=true), $1.20 without; this is the audio-on ceiling. Billed per video token: width*height*24*seconds/1024.",
-      "source": "api"
+      "source": "docs"
     },
     "max_clip_seconds": 12,
     "single_character_recommended": true,
@@ -1636,7 +1636,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "amount": 0.0000024,
       "currency": "USD",
       "notes": "fal model page, checked 2026-10-26: $2.40 per 1M video tokens with audio (the default, generate_audio=true), $1.20 without; this is the audio-on ceiling. Billed per video token: width*height*24*seconds/1024.",
-      "source": "api"
+      "source": "docs"
     },
     "max_clip_seconds": 12,
     "single_character_recommended": true,

@@ -19,11 +19,10 @@ to work in the meantime.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Optional, Sequence
 
-from ..cost import estimate_call_cost, video_duration_arg, video_price_quantities
+from ..cost import estimate_call_cost, video_call_arguments, video_price_quantities
 from ..llm_rates import LlmRateTable, llm_ceiling_usd
 from ..plan import CallPlan, CostBasis, make_call_plan
 from ..registry import get_model, pick_model
@@ -256,38 +255,6 @@ def plan_composite_character_in_environment(
 # ---------------------------------------------------------------------------
 
 
-def _numeric_seconds(value: Any) -> Optional[float]:
-    """A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk
-    (unknown, so the call stays unpriced rather than free)."""
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
-        return None
-    try:
-        seconds = float(value)
-    except ValueError:
-        return None
-    return seconds if math.isfinite(seconds) else None
-
-
-def video_call_arguments(
-    record, arguments: dict, *, duration_s: Optional[float], extra: Optional[dict]
-) -> tuple[dict, Optional[float]]:
-    """``(wire arguments, seconds the call bills)`` for a video call.
-
-    The one place planned and eager video calls agree. ``duration_s`` is *sent*
-    only for a model whose record lists a ``duration`` parameter (Seedance spells
-    it as a string enum), validated by :func:`falaw.cost.video_duration_arg`;
-    elsewhere it is estimator-only, since models name that argument differently.
-    ``extra`` wins over everything and the billed seconds follow what it says.
-    """
-    arguments = {**arguments, **(extra or {})}
-    seconds = duration_s
-    if "duration" in record.param_specs:
-        if duration_s is not None and "duration" not in arguments:
-            arguments["duration"] = video_duration_arg(record, duration_s)
-        seconds = _numeric_seconds(arguments.get("duration"))
-    return arguments, seconds
-
-
 def _plan_video(
     tool: str,
     category: str,
@@ -405,30 +372,26 @@ def plan_reference_to_video(
     reference images, videos and audio.
 
     The counts are checked against the model's recorded limits
-    (``model_constraints(id)["max_references"]``) while planning is free. The
+    (``model_constraints(id)["max_references"]``) by :func:`make_call_plan`, while
+    planning is free, whatever route (``extra`` included) they arrive by. The
     quote is the standard rate, a ceiling: fal bills about 0.6x when video
     references are supplied.
     """
-    application, record = _resolve_model_id_and_record(
-        model_id=model_id, category="reference_to_video", quality_tier=quality
-    )
     refs = {
-        "image_urls": list(image_urls),
-        "video_urls": list(video_urls),
-        "audio_urls": list(audio_urls),
+        "image_urls": image_urls,
+        "video_urls": video_urls,
+        "audio_urls": audio_urls,
     }
     for name, urls in refs.items():
-        limit = record.param_specs.get(name, {}).get("max_items")
-        if limit is not None and len(urls) > limit:
-            raise ValueError(
-                f"{application} takes at most {limit} {name}, got {len(urls)}"
-            )
+        if isinstance(urls, str):
+            raise TypeError(f"{name} must be a list of URLs, not one string")
+    wanted = {name: list(urls) for name, urls in refs.items() if urls}
     return _plan_video(
         "reference_to_video",
         "reference_to_video",
-        {"prompt": prompt, **{k: v for k, v in refs.items() if v}},
+        {"prompt": prompt, **wanted},
         quality=quality,
-        model_id=application,
+        model_id=model_id,
         duration_s=duration_s,
         extra=extra,
         metadata=metadata,

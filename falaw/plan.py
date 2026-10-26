@@ -562,6 +562,19 @@ def plan_hash(plan: Plan) -> str:
 # --- planning helpers -------------------------------------------------------
 
 
+def _check_against_catalogue(application: str, arguments: dict) -> None:
+    """Refuse arguments that break a limit the catalogue states for the model
+    (:mod:`falaw.validation`); an unlisted model has no stated limits."""
+    from .registry import get_model
+    from .validation import check_call_arguments
+
+    try:
+        record = get_model(application)
+    except KeyError:
+        return
+    check_call_arguments(record, arguments)
+
+
 def make_call_plan(
     *,
     tool: str,
@@ -614,6 +627,7 @@ def make_call_plan(
     # stays pure data, and execute() uploads it on a miss and keys on its bytes
     # (falaw#92).
     arguments, local_files = localize_paths(arguments)
+    _check_against_catalogue(application, arguments)
 
     # Validate before the cache peek: the peek's `except Exception` fallback
     # (best-effort by design) would otherwise swallow the refusal into a

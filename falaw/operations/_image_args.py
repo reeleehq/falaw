@@ -47,28 +47,6 @@ def check_prompt_length(prompt: str, record: Optional[ModelRecord]) -> None:
         )
 
 
-def check_explicit_size(arguments: dict, record: Optional[ModelRecord]) -> dict:
-    """Refuse an explicit ``{"width", "height"}`` size outside the model's pixel
-    bounds (``param_specs["image_size"]["min_pixels"/"max_pixels"]``) — fal
-    rejects it with an HTTP 422 after queueing, so falaw raises first."""
-    size = arguments.get("image_size")
-    spec = record.param_specs.get("image_size", {}) if record else {}
-    if not (isinstance(size, dict) and spec):
-        return arguments
-    try:
-        pixels = int(size["width"]) * int(size["height"])
-    except (KeyError, TypeError, ValueError):
-        raise ValueError(f"image_size must have integer width and height, got {size!r}")
-    low, high = spec.get("min_pixels"), spec.get("max_pixels")
-    if (low and pixels < low) or (high and pixels > high):
-        raise ValueError(
-            f"{record.id} needs an explicit image_size of {low or 0:,} to "
-            f"{high or float('inf'):,} total pixels; {size['width']}x{size['height']} "
-            f"is {pixels:,}. Use a larger size or a named preset."
-        )
-    return arguments
-
-
 def image_arguments(
     record: Optional[ModelRecord],
     prompt: str,
@@ -84,9 +62,7 @@ def image_arguments(
     """
     check_prompt_length(prompt, record)
     if record is None or record.size_param == "image_size":
-        return check_explicit_size(
-            {"prompt": prompt, "image_size": image_size, **(extra or {})}, record
-        )
+        return {"prompt": prompt, "image_size": image_size, **(extra or {})}
     ratio = IMAGE_SIZE_ASPECT_RATIOS.get(image_size)
     if ratio is None and ":" in image_size:
         ratio = image_size

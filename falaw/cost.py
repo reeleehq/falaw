@@ -20,6 +20,7 @@ enough to gate on (e.g. ``--budget=1.00``) and to surface in
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -75,6 +76,9 @@ DFLT_VIDEO_RESOLUTION = "720p"
 """Resolution assumed for a token-billed video model that records no default."""
 
 
+_ASPECT = re.compile(r"\s*(\d+)\s*:\s*(\d+)\s*")
+
+
 def frame_pixels(resolution: str, aspect_ratio: str | None = None) -> float:
     """Pixels per frame of a ``resolution`` at ``aspect_ratio`` (``"W:H"``).
 
@@ -83,10 +87,8 @@ def frame_pixels(resolution: str, aspect_ratio: str | None = None) -> float:
     """
     short = RESOLUTION_SHORT_SIDE[resolution]
     ratio = DFLT_VIDEO_ASPECT if aspect_ratio in (None, "", "auto") else aspect_ratio
-    try:
-        w, h = (int(part) for part in str(ratio).split(":"))
-    except ValueError:
-        w = h = 0
+    match = _ASPECT.fullmatch(str(ratio))
+    w, h = (int(g) for g in match.groups()) if match else (0, 0)
     if w <= 0 or h <= 0:
         raise ValueError(f"aspect_ratio must look like '16:9' or 'auto', got {ratio!r}")
     return short * short * max(w, h) / min(w, h)
@@ -143,6 +145,43 @@ def video_duration_arg(record: ModelRecord, duration_s: float) -> str:
             f"got {duration_s}"
         )
     return str(seconds)
+
+
+def _numeric_seconds(value) -> float | None:
+    """A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk
+    (unknown, so the call stays unpriced rather than free)."""
+    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+        return None
+    try:
+        seconds = float(value)
+    except ValueError:
+        return None
+    return seconds if math.isfinite(seconds) else None
+
+
+def video_call_arguments(
+    record: ModelRecord,
+    arguments: dict,
+    *,
+    duration_s: float | None,
+    extra: dict | None,
+) -> tuple[dict, float | None]:
+    """``(wire arguments, seconds the call bills)`` for a video call.
+
+    The one place planned and eager video calls agree. ``duration_s`` is *sent*
+    only for a model whose record lists a ``duration`` parameter (Seedance spells
+    it as a string enum), validated by :func:`video_duration_arg`; elsewhere it
+    is estimator-only when planning, since models name that argument
+    differently. ``extra`` wins over everything and the billed seconds follow
+    what it says.
+    """
+    arguments = {**arguments, **(extra or {})}
+    seconds = duration_s
+    if "duration" in record.param_specs:
+        if duration_s is not None and "duration" not in arguments:
+            arguments["duration"] = video_duration_arg(record, duration_s)
+        seconds = _numeric_seconds(arguments.get("duration"))
+    return arguments, seconds
 
 
 def estimate_call_cost(
