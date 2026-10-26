@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "5b7be5d7b10e";
+export const MODELS_TABLE_VERSION = "a9897248ef91";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -626,7 +626,7 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
   {
     "id": "fal-ai/mmaudio-v2/text-to-audio",
     "category": "music",
-    "description": "Text-to-audio generation",
+    "description": "Text-to-audio generation. Weights are CC BY-NC 4.0 (non-commercial) whatever fal's licence label says; not the default for sfx/ambient (falaw#88).",
     "aliases": [],
     "quality_tier": "balanced",
     "cost_hint": "",
@@ -637,6 +637,88 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
+    }
+  },
+  {
+    "id": "fal-ai/stable-audio-3/small/sfx/text-to-audio",
+    "category": "music",
+    "description": "Stable Audio 3 small, SFX-tuned text-to-audio (Stability Community licence: commercial under $1M revenue). The sfx/ambient default.",
+    "aliases": [
+      "stable-audio-3-sfx"
+    ],
+    "quality_tier": "balanced",
+    "cost_hint": "",
+    "docs_url": "https://fal.ai/models/fal-ai/stable-audio-3/small/sfx/text-to-audio",
+    "cost_estimate": {
+      "kind": "per_call",
+      "amount": 0.0206,
+      "currency": "USD",
+      "notes": "falaw#88; per clip, measured live 2026-10-25 (issue table)",
+      "source": "manual"
+    }
+  },
+  {
+    "id": "fal-ai/stable-audio-3/medium/text-to-audio",
+    "category": "music",
+    "description": "Stable Audio 3 medium text-to-audio (Stability Community licence).",
+    "aliases": [],
+    "quality_tier": "balanced",
+    "cost_hint": "",
+    "docs_url": "https://fal.ai/models/fal-ai/stable-audio-3/medium/text-to-audio",
+    "cost_estimate": {
+      "kind": "per_call",
+      "amount": 0.0376,
+      "currency": "USD",
+      "notes": "falaw#88; per clip, measured live 2026-10-25",
+      "source": "manual"
+    }
+  },
+  {
+    "id": "mirelo-ai/sfx2.0/text-to-audio",
+    "category": "music",
+    "description": "Mirelo SFX 2.0 text-to-SFX; returns a list of samples. Mirelo terms; gateway use not covered.",
+    "aliases": [],
+    "quality_tier": "balanced",
+    "cost_hint": "",
+    "docs_url": "https://fal.ai/models/mirelo-ai/sfx2.0/text-to-audio",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.01,
+      "currency": "USD",
+      "notes": "falaw#88; per second per sample (num_samples pinned to 1 by plan_generate_audio); $0.015 after 2026-12-13",
+      "source": "manual"
+    }
+  },
+  {
+    "id": "fal-ai/elevenlabs/sound-effects/v2",
+    "category": "music",
+    "description": "ElevenLabs sound effects v2 (ElevenLabs terms; fal route unverified). Prompt argument is `text`.",
+    "aliases": [],
+    "quality_tier": "balanced",
+    "cost_hint": "",
+    "docs_url": "https://fal.ai/models/fal-ai/elevenlabs/sound-effects/v2",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.002,
+      "currency": "USD",
+      "notes": "falaw#88; per second",
+      "source": "manual"
+    }
+  },
+  {
+    "id": "sonilo/v1.1/text-to-sound-effects",
+    "category": "music",
+    "description": "Sonilo v1.1 text-to-SFX; returns `audio` and `audios` (Sonilo terms; fal route unverified).",
+    "aliases": [],
+    "quality_tier": "balanced",
+    "cost_hint": "",
+    "docs_url": "https://fal.ai/models/sonilo/v1.1/text-to-sound-effects",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.0018,
+      "currency": "USD",
+      "notes": "falaw#88; per second per sample",
+      "source": "manual"
     }
   },
   {
