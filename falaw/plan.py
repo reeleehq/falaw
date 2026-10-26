@@ -206,6 +206,15 @@ class CallPlan:
     customer: nw's Transform ``impl_version`` (nw#27) — "same interface,
     changed behaviour" must miss the cache without renaming anything."""
 
+    local_files: tuple = ()
+    """Where :attr:`arguments` holds local-file markers (falaw#92): one pointer
+    (a tuple of dict keys / list indices) per ``os.PathLike`` the caller passed.
+    Only these are resolved at execute time (uploaded on a cache miss, keyed on
+    the file's sha256), so a string that merely looks like a marker is inert.
+    Omit-when-empty on the wire (like ``cost_basis``): a plan with no local
+    file serializes to the bytes it did before the field existed; absent reads
+    as empty."""
+
     cost_basis: Optional[CostBasis] = None
     """How :attr:`estimated_cost_usd` was computed, or ``None`` when nothing
     recorded it (falaw#60). Present, the quote can be re-run against today's
@@ -383,6 +392,8 @@ def call_plan_to_dict(call: CallPlan) -> dict:
         "metadata": call.metadata,
         "key_extra": call.key_extra,
     }
+    if call.local_files:
+        out["local_files"] = [list(p) for p in call.local_files]
     if call.cost_basis is not None:
         out["cost_basis"] = cost_basis_to_dict(call.cost_basis)
     return out
@@ -443,6 +454,7 @@ def call_plan_from_dict(d: dict) -> CallPlan:
         expected_duration_s=(tuple(duration) if duration is not None else None),
         metadata=dict(d.get("metadata") or {}),
         key_extra=dict(d.get("key_extra") or {}),
+        local_files=tuple(tuple(p) for p in d.get("local_files") or ()),
         cost_basis=(
             cost_basis_from_dict(basis)
             if (basis := d.get("cost_basis")) is not None
@@ -596,12 +608,12 @@ def make_call_plan(
             key-composition time on the way to the network (falaw#17).
     """
     from .canonical import ensure_canonical
-    from .upload import has_local_files, localize_paths, resolve_local_files
+    from .upload import localize_paths, resolve_local_files
 
     # A local file (``os.PathLike``) becomes a "<file ...>" marker: the Plan
     # stays pure data, and execute() uploads it on a miss and keys on its bytes
     # (falaw#92).
-    arguments = localize_paths(arguments)
+    arguments, local_files = localize_paths(arguments)
 
     # Validate before the cache peek: the peek's `except Exception` fallback
     # (best-effort by design) would otherwise swallow the refusal into a
@@ -623,11 +635,7 @@ def make_call_plan(
             try:
                 from .cache import cache_get  # type: ignore[import-not-found]
 
-                peek = (
-                    resolve_local_files(arguments, mode="key")
-                    if has_local_files(arguments)
-                    else arguments
-                )
+                peek = resolve_local_files(arguments, local_files, mode="key")
                 status = (
                     "hit"
                     if cache_get(application, peek, backend=backend) is not None
@@ -648,6 +656,7 @@ def make_call_plan(
         cache_status=status,
         expected_duration_s=expected_duration_s,
         metadata=metadata or {},
+        local_files=local_files,
         cost_basis=cost_basis,
     )
 
@@ -1056,7 +1065,7 @@ def _run_plan(
         succeeded but produced no URL — and that is this call's failure, not the
         run's.
         """
-        from .upload import has_local_files, resolve_local_files
+        from .upload import resolve_local_files
 
         call = plan.calls[index]
         wire_args = _resolve_placeholders(call.arguments, artifacts, ref=_wire_ref)
@@ -1068,13 +1077,18 @@ def _run_plan(
             if use_cache
             else wire_args
         )
-        if has_local_files(wire_args):
+        resolve_wire = None
+        if call.local_files:
             # Key on the files' bytes; upload only if the call misses the cache.
-            template = wire_args
+            template, pointers = wire_args, call.local_files
             key_args = (
-                resolve_local_files(key_args, mode="key") if use_cache else template
+                resolve_local_files(key_args, pointers, mode="key")
+                if use_cache
+                else template
             )
-            wire_args = lambda: resolve_local_files(template, mode="wire")  # noqa: E731
+            resolve_wire = lambda: resolve_local_files(  # noqa: E731
+                template, pointers, mode="wire"
+            )
         return _execute_call(
             call,
             wire_args,
@@ -1084,6 +1098,7 @@ def _run_plan(
             use_cache=use_cache,
             refresh=refresh,
             on_event=on_event,
+            resolve_wire=resolve_wire,
         )
 
     with _bounded_executor(concurrency) as pool:
@@ -1275,8 +1290,13 @@ def _execute_call(
     use_cache: bool,
     refresh: bool = False,
     on_event,
+    resolve_wire: Optional[Callable[[], dict]] = None,
 ) -> tuple:
     """Run one :class:`CallPlan`, returning ``(artifact, cache_hit)``.
+
+    ``resolve_wire``, when given, produces the wire arguments lazily (a local
+    file is uploaded only when the call actually goes out, never on a cache
+    hit); ``wire_args`` is then the unresolved template.
 
     ``cache_hit`` is *observed*, not predicted: it says this call was served
     from a cache entry that proved usable, which is what run-level cost
@@ -1301,9 +1321,7 @@ def _execute_call(
     from .cache import cached_call_fal, drop_cache_entry, emit_cache_hit
 
     key_arguments = None if key_args is wire_args else key_args
-    # A callable stands for wire arguments not yet resolved (a local file is
-    # uploaded only when the call actually goes out, not on a cache hit).
-    wire = lambda: wire_args() if callable(wire_args) else wire_args  # noqa: E731
+    wire = lambda: resolve_wire() if resolve_wire else wire_args  # noqa: E731
     if use_cache:
         from .cache import cache_get
 

@@ -39,18 +39,23 @@ function plan(tool: string, input: Record<string, unknown>) {
   throw new Error(`no planner for ${tool}`);
 }
 
+/** Python omits `local_files` when empty (like `cost_basis`); absent reads as empty. */
+function withTolerated(call: Record<string, unknown>): Record<string, unknown> {
+  return { local_files: [], ...call };
+}
+
 describe('plans', () => {
   const fixture = load<Plans>('plans.json');
 
   it.each(fixture.calls.map((c, i) => [i, c] as const))('call %i builds the same CallPlan and hash', async (_, c) => {
     const built = plan(c.tool, c.input);
-    expect(built).toEqual(c.expected);
+    expect(built).toEqual(withTolerated(c.expected));
     expect(await planHash(makePlan([built]))).toBe(c.plan_hash);
   });
 
   it.each(fixture.plans.map((p, i) => [i, p] as const))('plan %i (calls %s)', async (_, p) => {
     const built = makePlan(p.calls.map((i) => plan(fixture.calls[i]!.tool, fixture.calls[i]!.input)));
-    expect(built).toEqual(p.expected);
+    expect(built).toEqual({ ...p.expected, calls: (p.expected.calls as Record<string, unknown>[]).map(withTolerated) });
     expect(await planHash(built)).toBe(p.plan_hash);
     expect(totalCostUsd(built)).toBeCloseTo(p.total_cost_usd, 12);
     expect(hasUnknownCosts(built)).toBe(p.has_unknown_costs);

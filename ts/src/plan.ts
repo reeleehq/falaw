@@ -61,6 +61,7 @@ export function makeCallPlan(opts: MakeCallPlanOptions): CallPlan {
     key_extra: { ...(opts.keyExtra ?? {}) },
     // Python omits the key when unset; `null` here parses identically on that side
     // (`call_plan_from_dict`) and keeps the TS type one shape. Never hashed either way.
+    local_files: [],
     cost_basis: opts.costBasis ?? null,
   };
   return plan;

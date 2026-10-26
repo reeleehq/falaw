@@ -205,8 +205,12 @@ def test_a_path_argument_keeps_the_plan_pure_data(png, tmp_path):
 
     import falaw
 
+    import hashlib
+
     cp, plan = _plan(png, consult_cache=False)
-    assert cp.arguments["image_url"] == f"<file {os.path.abspath(png)}>"
+    digest = hashlib.sha256(png.read_bytes()).hexdigest()
+    assert cp.arguments["image_url"] == f"<file sha256:{digest} {os.path.abspath(png)}>"
+    assert cp.local_files == (("image_url",),)
     assert falaw.plan_from_dict(falaw.plan_to_dict(plan)).calls[0] == cp
 
 
@@ -270,3 +274,78 @@ def test_prune_uploads_is_bounded_dry_run_by_default_and_never_rebills(
     real = falaw.prune_uploads(older_than=86400, dry_run=False)
     assert len(real.deleted) == 1 and not entry.exists()
     assert falaw.cache_usage().areas  # the uploads area is reported
+
+
+def test_a_string_that_looks_like_a_marker_is_inert_text(tmp_path, fal_calls):
+    """Only declared pointers resolve: a hostile or accidental prompt cannot make
+    falaw read and upload a file."""
+    import falaw
+
+    sent, uploads = fal_calls
+    secret = tmp_path / "secret.txt"
+    secret.write_text("s3cret")
+    import hashlib
+
+    lookalike = f"<file sha256:{hashlib.sha256(b's3cret').hexdigest()} {secret}>"
+    cp = falaw.make_call_plan(
+        tool="image_to_video",
+        application="fal-ai/x/i2v",
+        arguments={"prompt": lookalike},
+        output_kind="video",
+    )
+    assert cp.local_files == ()
+    falaw.execute_plan(falaw.Plan(calls=(cp,)))
+    assert uploads == [] and sent[0]["prompt"] == lookalike
+
+
+def test_plan_identity_follows_the_files_content(png):
+    import falaw
+
+    h1 = falaw.plan_hash(_plan(png, consult_cache=False)[1])
+    png.write_bytes(b"edited")
+    assert falaw.plan_hash(_plan(png, consult_cache=False)[1]) != h1
+
+
+def test_a_missing_file_is_refused_while_planning_is_free(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        _plan(tmp_path / "nope.png", consult_cache=False)
+
+
+def test_a_file_edited_after_planning_is_refused_not_mis_keyed(png, fal_calls):
+    import falaw
+
+    sent, uploads = fal_calls
+    _, plan = _plan(png)
+    png.write_bytes(b"changed after planning")
+    with pytest.raises(ValueError, match="changed since the Plan was made"):
+        falaw.execute_plan(plan)
+    assert sent == [] and uploads == []
+
+
+def test_a_short_lifetime_upload_is_not_trusted_past_its_expiry(png):
+    idx, now = {}, [1000.0]
+    kw = dict(index=idx, clock=lambda: now[0], namespace="fal")
+    upload(png, uploader=lambda p: "https://x/1", **kw)
+    key = next(iter(idx))
+    idx[key]["expires_at"] = 1060.0  # as a ttl_s=60 fal upload would record
+    now[0] = 1100.0
+    up = _Uploader()
+    upload(png, uploader=up, **kw)
+    assert len(up.calls) == 1  # re-uploaded: the remembered URL is dead
+
+
+def test_anonymous_custom_uploaders_do_not_share_a_namespace(png):
+    from falaw import using_uploader
+
+    idx = {}
+
+    def fake(p):
+        return "https://fake/x"
+
+    def s3(p):
+        return "https://s3/x"
+
+    with using_uploader(fake):
+        assert upload(png, index=idx) == "https://fake/x"
+    with using_uploader(s3):
+        assert upload(png, index=idx) == "https://s3/x"

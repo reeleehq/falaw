@@ -31,6 +31,11 @@ export async function execute(plan: Plan | readonly CallPlan[], opts: ExecuteOpt
   const calls = Array.isArray(plan) ? (plan as readonly CallPlan[]) : (plan as Plan).calls;
   const done: ExecutedCall[] = [];
   for (const call of calls) {
+    if (call.local_files?.length) {
+      throw new Error(
+        `Call ${call.application} names local files (${CONSTANTS.file_prefix}...>); only falaw (Python) can upload them. Send the plan to a falaw executor.`,
+      );
+    }
     const sent: CallPlan = { ...call, arguments: resolvePlaceholders(call.arguments, done) as Record<string, unknown> };
     const { raw, requestId } = await opts.transport(sent, { signal: opts.signal, onEvent: opts.onEvent });
     const result = parseResponse(raw, { application: sent.application, arguments: sent.arguments });
