@@ -126,9 +126,10 @@ def test_the_quantity_hints_survive_serialization():
     the basis a persisted quantity-priced call cannot be re-quoted at all."""
     call = falaw.plan_image_to_video("u", duration_s=6.0, consult_cache=False)
     assert "duration_s" not in call.arguments
-    # Seedance bills per video token: 1080p x 6 s x 24/1024 tokens per pixel-second.
+    # Seedance bills per video token: 1080p x 6 s x 24/1024 tokens per pixel-second,
+    # at the widest listed aspect (21:9) since the default is "auto".
     revived = plan_from_dict(plan_to_dict(Plan(calls=(call,)))).calls[0]
-    assert revived.cost_basis.quantities == {"tokens": 291600}
+    assert revived.cost_basis.quantities == {"tokens": 382725}
     out = reprice_plan(Plan(calls=(revived,)))
     assert out.calls[0].status == "unchanged"
     assert out.calls[0].new_cost_usd == call.estimated_cost_usd

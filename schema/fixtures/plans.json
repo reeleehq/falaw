@@ -14,7 +14,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -43,7 +43,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 0.0018,
         "expected_duration_s": null,
@@ -73,7 +73,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 0.06,
         "expected_duration_s": null,
@@ -116,7 +116,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -160,7 +160,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -195,7 +195,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": null,
         "expected_duration_s": null,
@@ -224,12 +224,12 @@
           "priced": "fal-ai/bytedance/seedance/v1/pro/image-to-video",
           "pricer": "model_catalogue",
           "quantities": {
-            "tokens": 291600
+            "tokens": 382725
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
-        "estimated_cost_usd": 0.7290000000000001,
+        "estimated_cost_usd": 0.9568125000000001,
         "expected_duration_s": null,
         "key_extra": {},
         "metadata": {},
@@ -259,7 +259,7 @@
             "seconds": 5.5
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 1.54,
         "expected_duration_s": null,
@@ -291,7 +291,7 @@
             "seconds": 6
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 0.48,
         "expected_duration_s": null,
@@ -321,12 +321,12 @@
           "priced": "bytedance/seedance-2.0/image-to-video",
           "pricer": "model_catalogue",
           "quantities": {
-            "tokens": 108000
+            "tokens": 141750
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
-        "estimated_cost_usd": 1.512,
+        "estimated_cost_usd": 1.9845,
         "expected_duration_s": null,
         "key_extra": {},
         "metadata": {},
@@ -355,12 +355,12 @@
           "priced": "bytedance/seedance-2.0/fast/text-to-video",
           "pricer": "model_catalogue",
           "quantities": {
-            "tokens": 38400
+            "tokens": 50400
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
-        "estimated_cost_usd": 0.43007999999999996,
+        "estimated_cost_usd": 0.56448,
         "expected_duration_s": null,
         "key_extra": {},
         "metadata": {},
@@ -391,12 +391,12 @@
           "priced": "fal-ai/bytedance/seedance/v1/pro/text-to-video",
           "pricer": "model_catalogue",
           "quantities": {
-            "tokens": 243000
+            "tokens": 318938
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
-        "estimated_cost_usd": 0.6075,
+        "estimated_cost_usd": 0.7973450000000001,
         "expected_duration_s": null,
         "key_extra": {},
         "metadata": {},
@@ -423,7 +423,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": null,
         "expected_duration_s": null,
@@ -457,7 +457,7 @@
             "tokens": 382725
           },
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": 5.35815,
         "expected_duration_s": null,
@@ -492,7 +492,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "ace08bcba966"
+          "table_version": "63e5f7cd7a70"
         },
         "estimated_cost_usd": null,
         "expected_duration_s": null,
@@ -510,6 +510,158 @@
       },
       "plan_hash": "20a3310bb17d087520ddf505d4eddcea1268476ce8488648c54f400aec16df14",
       "tool": "text_to_video"
+    },
+    {
+      "expected": {
+        "application": "bytedance/seedance-2.0/reference-to-video",
+        "arguments": {
+          "duration": "5",
+          "image_urls": [
+            "https://x.example/a.png"
+          ],
+          "prompt": "a tiger walks"
+        },
+        "backend": "fal",
+        "cache_status": "unknown",
+        "cost_basis": {
+          "priced": "bytedance/seedance-2.0/reference-to-video",
+          "pricer": "model_catalogue",
+          "quantities": {
+            "tokens": 141750
+          },
+          "table": "falaw/data/models.json",
+          "table_version": "63e5f7cd7a70"
+        },
+        "estimated_cost_usd": 1.9845,
+        "expected_duration_s": null,
+        "key_extra": {},
+        "metadata": {},
+        "output_kind": "video",
+        "tool": "reference_to_video"
+      },
+      "input": {
+        "duration_s": 5,
+        "image_urls": [
+          "https://x.example/a.png"
+        ],
+        "model_id": "seedance2-ref",
+        "prompt": "a tiger walks"
+      },
+      "plan_hash": "09e2e8e1f4f5bc6bd09db14a4532e791429aac43b2d5741a4470b3949eeb08e6",
+      "tool": "reference_to_video"
+    },
+    {
+      "expected": {
+        "application": "bytedance/seedance-2.0/reference-to-video",
+        "arguments": {
+          "duration": "5",
+          "prompt": "a tiger walks",
+          "video_urls": [
+            "https://x.example/a.mp4"
+          ]
+        },
+        "backend": "fal",
+        "cache_status": "unknown",
+        "cost_basis": {
+          "priced": "bytedance/seedance-2.0/reference-to-video",
+          "pricer": "model_catalogue",
+          "quantities": {
+            "tokens": 141750
+          },
+          "table": "falaw/data/models.json",
+          "table_version": "63e5f7cd7a70"
+        },
+        "estimated_cost_usd": 1.9845,
+        "expected_duration_s": null,
+        "key_extra": {},
+        "metadata": {},
+        "output_kind": "video",
+        "tool": "reference_to_video"
+      },
+      "input": {
+        "duration_s": 5,
+        "model_id": "seedance2-ref",
+        "prompt": "a tiger walks",
+        "video_urls": [
+          "https://x.example/a.mp4"
+        ]
+      },
+      "plan_hash": "3a89da82fbd725cc162c8cc577803548ef986040b11a3d08f3d950d90eca2685",
+      "tool": "reference_to_video"
+    },
+    {
+      "expected": {
+        "application": "bytedance/seedance-2.0/text-to-video",
+        "arguments": {
+          "duration": "5",
+          "prompt": "a tiger walks",
+          "resolution": "4k"
+        },
+        "backend": "fal",
+        "cache_status": "unknown",
+        "cost_basis": {
+          "priced": "bytedance/seedance-2.0/text-to-video",
+          "pricer": "model_catalogue",
+          "quantities": {
+            "tokens": 729729
+          },
+          "table": "falaw/data/models.json",
+          "table_version": "63e5f7cd7a70"
+        },
+        "estimated_cost_usd": 10.216206,
+        "expected_duration_s": null,
+        "key_extra": {},
+        "metadata": {},
+        "output_kind": "video",
+        "tool": "text_to_video"
+      },
+      "input": {
+        "duration_s": 5,
+        "extra": {
+          "resolution": "4k"
+        },
+        "model_id": "seedance2-t2v",
+        "prompt": "a tiger walks"
+      },
+      "plan_hash": "2395e41e0b713d32f19a004f9965955d327e40585740ec803525af7ba04f206d",
+      "tool": "text_to_video"
+    }
+  ],
+  "errors": [
+    {
+      "input": {
+        "duration_s": 5,
+        "image_urls": [
+          "https://x.example/0.png",
+          "https://x.example/1.png",
+          "https://x.example/2.png",
+          "https://x.example/3.png",
+          "https://x.example/4.png",
+          "https://x.example/5.png",
+          "https://x.example/6.png",
+          "https://x.example/7.png",
+          "https://x.example/8.png",
+          "https://x.example/9.png"
+        ],
+        "model_id": "seedance2-ref",
+        "prompt": "x"
+      },
+      "message": "takes at most 9 image_urls, got 10",
+      "tool": "reference_to_video"
+    },
+    {
+      "input": {
+        "extra": {
+          "image_size": {
+            "height": 64,
+            "width": 64
+          }
+        },
+        "model_id": "seedream45",
+        "prompt": "x"
+      },
+      "message": "total pixels",
+      "tool": "generate_image"
     }
   ],
   "plans": [
@@ -533,7 +685,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "ace08bcba966"
+              "table_version": "63e5f7cd7a70"
             },
             "estimated_cost_usd": 0.015,
             "expected_duration_s": null,
@@ -554,7 +706,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "ace08bcba966"
+              "table_version": "63e5f7cd7a70"
             },
             "estimated_cost_usd": null,
             "expected_duration_s": null,
@@ -602,7 +754,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "ace08bcba966"
+              "table_version": "63e5f7cd7a70"
             },
             "estimated_cost_usd": 0.015,
             "expected_duration_s": null,
@@ -625,7 +777,7 @@
                 "seconds": 6
               },
               "table": "falaw/data/models.json",
-              "table_version": "ace08bcba966"
+              "table_version": "63e5f7cd7a70"
             },
             "estimated_cost_usd": 0.48,
             "expected_duration_s": null,
@@ -661,7 +813,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "ace08bcba966"
+              "table_version": "63e5f7cd7a70"
             },
             "estimated_cost_usd": 0.0018,
             "expected_duration_s": null,
@@ -683,7 +835,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "ace08bcba966"
+              "table_version": "63e5f7cd7a70"
             },
             "estimated_cost_usd": 0.0018,
             "expected_duration_s": null,

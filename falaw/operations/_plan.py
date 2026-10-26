@@ -374,8 +374,8 @@ def plan_reference_to_video(
     The counts are checked against the model's recorded limits
     (``model_constraints(id)["max_references"]``) by :func:`make_call_plan`, while
     planning is free, whatever route (``extra`` included) they arrive by. The
-    quote is the standard rate, a ceiling: fal bills about 0.6x when video
-    references are supplied.
+    quote is the standard rate, a ceiling for the no-video case: fal bills
+    reference videos differently (falaw#99, unverified), so none is discounted.
     """
     refs = {
         "image_urls": image_urls,

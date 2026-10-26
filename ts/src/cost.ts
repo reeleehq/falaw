@@ -88,6 +88,22 @@ export function numericSeconds(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** The aspect ratio a quote assumes (`falaw.cost.quote_aspect`): an explicit ratio as given; absent or
+ *  `"auto"` → the widest `"W:H"` in the record's enum (a ceiling), else `CONSTANTS.default_video_aspect`. */
+export function quoteAspect(record: Pick<ModelRecord, 'param_specs'>, aspectRatio?: string | null): string {
+  const spec = record.param_specs.aspect_ratio;
+  const wanted = aspectRatio || (spec?.default as string | undefined);
+  if (wanted && wanted !== 'auto') return wanted;
+  const ratios = ((spec?.enum as string[] | undefined) ?? []).filter((r) => /^\s*\d+\s*:\s*\d+\s*$/.test(r));
+  let widest = CONSTANTS.default_video_aspect as string;
+  let best = -1;
+  for (const r of ratios) {
+    const pixels = framePixels('480p', r);
+    if (pixels > best) [best, widest] = [pixels, r];
+  }
+  return widest;
+}
+
 /** Pixels per frame of a named resolution at a "W:H" aspect (`falaw.cost.frame_pixels`). */
 export function framePixels(resolution: string, aspectRatio?: string | null): number {
   const short = (CONSTANTS.video_resolution_short_side as Record<string, number>)[resolution]!;
@@ -102,7 +118,7 @@ export function framePixels(resolution: string, aspectRatio?: string | null): nu
  *  `{tokens}` for a per-video-token model, `{seconds}` otherwise, `{}` when the duration
  *  is unknown (unpriceable, never free). */
 export function videoPriceQuantities(
-  record: Pick<ModelRecord, 'id' | 'tokens_per_pixel_second' | 'param_specs'>,
+  record: Pick<ModelRecord, 'id' | 'tokens_per_pixel_second' | 'param_specs' | 'resolution_rate_factors'>,
   seconds: number | null | undefined,
   resolution?: string | null,
   aspectRatio?: string | null,
@@ -117,5 +133,6 @@ export function videoPriceQuantities(
   if (!allowed.includes(res) || shortSides[res] === undefined) {
     throw new Error(`${record.id} does not offer resolution '${res}'; expected one of ${JSON.stringify(allowed)}`);
   }
-  return { tokens: roundHalfEven(framePixels(res, aspectRatio) * seconds * factor) };
+  const discount = record.resolution_rate_factors[res] ?? 1;
+  return { tokens: roundHalfEven(framePixels(res, quoteAspect(record, aspectRatio)) * seconds * factor * discount) };
 }

@@ -159,6 +159,25 @@ export function planTextToVideo(input: TextToVideoInput): CallPlan {
   return planVideo('text_to_video', { prompt: input.prompt }, input);
 }
 
+export interface ReferenceToVideoInput extends VideoInput {
+  readonly prompt: string;
+  readonly imageUrls?: readonly string[];
+  readonly videoUrls?: readonly string[];
+  readonly audioUrls?: readonly string[];
+}
+
+/** Plan a reference-to-video call (`falaw.plan_reference_to_video`): a prompt steered by
+ *  reference images, videos and audio. Counts are checked against the model's limits. */
+export function planReferenceToVideo(input: ReferenceToVideoInput): CallPlan {
+  const refs = { image_urls: input.imageUrls, video_urls: input.videoUrls, audio_urls: input.audioUrls };
+  const args: Record<string, unknown> = { prompt: input.prompt };
+  for (const [name, urls] of Object.entries(refs)) {
+    if (typeof urls === 'string') throw new TypeError(`${name} must be a list of URLs, not one string`);
+    if (urls && urls.length) args[name] = [...urls];
+  }
+  return planVideo('reference_to_video', args, input);
+}
+
 export function makePlan(calls: readonly CallPlan[]): Plan {
   return { schema: CONSTANTS.plan_dict_schema, calls: [...calls] };
 }

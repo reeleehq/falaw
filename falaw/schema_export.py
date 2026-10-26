@@ -63,6 +63,7 @@ from .upload import FILE_PREFIX
 from .operations._plan import (
     plan_generate_image,
     plan_image_to_video,
+    plan_reference_to_video,
     plan_text_to_video,
 )
 from .plan import (
@@ -92,6 +93,7 @@ _PLANNERS = {
     "generate_image": plan_generate_image,
     "image_to_video": plan_image_to_video,
     "text_to_video": plan_text_to_video,
+    "reference_to_video": plan_reference_to_video,
 }
 
 #: Planner inputs the TS ``planGenerateImage`` / ``planImageToVideo`` must turn
@@ -186,6 +188,58 @@ PLAN_CASES: tuple[dict, ...] = (
             "model_id": "seedance2-t2v",
             "extra": {"duration": ""},
         },
+    },
+    # Reference-to-video (falaw#99): a quote ignores reference counts, only limits are checked.
+    {
+        "tool": "reference_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-ref",
+            "duration_s": 5,
+            "image_urls": ["https://x.example/a.png"],
+        },
+    },
+    {
+        "tool": "reference_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-ref",
+            "duration_s": 5,
+            "video_urls": ["https://x.example/a.mp4"],
+        },
+    },
+    {  # 4K bills a lower per-token rate
+        "tool": "text_to_video",
+        "input": {
+            "prompt": "a tiger walks",
+            "model_id": "seedance2-t2v",
+            "duration_s": 5,
+            "extra": {"resolution": "4k"},
+        },
+    },
+)
+
+#: Planner inputs that must raise (the fixtures cannot express a raise in
+#: ``PLAN_CASES``): the TS twin must throw with ``message`` in its text.
+PLAN_ERROR_CASES: tuple[dict, ...] = (
+    {
+        "tool": "reference_to_video",
+        "input": {
+            "prompt": "x",
+            "model_id": "seedance2-ref",
+            "duration_s": 5,
+            "image_urls": [f"https://x.example/{i}.png" for i in range(10)],
+        },
+        "message": "takes at most 9 image_urls, got 10",
+    },
+    {
+        "tool": "generate_image",
+        "input": {
+            "prompt": "x",
+            "model_id": "seedream45",
+            "extra": {"image_size": {"width": 64, "height": 64}},
+        },
+        "message": "total pixels",
     },
 )
 
@@ -523,7 +577,19 @@ def _plan_fixtures() -> dict:
                 "has_unknown_costs": plan.has_unknown_costs,
             }
         )
-    return {"calls": calls, "plans": plans}
+    errors = []
+    for case in PLAN_ERROR_CASES:
+        try:
+            _PLANNERS[case["tool"]](**case["input"], consult_cache=False)
+        except ValueError as e:
+            if case["message"] not in str(e):
+                raise RuntimeError(
+                    f"{case['tool']} raised {e!s}, not {case['message']!r}"
+                )
+        else:
+            raise RuntimeError(f"{case['tool']} did not raise: {case['input']}")
+        errors.append({k: case[k] for k in ("tool", "input", "message")})
+    return {"calls": calls, "plans": plans, "errors": errors}
 
 
 def _response_fixtures() -> list[dict]:
