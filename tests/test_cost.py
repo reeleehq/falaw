@@ -84,7 +84,8 @@ def test_unknown_per_second_cost_lights_up_plan_has_unknown_costs():
     from falaw import Plan
     from falaw.operations._plan import plan_image_to_video
 
-    seedance = "fal-ai/bytedance/seedance/v1/pro/image-to-video"  # per_second
+    # Seedance 2.0 declares duration "auto": nothing to price at when unsent.
+    seedance = "bytedance/seedance-2.0/image-to-video"
 
     unpriced = Plan(calls=(plan_image_to_video("https://e/a.png", model_id=seedance),))
     assert unpriced.has_unknown_costs is True

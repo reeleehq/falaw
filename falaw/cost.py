@@ -199,14 +199,18 @@ def video_call_arguments(
     it as a string enum), validated by :func:`video_duration_arg`; elsewhere it
     is estimator-only when planning, since models name that argument
     differently. ``extra`` wins over everything and the billed seconds follow
-    what it says.
+    what it says. With no duration anywhere, nothing is sent and the call is
+    priced at the record's declared default (fal bills that default; ``"auto"``
+    stays unknown), so the cache key stays the real run's.
     """
     arguments = {**arguments, **(extra or {})}
     seconds = duration_s
     if "duration" in record.param_specs:
         if duration_s is not None and "duration" not in arguments:
             arguments["duration"] = video_duration_arg(record, duration_s)
-        seconds = _numeric_seconds(arguments.get("duration"))
+        spec = record.param_specs["duration"]
+        dflt = spec.get("default") if isinstance(spec, dict) else None
+        seconds = _numeric_seconds(arguments.get("duration", dflt))
     return arguments, seconds
 
 

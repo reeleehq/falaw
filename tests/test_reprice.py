@@ -138,7 +138,9 @@ def test_the_quantity_hints_survive_serialization():
 def test_unsupplied_hints_are_omitted_rather_than_written_as_null():
     """Absent is what the estimator actually saw — and what makes a
     quantity-priced record unpriceable, which is a fact worth preserving."""
-    call = falaw.plan_image_to_video("u", consult_cache=False)
+    call = falaw.plan_image_to_video(
+        "u", model_id="bytedance/seedance-2.0/image-to-video", consult_cache=False
+    )
     assert call.cost_basis.quantities == {}
     assert call.estimated_cost_usd is None  # unknown, not free
     out = reprice_plan(Plan(calls=(call,)))

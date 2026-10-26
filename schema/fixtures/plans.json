@@ -193,11 +193,13 @@
         "cost_basis": {
           "priced": "fal-ai/bytedance/seedance/v1/pro/image-to-video",
           "pricer": "model_catalogue",
-          "quantities": {},
+          "quantities": {
+            "tokens": 318938
+          },
           "table": "falaw/data/models.json",
           "table_version": "f0b3aec5a3e8"
         },
-        "estimated_cost_usd": null,
+        "estimated_cost_usd": 0.7973450000000001,
         "expected_duration_s": null,
         "key_extra": {},
         "metadata": {},
@@ -732,11 +734,13 @@
             "cost_basis": {
               "priced": "fal-ai/bytedance/seedance/v1/pro/image-to-video",
               "pricer": "model_catalogue",
-              "quantities": {},
+              "quantities": {
+                "tokens": 318938
+              },
               "table": "falaw/data/models.json",
               "table_version": "f0b3aec5a3e8"
             },
-            "estimated_cost_usd": null,
+            "estimated_cost_usd": 0.7973450000000001,
             "expected_duration_s": null,
             "key_extra": {},
             "metadata": {},
@@ -746,9 +750,9 @@
         ],
         "schema": "falaw.plan/v1"
       },
-      "has_unknown_costs": true,
+      "has_unknown_costs": false,
       "plan_hash": "c0c83f604efd6666600e1783de94e3e46a1fa532c620eaa874d96d38199c1544",
-      "total_cost_usd": 0.015
+      "total_cost_usd": 0.8123450000000001
     },
     {
       "calls": [
