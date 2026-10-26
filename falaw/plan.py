@@ -69,6 +69,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Iterator, Literal, Optional
 
 from .canonical import DFLT_BACKEND
+from .terms import TermsContext, check_terms
 from .degrade import (
     DEGRADE_WARNING_SINK,
     deferred_degrade_warnings,
@@ -598,6 +599,7 @@ def make_call_plan(
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     cost_basis: Optional[CostBasis] = None,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Build a :class:`CallPlan` and (optionally) check the cache.
 
@@ -625,13 +627,22 @@ def make_call_plan(
     reaches the cache key or :func:`plan_hash`, and a plan built without one
     is byte-identical to one built before the field existed.
 
+    ``terms_context`` opts this call into the terms ledger (falaw#16): with a
+    :class:`falaw.terms.TermsContext`, a ``(application, backend)`` whose terms
+    forbid the job — or are unknown — is refused here, before anything is
+    called. ``None`` (the default) checks nothing.
+
     Raises:
         falaw.errors.FalNonCanonicalArgument: an argument cannot be hashed
             faithfully (non-JSON object, non-finite float, non-string mapping
             key). Raised here — while planning is still free — rather than at
             key-composition time on the way to the network (falaw#17).
+        falaw.errors.FalTermsViolation: ``terms_context`` was given and the
+            ledger does not clear this ``(application, backend)``.
     """
     from .canonical import ensure_canonical
+
+    check_terms(application, backend, terms_context)
     from .upload import localize_paths, resolve_local_files
 
     # A local file (``os.PathLike``) becomes a "<file ...>" marker: the Plan
@@ -786,6 +797,7 @@ def execute(
     fetch_bytes: Optional[bool] = None,
     asset_fetcher=None,
     concurrency: int = DFLT_CONCURRENCY,
+    terms_context: Optional[TermsContext] = None,
 ) -> list:
     """Execute a Plan, returning a list of materialized :class:`lacing.Artifact`s.
 
@@ -888,6 +900,9 @@ def execute(
 
     Placeholder resolution — the wire/key split
     -------------------------------------------
+    ``terms_context`` checks every call against the terms ledger before any
+    call runs; see :func:`execute_isolated`.
+
     Any string argument equal to ``"<from N>"`` (for an integer ``N``) is
     rewritten *just before* the call is made — so a multi-step plan (e.g.
     generate_image → image_to_video) can reference the upstream output without
@@ -925,6 +940,7 @@ def execute(
         asset_fetcher=asset_fetcher,
         concurrency=concurrency,
         halt_on_failure=True,
+        terms_context=terms_context,
     ).artifacts_or_raise()
 
 
@@ -941,6 +957,7 @@ def execute_isolated(
     asset_fetcher=None,
     concurrency: int = DFLT_CONCURRENCY,
     halt_on_failure: bool = False,
+    terms_context: Optional[TermsContext] = None,
 ) -> ExecutionReport:
     """Execute a Plan with **per-call failure isolation**, returning a report.
 
@@ -963,6 +980,13 @@ def execute_isolated(
             in flight are **not** cancelled — a fal request cannot be recalled
             once made, and pretending otherwise would discard results that were
             billed anyway.
+
+        terms_context: Opt in to the terms ledger (falaw#16) at execution
+            time: every call's ``(application, backend)`` is checked **before
+            any call runs**, whatever its backend, and one refusal raises
+            :class:`~falaw.FalTermsViolation` for the whole plan. Planning
+            checks only the calls ``plan_*`` builds; this also covers plans
+            rebuilt from dicts, edited, or given a non-default ``backend``.
 
         All other arguments are as :func:`execute`.
 
@@ -988,6 +1012,8 @@ def execute_isolated(
             "It bounds how many calls are in flight at once; 1 is sequential."
         )
     use_cache, refresh = _resolved_cache_mode(use_cache, refresh)
+    for call in plan.calls:
+        check_terms(call.application, call.backend, terms_context)
 
     if dry_run:
         # Per-call isolation applies to dry runs too: a hand-built CallPlan

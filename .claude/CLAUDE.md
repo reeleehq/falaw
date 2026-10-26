@@ -28,6 +28,7 @@ cost estimation/repricing, and an agent journal for cross-session notes.
   re-quoting a persisted Plan at today's rates (falaw#60).
 - `account.py` — account health probe (works around `fal_client` swallowing 403 bodies).
 - `journal.py` — append-only agent notes log.
+- `terms.py` — the terms ledger (falaw#16): per-`(model, backend)` rows in `data/model_terms.json`, `check_terms` at plan time via `plan_*(..., terms_context=TermsContext(...))` and at execution via `execute(..., terms_context=)`; `unknown` and *no row* refuse. `unreviewed_models()` lists what still needs a human read.
 - `degrade.py` — the one collection point for "carried on, but you should know".
 - `testing.py` — **the fake asset transport** (see Invariants).
 - `comfyui/` — the executable ComfyUI deployment gate (falaw#94): `check_manifest`, `screen_licences`, `check_graph_paths`, `submit_graph` + audit sink. Pure checks; every external fact is a keyword seam.

@@ -195,6 +195,32 @@ class FalDurationOutOfRange(FalError):
         self.valid_range = valid_range
 
 
+class FalTermsViolation(FalError):
+    """The model's terms of service forbid (or leave unknown) this use.
+
+    Raised by :func:`falaw.terms.check_terms` at plan time (``plan_*``) and, opt-in, at
+    execution time (``execute(..., terms_context=)``) — before any call,
+    not audited after. ``unknown`` refuses, like ``has_unknown_costs`` does
+    for money. The message names the model, the backend, the clause and the
+    ledger row's ``source_url``; the same fields are attributes.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        model_id: str,
+        backend: str,
+        clause: str,
+        source_url: str = "",
+    ):
+        super().__init__(message)
+        self.model_id = model_id
+        self.backend = backend
+        self.clause = clause
+        self.source_url = source_url
+
+
 class FalAssetFetchError(FalError):
     """The bytes behind a fal-served asset URL could not be retrieved.
 
