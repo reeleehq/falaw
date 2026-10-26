@@ -432,3 +432,13 @@ def test_a_measured_latency_reaches_the_plan_as_the_expected_wall_time():
     bare = falaw.plan_text_to_video("x", model_id="seedance-t2v", **kw)
     assert bare.expected_wall_time_s is None
     assert "expected_wall_time_s" not in falaw.call_plan_to_dict(bare)
+
+
+def test_a_duration_less_call_is_priced_at_the_declared_default_and_sends_nothing():
+    model = "fal-ai/bytedance/seedance/v1.5/pro/text-to-video"
+    kw = dict(model_id=model, consult_cache=False)
+    bare = falaw.plan_text_to_video("a fox", **kw)
+    five = falaw.plan_text_to_video("a fox", duration_s=5, **kw)
+    assert "duration" not in bare.arguments  # the cache key is the real run's
+    assert bare.estimated_cost_usd is not None
+    assert bare.estimated_cost_usd == five.estimated_cost_usd

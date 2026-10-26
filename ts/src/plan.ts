@@ -120,7 +120,8 @@ function planVideo(tool: string, args: Record<string, unknown>, input: VideoInpu
   let seconds = input.durationS ?? null;
   if ('duration' in record.param_specs) {
     if (input.durationS != null && !('duration' in merged)) merged.duration = videoDurationArg(record, input.durationS);
-    seconds = numericSeconds(merged.duration);
+    // Nothing sent: fal bills the record's declared default, so price at it.
+    seconds = numericSeconds('duration' in merged ? merged.duration : record.param_specs.duration?.default);
   }
   checkCallArguments(record, merged);
   const quantities = videoPriceQuantities(
