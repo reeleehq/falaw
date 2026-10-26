@@ -81,7 +81,9 @@ from .llm_prices import (
     LlmPrice,
     get_llm_price,
     list_llm_prices,
+    LlmTokenCounts,
     llm_call_cost_usd,
+    llm_token_counts,
     llm_prices_table_version,
 )
 from .llm_rates import (
@@ -205,7 +207,9 @@ __all__ = [
     "LlmPrice",
     "get_llm_price",
     "list_llm_prices",
+    "LlmTokenCounts",
     "llm_call_cost_usd",
+    "llm_token_counts",
     "llm_prices_table_version",
     "AccountStatus",
     "Asset",
