@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=29ed05f3"></script>
+    <script src="../../_static/documentation_options.js?v=8d9581ea"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.70" />
+  <meta name="docsearch:version" content="0.0.71" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -911,6 +911,12 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    requested duration fits this range and raise :class:`FalDurationOutOfRange`</span>
 <span class="sd">    *before* the call instead of letting it silently truncate."""</span>
 
+    <span class="n">expected_wall_time_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""``(low, high)`` seconds the call is expected to take to come back (not</span>
+<span class="sd">    the clip length: see :attr:`expected_duration_s`). From the catalogue's</span>
+<span class="sd">    measured ``typical_wall_time_s``; ``None`` when not measured. Left out of</span>
+<span class="sd">    :func:`call_plan_to_dict` when ``None``."""</span>
+
     <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
 <span class="w">    </span><span class="sd">"""Free-form labels for downstream consumers. Conventional keys:</span>
 <span class="sd">    ``shot_id``, ``beat_id``, ``character_name``, ``strategy``."""</span>
@@ -1120,6 +1126,8 @@ window.runMermaid = runMermaid;</script>
         <span class="s2">"metadata"</span><span class="p">:</span> <span class="n">call</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
         <span class="s2">"key_extra"</span><span class="p">:</span> <span class="n">call</span><span class="o">.</span><span class="n">key_extra</span><span class="p">,</span>
     <span class="p">}</span>
+    <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">expected_wall_time_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out</span><span class="p">[</span><span class="s2">"expected_wall_time_s"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">expected_wall_time_s</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">local_files</span><span class="p">:</span>
         <span class="n">out</span><span class="p">[</span><span class="s2">"local_files"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">call</span><span class="o">.</span><span class="n">local_files</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">call</span><span class="o">.</span><span class="n">cost_basis</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1180,6 +1188,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    that is still current.</span>
 <span class="sd">    """</span>
     <span class="n">duration</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expected_duration_s"</span><span class="p">)</span>
+    <span class="n">wall</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"expected_wall_time_s"</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">CallPlan</span><span class="p">(</span>
         <span class="n">tool</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">"tool"</span><span class="p">],</span>
         <span class="n">application</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">"application"</span><span class="p">],</span>
@@ -1189,6 +1198,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"estimated_cost_usd"</span><span class="p">),</span>
         <span class="n">cache_status</span><span class="o">=</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"cache_status"</span><span class="p">,</span> <span class="s2">"unknown"</span><span class="p">),</span>
         <span class="n">expected_duration_s</span><span class="o">=</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span> <span class="k">if</span> <span class="n">duration</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="n">expected_wall_time_s</span><span class="o">=</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">wall</span><span class="p">)</span> <span class="k">if</span> <span class="n">wall</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
         <span class="n">metadata</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"metadata"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}),</span>
         <span class="n">key_extra</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"key_extra"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}),</span>
         <span class="n">local_files</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"local_files"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">()),</span>
@@ -1333,6 +1343,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_BACKEND</span><span class="p">,</span>
     <span class="n">estimated_cost_usd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">expected_duration_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">expected_wall_time_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">consult_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">cost_basis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">CostBasis</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1418,6 +1429,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="n">estimated_cost_usd</span><span class="p">,</span>
         <span class="n">cache_status</span><span class="o">=</span><span class="n">status</span><span class="p">,</span>
         <span class="n">expected_duration_s</span><span class="o">=</span><span class="n">expected_duration_s</span><span class="p">,</span>
+        <span class="n">expected_wall_time_s</span><span class="o">=</span><span class="n">expected_wall_time_s</span><span class="p">,</span>
         <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span> <span class="ow">or</span> <span class="p">{},</span>
         <span class="n">local_files</span><span class="o">=</span><span class="n">local_files</span><span class="p">,</span>
         <span class="n">cost_basis</span><span class="o">=</span><span class="n">cost_basis</span><span class="p">,</span>

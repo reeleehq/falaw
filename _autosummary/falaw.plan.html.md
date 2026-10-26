@@ -120,7 +120,7 @@ Whether the cache will short-circuit this call.
 
 alias of [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[‘hit’, ‘miss’, ‘stale’, ‘unknown’]
 
-### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
+### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, expected_wall_time_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -185,6 +185,13 @@ populated (callers can distinguish “free” from “unknown”).
 duration contract is known. Plan-level validators can check that the
 requested duration fits this range and raise `FalDurationOutOfRange`
 *before* the call instead of letting it silently truncate.
+
+#### expected_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+`(low, high)` seconds the call is expected to take to come back (not
+the clip length: see [`expected_duration_s`](#falaw.plan.CallPlan.expected_duration_s)). From the catalogue’s
+measured `typical_wall_time_s`; `None` when not measured. Left out of
+[`call_plan_to_dict()`](#falaw.plan.call_plan_to_dict) when `None`.
 
 #### key_extra *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -639,7 +646,7 @@ drift into two opinions about what a response’s asset is.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
-### falaw.plan.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, metadata=None, consult_cache=True, cost_basis=None)
+### falaw.plan.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None)
 
 Build a [`CallPlan`](#falaw.plan.CallPlan) and (optionally) check the cache.
 

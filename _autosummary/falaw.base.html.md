@@ -72,7 +72,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -146,6 +146,13 @@ model.
 
 * **Type:**
   For a model billed per *video token*
+
+#### typical_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+Measured wall-clock range `(low, high)` in seconds of one call, for a
+model whose latency is worth telling the caller about (Seedance 2.0: minutes,
+barely proportional to clip length). A video plan copies it to
+`CallPlan.expected_wall_time_s`. `None` when not measured.
 
 ### falaw.base.TABLE_VERSION_CHARS *= 12*
 

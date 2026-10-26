@@ -1,4 +1,4 @@
-> built 2026-10-26 14:35 UTC from 473e7f9 (main) · falaw 0.0.70. Details: build_info.json
+> built 2026-10-26 15:53 UTC from c7fd657 (main) · falaw 0.0.71. Details: build_info.json
 
 # index.html.md
 
@@ -572,7 +572,7 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -646,6 +646,13 @@ model.
 
 * **Type:**
   For a model billed per *video token*
+
+#### typical_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+Measured wall-clock range `(low, high)` in seconds of one call, for a
+model whose latency is worth telling the caller about (Seedance 2.0: minutes,
+barely proportional to clip length). A video plan copies it to
+`CallPlan.expected_wall_time_s`. `None` when not measured.
 
 ### falaw.base.TABLE_VERSION_CHARS *= 12*
 
@@ -3375,7 +3382,7 @@ Human-readable explanation. Required for `blocked`; free otherwise.
 
 `"succeeded"` / `"failed"` / `"blocked"`. See the module docstring.
 
-### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
+### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, expected_wall_time_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3440,6 +3447,13 @@ populated (callers can distinguish “free” from “unknown”).
 duration contract is known. Plan-level validators can check that the
 requested duration fits this range and raise [`FalDurationOutOfRange`](_autosummary/falaw.html.md#falaw.FalDurationOutOfRange)
 *before* the call instead of letting it silently truncate.
+
+#### expected_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+`(low, high)` seconds the call is expected to take to come back (not
+the clip length: see [`expected_duration_s`](_autosummary/falaw.html.md#falaw.CallPlan.expected_duration_s)). From the catalogue’s
+measured `typical_wall_time_s`; `None` when not measured. Left out of
+[`call_plan_to_dict()`](_autosummary/falaw.html.md#falaw.call_plan_to_dict) when `None`.
 
 #### key_extra *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -4036,7 +4050,7 @@ already inside `output`.
 
 Every prompt token, cached or not.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -4110,6 +4124,13 @@ model.
 
 * **Type:**
   For a model billed per *video token*
+
+#### typical_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+Measured wall-clock range `(low, high)` in seconds of one call, for a
+model whose latency is worth telling the caller about (Seedance 2.0: minutes,
+barely proportional to clip length). A video plan copies it to
+`CallPlan.expected_wall_time_s`. `None` when not measured.
 
 ### *class* falaw.Plan(calls=())
 
@@ -5369,7 +5390,7 @@ A key that is present but `None` falls through to the next shape’s key
 * **Return type:**
   [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts)
 
-### falaw.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, metadata=None, consult_cache=True, cost_basis=None)
+### falaw.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None)
 
 Build a [`CallPlan`](_autosummary/falaw.html.md#falaw.CallPlan) and (optionally) check the cache.
 
@@ -8030,7 +8051,7 @@ Whether the cache will short-circuit this call.
 
 alias of [`Literal`](https://docs.python.org/3/library/typing.html#typing.Literal)[‘hit’, ‘miss’, ‘stale’, ‘unknown’]
 
-### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
+### *class* falaw.plan.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, expected_wall_time_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -8095,6 +8116,13 @@ populated (callers can distinguish “free” from “unknown”).
 duration contract is known. Plan-level validators can check that the
 requested duration fits this range and raise `FalDurationOutOfRange`
 *before* the call instead of letting it silently truncate.
+
+#### expected_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+`(low, high)` seconds the call is expected to take to come back (not
+the clip length: see [`expected_duration_s`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan.expected_duration_s)). From the catalogue’s
+measured `typical_wall_time_s`; `None` when not measured. Left out of
+[`call_plan_to_dict()`](_autosummary/falaw.plan.html.md#falaw.plan.call_plan_to_dict) when `None`.
 
 #### key_extra *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -8549,7 +8577,7 @@ drift into two opinions about what a response’s asset is.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
-### falaw.plan.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, metadata=None, consult_cache=True, cost_basis=None)
+### falaw.plan.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None)
 
 Build a [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan) and (optionally) check the cache.
 
@@ -10396,18 +10424,16 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-26 14:35 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/473e7f9eefe7fdbed725da207ad76a8f9ce3b339"><code>473e7f9</code></a> on branch <code>main</code>, for **falaw 0.0.70** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-26 15:53 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c7fd657f8f9d7d7ab0491af7a2cf4e0b9ded0422"><code>c7fd657</code></a> on branch <code>main</code>, for **falaw 0.0.71** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.70) is behind the latest release on PyPI (0.0.71): `pip install falaw` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/473e7f9eefe7fdbed725da207ad76a8f9ce3b339"><code>473e7f9eefe7fdbed725da207ad76a8f9ce3b339</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c7fd657f8f9d7d7ab0491af7a2cf4e0b9ded0422"><code>c7fd657f8f9d7d7ab0491af7a2cf4e0b9ded0422</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10418,9 +10444,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40340781861">40340781861</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40353464857">40353464857</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>473e7f9eefe7fdbed725da207ad76a8f9ce3b339</code> (in the history of the built commit) |
+| Event commit | <code>c7fd657f8f9d7d7ab0491af7a2cf4e0b9ded0422</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -10445,13 +10471,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.71/">0.0.71</a>, newer than the documented version (0.0.70).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.71/">0.0.71</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 473e7f9eefe7fdbed725da207ad76a8f9ce3b339
+git checkout c7fd657f8f9d7d7ab0491af7a2cf4e0b9ded0422
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

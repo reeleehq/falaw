@@ -382,7 +382,7 @@ Human-readable explanation. Required for `blocked`; free otherwise.
 
 `"succeeded"` / `"failed"` / `"blocked"`. See the module docstring.
 
-### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
+### *class* falaw.CallPlan(, tool, application, backend='fal', arguments, output_kind, estimated_cost_usd=None, cache_status='unknown', expected_duration_s=None, expected_wall_time_s=None, metadata=dict(), key_extra=dict(), local_files=(), cost_basis=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -447,6 +447,13 @@ populated (callers can distinguish “free” from “unknown”).
 duration contract is known. Plan-level validators can check that the
 requested duration fits this range and raise [`FalDurationOutOfRange`](#falaw.FalDurationOutOfRange)
 *before* the call instead of letting it silently truncate.
+
+#### expected_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+`(low, high)` seconds the call is expected to take to come back (not
+the clip length: see [`expected_duration_s`](#falaw.CallPlan.expected_duration_s)). From the catalogue’s
+measured `typical_wall_time_s`; `None` when not measured. Left out of
+[`call_plan_to_dict()`](#falaw.call_plan_to_dict) when `None`.
 
 #### key_extra *: [dict](https://docs.python.org/3/builtins/stdtypes.html#dict)*
 
@@ -1043,7 +1050,7 @@ already inside `output`.
 
 Every prompt token, cached or not.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -1117,6 +1124,13 @@ model.
 
 * **Type:**
   For a model billed per *video token*
+
+#### typical_wall_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[float](https://docs.python.org/3/builtins/functions.html#float), [float](https://docs.python.org/3/builtins/functions.html#float)]]*
+
+Measured wall-clock range `(low, high)` in seconds of one call, for a
+model whose latency is worth telling the caller about (Seedance 2.0: minutes,
+barely proportional to clip length). A video plan copies it to
+`CallPlan.expected_wall_time_s`. `None` when not measured.
 
 ### *class* falaw.Plan(calls=())
 
@@ -2376,7 +2390,7 @@ A key that is present but `None` falls through to the next shape’s key
 * **Return type:**
   [`LlmTokenCounts`](falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts)
 
-### falaw.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, metadata=None, consult_cache=True, cost_basis=None)
+### falaw.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None)
 
 Build a [`CallPlan`](#falaw.CallPlan) and (optionally) check the cache.
 
