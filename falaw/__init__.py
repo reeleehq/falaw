@@ -54,7 +54,13 @@ from .prune import (
     prune_content,
     prune_manifests,
 )
-from .terms import ModelTerms, TermsContext, check_terms, third_party_tenancy_ok
+from .terms import (
+    ModelTerms,
+    TermsContext,
+    check_terms,
+    third_party_tenancy_ok,
+    using_terms_context,
+)
 from .errors import (
     FalAccountLocked,
     FalAssetFetchError,
@@ -232,6 +238,7 @@ __all__ = [
     "ModelTerms",
     "TermsContext",
     "check_terms",
+    "using_terms_context",
     "third_party_tenancy_ok",
     "FalHTTPError",
     "FalInsufficientFunds",

@@ -24,7 +24,7 @@
   {
     "model_id": "fal-ai/flux/dev",
     "backend": "fal",
-    "license": "flux-1-dev-non-commercial-license",
+    "license": "LicenseRef-flux-1-dev-non-commercial",
     "license_binds_us": "no",
     "notes": "Hosted: fal holds the weights licence; fal's terms govern use. Commercial/tenancy not reviewed against fal's terms.",
     "source_url": "https://fal.ai/models/fal-ai/flux/dev",
@@ -33,7 +33,7 @@
   {
     "model_id": "fal-ai/flux/dev",
     "backend": "comfyui",
-    "license": "flux-1-dev-non-commercial-license",
+    "license": "LicenseRef-flux-1-dev-non-commercial",
     "license_binds_us": "yes",
     "commercial_use": "forbidden",
     "third_party_tenancy": "forbidden",
@@ -55,7 +55,7 @@
   {
     "model_id": "fal-ai/stable-audio-3/small/sfx/text-to-audio",
     "backend": "fal",
-    "license": "stability-community-license",
+    "license": "LicenseRef-stability-community",
     "license_binds_us": "unknown",
     "notes": "Commercial only under $1M annual revenue; whether that binds us through fal is unreviewed.",
     "source_url": "https://fal.ai/models/fal-ai/stable-audio-3/small/sfx/text-to-audio",
@@ -64,7 +64,7 @@
   {
     "model_id": "fal-ai/stable-audio-3/medium/text-to-audio",
     "backend": "fal",
-    "license": "stability-community-license",
+    "license": "LicenseRef-stability-community",
     "license_binds_us": "unknown",
     "notes": "Stability Community licence; whether it binds us through fal is unreviewed.",
     "source_url": "https://fal.ai/models/fal-ai/stable-audio-3/medium/text-to-audio",
@@ -73,7 +73,7 @@
   {
     "model_id": "mirelo-ai/sfx2.0/text-to-audio",
     "backend": "fal",
-    "license": "mirelo-terms",
+    "license": "LicenseRef-mirelo-terms",
     "license_binds_us": "unknown",
     "notes": "Catalogue: gateway use not covered by Mirelo terms.",
     "source_url": "https://fal.ai/models/mirelo-ai/sfx2.0/text-to-audio",
@@ -82,7 +82,7 @@
   {
     "model_id": "fal-ai/ideogram/v3",
     "backend": "fal",
-    "license": "ideogram-terms",
+    "license": "LicenseRef-ideogram-terms",
     "license_binds_us": "no",
     "c2pa_compatible": "no",
     "provenance_constraint": "Ideogram's terms require representing that output is 'entirely human generated'; cannot be honoured by output stamped C2PA digitalSourceType trainedAlgorithmicMedia.",
@@ -93,7 +93,7 @@
   {
     "model_id": "fal-ai/ideogram/v3/reframe",
     "backend": "fal",
-    "license": "ideogram-terms",
+    "license": "LicenseRef-ideogram-terms",
     "license_binds_us": "no",
     "c2pa_compatible": "no",
     "provenance_constraint": "Ideogram's terms require representing that output is 'entirely human generated'; cannot be honoured by output stamped C2PA digitalSourceType trainedAlgorithmicMedia.",
