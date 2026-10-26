@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=ba6d0b80"></script>
+    <script src="../../_static/documentation_options.js?v=1e158f99"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.72" />
+  <meta name="docsearch:version" content="0.0.73" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -936,14 +936,18 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    it as a string enum), validated by :func:`video_duration_arg`; elsewhere it</span>
 <span class="sd">    is estimator-only when planning, since models name that argument</span>
 <span class="sd">    differently. ``extra`` wins over everything and the billed seconds follow</span>
-<span class="sd">    what it says.</span>
+<span class="sd">    what it says. With no duration anywhere, nothing is sent and the call is</span>
+<span class="sd">    priced at the record's declared default (fal bills that default; ``"auto"``</span>
+<span class="sd">    stays unknown), so the cache key stays the real run's.</span>
 <span class="sd">    """</span>
     <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="p">(</span><span class="n">extra</span> <span class="ow">or</span> <span class="p">{})}</span>
     <span class="n">seconds</span> <span class="o">=</span> <span class="n">duration_s</span>
     <span class="k">if</span> <span class="s2">"duration"</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">duration_s</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"duration"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">arguments</span><span class="p">:</span>
             <span class="n">arguments</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">video_duration_arg</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">duration_s</span><span class="p">)</span>
-        <span class="n">seconds</span> <span class="o">=</span> <span class="n">_numeric_seconds</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"duration"</span><span class="p">))</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span>
+        <span class="n">dflt</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="n">_numeric_seconds</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"duration"</span><span class="p">,</span> <span class="n">dflt</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">seconds</span></div>
 
 

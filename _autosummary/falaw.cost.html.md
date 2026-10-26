@@ -160,7 +160,9 @@ only for a model whose record lists a `duration` parameter (Seedance spells
 it as a string enum), validated by [`video_duration_arg()`](#falaw.cost.video_duration_arg); elsewhere it
 is estimator-only when planning, since models name that argument
 differently. `extra` wins over everything and the billed seconds follow
-what it says.
+what it says. With no duration anywhere, nothing is sent and the call is
+priced at the record’s declared default (fal bills that default; `"auto"`
+stays unknown), so the cache key stays the real run’s.
 
 * **Return type:**
   [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict), [`float`](https://docs.python.org/3/builtins/functions.html#float) | [`None`](https://docs.python.org/3/builtins/constants.html#None)]

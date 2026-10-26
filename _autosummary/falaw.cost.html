@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ba6d0b80"></script>
+    <script src="../_static/documentation_options.js?v=1e158f99"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.72" />
+  <meta name="docsearch:version" content="0.0.73" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -663,7 +663,9 @@ only for a model whose record lists a <code class="docutils literal notranslate"
 it as a string enum), validated by <a class="reference internal" href="#falaw.cost.video_duration_arg" title="falaw.cost.video_duration_arg"><code class="xref py py-func docutils literal notranslate"><span class="pre">video_duration_arg()</span></code></a>; elsewhere it
 is estimator-only when planning, since models name that argument
 differently. <code class="docutils literal notranslate"><span class="pre">extra</span></code> wins over everything and the billed seconds follow
-what it says.</p>
+what it says. With no duration anywhere, nothing is sent and the call is
+priced at the record’s declared default (fal bills that default; <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>
+stays unknown), so the cache key stays the real run’s.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> | <span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span>]</span></p>
