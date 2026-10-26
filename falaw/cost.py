@@ -342,7 +342,8 @@ def _shot_pricing_lines(
                         if v_record.cost_estimate
                         else "USD"
                     ),
-                    note=f"image_to_video × {billed:.1f}s",
+                    note="image_to_video"
+                    + (f" × {billed:.1f}s" if billed is not None else ""),
                 )
             )
     return out
