@@ -27,6 +27,7 @@ from ..llm_rates import LlmRateTable, llm_ceiling_usd
 from ..plan import CallPlan, CostBasis, make_call_plan
 from ..registry import get_model, pick_model
 from ._image_args import image_arguments
+from ..terms import TermsContext
 from ..reprice import catalogue_cost_basis, llm_cost_basis
 
 
@@ -97,6 +98,7 @@ def plan_generate_image(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.generate_image` call without executing it."""
     application, record = _resolve_model_id_and_record(
@@ -112,6 +114,7 @@ def plan_generate_image(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -130,6 +133,7 @@ def plan_edit_image(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.edit_image` call (Flux Kontext / SeedEdit / OmniGen)."""
     application, record = _resolve_model_id_and_record(
@@ -145,6 +149,7 @@ def plan_edit_image(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -163,6 +168,7 @@ def plan_generate_image_with_refs(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.generate_image_with_refs` call.
 
@@ -195,6 +201,7 @@ def plan_generate_image_with_refs(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -222,6 +229,7 @@ def plan_composite_character_in_environment(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.composite_character_in_environment` call.
 
@@ -246,6 +254,7 @@ def plan_composite_character_in_environment(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -266,6 +275,7 @@ def _plan_video(
     extra: Optional[dict],
     metadata: Optional[dict],
     consult_cache: bool,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """The planning body shared by the video verbs (see
     :func:`video_call_arguments` for the duration rules)."""
@@ -292,6 +302,7 @@ def _plan_video(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
         expected_wall_time_s=record.typical_wall_time_s,
     )
@@ -307,6 +318,7 @@ def plan_image_to_video(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.image_to_video` call.
 
@@ -328,6 +340,7 @@ def plan_image_to_video(
         extra=extra,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
     )
 
 
@@ -340,6 +353,7 @@ def plan_text_to_video(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.text_to_video` call — the sibling of
     :func:`plan_image_to_video` (same duration and cost rules)."""
@@ -353,6 +367,7 @@ def plan_text_to_video(
         extra=extra,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
     )
 
 
@@ -368,6 +383,7 @@ def plan_reference_to_video(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a reference-to-video call (Seedance 2.0): a prompt steered by
     reference images, videos and audio.
@@ -397,6 +413,7 @@ def plan_reference_to_video(
         extra=extra,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
     )
 
 
@@ -416,6 +433,7 @@ def plan_animate_face(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.animate_face` call (image + audio → talking video).
 
@@ -443,6 +461,7 @@ def plan_animate_face(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -462,6 +481,7 @@ def plan_lipsync(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.lipsync` call (existing video + new audio → re-synced video)."""
     application, record = _resolve_model_id_and_record(
@@ -477,6 +497,7 @@ def plan_lipsync(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -497,6 +518,7 @@ def plan_text_to_speech(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.text_to_speech` call (text → audio Artifact).
 
@@ -531,6 +553,7 @@ def plan_text_to_speech(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -649,6 +672,7 @@ def plan_generate_audio(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.generate_audio` call (prompt → ambient/SFX/music).
 
@@ -678,6 +702,7 @@ def plan_generate_audio(
         estimated_cost_usd=cost,
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         cost_basis=basis,
     )
 
@@ -708,6 +733,7 @@ def plan_llm_complete(
     extra: Optional[dict] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Plan a :func:`falaw.llm_complete` call without executing it.
 
@@ -779,6 +805,7 @@ def plan_llm_complete(
         ),
         metadata=metadata,
         consult_cache=consult_cache,
+        terms_context=terms_context,
         # The basis records the *routed* model, not ``application``: the router
         # is one record, the price belongs to the model it routes to — and the
         # hints below never enter ``arguments``, so nothing else on a persisted

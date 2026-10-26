@@ -69,6 +69,7 @@ from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Iterator, Literal, Optional
 
 from .canonical import DFLT_BACKEND
+from .terms import TermsContext
 from .degrade import (
     DEGRADE_WARNING_SINK,
     deferred_degrade_warnings,
@@ -598,6 +599,7 @@ def make_call_plan(
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     cost_basis: Optional[CostBasis] = None,
+    terms_context: Optional[TermsContext] = None,
 ) -> CallPlan:
     """Build a :class:`CallPlan` and (optionally) check the cache.
 
@@ -625,13 +627,23 @@ def make_call_plan(
     reaches the cache key or :func:`plan_hash`, and a plan built without one
     is byte-identical to one built before the field existed.
 
+    ``terms_context`` opts this call into the terms ledger (falaw#16): with a
+    :class:`falaw.terms.TermsContext`, a ``(application, backend)`` whose terms
+    forbid the job — or are unknown — is refused here, before anything is
+    called. ``None`` (the default) checks nothing.
+
     Raises:
         falaw.errors.FalNonCanonicalArgument: an argument cannot be hashed
             faithfully (non-JSON object, non-finite float, non-string mapping
             key). Raised here — while planning is still free — rather than at
             key-composition time on the way to the network (falaw#17).
+        falaw.errors.FalTermsViolation: ``terms_context`` was given and the
+            ledger does not clear this ``(application, backend)``.
     """
     from .canonical import ensure_canonical
+    from .terms import check_terms
+
+    check_terms(application, backend, terms_context)
     from .upload import localize_paths, resolve_local_files
 
     # A local file (``os.PathLike``) becomes a "<file ...>" marker: the Plan

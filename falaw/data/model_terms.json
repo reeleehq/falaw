@@ -1,0 +1,104 @@
+[
+  {
+    "model_id": "fal-ai/flux/schnell",
+    "backend": "fal",
+    "license": "Apache-2.0",
+    "license_binds_us": "no",
+    "commercial_use": "allowed",
+    "notes": "Commercial use allowed per the fal catalogue entry; tenancy not separately reviewed.",
+    "source_url": "https://fal.ai/models/fal-ai/flux/schnell",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/flux/schnell",
+    "backend": "comfyui",
+    "license": "Apache-2.0",
+    "license_binds_us": "yes",
+    "commercial_use": "allowed",
+    "third_party_tenancy": "allowed",
+    "c2pa_compatible": "yes",
+    "notes": "Self-hosted weights (black-forest-labs/FLUX.1-schnell) are Apache-2.0: permissive, safe self-host default.",
+    "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/flux/dev",
+    "backend": "fal",
+    "license": "flux-1-dev-non-commercial-license",
+    "license_binds_us": "no",
+    "notes": "Hosted: fal holds the weights licence; fal's terms govern use. Commercial/tenancy not reviewed against fal's terms.",
+    "source_url": "https://fal.ai/models/fal-ai/flux/dev",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/flux/dev",
+    "backend": "comfyui",
+    "license": "flux-1-dev-non-commercial-license",
+    "license_binds_us": "yes",
+    "commercial_use": "forbidden",
+    "third_party_tenancy": "forbidden",
+    "c2pa_compatible": "yes",
+    "notes": "Self-hosted weights (black-forest-labs/FLUX.1-dev) bind us directly under a bespoke non-commercial licence.",
+    "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-dev",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/mmaudio-v2/text-to-audio",
+    "backend": "fal",
+    "license": "CC-BY-NC-4.0",
+    "license_binds_us": "unknown",
+    "commercial_use": "forbidden",
+    "notes": "Weights are CC BY-NC 4.0 whatever fal's licence label says (falaw#88).",
+    "source_url": "https://fal.ai/models/fal-ai/mmaudio-v2/text-to-audio",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/stable-audio-3/small/sfx/text-to-audio",
+    "backend": "fal",
+    "license": "stability-community-license",
+    "license_binds_us": "unknown",
+    "notes": "Commercial only under $1M annual revenue; whether that binds us through fal is unreviewed.",
+    "source_url": "https://fal.ai/models/fal-ai/stable-audio-3/small/sfx/text-to-audio",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/stable-audio-3/medium/text-to-audio",
+    "backend": "fal",
+    "license": "stability-community-license",
+    "license_binds_us": "unknown",
+    "notes": "Stability Community licence; whether it binds us through fal is unreviewed.",
+    "source_url": "https://fal.ai/models/fal-ai/stable-audio-3/medium/text-to-audio",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "mirelo-ai/sfx2.0/text-to-audio",
+    "backend": "fal",
+    "license": "mirelo-terms",
+    "license_binds_us": "unknown",
+    "notes": "Catalogue: gateway use not covered by Mirelo terms.",
+    "source_url": "https://fal.ai/models/mirelo-ai/sfx2.0/text-to-audio",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/ideogram/v3",
+    "backend": "fal",
+    "license": "ideogram-terms",
+    "license_binds_us": "no",
+    "c2pa_compatible": "no",
+    "provenance_constraint": "Ideogram's terms require representing that output is 'entirely human generated'; cannot be honoured by output stamped C2PA digitalSourceType trainedAlgorithmicMedia.",
+    "notes": "Hard contradiction with C2PA provenance (falaw#16), not a tension. Commercial/tenancy not reviewed.",
+    "source_url": "https://fal.ai/models/fal-ai/ideogram/v3",
+    "observed_on": "2026-10-27"
+  },
+  {
+    "model_id": "fal-ai/ideogram/v3/reframe",
+    "backend": "fal",
+    "license": "ideogram-terms",
+    "license_binds_us": "no",
+    "c2pa_compatible": "no",
+    "provenance_constraint": "Ideogram's terms require representing that output is 'entirely human generated'; cannot be honoured by output stamped C2PA digitalSourceType trainedAlgorithmicMedia.",
+    "notes": "Hard contradiction with C2PA provenance (falaw#16), not a tension. Commercial/tenancy not reviewed.",
+    "source_url": "https://fal.ai/models/fal-ai/ideogram/v3/reframe",
+    "observed_on": "2026-10-27"
+  }
+]

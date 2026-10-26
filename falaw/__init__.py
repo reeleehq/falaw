@@ -54,6 +54,7 @@ from .prune import (
     prune_content,
     prune_manifests,
 )
+from .terms import ModelTerms, TermsContext, check_terms, third_party_tenancy_ok
 from .errors import (
     FalAccountLocked,
     FalAssetFetchError,
@@ -68,6 +69,7 @@ from .errors import (
     FalPromptTooLong,
     FalRateLimited,
     FalServerError,
+    FalTermsViolation,
     FalTimeout,
     FalUnauthorized,
 )
@@ -226,6 +228,11 @@ __all__ = [
     "FalBadRequest",
     "FalDurationOutOfRange",
     "FalError",
+    "FalTermsViolation",
+    "ModelTerms",
+    "TermsContext",
+    "check_terms",
+    "third_party_tenancy_ok",
     "FalHTTPError",
     "FalInsufficientFunds",
     "FalModelHung",
