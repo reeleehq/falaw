@@ -195,7 +195,11 @@ def call_fal(
             position = getattr(update, "position", None)
             if last_position != [position]:
                 last_position[:] = [position]
-                _ev("provider_queued", provider_phase="in_queue", queue_position=position)
+                _ev(
+                    "provider_queued",
+                    provider_phase="in_queue",
+                    queue_position=position,
+                )
         elif isinstance(update, fal_client.InProgress):
             messages = [
                 entry.get("message") if isinstance(entry, dict) else None
