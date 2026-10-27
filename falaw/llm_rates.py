@@ -100,7 +100,7 @@ def warn_if_stale(
     issued, else ``None`` (handy for tests, which can assert on it without
     a ``pytest.warns`` context).
 
-    ``stacklevel=2`` attributes the warning to :func:`llm_ceiling_usd`'s call
+    ``stacklevel=2`` attributes the warning to :func:`llm_cost_bases`'s call
     site here rather than to every external caller of *that* — a fixed
     location, not one that moves with the caller. That matters because
     Python's default warning filter only dedups a repeated warning by its
@@ -380,16 +380,103 @@ def llm_ceiling_usd(
     _require_count(
         input_tokens=input_tokens, max_output_tokens=max_output_tokens, count=count
     )
+    bases = llm_cost_bases(
+        model,
+        input_tokens=input_tokens,
+        output_tokens=max_output_tokens,
+        count=count,
+        rates=rates,
+    )
+    if bases is None:
+        return None  # unpriceable model → unknown, NOT the router's flat price
+    if input_tokens is None and max_output_tokens is None:
+        return bases.per_call_usd
+    if bases.token_usd is None:
+        return None  # a token quote was asked for and cannot be bounded
+    usd, _ = bases.bound()
+    return usd
+
+
+PER_CALL_BASIS = "per_call"
+"""Basis name: fal's published per-request price for the routed model."""
+
+UPSTREAM_TOKENS_BASIS = "upstream_tokens"
+"""Basis name: token counts at the routed model's upstream (OpenRouter) rates.
+
+fal publishes no per-token price for any-llm, so a cost on this basis is an
+*estimate* from what fal resells, never a figure fal itself quoted."""
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class LlmCostBases:
+    """What ``count`` calls routing one model cost, on each basis the table prices.
+
+    Attributes:
+        per_call_usd: The request-price basis, always known for a priced row.
+        token_usd: The upstream-token basis (long-prompt tier included), or
+            ``None`` when it cannot be computed: a token count is missing or
+            the row publishes no token rates.
+    """
+
+    per_call_usd: float
+    token_usd: Optional[float] = None
+
+    def bound(self) -> tuple[float, str]:
+        """``(usd, basis)`` of the basis that binds: the greater of the two.
+
+        The token basis is named only when it is strictly greater, so a tie
+        reads as the request price fal actually publishes.
+
+        >>> LlmCostBases(per_call_usd=0.01, token_usd=0.05).bound()
+        (0.05, 'upstream_tokens')
+        >>> LlmCostBases(per_call_usd=0.01).bound()
+        (0.01, 'per_call')
+        """
+        if self.token_usd is not None and self.token_usd > self.per_call_usd:
+            return self.token_usd, UPSTREAM_TOKENS_BASIS
+        return self.per_call_usd, PER_CALL_BASIS
+
+
+def llm_cost_bases(
+    model: str,
+    *,
+    input_tokens: Optional[int] = None,
+    output_tokens: Optional[int] = None,
+    count: int = 1,
+    rates: Optional[LlmRateTable] = None,
+) -> Optional[LlmCostBases]:
+    """Every basis ``count`` calls routing ``model`` can be priced on, or ``None``.
+
+    The one place the rate row is read, staleness warned about and the token
+    arithmetic done. :func:`llm_ceiling_usd` composes it into a plan-time
+    ceiling (all or nothing on the token hints); a receipt composes it into a
+    record of a call already made (the request price when the tokens cannot be
+    priced). ``None`` means the table does not price ``model`` at all.
+
+    >>> bases = llm_cost_bases(
+    ...     'anthropic/claude-haiku-5.5', input_tokens=100_000, output_tokens=0
+    ... )
+    >>> bases.per_call_usd, round(bases.token_usd, 6)
+    (0.01, 0.05)
+    >>> llm_cost_bases(
+    ...     'google/gemini-flash-1.5', input_tokens=50_000, output_tokens=1_000
+    ... ).token_usd is None
+    True
+
+    Raises:
+        TypeError: a token count or ``count`` that is not a plain ``int``.
+        ValueError: a negative token count or ``count``.
+    """
+    _require_count(input_tokens=input_tokens, output_tokens=output_tokens, count=count)
 
     rate = get_llm_rate(model, rates=rates)
     if rate is None:
-        return None  # unpriceable model → unknown, NOT the router's flat price
+        return None
     warn_if_stale(rate)
 
-    if input_tokens is None and max_output_tokens is None:
-        return rate.per_call_usd * count
-    if input_tokens is None or max_output_tokens is None or not rate.has_token_rates:
-        return None  # a token quote was asked for and cannot be bounded
+    per_call_usd = rate.per_call_usd * count
+    if input_tokens is None or output_tokens is None or not rate.has_token_rates:
+        return LlmCostBases(per_call_usd=per_call_usd)
 
     billed = rates_for_prompt(
         rate.token_rates,
@@ -397,11 +484,11 @@ def llm_ceiling_usd(
         long_prompt_over_tokens=rate.long_prompt_over_tokens,
         long_prompt_rates=rate.long_prompt_rates,
     )
-    token_cost = (
+    token_usd = (
         input_tokens * billed.input_usd_per_mtok
-        + max_output_tokens * billed.output_usd_per_mtok
+        + output_tokens * billed.output_usd_per_mtok
     ) / TOKENS_PER_RATE_UNIT
-    return max(rate.per_call_usd, token_cost) * count
+    return LlmCostBases(per_call_usd=per_call_usd, token_usd=token_usd * count)
 
 
 def _require_count(**quantities: Optional[int]) -> None:
