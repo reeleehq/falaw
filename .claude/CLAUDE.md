@@ -25,7 +25,9 @@ cost estimation/repricing, and an agent journal for cross-session notes.
 - `registry.py` — tool/model registries, queryable by tags/categories.
 - `pricing.py` / `llm_rates.py` / `reprice.py` — cost-estimate ingestion from
   fal's pricing API, per-routed-model LLM rate ceilings (falaw#50), and
-  re-quoting a persisted Plan at today's rates (falaw#60).
+  re-quoting a persisted Plan at today's rates (falaw#60). `llm_prices.py` prices
+  first-party LLM calls; `llm_regimes.py` is the token-rate regime (and long-prompt
+  tier) both LLM tables share (falaw#128).
 - `account.py` — account health probe (works around `fal_client` swallowing 403 bodies).
 - `journal.py` — append-only agent notes log.
 - `terms.py` — the terms ledger (falaw#16): per-`(model, backend)` rows in `data/model_terms.json`, `check_terms` at plan time via `plan_*(..., terms_context=TermsContext(...))` and at execution via `execute(..., terms_context=)`; `unknown` and *no row* refuse. `using_terms_context(ctx)` gates every eager verb (enforced in `cached_call_fal`/`call_fal`); routers are judged by the routed model; cleared plans carry `metadata["terms_cleared"]` (`is_cleared`). `unreviewed_models()` lists what still needs a human read.
@@ -39,7 +41,7 @@ cost estimation/repricing, and an agent journal for cross-session notes.
 
 ```bash
 uv venv .venv && uv pip install -e . pytest ruff
-env -u FAL_KEY .venv/bin/pytest -q    # 605 passed, 2 skipped — no network, no key needed
+env -u FAL_KEY .venv/bin/pytest -q    # 960+ passed, 2 skipped — no network, no key needed
 .venv/bin/ruff check .
 ```
 Or `wads ci-local` (Python 3.10+3.12, Windows included).
