@@ -103,6 +103,34 @@ def _rates(row: Mapping[str, Any]) -> LlmPriceRates:
     )
 
 
+def parse_long_prompt(
+    row: Mapping[str, Any],
+) -> tuple[Optional[int], Optional[LlmPriceRates]]:
+    """``(over_input_tokens, rates)`` from a row's ``long_prompt`` block, or ``(None, None)``.
+
+    The one reading of the block both falaw rate tables share: the rates replace the
+    row's own once a prompt exceeds ``over_input_tokens``.
+    """
+    long_prompt = row.get("long_prompt")
+    if not long_prompt:
+        return None, None
+    return int(long_prompt["over_input_tokens"]), _rates(long_prompt)
+
+
+def rates_for_prompt(
+    rates: LlmPriceRates,
+    input_tokens: int,
+    *,
+    long_prompt_over_tokens: Optional[int],
+    long_prompt_rates: Optional[LlmPriceRates],
+) -> LlmPriceRates:
+    """The rates a prompt of ``input_tokens`` is billed at: the long-prompt tier
+    past its threshold, else ``rates``. Shared by both falaw rate tables."""
+    if long_prompt_rates is not None and input_tokens > long_prompt_over_tokens:
+        return long_prompt_rates
+    return rates
+
+
 @lru_cache(maxsize=1)
 def load_llm_prices() -> LlmPriceTable:
     """The committed table, keyed by ``(provider, model)``. Read once per process."""
@@ -110,15 +138,13 @@ def load_llm_prices() -> LlmPriceTable:
         table = json.load(f)
     out: dict[tuple[str, str], LlmPrice] = {}
     for row in table["rows"]:
-        long_prompt = row.get("long_prompt")
+        over_tokens, long_rates = parse_long_prompt(row)
         out[(row["provider"], row["model"])] = LlmPrice(
             provider=row["provider"],
             model=row["model"],
             rates=_rates(row),
-            long_prompt_over_tokens=(
-                int(long_prompt["over_input_tokens"]) if long_prompt else None
-            ),
-            long_prompt_rates=_rates(long_prompt) if long_prompt else None,
+            long_prompt_over_tokens=over_tokens,
+            long_prompt_rates=long_rates,
             source=row.get("source", ""),
             date=row.get("date", ""),
             notes=row.get("notes", ""),
@@ -179,12 +205,13 @@ def llm_call_cost_usd(
     known = price is not None
     rates = price.rates if price else _dearest_rates(provider, table)
     counts = llm_token_counts(provider, usage)
-    if (
-        price
-        and price.long_prompt_rates
-        and counts.input > price.long_prompt_over_tokens
-    ):
-        rates = price.long_prompt_rates
+    if price:
+        rates = rates_for_prompt(
+            rates,
+            counts.input,
+            long_prompt_over_tokens=price.long_prompt_over_tokens,
+            long_prompt_rates=price.long_prompt_rates,
+        )
     usd = _usd(rates, counts)
     return round(usd, COST_DECIMALS), known
 

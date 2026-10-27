@@ -43,7 +43,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from typing import Callable, Optional
+from typing import Callable, Mapping, Optional
 
 from .llm_rates import _rates_path
 from .registry import register_tool
@@ -161,14 +161,59 @@ def parse_openrouter_models(payload: dict) -> dict[str, tuple[float, float]]:
         completion = _positive_float(pricing.get("completion"))
         if prompt is None or completion is None:
             continue
-        # Rounded to TOKEN_RATE_PRECISION: scaling a per-token float (e.g.
-        # 0.0000004) by 1e6 reintroduces binary-float noise (0.39999999999999997)
-        # that would diff as "changed" against a hand-typed 0.4 forever.
-        rates[model_id] = (
-            round(prompt * 1_000_000, TOKEN_RATE_PRECISION),
-            round(completion * 1_000_000, TOKEN_RATE_PRECISION),
-        )
+        rates[model_id] = (_per_mtok(prompt), _per_mtok(completion))
     return rates
+
+
+def parse_openrouter_long_prompts(payload: dict) -> dict[str, Optional[dict]]:
+    """``{model_id: long_prompt block or None}`` for every OpenRouter model with overrides.
+
+    Pure parse of ``pricing.overrides`` in the ``GET /api/v1/models`` body
+    (falaw#124): an override bills its ``prompt``/``completion`` rates once a
+    prompt reaches ``min_prompt_tokens``. The block has the shape the rate
+    tables share (:func:`falaw.llm_prices.parse_long_prompt`), so
+    ``over_input_tokens`` is ``min_prompt_tokens - 1``: the tier starts *at* the
+    threshold, and a ceiling must not quote the boundary at the cheaper rate.
+
+    ``None`` marks a model whose overrides this parse cannot price: more than
+    one, or one without an integer threshold and two positive rates.
+    :func:`build_proposed_rows` then drops that model's token rates, because
+    quoting its base rates alone is the under-quote this tier exists to prevent.
+    """
+    blocks: dict[str, Optional[dict]] = {}
+    for row in payload.get("data", ()):
+        model_id = row.get("id")
+        overrides = (row.get("pricing") or {}).get("overrides")
+        if model_id and overrides:
+            blocks[model_id] = (
+                _long_prompt_block(overrides[0]) if len(overrides) == 1 else None
+            )
+    return blocks
+
+
+def _long_prompt_block(override: dict) -> Optional[dict]:
+    threshold = override.get("min_prompt_tokens")
+    prompt = _positive_float(override.get("prompt"))
+    completion = _positive_float(override.get("completion"))
+    if (
+        isinstance(threshold, bool)
+        or not isinstance(threshold, int)
+        or threshold < 1
+        or None in (prompt, completion)
+    ):
+        return None
+    return {
+        "over_input_tokens": threshold - 1,
+        "input_usd_per_mtok": _per_mtok(prompt),
+        "output_usd_per_mtok": _per_mtok(completion),
+    }
+
+
+def _per_mtok(per_token: float) -> float:
+    # Rounded to TOKEN_RATE_PRECISION: scaling a per-token float (e.g.
+    # 0.0000004) by 1e6 reintroduces binary-float noise (0.39999999999999997)
+    # that would diff as "changed" against a hand-typed 0.4 forever.
+    return round(per_token * 1_000_000, TOKEN_RATE_PRECISION)
 
 
 def _positive_float(value) -> Optional[float]:
@@ -186,8 +231,13 @@ def build_proposed_rows(
     openrouter_rates: "dict[str, tuple[float, float]]",
     *,
     date: str,
+    long_prompts: "Mapping[str, Optional[dict]]",
 ) -> "list[dict]":
     """One rate-table row per id in ``any_llm.model_enum``, freshly derived.
+
+    ``long_prompts`` (:func:`parse_openrouter_long_prompts`) adds a
+    ``long_prompt`` block to a priced row whose model has one; a model whose
+    tier could not be parsed (``None``) gets no token rates at all.
 
     The whole table is regenerated from the two sources every run — there is
     no merge with the committed file here. The committed file only changes
@@ -203,7 +253,9 @@ def build_proposed_rows(
             any_llm.premium_multiple if premium else 1
         )
         token_rates = openrouter_rates.get(model)
-        if token_rates is None:
+        long_prompt = long_prompts.get(model)
+        unpriced_tier = model in long_prompts and long_prompt is None
+        if token_rates is None or unpriced_tier:
             rows.append(
                 {
                     "model": model,
@@ -214,7 +266,10 @@ def build_proposed_rows(
                     "source": any_llm_source,
                     "date": date,
                     "notes": (
-                        "no per-token rate published upstream for this id on "
+                        "upstream publishes a long-prompt tier this refresh cannot "
+                        "parse, so its token rates are unknown"
+                        if unpriced_tier
+                        else "no per-token rate published upstream for this id on "
                         "the fetch date; the per-request tier is the only "
                         "known basis"
                     ),
@@ -222,18 +277,16 @@ def build_proposed_rows(
             )
         else:
             input_rate, output_rate = token_rates
-            rows.append(
-                {
-                    "model": model,
-                    "tier": "premium" if premium else "standard",
-                    "per_call_usd": per_call_usd,
-                    "input_usd_per_mtok": input_rate,
-                    "output_usd_per_mtok": output_rate,
-                    "source": both_source,
-                    "date": date,
-                    "notes": "",
-                }
-            )
+            row = {
+                "model": model,
+                "tier": "premium" if premium else "standard",
+                "per_call_usd": per_call_usd,
+                "input_usd_per_mtok": input_rate,
+                "output_usd_per_mtok": output_rate,
+            }
+            if long_prompt is not None:
+                row["long_prompt"] = dict(long_prompt)
+            rows.append({**row, "source": both_source, "date": date, "notes": ""})
     return rows
 
 
@@ -242,6 +295,7 @@ _DIFFED_FIELDS = (
     "per_call_usd",
     "input_usd_per_mtok",
     "output_usd_per_mtok",
+    "long_prompt",
 )
 
 
@@ -399,7 +453,12 @@ def refresh_llm_rates(
     openrouter_rates = parse_openrouter_models(openrouter_body)
 
     stamp = today or datetime.date.today().isoformat()
-    proposed_rows = build_proposed_rows(any_llm, openrouter_rates, date=stamp)
+    proposed_rows = build_proposed_rows(
+        any_llm,
+        openrouter_rates,
+        date=stamp,
+        long_prompts=parse_openrouter_long_prompts(openrouter_body),
+    )
 
     path = rates_path or _rates_path()
     with open(path, encoding="utf-8") as f:

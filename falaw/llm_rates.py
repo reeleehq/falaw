@@ -54,6 +54,7 @@ from functools import lru_cache
 from typing import Mapping, Optional
 
 from .base import data_table_version
+from .llm_prices import LlmPriceRates, parse_long_prompt, rates_for_prompt
 
 RATES_FILENAME = "llm_rates.json"
 """Basename of the rate table under ``falaw/data``."""
@@ -136,6 +137,11 @@ class LlmRate:
             :data:`TOKENS_PER_RATE_UNIT` prompt tokens, or ``None`` when no
             upstream rate is published for this id — unknown, never zero.
         output_usd_per_mtok: The same for completion tokens.
+        long_prompt_over_tokens: Prompt length past which the upstream bills
+            ``long_prompt_rates`` instead (OpenRouter's ``pricing.overrides``,
+            falaw#124), or ``None`` when the model has one regime.
+        long_prompt_rates: The token rates that replace the row's own past
+            ``long_prompt_over_tokens``.
         source: Where these numbers came from.
         date: ISO date they were read on. Rates move; a quote is only as
             fresh as its row.
@@ -147,9 +153,34 @@ class LlmRate:
     per_call_usd: float
     input_usd_per_mtok: Optional[float] = None
     output_usd_per_mtok: Optional[float] = None
+    long_prompt_over_tokens: Optional[int] = None
+    long_prompt_rates: Optional[LlmPriceRates] = None
     source: str = ""
     date: str = ""
     notes: str = ""
+
+    def __post_init__(self) -> None:
+        # A caller's ``rates=`` table is checked too: a half-set or cheaper tier
+        # would raise mid-quote or quote less past the threshold.
+        over, long_rates = self.long_prompt_over_tokens, self.long_prompt_rates
+        if (over is None) != (long_rates is None):
+            raise ValueError(
+                f"{self.model}: long_prompt_over_tokens and long_prompt_rates "
+                "are set together or not at all"
+            )
+        if long_rates is None:
+            return
+        if isinstance(over, bool) or not isinstance(over, int) or over < 0:
+            raise ValueError(
+                f"{self.model}: long_prompt_over_tokens must be an int >= 0"
+            )
+        for name in ("input_usd_per_mtok", "output_usd_per_mtok"):
+            base = getattr(self, name)
+            if base is not None and getattr(long_rates, name) < base:
+                raise ValueError(
+                    f"{self.model}: the long-prompt {name} is below the base rate, "
+                    "so a longer prompt would quote less"
+                )
 
     @property
     def has_token_rates(self) -> bool:
@@ -176,19 +207,23 @@ def load_llm_rates() -> LlmRateTable:
     """
     with open(_rates_path(), encoding="utf-8") as f:
         table = json.load(f)
-    return {
-        row["model"]: LlmRate(
-            model=row["model"],
-            tier=row["tier"],
-            per_call_usd=float(row["per_call_usd"]),
-            input_usd_per_mtok=_optional_float(row.get("input_usd_per_mtok")),
-            output_usd_per_mtok=_optional_float(row.get("output_usd_per_mtok")),
-            source=row.get("source", ""),
-            date=row.get("date", ""),
-            notes=row.get("notes", ""),
-        )
-        for row in table["rows"]
-    }
+    return {row["model"]: _rate_from_row(row) for row in table["rows"]}
+
+
+def _rate_from_row(row: Mapping) -> LlmRate:
+    over_tokens, long_rates = parse_long_prompt(row)
+    return LlmRate(
+        model=row["model"],
+        tier=row["tier"],
+        per_call_usd=float(row["per_call_usd"]),
+        input_usd_per_mtok=_optional_float(row.get("input_usd_per_mtok")),
+        output_usd_per_mtok=_optional_float(row.get("output_usd_per_mtok")),
+        long_prompt_over_tokens=over_tokens,
+        long_prompt_rates=long_rates,
+        source=row.get("source", ""),
+        date=row.get("date", ""),
+        notes=row.get("notes", ""),
+    )
 
 
 def _optional_float(value) -> Optional[float]:
@@ -277,6 +312,16 @@ def llm_ceiling_usd(
     >>> b >= a
     True
 
+    Past a row's long-prompt threshold the upstream bills higher rates for the
+    whole call (falaw#124), and the quote uses them. Claude Haiku 5.5 costs five
+    times as much per token above 100,000 prompt tokens:
+
+    >>> haiku = 'anthropic/claude-haiku-5.5'
+    >>> below = llm_ceiling_usd(haiku, input_tokens=99_999, max_output_tokens=0)
+    >>> above = llm_ceiling_usd(haiku, input_tokens=100_000, max_output_tokens=0)
+    >>> round(below, 6), round(above, 6)
+    (0.01, 0.05)
+
     Both hints are upper bounds the *caller* holds at plan time: the prompt is
     already written, and ``max_tokens`` caps the response. Real output length
     is unknowable before the call, which is exactly why this quotes the cap and
@@ -331,9 +376,18 @@ def llm_ceiling_usd(
     if input_tokens is None or max_output_tokens is None or not rate.has_token_rates:
         return None  # a token quote was asked for and cannot be bounded
 
+    billed = rates_for_prompt(
+        LlmPriceRates(
+            input_usd_per_mtok=rate.input_usd_per_mtok,
+            output_usd_per_mtok=rate.output_usd_per_mtok,
+        ),
+        input_tokens,
+        long_prompt_over_tokens=rate.long_prompt_over_tokens,
+        long_prompt_rates=rate.long_prompt_rates,
+    )
     token_cost = (
-        input_tokens * rate.input_usd_per_mtok
-        + max_output_tokens * rate.output_usd_per_mtok
+        input_tokens * billed.input_usd_per_mtok
+        + max_output_tokens * billed.output_usd_per_mtok
     ) / TOKENS_PER_RATE_UNIT
     return max(rate.per_call_usd, token_cost) * count
 
