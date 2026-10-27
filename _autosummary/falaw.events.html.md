@@ -12,7 +12,7 @@ a single `call_fal` invocation:
 - `queued`      — call submitted to fal
 - `progress`    — fal pushed an InProgress update with no message body
 - `log`         — fal pushed an InProgress update with a log line
-- `done`        — call returned a result
+- `done`        — call returned a result; `metrics` carries fal’s `Completed.metrics`
 - `error`       — call raised
 - `cache_hit`   — [`falaw.cached_call_fal()`](falaw.html.md#falaw.cached_call_fal) found a hit and skipped the network
 - `provider_queued` — fal reported the call waiting in ITS line (`queue_position`)
@@ -22,6 +22,13 @@ where the call is: `"in_queue"` on a `provider_queued` event, `"in_progress"` on
 `progress` / `log` events fal’s IN_PROGRESS updates produce. It is `None` on every
 event fal said nothing about (a cache hit, `queued`, `done`), so a consumer that sees
 no phase knows nothing, which is not the same as “in progress”.
+
+`metrics` is fal’s own account of the finished run, as its final `Completed` status
+reported it (e.g. `{"inference_time": 3.2}`, seconds the runner spent processing). It
+rides the `done` event only, and stays out of the model’s response so a cached response
+is still exactly what the model returned. It is `None` when fal reported none, and on a
+`cache_hit` (nothing ran, nothing was billed). fal does not say whether
+`inference_time` is the billed quantity: a cost derived from it is an observed run time.
 
 Subscribers can be registered globally via [`subscribe()`](#falaw.events.subscribe) or
 per-call via the `on_event=` argument on `call_fal()` /
@@ -43,7 +50,7 @@ notes.
 | [`ProgressEvent`](#falaw.events.ProgressEvent)(\*, kind, application, call_id)   | One step in the lifecycle of a fal call.   |
 |--------------------------------------------------------------------------------------------------|--------------------------------------------|
 
-### *class* falaw.events.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None)
+### *class* falaw.events.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None, metrics=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -110,6 +117,16 @@ fal’s `queue_position` on a `"provider_queued"` event
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
+#### metrics
+
+fal’s `Completed.metrics` on a `"done"` event, or `None`
+(see the module docstring). A plain `dict`, so the event stays
+serialisable (`dataclasses.asdict`, pickle, JSON); subscribers share
+it and must not edit it.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]
 
 ### falaw.events.clear_subscribers()
 

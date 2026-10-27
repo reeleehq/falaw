@@ -1,4 +1,4 @@
-> built 2026-10-27 10:35 UTC from 522cf12 (main) · falaw 0.0.79. Details: build_info.json
+> built 2026-10-27 18:14 UTC from ec90ff4 (main) · falaw 0.0.80. Details: build_info.json
 
 # index.html.md
 
@@ -1031,7 +1031,9 @@ Call a fal model, but reuse the cached response when present.
   * **refresh** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – if True, bypass the cache and overwrite it with a fresh result.
   * **on_event** – Per-call subscriber for [`falaw.events.ProgressEvent`](_autosummary/falaw.events.html.md#falaw.events.ProgressEvent).
     On a cache hit, a synthetic `cache_hit` event is emitted so
-    UIs can show “skipped” instead of “running”.
+    UIs can show “skipped” instead of “running”. On a call that ran, the
+    `done` event’s `metrics` carries fal’s run metrics (e.g.
+    `inference_time`); a hit has none, since nothing ran.
   * **backend** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – which execution backend serves this call (falaw#15) —
     resolved via [`falaw.backends`](_autosummary/falaw.backends.html.md#module-falaw.backends). Also joins the cache key
     (non-default only), so two backends never share an entry. Despite
@@ -2312,7 +2314,9 @@ Call a fal model via fal_client.subscribe.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
-  The raw response dict from the model.
+  The raw response dict from the model. fal’s run metrics (its final
+  `Completed` status, e.g. `inference_time`) are not in it: they ride
+  the `done` event’s `metrics` (see [`falaw.events`](_autosummary/falaw.events.html.md#module-falaw.events)).
 
 ### falaw.core.current_fal_key()
 
@@ -2920,7 +2924,7 @@ a single `call_fal` invocation:
 - `queued`      — call submitted to fal
 - `progress`    — fal pushed an InProgress update with no message body
 - `log`         — fal pushed an InProgress update with a log line
-- `done`        — call returned a result
+- `done`        — call returned a result; `metrics` carries fal’s `Completed.metrics`
 - `error`       — call raised
 - `cache_hit`   — [`falaw.cached_call_fal()`](_autosummary/falaw.html.md#falaw.cached_call_fal) found a hit and skipped the network
 - `provider_queued` — fal reported the call waiting in ITS line (`queue_position`)
@@ -2930,6 +2934,13 @@ where the call is: `"in_queue"` on a `provider_queued` event, `"in_progress"` on
 `progress` / `log` events fal’s IN_PROGRESS updates produce. It is `None` on every
 event fal said nothing about (a cache hit, `queued`, `done`), so a consumer that sees
 no phase knows nothing, which is not the same as “in progress”.
+
+`metrics` is fal’s own account of the finished run, as its final `Completed` status
+reported it (e.g. `{"inference_time": 3.2}`, seconds the runner spent processing). It
+rides the `done` event only, and stays out of the model’s response so a cached response
+is still exactly what the model returned. It is `None` when fal reported none, and on a
+`cache_hit` (nothing ran, nothing was billed). fal does not say whether
+`inference_time` is the billed quantity: a cost derived from it is an observed run time.
 
 Subscribers can be registered globally via [`subscribe()`](_autosummary/falaw.events.html.md#falaw.events.subscribe) or
 per-call via the `on_event=` argument on `call_fal()` /
@@ -2951,7 +2962,7 @@ notes.
 | [`ProgressEvent`](_autosummary/falaw.events.html.md#falaw.events.ProgressEvent)(\*, kind, application, call_id)   | One step in the lifecycle of a fal call.   |
 |--------------------------------------------------------------------------------------------------|--------------------------------------------|
 
-### *class* falaw.events.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None)
+### *class* falaw.events.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None, metrics=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3018,6 +3029,16 @@ fal’s `queue_position` on a `"provider_queued"` event
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
+#### metrics
+
+fal’s `Completed.metrics` on a `"done"` event, or `None`
+(see the module docstring). A plain `dict`, so the event stays
+serialisable (`dataclasses.asdict`, pickle, JSON); subscribers share
+it and must not edit it.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]
 
 ### falaw.events.clear_subscribers()
 
@@ -4322,7 +4343,7 @@ Identity of the table this pricer reads, for the refreshed basis.
 
 Today’s version of that table, for the refreshed basis.
 
-### *class* falaw.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None)
+### *class* falaw.ProgressEvent(, kind, application, call_id, message='', pct=None, elapsed_s=0.0, provider_phase=None, queue_position=None, metrics=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -4389,6 +4410,16 @@ fal’s `queue_position` on a `"provider_queued"` event
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
+#### metrics
+
+fal’s `Completed.metrics` on a `"done"` event, or `None`
+(see the module docstring). A plain `dict`, so the event stays
+serialisable (`dataclasses.asdict`, pickle, JSON); subscribers share
+it and must not edit it.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]
 
 ### *class* falaw.PruneCandidate(key, path, bytes, last_modified=None)
 
@@ -4692,7 +4723,9 @@ Call a fal model, but reuse the cached response when present.
   * **refresh** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – if True, bypass the cache and overwrite it with a fresh result.
   * **on_event** – Per-call subscriber for [`falaw.events.ProgressEvent`](_autosummary/falaw.events.html.md#falaw.events.ProgressEvent).
     On a cache hit, a synthetic `cache_hit` event is emitted so
-    UIs can show “skipped” instead of “running”.
+    UIs can show “skipped” instead of “running”. On a call that ran, the
+    `done` event’s `metrics` carries fal’s run metrics (e.g.
+    `inference_time`); a hit has none, since nothing ran.
   * **backend** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – which execution backend serves this call (falaw#15) —
     resolved via [`falaw.backends`](_autosummary/falaw.backends.html.md#module-falaw.backends). Also joins the cache key
     (non-default only), so two backends never share an entry. Despite
@@ -4729,7 +4762,9 @@ Call a fal model via fal_client.subscribe.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
-  The raw response dict from the model.
+  The raw response dict from the model. fal’s run metrics (its final
+  `Completed` status, e.g. `inference_time`) are not in it: they ride
+  the `done` event’s `metrics` (see [`falaw.events`](_autosummary/falaw.events.html.md#module-falaw.events)).
 
 ### falaw.call_plan_from_dict(d)
 
@@ -10953,7 +10988,7 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-27 10:35 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/522cf126392918aa104c1a6173b729f9c813b5d5"><code>522cf12</code></a> on branch <code>main</code>, for **falaw 0.0.79** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-27 18:14 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/ec90ff4c013d03bc0408361acf6e894565aab956"><code>ec90ff4</code></a> on branch <code>main</code>, for **falaw 0.0.80** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -10962,7 +10997,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/522cf126392918aa104c1a6173b729f9c813b5d5"><code>522cf126392918aa104c1a6173b729f9c813b5d5</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/ec90ff4c013d03bc0408361acf6e894565aab956"><code>ec90ff4c013d03bc0408361acf6e894565aab956</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -10973,9 +11008,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40489173319">40489173319</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40557599457">40557599457</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>522cf126392918aa104c1a6173b729f9c813b5d5</code> (in the history of the built commit) |
+| Event commit | <code>ec90ff4c013d03bc0408361acf6e894565aab956</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11000,13 +11035,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.79/">0.0.79</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.80/">0.0.80</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 522cf126392918aa104c1a6173b729f9c813b5d5
+git checkout ec90ff4c013d03bc0408361acf6e894565aab956
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

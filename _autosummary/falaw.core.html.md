@@ -73,7 +73,9 @@ Call a fal model via fal_client.subscribe.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 * **Returns:**
-  The raw response dict from the model.
+  The raw response dict from the model. fal’s run metrics (its final
+  `Completed` status, e.g. `inference_time`) are not in it: they ride
+  the `done` event’s `metrics` (see [`falaw.events`](falaw.events.html.md#module-falaw.events)).
 
 ### falaw.core.current_fal_key()
 

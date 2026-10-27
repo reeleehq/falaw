@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=ae06b2e5"></script>
+    <script src="../../_static/documentation_options.js?v=5c6fbccc"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.79" />
+  <meta name="docsearch:version" content="0.0.80" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -736,6 +736,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._credentials</span><span class="w"> </span><span class="kn">import</span> <span class="n">current_credentials</span><span class="p">,</span> <span class="n">resolve_credential</span><span class="p">,</span> <span class="n">using_credentials</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">import_fal_client</span> <span class="k">as</span> <span class="n">_import_fal_client</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">translate</span> <span class="k">as</span> <span class="n">_translate_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.degrade</span><span class="w"> </span><span class="kn">import</span> <span class="n">emit_degradation</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">EventCallback</span><span class="p">,</span> <span class="n">ProgressEvent</span><span class="p">,</span> <span class="n">emit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.journal</span><span class="w"> </span><span class="kn">import</span> <span class="n">_default_journal</span>
 
@@ -869,7 +870,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            global or an env var.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        The raw response dict from the model.</span>
+<span class="sd">        The raw response dict from the model. fal's run metrics (its final</span>
+<span class="sd">        ``Completed`` status, e.g. ``inference_time``) are not in it: they ride</span>
+<span class="sd">        the ``done`` event's ``metrics`` (see :mod:`falaw.events`).</span>
 <span class="sd">    """</span>
     <span class="n">_check_against_catalogue</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>  <span class="c1"># refuse before any network</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">.terms</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_terms</span><span class="p">,</span> <span class="n">current_terms_context</span>
@@ -895,6 +898,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">pct</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">provider_phase</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">queue_position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metrics</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">emit</span><span class="p">(</span>
             <span class="n">ProgressEvent</span><span class="p">(</span>
@@ -906,6 +910,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">elapsed_s</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">started</span><span class="p">,</span>
                 <span class="n">provider_phase</span><span class="o">=</span><span class="n">provider_phase</span><span class="p">,</span>  <span class="c1"># type: ignore[arg-type]</span>
                 <span class="n">queue_position</span><span class="o">=</span><span class="n">queue_position</span><span class="p">,</span>
+                <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">also</span><span class="o">=</span><span class="p">(</span><span class="n">on_event</span><span class="p">,)</span> <span class="k">if</span> <span class="n">on_event</span> <span class="k">else</span> <span class="p">(),</span>
         <span class="p">)</span>
@@ -913,10 +918,23 @@ window.runMermaid = runMermaid;</script>
     <span class="n">log</span> <span class="o">=</span> <span class="n">on_log</span> <span class="k">if</span> <span class="n">on_log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">_msg</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
 
     <span class="n">last_position</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># fal re-reports the queue ~10x/s: say it on a change only</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># fal's Completed.metrics, for the `done` event (#125)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_on_queue_update</span><span class="p">(</span><span class="n">update</span><span class="p">):</span>
         <span class="n">queued_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fal_client</span><span class="p">,</span> <span class="s2">"Queued"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">queued_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">queued_cls</span><span class="p">):</span>
+        <span class="n">completed_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">fal_client</span><span class="p">,</span> <span class="s2">"Completed"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">completed_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">completed_cls</span><span class="p">):</span>
+            <span class="c1"># Inside subscribe, before the result is read: raising here would lose a</span>
+            <span class="c1"># run fal has already billed, so a malformed value degrades instead.</span>
+            <span class="n">reported</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="s2">"metrics"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reported</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+                <span class="n">metrics</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">reported</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">reported</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">emit_degradation</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"fal reported non-mapping metrics for </span><span class="si">{</span><span class="n">application</span><span class="si">!r}</span><span class="s2">: "</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">reported</span><span class="si">!r}</span><span class="s2">; the done event carries none."</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">queued_cls</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="n">queued_cls</span><span class="p">):</span>
             <span class="n">position</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="s2">"position"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">last_position</span> <span class="o">!=</span> <span class="p">[</span><span class="n">position</span><span class="p">]:</span>
                 <span class="n">last_position</span><span class="p">[:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">position</span><span class="p">]</span>
@@ -968,7 +986,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="p">},</span>
             <span class="p">)</span>
         <span class="k">raise</span> <span class="n">exc</span> <span class="kn">from</span><span class="w"> </span><span class="nn">raw_exc</span>
-    <span class="n">_ev</span><span class="p">(</span><span class="s2">"done"</span><span class="p">)</span>
+    <span class="n">_ev</span><span class="p">(</span><span class="s2">"done"</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">result</span></div>
 
 </pre></div>

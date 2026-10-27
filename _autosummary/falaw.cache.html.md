@@ -135,7 +135,9 @@ Call a fal model, but reuse the cached response when present.
   * **refresh** ([`bool`](https://docs.python.org/3/builtins/functions.html#bool)) – if True, bypass the cache and overwrite it with a fresh result.
   * **on_event** – Per-call subscriber for [`falaw.events.ProgressEvent`](falaw.events.html.md#falaw.events.ProgressEvent).
     On a cache hit, a synthetic `cache_hit` event is emitted so
-    UIs can show “skipped” instead of “running”.
+    UIs can show “skipped” instead of “running”. On a call that ran, the
+    `done` event’s `metrics` carries fal’s run metrics (e.g.
+    `inference_time`); a hit has none, since nothing ran.
   * **backend** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – which execution backend serves this call (falaw#15) —
     resolved via [`falaw.backends`](falaw.backends.html.md#module-falaw.backends). Also joins the cache key
     (non-default only), so two backends never share an entry. Despite

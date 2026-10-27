@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=ae06b2e5"></script>
+    <script src="../_static/documentation_options.js?v=5c6fbccc"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.79" />
+  <meta name="docsearch:version" content="0.0.80" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -455,7 +455,7 @@ a single <code class="docutils literal notranslate"><span class="pre">call_fal</
 <li><p><code class="docutils literal notranslate"><span class="pre">queued</span></code>      — call submitted to fal</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">progress</span></code>    — fal pushed an InProgress update with no message body</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">log</span></code>         — fal pushed an InProgress update with a log line</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">done</span></code>        — call returned a result</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">done</span></code>        — call returned a result; <code class="docutils literal notranslate"><span class="pre">metrics</span></code> carries fal’s <code class="docutils literal notranslate"><span class="pre">Completed.metrics</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">error</span></code>       — call raised</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>   — <a class="reference internal" href="falaw.html#falaw.cached_call_fal" title="falaw.cached_call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.cached_call_fal()</span></code></a> found a hit and skipped the network</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> — fal reported the call waiting in ITS line (<code class="docutils literal notranslate"><span class="pre">queue_position</span></code>)</p></li>
@@ -465,6 +465,12 @@ where the call is: <code class="docutils literal notranslate"><span class="pre">
 <code class="docutils literal notranslate"><span class="pre">progress</span></code> / <code class="docutils literal notranslate"><span class="pre">log</span></code> events fal’s IN_PROGRESS updates produce. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> on every
 event fal said nothing about (a cache hit, <code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">done</span></code>), so a consumer that sees
 no phase knows nothing, which is not the same as “in progress”.</p>
+<p><code class="docutils literal notranslate"><span class="pre">metrics</span></code> is fal’s own account of the finished run, as its final <code class="docutils literal notranslate"><span class="pre">Completed</span></code> status
+reported it (e.g. <code class="docutils literal notranslate"><span class="pre">{&quot;inference_time&quot;:</span> <span class="pre">3.2}</span></code>, seconds the runner spent processing). It
+rides the <code class="docutils literal notranslate"><span class="pre">done</span></code> event only, and stays out of the model’s response so a cached response
+is still exactly what the model returned. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> when fal reported none, and on a
+<code class="docutils literal notranslate"><span class="pre">cache_hit</span></code> (nothing ran, nothing was billed). fal does not say whether
+<code class="docutils literal notranslate"><span class="pre">inference_time</span></code> is the billed quantity: a cost derived from it is an observed run time.</p>
 <p>Subscribers can be registered globally via <a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-func docutils literal notranslate"><span class="pre">subscribe()</span></code></a> or
 per-call via the <code class="docutils literal notranslate"><span class="pre">on_event=</span></code> argument on <code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code> /
 <code class="xref py py-func docutils literal notranslate"><span class="pre">cached_call_fal()</span></code>. The <code class="docutils literal notranslate"><span class="pre">on_log</span></code> parameter still works
@@ -502,7 +508,7 @@ notes.</p>
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.events.ProgressEvent">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.events.</span></span><span class="sig-name descname"><span class="pre">ProgressEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/events.html#ProgressEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.events.ProgressEvent" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.events.</span></span><span class="sig-name descname"><span class="pre">ProgressEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">call_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elapsed_s</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider_phase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/events.html#ProgressEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.events.ProgressEvent" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One step in the lifecycle of a fal call.</p>
 <dl class="field-list simple">
@@ -597,6 +603,20 @@ compatibility.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.events.ProgressEvent.metrics">
+<span class="sig-name descname"><span class="pre">metrics</span></span><a class="headerlink" href="#falaw.events.ProgressEvent.metrics" title="Link to this definition">#</a></dt>
+<dd><p>fal’s <code class="docutils literal notranslate"><span class="pre">Completed.metrics</span></code> on a <code class="docutils literal notranslate"><span class="pre">&quot;done&quot;</span></code> event, or <code class="docutils literal notranslate"><span class="pre">None</span></code>
+(see the module docstring). A plain <code class="docutils literal notranslate"><span class="pre">dict</span></code>, so the event stays
+serialisable (<code class="docutils literal notranslate"><span class="pre">dataclasses.asdict</span></code>, pickle, JSON); subscribers share
+it and must not edit it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -731,6 +751,7 @@ that unit’s events without threading <code class="docutils literal notranslate
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.elapsed_s"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.elapsed_s</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.provider_phase"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.provider_phase</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.queue_position"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.queue_position</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.ProgressEvent.metrics"><code class="docutils literal notranslate"><span class="pre">ProgressEvent.metrics</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.events.clear_subscribers"><code class="docutils literal notranslate"><span class="pre">clear_subscribers()</span></code></a></li>

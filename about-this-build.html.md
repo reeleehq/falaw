@@ -2,7 +2,7 @@
 
 # About this build
 
-This documentation was built on **2026-10-27 10:35 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/522cf126392918aa104c1a6173b729f9c813b5d5"><code>522cf12</code></a> on branch <code>main</code>, for **falaw 0.0.79** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-27 18:14 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/ec90ff4c013d03bc0408361acf6e894565aab956"><code>ec90ff4</code></a> on branch <code>main</code>, for **falaw 0.0.80** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -11,7 +11,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/522cf126392918aa104c1a6173b729f9c813b5d5"><code>522cf126392918aa104c1a6173b729f9c813b5d5</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/ec90ff4c013d03bc0408361acf6e894565aab956"><code>ec90ff4c013d03bc0408361acf6e894565aab956</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -22,9 +22,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40489173319">40489173319</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40557599457">40557599457</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>522cf126392918aa104c1a6173b729f9c813b5d5</code> (in the history of the built commit) |
+| Event commit | <code>ec90ff4c013d03bc0408361acf6e894565aab956</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -49,13 +49,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.79/">0.0.79</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.80/">0.0.80</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 522cf126392918aa104c1a6173b729f9c813b5d5
+git checkout ec90ff4c013d03bc0408361acf6e894565aab956
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
