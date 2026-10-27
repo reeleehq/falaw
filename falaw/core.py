@@ -22,6 +22,7 @@ from typing import Any, Callable, Iterator, Mapping, Optional
 from ._credentials import current_credentials, resolve_credential, using_credentials
 from .errors import import_fal_client as _import_fal_client
 from .errors import translate as _translate_error
+from .degrade import emit_degradation
 from .events import EventCallback, ProgressEvent, emit
 from .journal import _default_journal
 
@@ -172,7 +173,7 @@ def call_fal(
         pct: float | None = None,
         provider_phase: str | None = None,
         queue_position: int | None = None,
-        metrics: Mapping[str, Any] | None = None,
+        metrics: dict | None = None,
     ) -> None:
         emit(
             ProgressEvent(
@@ -198,7 +199,16 @@ def call_fal(
         queued_cls = getattr(fal_client, "Queued", None)
         completed_cls = getattr(fal_client, "Completed", None)
         if completed_cls is not None and isinstance(update, completed_cls):
-            metrics.update(getattr(update, "metrics", None) or {})
+            # Inside subscribe, before the result is read: raising here would lose a
+            # run fal has already billed, so a malformed value degrades instead.
+            reported = getattr(update, "metrics", None)
+            if isinstance(reported, Mapping):
+                metrics.update(reported)
+            elif reported is not None:
+                emit_degradation(
+                    f"fal reported non-mapping metrics for {application!r}: "
+                    f"{reported!r}; the done event carries none."
+                )
         elif queued_cls is not None and isinstance(update, queued_cls):
             position = getattr(update, "position", None)
             if last_position != [position]:

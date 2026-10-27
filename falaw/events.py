@@ -41,8 +41,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from types import MappingProxyType
-from typing import Any, Callable, Iterable, Literal, Mapping, Optional
+from typing import Any, Callable, Iterable, Literal, Optional
 
 
 EventKind = Literal[
@@ -72,8 +71,10 @@ class ProgressEvent:
         provider_phase: fal's reported phase (see the module docstring), or ``None``.
         queue_position: fal's ``queue_position`` on a ``"provider_queued"`` event
             (0 = next); ``None`` on every other event.
-        metrics: fal's ``Completed.metrics`` on a ``"done"`` event (read-only), or
-            ``None`` (see the module docstring).
+        metrics: fal's ``Completed.metrics`` on a ``"done"`` event, or ``None``
+            (see the module docstring). A plain ``dict``, so the event stays
+            serialisable (``dataclasses.asdict``, pickle, JSON); subscribers share
+            it and must not edit it.
     """
 
     kind: EventKind
@@ -84,11 +85,7 @@ class ProgressEvent:
     elapsed_s: float = 0.0
     provider_phase: Optional[ProviderPhase] = None
     queue_position: Optional[int] = None
-    metrics: Optional[Mapping[str, Any]] = field(default=None, hash=False)
-
-    def __post_init__(self) -> None:
-        if self.metrics is not None:  # a snapshot no subscriber can edit for the others
-            object.__setattr__(self, "metrics", MappingProxyType(dict(self.metrics)))
+    metrics: Optional[dict[str, Any]] = field(default=None, hash=False)
 
 
 # --- subscriber registry ---------------------------------------------------

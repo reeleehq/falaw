@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import dataclasses
+import pickle
 import sys
 import types
 from typing import Any
@@ -266,7 +268,7 @@ def test_a_queue_that_does_not_move_is_reported_once():
     assert [e.queue_position for e in events if e.kind == "provider_queued"] == [4, 3]
 
 
-def _install_fake_fal_client_completing(metrics, *, result=None):
+def _install_fake_fal_client_completing(monkeypatch, metrics, *, completed_cls=None):
     """A stub whose ``subscribe`` ends with fal's ``Completed(logs, metrics)``."""
 
     class _InProgress:
@@ -277,34 +279,52 @@ def _install_fake_fal_client_completing(metrics, *, result=None):
         def __init__(self, logs, metrics):
             self.logs, self.metrics = logs, metrics
 
+    completed_cls = completed_cls or _Completed
+
     def subscribe(application, *, arguments, with_logs, on_queue_update):
         on_queue_update(_InProgress())
-        on_queue_update(_Completed(None, metrics))
-        return result if result is not None else {"video": {"url": "u"}}
+        on_queue_update(completed_cls(logs=[], metrics=metrics))
+        return {"video": {"url": "u"}}
 
-    sys.modules["fal_client"] = types.SimpleNamespace(
-        InProgress=_InProgress, Completed=_Completed, subscribe=subscribe
+    fake = types.SimpleNamespace(
+        InProgress=_InProgress, Completed=completed_cls, subscribe=subscribe
     )
+    monkeypatch.setitem(sys.modules, "fal_client", fake)
 
 
-def test_completed_metrics_ride_the_done_event_not_the_response():
-    _install_fake_fal_client_completing({"inference_time": 3.25})
+def test_completed_metrics_ride_the_done_event_not_the_response(monkeypatch):
+    _install_fake_fal_client_completing(monkeypatch, {"inference_time": 3.25})
     from falaw import call_fal
 
     events = []
     response = call_fal("fal-ai/x", {}, on_event=events.append)
     assert response == {"video": {"url": "u"}}  # the model's output, untouched
     done = events[-1]
-    assert done.kind == "done" and dict(done.metrics) == {"inference_time": 3.25}
+    assert done.kind == "done" and done.metrics == {"inference_time": 3.25}
     assert all(e.metrics is None for e in events[:-1])
-    with pytest.raises(TypeError):  # one subscriber cannot edit it for the others
-        done.metrics["inference_time"] = 0
+    # Sinks serialise events (nw's job record uses ``asdict``): keep that working.
+    assert dataclasses.asdict(done)["metrics"] == {"inference_time": 3.25}
+    assert pickle.loads(pickle.dumps(done)) == done
     hash(done)  # events stay hashable
 
 
+def test_the_real_fal_client_completed_status_is_recognised(monkeypatch):
+    # Other tests leave a stub in sys.modules["fal_client"]: reach the real one.
+    monkeypatch.delitem(sys.modules, "fal_client", raising=False)
+    fal_client = pytest.importorskip("fal_client.client")
+    _install_fake_fal_client_completing(
+        monkeypatch, {"inference_time": 2.0}, completed_cls=fal_client.Completed
+    )
+    from falaw import call_fal
+
+    events = []
+    call_fal("fal-ai/x", {}, on_event=events.append)
+    assert events[-1].metrics == {"inference_time": 2.0}
+
+
 @pytest.mark.parametrize("metrics", [{}, None])
-def test_no_completed_metrics_is_none_not_empty(metrics):
-    _install_fake_fal_client_completing(metrics)
+def test_no_completed_metrics_is_none_not_empty(monkeypatch, metrics):
+    _install_fake_fal_client_completing(monkeypatch, metrics)
     from falaw import call_fal
 
     events = []
@@ -312,12 +332,25 @@ def test_no_completed_metrics_is_none_not_empty(metrics):
     assert events[-1].kind == "done" and events[-1].metrics is None
 
 
-def test_cached_call_fal_reports_metrics_on_a_run_and_none_on_a_hit():
-    _install_fake_fal_client_completing({"inference_time": 1.5})
+def test_malformed_metrics_degrade_and_never_lose_the_billed_result(monkeypatch):
+    _install_fake_fal_client_completing(monkeypatch, "oops")
+    from falaw import call_fal
+    from falaw.degrade import deferred_degrade_warnings
+
+    events = []
+    with deferred_degrade_warnings() as complaints:
+        response = call_fal("fal-ai/x", {}, on_event=events.append)
+    assert response == {"video": {"url": "u"}}
+    assert events[-1].kind == "done" and events[-1].metrics is None
+    assert any("non-mapping metrics" in c for c in complaints)
+
+
+def test_cached_call_fal_reports_metrics_on_a_run_and_none_on_a_hit(monkeypatch):
+    _install_fake_fal_client_completing(monkeypatch, {"inference_time": 1.5})
     from falaw import cached_call_fal
 
     ran, hit = [], []
     cached_call_fal("fal-ai/x", {"prompt": "p"}, on_event=ran.append)
     cached_call_fal("fal-ai/x", {"prompt": "p"}, on_event=hit.append)
-    assert dict(ran[-1].metrics) == {"inference_time": 1.5}
+    assert ran[-1].metrics == {"inference_time": 1.5}
     assert [e.kind for e in hit] == ["cache_hit"] and hit[0].metrics is None
