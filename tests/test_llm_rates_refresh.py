@@ -598,3 +598,24 @@ def test_proposed_rows_carry_the_block_and_the_diff_reports_a_change_to_it():
         ("anthropic/claude-sonnet-4.5", "long_prompt"),
         ("google/gemini-2.5-pro", "long_prompt"),
     }
+
+
+def test_any_llm_exposes_no_prompt_cache_control():
+    """falaw#129: llm_ceiling_usd prices every prompt token at the prompt rate, which
+    is a ceiling only while a call cannot write Anthropic's prompt cache (1.25x).
+    Through any-llm it cannot: no input parameter places a cache breakpoint. A new
+    parameter fails this, so the ceiling is revisited before it can under-quote."""
+    import re
+
+    inputs = _any_llm_text().split("input parameters:")[1].split("### Output Schema")[0]
+    params = set(re.findall(r"- \*\*`(\w+)`\*\*", inputs))
+    assert params == {
+        "prompt",
+        "system_prompt",
+        "reasoning",
+        "priority",
+        "temperature",
+        "max_tokens",
+        "model",
+    }
+    assert "cache" not in inputs.lower()
