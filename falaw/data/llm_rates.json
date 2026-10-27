@@ -5,7 +5,8 @@
   "units": {
     "per_call_usd": "USD billed by fal per request to the router",
     "input_usd_per_mtok": "USD per 1,000,000 prompt tokens, upstream list rate",
-    "output_usd_per_mtok": "USD per 1,000,000 completion tokens, upstream list rate"
+    "output_usd_per_mtok": "USD per 1,000,000 completion tokens, upstream list rate",
+    "long_prompt": "Upstream token rates that replace the row's own once a prompt exceeds over_input_tokens (OpenRouter pricing.overrides, whose min_prompt_tokens is over_input_tokens + 1)"
   },
   "provenance": {
     "per_call_usd": "fal's own any-llm endpoint doc, fetched 2026-10-27: '$0.001 per requests', and 'Premium models are charged at 10x the rate of standard models' followed by the verbatim premium list. Materialized per row so no multiplier arithmetic lives in code.",
@@ -38,6 +39,11 @@
       "per_call_usd": 0.01,
       "input_usd_per_mtok": 3.0,
       "output_usd_per_mtok": 15.0,
+      "long_prompt": {
+        "over_input_tokens": 199999,
+        "input_usd_per_mtok": 6.0,
+        "output_usd_per_mtok": 22.5
+      },
       "source": "fal any-llm endpoint doc (https://fal.ai/models/fal-ai/any-llm/llms.txt); upstream per-token rates from OpenRouter (https://openrouter.ai/api/v1/models)",
       "date": "2026-10-27",
       "notes": ""
@@ -48,6 +54,11 @@
       "per_call_usd": 0.01,
       "input_usd_per_mtok": 0.1,
       "output_usd_per_mtok": 0.5,
+      "long_prompt": {
+        "over_input_tokens": 99999,
+        "input_usd_per_mtok": 0.5,
+        "output_usd_per_mtok": 2.5
+      },
       "source": "fal any-llm endpoint doc (https://fal.ai/models/fal-ai/any-llm/llms.txt); upstream per-token rates from OpenRouter (https://openrouter.ai/api/v1/models)",
       "date": "2026-10-27",
       "notes": ""
@@ -158,6 +169,11 @@
       "per_call_usd": 0.01,
       "input_usd_per_mtok": 1.25,
       "output_usd_per_mtok": 10.0,
+      "long_prompt": {
+        "over_input_tokens": 199999,
+        "input_usd_per_mtok": 2.5,
+        "output_usd_per_mtok": 15.0
+      },
       "source": "fal any-llm endpoint doc (https://fal.ai/models/fal-ai/any-llm/llms.txt); upstream per-token rates from OpenRouter (https://openrouter.ai/api/v1/models)",
       "date": "2026-10-27",
       "notes": ""

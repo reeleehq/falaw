@@ -26,6 +26,7 @@ from falaw.llm_rates_refresh import (
     diff_llm_rate_tables,
     format_llm_rates_diff,
     parse_any_llm_doc,
+    parse_openrouter_long_prompts,
     parse_openrouter_models,
     refresh_llm_rates,
 )
@@ -135,8 +136,13 @@ def test_proposed_rows_reproduce_the_committed_table_from_the_same_sources():
     # table cites (fetched the same day) -- so a correct parse regenerates it
     # exactly, field for field, and the diff should be empty.
     doc = parse_any_llm_doc(_any_llm_text())
-    openrouter_rates = parse_openrouter_models(_openrouter_body())
-    proposed_rows = build_proposed_rows(doc, openrouter_rates, date="2026-10-27")
+    body = _openrouter_body()
+    proposed_rows = build_proposed_rows(
+        doc,
+        parse_openrouter_models(body),
+        date="2026-10-27",
+        long_prompts=parse_openrouter_long_prompts(body),
+    )
 
     with open(_committed_table_path(), encoding="utf-8") as f:
         committed_rows = json.load(f)["rows"]
@@ -488,3 +494,89 @@ def test_repeated_quotes_of_the_same_stale_row_warn_once_not_per_call():
         for _ in range(5):
             llm_ceiling_usd("my/blank-date-model", rates=blank)
         assert len(caught) == 1
+
+
+# --- long-prompt tiers from pricing.overrides (falaw#124) -------------------
+
+
+def test_overrides_become_a_long_prompt_block_starting_at_the_threshold():
+    blocks = parse_openrouter_long_prompts(_openrouter_body())
+    assert blocks["anthropic/claude-haiku-5.5"] == {
+        "over_input_tokens": 99_999,  # min_prompt_tokens 100,000 is billed long
+        "input_usd_per_mtok": 0.5,
+        "output_usd_per_mtok": 2.5,
+    }
+    assert set(blocks) == {
+        "anthropic/claude-haiku-5.5",
+        "anthropic/claude-sonnet-4.5",
+        "google/gemini-2.5-pro",
+    }
+
+
+def test_several_overrides_collapse_to_one_block_that_never_under_quotes():
+    payload = {
+        "data": [
+            {
+                "id": "a/m",
+                "pricing": {
+                    "overrides": [
+                        {
+                            "min_prompt_tokens": 500,
+                            "prompt": "0.000004",
+                            "completion": "0.000001",
+                        },
+                        {
+                            "min_prompt_tokens": 100,
+                            "prompt": "0.000002",
+                            "completion": "0.000003",
+                        },
+                    ]
+                },
+            }
+        ]
+    }
+    assert parse_openrouter_long_prompts(payload)["a/m"] == {
+        "over_input_tokens": 99,
+        "input_usd_per_mtok": 4.0,
+        "output_usd_per_mtok": 3.0,
+    }
+
+
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"prompt": "0.000002", "completion": "0.000003"},  # no threshold
+        {"min_prompt_tokens": "100", "prompt": "0.000002", "completion": "0.000003"},
+        {"min_prompt_tokens": 0, "prompt": "0.000002", "completion": "0.000003"},
+        {"min_prompt_tokens": 100, "prompt": "0", "completion": "0.000003"},
+        {"min_prompt_tokens": 100, "completion": "0.000003"},
+    ],
+)
+def test_an_unparseable_override_yields_no_block(override):
+    payload = {"data": [{"id": "a/m", "pricing": {"overrides": [override]}}]}
+    assert parse_openrouter_long_prompts(payload) == {}
+
+
+def test_proposed_rows_carry_the_block_and_the_diff_reports_a_change_to_it():
+    doc = parse_any_llm_doc(_any_llm_text())
+    body = _openrouter_body()
+    rows = build_proposed_rows(
+        doc,
+        parse_openrouter_models(body),
+        date="2026-10-27",
+        long_prompts=parse_openrouter_long_prompts(body),
+    )
+    by_model = {r["model"]: r for r in rows}
+    assert (
+        by_model["anthropic/claude-sonnet-4.5"]["long_prompt"]["over_input_tokens"]
+        == 199_999
+    )
+    assert "long_prompt" not in by_model["openai/gpt-4o"]
+
+    without = build_proposed_rows(doc, parse_openrouter_models(body), date="2026-10-27")
+    changed = diff_llm_rate_tables(rows, without)["changed"]
+    assert {(c["model"], c["field"]) for c in changed} == {
+        ("anthropic/claude-haiku-5.5", "long_prompt"),
+        ("anthropic/claude-sonnet-4.5", "long_prompt"),
+        ("google/gemini-2.5-pro", "long_prompt"),
+    }

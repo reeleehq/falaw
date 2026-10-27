@@ -203,7 +203,7 @@ def test_quote_is_monotone_in_each_token_hint(hint):
 
 def test_the_token_basis_uses_the_published_per_million_rates():
     rate = get_llm_rate(PRICED_MODEL)
-    input_tokens, output_tokens = 500_000, 100_000
+    input_tokens, output_tokens = 150_000, 100_000  # below the 200k long-prompt tier
     expected = (
         input_tokens * rate.input_usd_per_mtok
         + output_tokens * rate.output_usd_per_mtok
@@ -377,3 +377,63 @@ def test_plan_accepts_a_rates_override():
         )
     }
     assert _plan(llm_rates=mine).estimated_cost_usd == 0.25
+
+
+# --- long-prompt tiers (falaw#124) -------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "model, threshold",
+    [
+        ("anthropic/claude-haiku-5.5", 100_000),
+        ("anthropic/claude-sonnet-4.5", 200_000),
+        ("google/gemini-2.5-pro", 200_000),
+    ],
+)
+def test_a_prompt_at_the_long_prompt_threshold_quotes_the_dearer_tier(model, threshold):
+    rate = get_llm_rate(model)
+    long_rates = rate.long_prompt_rates
+    assert long_rates.input_usd_per_mtok > rate.input_usd_per_mtok
+    assert long_rates.output_usd_per_mtok > rate.output_usd_per_mtok
+    out = 4_000
+
+    def quote(tokens):
+        return llm_ceiling_usd(model, input_tokens=tokens, max_output_tokens=out)
+
+    base = (
+        (threshold - 1) * rate.input_usd_per_mtok + out * rate.output_usd_per_mtok
+    ) / 1e6
+    dear = (
+        threshold * long_rates.input_usd_per_mtok + out * long_rates.output_usd_per_mtok
+    ) / 1e6
+    assert quote(threshold - 1) == pytest.approx(max(rate.per_call_usd, base))
+    assert quote(threshold) == pytest.approx(max(rate.per_call_usd, dear))
+
+
+def test_a_caller_table_long_prompt_tier_is_applied():
+    from falaw.llm_prices import LlmPriceRates
+
+    rates = {
+        "a/m": LlmRate(
+            model="a/m",
+            tier="standard",
+            per_call_usd=0.0,
+            input_usd_per_mtok=1.0,
+            output_usd_per_mtok=1.0,
+            long_prompt_over_tokens=10,
+            long_prompt_rates=LlmPriceRates(
+                input_usd_per_mtok=3.0, output_usd_per_mtok=5.0
+            ),
+            date="2999-01-01",
+        )
+    }
+    quote = lambda n: llm_ceiling_usd(  # noqa: E731
+        "a/m", input_tokens=n, max_output_tokens=1_000_000, rates=rates
+    )
+    assert quote(10) == pytest.approx(1.0 + 10 / 1e6)
+    assert quote(11) == pytest.approx(5.0 + 33 / 1e6)
+
+
+def test_a_row_without_a_long_prompt_tier_has_one_regime():
+    rate = get_llm_rate("openai/gpt-4o")
+    assert rate.long_prompt_rates is None and rate.long_prompt_over_tokens is None
