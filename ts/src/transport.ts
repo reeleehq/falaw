@@ -75,6 +75,8 @@ export interface QueueTransportOptions {
 const DFLT_QUEUE_BASE_URL = 'https://queue.fal.run';
 const DFLT_POLL_INTERVAL_MS = 1000;
 const DFLT_TIMEOUT_MS = 10 * 60 * 1000;
+/** No queue position seen yet: unlike `null`, a value fal's JSON can never carry. */
+const NO_POSITION = Symbol('no queue position');
 
 interface QueueSubmission {
   request_id?: string;
@@ -166,7 +168,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
     }
     ctx.onEvent?.({ kind: 'queued', application, requestId });
     const deadline = Date.now() + timeout;
-    let lastPosition: number | undefined | null = null; // fal re-reports the line: say it on a change only
+    let lastPosition: unknown = NO_POSITION; // fal re-reports the line: say it on a change only
     let metrics: Json | undefined;
     try {
       for (;;) {
@@ -176,7 +178,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
           metrics = isRecord(status.metrics) && Object.keys(status.metrics).length ? status.metrics : undefined;
           if (status.error) {
             // No result is fetched, so the run fails (the Python side keeps a result in hand).
-            throw new FalError(`fal request ${requestId ?? ''} failed: ${status.error_type ?? 'error'}: ${status.error}`);
+            throw new FalError(`fal request ${requestId ?? ''} failed: ${status.error_type || 'error'}: ${status.error}`);
           }
           break;
         }
@@ -186,7 +188,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
             ctx.onEvent?.({ kind: 'provider_queued', application, requestId, status: status.status, providerPhase: 'in_queue', queuePosition: status.queue_position });
           }
         } else if (status.status === 'IN_PROGRESS') {
-          lastPosition = null; // a runner failure sends the call back to IN_QUEUE: report that wait again
+          lastPosition = NO_POSITION; // a runner failure sends the call back to IN_QUEUE: report that wait again
           ctx.onEvent?.({ kind: 'progress', application, requestId, status: status.status, providerPhase: 'in_progress' });
         } else if (status.status) {
           throw new FalError(`fal request ${requestId ?? ''} ended with status ${status.status}`);

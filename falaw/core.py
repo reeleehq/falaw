@@ -123,8 +123,8 @@ class _FalStatusTranslator:
     """Turns fal's queue statuses into falaw events, for one :func:`call_fal`.
 
     Passed to ``fal_client.subscribe`` as ``on_queue_update``. It runs inside
-    subscribe, before the result is read, so it never raises: an exception here
-    would lose a run fal may already have billed. What it learns from the final
+    subscribe, before the result is read, so it never raises over a malformed
+    status value: an exception here would lose a run fal may already have billed. What it learns from the final
     ``Completed`` status (``metrics``, ``provider_error``) is read back by
     :func:`call_fal` once subscribe returns or raises.
     """
