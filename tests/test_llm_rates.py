@@ -26,7 +26,7 @@ ANY_LLM_MODEL_ENUM = (
     "deepseek/deepseek-r1",
     "deepseek/deepseek-v3.1-terminus",
     "anthropic/claude-sonnet-4.5",
-    "anthropic/claude-haiku-4.5",
+    "anthropic/claude-haiku-5.5",
     "anthropic/claude-3.7-sonnet",
     "anthropic/claude-3.5-sonnet",
     "anthropic/claude-3-5-haiku",
@@ -66,7 +66,7 @@ ANY_LLM_PREMIUM_MODELS = frozenset(
     {
         "openai/gpt-4.1",
         "anthropic/claude-3.5-sonnet",
-        "anthropic/claude-haiku-4.5",
+        "anthropic/claude-haiku-5.5",
         "deepseek/deepseek-r1",
         "openai/gpt-4o",
         "openai/o3",
