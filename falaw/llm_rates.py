@@ -23,6 +23,19 @@ over every basis known for that model** (:func:`llm_ceiling_usd`) — the only
 composition that cannot under-quote either way, and monotone non-decreasing in
 both token hints.
 
+**Prompt caching cannot raise the bill** (falaw#129). OpenRouter lists cache-write
+rates above the prompt rate for Anthropic models (1.25x, and 2x for the 1-hour cache),
+so a ceiling that priced every prompt token at the prompt rate would under-quote a prompt
+that writes the cache. Going by fal's published input schema, an any-llm call cannot
+write one: its input is a plain ``prompt`` and ``system_prompt`` string with no
+``cache_control`` breakpoint, and Anthropic's cache, like Gemini's explicit cache (prompt
+plus a storage charge), needs that opt-in. OpenAI's and Gemini's implicit caching only
+discounts reads. So the prompt rate bounds the input side. This rests on the schema
+alone: fal could still set a breakpoint on its side, which nothing published shows. The
+refresh reports any input parameter beyond the reviewed set
+(:data:`falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS`); a new one means revisiting
+this. The scope is ``fal-ai/any-llm``, the router the table prices.
+
 The table itself is data, not code: :data:`RATES_FILENAME` under ``falaw/data``,
 versioned, one row per routed model, each row carrying its own ``source`` and
 ``date``. Nothing here touches the network — planning stays free.

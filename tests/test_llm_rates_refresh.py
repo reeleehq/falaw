@@ -29,6 +29,7 @@ from falaw.llm_rates_refresh import (
     parse_openrouter_long_prompts,
     parse_openrouter_models,
     refresh_llm_rates,
+    REVIEWED_ANY_LLM_INPUTS,
 )
 
 _FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures", "llm_rates")
@@ -598,3 +599,30 @@ def test_proposed_rows_carry_the_block_and_the_diff_reports_a_change_to_it():
         ("anthropic/claude-sonnet-4.5", "long_prompt"),
         ("google/gemini-2.5-pro", "long_prompt"),
     }
+
+
+def test_any_llm_exposes_no_prompt_cache_control():
+    """falaw#129: llm_ceiling_usd prices every prompt token at the prompt rate, a
+    ceiling only while a call cannot write Anthropic's prompt cache. The reviewed
+    input set is what the recorded doc lists, and none of it is a cache control."""
+    doc = parse_any_llm_doc(_any_llm_text())
+    assert doc.input_params == REVIEWED_ANY_LLM_INPUTS
+    assert not any("cache" in name for name in doc.input_params)
+
+
+def test_the_refresh_reports_an_any_llm_input_nobody_reviewed(tmp_path):
+    text = _any_llm_text().replace(
+        "- **`prompt`**",
+        "- **`cache_control`** (`object`, _optional_):\n  Cache breakpoint\n\n- **`prompt`**",
+        1,
+    )
+    summary = refresh_llm_rates(
+        write=True,
+        http_get_any_llm_doc=lambda url: text,
+        http_get_openrouter_models=lambda url: _openrouter_body(),
+        proposed_path=str(tmp_path / "proposed.json"),
+        diff_path=str(tmp_path / "diff.txt"),
+        today="2026-10-27",
+    )
+    assert summary["unreviewed_any_llm_inputs"] == ["cache_control"]
+    assert "cache_control" in (tmp_path / "diff.txt").read_text()

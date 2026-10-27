@@ -75,6 +75,23 @@ first ``.`` — several model ids (``gpt-4.1``, ``claude-3.5-sonnet``, ...)
 contain a period of their own."""
 _OPTIONS_RE = re.compile(r"Options:\s*(?P<opts>(?:`\"[^\"]+\"`,?\s*)+)")
 _QUOTED_RE = re.compile(r'`"([^"]+)"`')
+_INPUTS_RE = re.compile(r"input parameters:(?P<inputs>.*?)### Output Schema", re.DOTALL)
+_PARAM_RE = re.compile(r"^- \*\*`(\w+)`\*\*", re.MULTILINE)
+
+#: any-llm's input parameters as of the last human review. The rate table's ceiling
+#: assumes none of them lets a call write a prompt cache (falaw#129, see the
+#: :mod:`falaw.llm_rates` docstring), so the refresh reports any parameter fal adds.
+REVIEWED_ANY_LLM_INPUTS = frozenset(
+    {
+        "prompt",
+        "system_prompt",
+        "reasoning",
+        "priority",
+        "temperature",
+        "max_tokens",
+        "model",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -92,12 +109,15 @@ class AnyLlmDoc:
             table row).
         model_enum: Every routed-model id the ``model`` argument accepts, in
             the doc's own order.
+        input_params: The input parameter names the doc lists (empty when the
+            doc has no input section).
     """
 
     base_per_call_usd: float
     premium_multiple: int
     premium_models: frozenset[str]
     model_enum: tuple[str, ...]
+    input_params: frozenset[str] = frozenset()
 
 
 def parse_any_llm_doc(text: str) -> AnyLlmDoc:
@@ -134,11 +154,17 @@ def parse_any_llm_doc(text: str) -> AnyLlmDoc:
     if not model_enum:
         raise ValueError("any-llm doc: `model` Options list parsed empty")
 
+    inputs_match = _INPUTS_RE.search(text)
+    input_params = frozenset(
+        _PARAM_RE.findall(inputs_match.group("inputs")) if inputs_match else ()
+    )
+
     return AnyLlmDoc(
         base_per_call_usd=base_per_call_usd,
         premium_multiple=premium_multiple,
         premium_models=premium_models,
         model_enum=model_enum,
+        input_params=input_params,
     )
 
 
@@ -467,12 +493,20 @@ def refresh_llm_rates(
 
     diff = diff_llm_rate_tables(committed_rows, proposed_rows)
     diff_text = format_llm_rates_diff(diff)
+    unreviewed_inputs = sorted(any_llm.input_params - REVIEWED_ANY_LLM_INPUTS)
+    if unreviewed_inputs:
+        diff_text = (
+            f"any-llm has new input parameters {unreviewed_inputs}: check that none "
+            "lets a call write a prompt cache before promoting (falaw#129).\n\n"
+            + diff_text
+        )
 
     summary = {
         "fetched_at": stamp,
         "committed_models": len(committed_rows),
         "proposed_models": len(proposed_rows),
         "diff": diff,
+        "unreviewed_any_llm_inputs": unreviewed_inputs,
         "write": write,
         "proposed_path": None,
         "diff_path": None,
