@@ -136,7 +136,7 @@ def test_proposed_rows_reproduce_the_committed_table_from_the_same_sources():
     # exactly, field for field, and the diff should be empty.
     doc = parse_any_llm_doc(_any_llm_text())
     openrouter_rates = parse_openrouter_models(_openrouter_body())
-    proposed_rows = build_proposed_rows(doc, openrouter_rates, date="2026-09-07")
+    proposed_rows = build_proposed_rows(doc, openrouter_rates, date="2026-10-27")
 
     with open(_committed_table_path(), encoding="utf-8") as f:
         committed_rows = json.load(f)["rows"]
@@ -280,7 +280,7 @@ def test_refresh_dry_run_touches_no_file():
         write=False,
         http_get_any_llm_doc=get_text,
         http_get_openrouter_models=get_json,
-        today="2026-09-07",
+        today="2026-10-27",
     )
 
     assert open(committed_path, encoding="utf-8").read() == before
@@ -306,7 +306,7 @@ def test_refresh_write_writes_a_proposal_and_diff_but_never_the_committed_file(
         http_get_openrouter_models=get_json,
         proposed_path=proposed_path,
         diff_path=diff_path,
-        today="2026-09-07",
+        today="2026-10-27",
     )
 
     # The committed table -- the one a test pins the premium set against --
@@ -328,7 +328,7 @@ def test_refresh_uses_the_injected_fetchers_not_the_network():
         write=False,
         http_get_any_llm_doc=get_text,
         http_get_openrouter_models=get_json,
-        today="2026-09-07",
+        today="2026-10-27",
     )
     assert calls == [ANY_LLM_DOC_URL, OPENROUTER_MODELS_URL]
 
@@ -349,7 +349,7 @@ def test_refresh_dry_run_reports_a_price_change_without_writing_anything(tmp_pat
         http_get_any_llm_doc=get_text,
         http_get_openrouter_models=get_json,
         rates_path=str(rates_path),
-        today="2026-09-07",
+        today="2026-10-27",
     )
 
     assert rates_path.read_text() == json.dumps(stale_table)  # untouched
@@ -364,7 +364,7 @@ def test_refresh_dry_run_reports_a_price_change_without_writing_anything(tmp_pat
     assert entry["new"] == 3.0
     # The diff carries where the proposed number came from, not just the
     # number, so a human reviewing it doesn't have to open the proposed file.
-    assert entry["date"] == "2026-09-07"
+    assert entry["date"] == "2026-10-27"
     assert "openrouter.ai" in entry["source"]
 
 
@@ -421,9 +421,12 @@ def test_check_staleness_respects_a_custom_threshold():
 def test_llm_ceiling_usd_warns_when_the_committed_table_is_stale(monkeypatch):
     import datetime
 
-    # The committed table's date is 2026-09-07; push "today" far enough past
-    # the default threshold that every row reads as stale.
-    far_future = datetime.date.fromisoformat("2026-09-07") + datetime.timedelta(
+    from falaw.llm_rates import get_llm_rate
+
+    # Push "today" far enough past the committed row's date (read, not pinned,
+    # so a refresh does not break this test) that it reads as stale.
+    committed = get_llm_rate("anthropic/claude-sonnet-4.5").date
+    far_future = datetime.date.fromisoformat(committed) + datetime.timedelta(
         days=DEFAULT_STALENESS_THRESHOLD_DAYS + 1
     )
 
