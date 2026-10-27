@@ -513,48 +513,64 @@ def test_overrides_become_a_long_prompt_block_starting_at_the_threshold():
     }
 
 
-def test_several_overrides_collapse_to_one_block_that_never_under_quotes():
+_OK_OVERRIDE = {
+    "min_prompt_tokens": 100,
+    "prompt": "0.000002",
+    "completion": "0.000003",
+}
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        [_OK_OVERRIDE, {**_OK_OVERRIDE, "min_prompt_tokens": 500}],  # several tiers
+        [{"prompt": "0.000002", "completion": "0.000003"}],  # no threshold
+        [{**_OK_OVERRIDE, "min_prompt_tokens": "100"}],
+        [{**_OK_OVERRIDE, "min_prompt_tokens": 100.0}],
+        [{**_OK_OVERRIDE, "min_prompt_tokens": True}],
+        [{**_OK_OVERRIDE, "min_prompt_tokens": 0}],
+        [{**_OK_OVERRIDE, "prompt": "0"}],
+        [{"min_prompt_tokens": 100, "completion": "0.000003"}],
+    ],
+)
+def test_an_unparseable_tier_drops_the_models_token_rates(overrides):
+    """Quoting the base rates alone would be the under-quote the tier exists for."""
     payload = {
         "data": [
             {
                 "id": "a/m",
                 "pricing": {
-                    "overrides": [
-                        {
-                            "min_prompt_tokens": 500,
-                            "prompt": "0.000004",
-                            "completion": "0.000001",
-                        },
-                        {
-                            "min_prompt_tokens": 100,
-                            "prompt": "0.000002",
-                            "completion": "0.000003",
-                        },
-                    ]
+                    "prompt": "0.000001",
+                    "completion": "0.000001",
+                    "overrides": overrides,
                 },
             }
         ]
     }
+    assert parse_openrouter_long_prompts(payload) == {"a/m": None}
+    doc = AnyLlmDoc(
+        base_per_call_usd=0.001,
+        premium_multiple=10,
+        premium_models=frozenset(),
+        model_enum=("a/m",),
+    )
+    (row,) = build_proposed_rows(
+        doc,
+        parse_openrouter_models(payload),
+        date="2026-10-27",
+        long_prompts=parse_openrouter_long_prompts(payload),
+    )
+    assert row["input_usd_per_mtok"] is None and row["output_usd_per_mtok"] is None
+    assert "long-prompt tier" in row["notes"] and "long_prompt" not in row
+
+
+def test_one_parseable_override_is_a_block():
+    payload = {"data": [{"id": "a/m", "pricing": {"overrides": [_OK_OVERRIDE]}}]}
     assert parse_openrouter_long_prompts(payload)["a/m"] == {
         "over_input_tokens": 99,
-        "input_usd_per_mtok": 4.0,
+        "input_usd_per_mtok": 2.0,
         "output_usd_per_mtok": 3.0,
     }
-
-
-@pytest.mark.parametrize(
-    "override",
-    [
-        {"prompt": "0.000002", "completion": "0.000003"},  # no threshold
-        {"min_prompt_tokens": "100", "prompt": "0.000002", "completion": "0.000003"},
-        {"min_prompt_tokens": 0, "prompt": "0.000002", "completion": "0.000003"},
-        {"min_prompt_tokens": 100, "prompt": "0", "completion": "0.000003"},
-        {"min_prompt_tokens": 100, "completion": "0.000003"},
-    ],
-)
-def test_an_unparseable_override_yields_no_block(override):
-    payload = {"data": [{"id": "a/m", "pricing": {"overrides": [override]}}]}
-    assert parse_openrouter_long_prompts(payload) == {}
 
 
 def test_proposed_rows_carry_the_block_and_the_diff_reports_a_change_to_it():
@@ -573,7 +589,9 @@ def test_proposed_rows_carry_the_block_and_the_diff_reports_a_change_to_it():
     )
     assert "long_prompt" not in by_model["openai/gpt-4o"]
 
-    without = build_proposed_rows(doc, parse_openrouter_models(body), date="2026-10-27")
+    without = build_proposed_rows(
+        doc, parse_openrouter_models(body), date="2026-10-27", long_prompts={}
+    )
     changed = diff_llm_rate_tables(rows, without)["changed"]
     assert {(c["model"], c["field"]) for c in changed} == {
         ("anthropic/claude-haiku-5.5", "long_prompt"),

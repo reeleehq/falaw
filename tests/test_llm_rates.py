@@ -411,25 +411,13 @@ def test_a_prompt_at_the_long_prompt_threshold_quotes_the_dearer_tier(model, thr
 
 
 def test_a_caller_table_long_prompt_tier_is_applied():
-    from falaw.llm_prices import LlmPriceRates
+    rates = {"a/m": _row(long_prompt_over_tokens=10, rates=(3.0, 5.0))}
 
-    rates = {
-        "a/m": LlmRate(
-            model="a/m",
-            tier="standard",
-            per_call_usd=0.0,
-            input_usd_per_mtok=1.0,
-            output_usd_per_mtok=1.0,
-            long_prompt_over_tokens=10,
-            long_prompt_rates=LlmPriceRates(
-                input_usd_per_mtok=3.0, output_usd_per_mtok=5.0
-            ),
-            date="2999-01-01",
+    def quote(n):
+        return llm_ceiling_usd(
+            "a/m", input_tokens=n, max_output_tokens=1_000_000, rates=rates
         )
-    }
-    quote = lambda n: llm_ceiling_usd(  # noqa: E731
-        "a/m", input_tokens=n, max_output_tokens=1_000_000, rates=rates
-    )
+
     assert quote(10) == pytest.approx(1.0 + 10 / 1e6)
     assert quote(11) == pytest.approx(5.0 + 33 / 1e6)
 
@@ -437,3 +425,44 @@ def test_a_caller_table_long_prompt_tier_is_applied():
 def test_a_row_without_a_long_prompt_tier_has_one_regime():
     rate = get_llm_rate("openai/gpt-4o")
     assert rate.long_prompt_rates is None and rate.long_prompt_over_tokens is None
+
+
+def _row(**long_prompt):
+    from falaw.llm_prices import LlmPriceRates
+
+    rates = long_prompt.pop("rates", None)
+    return LlmRate(
+        model="a/m",
+        tier="standard",
+        per_call_usd=0.0,
+        input_usd_per_mtok=1.0,
+        output_usd_per_mtok=1.0,
+        long_prompt_rates=rates
+        and LlmPriceRates(input_usd_per_mtok=rates[0], output_usd_per_mtok=rates[1]),
+        date="2999-01-01",
+        **long_prompt,
+    )
+
+
+@pytest.mark.parametrize(
+    "long_prompt",
+    [
+        {"rates": (2.0, 2.0)},  # a tier with no threshold
+        {"long_prompt_over_tokens": 10},  # a threshold with no tier
+        {"long_prompt_over_tokens": -1, "rates": (2.0, 2.0)},
+        {"long_prompt_over_tokens": True, "rates": (2.0, 2.0)},
+        {"long_prompt_over_tokens": 10, "rates": (0.5, 2.0)},  # cheaper past it
+    ],
+)
+def test_a_caller_row_with_an_incoherent_long_prompt_tier_is_refused(long_prompt):
+    with pytest.raises(ValueError):
+        _row(**long_prompt)
+
+
+def test_the_quote_never_drops_when_a_prompt_crosses_the_threshold():
+    rates = {"a/m": _row(long_prompt_over_tokens=10, rates=(3.0, 1.0))}
+    quotes = [
+        llm_ceiling_usd("a/m", input_tokens=n, max_output_tokens=5, rates=rates)
+        for n in range(20)
+    ]
+    assert quotes == sorted(quotes)

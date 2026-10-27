@@ -54,7 +54,7 @@ from functools import lru_cache
 from typing import Mapping, Optional
 
 from .base import data_table_version
-from .llm_prices import LlmPriceRates, parse_long_prompt
+from .llm_prices import LlmPriceRates, parse_long_prompt, rates_for_prompt
 
 RATES_FILENAME = "llm_rates.json"
 """Basename of the rate table under ``falaw/data``."""
@@ -158,6 +158,29 @@ class LlmRate:
     source: str = ""
     date: str = ""
     notes: str = ""
+
+    def __post_init__(self) -> None:
+        # A caller's ``rates=`` table is checked too: a half-set or cheaper tier
+        # would raise mid-quote or quote less past the threshold.
+        over, long_rates = self.long_prompt_over_tokens, self.long_prompt_rates
+        if (over is None) != (long_rates is None):
+            raise ValueError(
+                f"{self.model}: long_prompt_over_tokens and long_prompt_rates "
+                "are set together or not at all"
+            )
+        if long_rates is None:
+            return
+        if isinstance(over, bool) or not isinstance(over, int) or over < 0:
+            raise ValueError(
+                f"{self.model}: long_prompt_over_tokens must be an int >= 0"
+            )
+        for name in ("input_usd_per_mtok", "output_usd_per_mtok"):
+            base = getattr(self, name)
+            if base is not None and getattr(long_rates, name) < base:
+                raise ValueError(
+                    f"{self.model}: the long-prompt {name} is below the base rate, "
+                    "so a longer prompt would quote less"
+                )
 
     @property
     def has_token_rates(self) -> bool:
@@ -353,13 +376,18 @@ def llm_ceiling_usd(
     if input_tokens is None or max_output_tokens is None or not rate.has_token_rates:
         return None  # a token quote was asked for and cannot be bounded
 
-    input_rate, output_rate = rate.input_usd_per_mtok, rate.output_usd_per_mtok
-    long_rates = rate.long_prompt_rates
-    if long_rates is not None and input_tokens > rate.long_prompt_over_tokens:
-        input_rate = long_rates.input_usd_per_mtok
-        output_rate = long_rates.output_usd_per_mtok
+    billed = rates_for_prompt(
+        LlmPriceRates(
+            input_usd_per_mtok=rate.input_usd_per_mtok,
+            output_usd_per_mtok=rate.output_usd_per_mtok,
+        ),
+        input_tokens,
+        long_prompt_over_tokens=rate.long_prompt_over_tokens,
+        long_prompt_rates=rate.long_prompt_rates,
+    )
     token_cost = (
-        input_tokens * input_rate + max_output_tokens * output_rate
+        input_tokens * billed.input_usd_per_mtok
+        + max_output_tokens * billed.output_usd_per_mtok
     ) / TOKENS_PER_RATE_UNIT
     return max(rate.per_call_usd, token_cost) * count
 

@@ -117,6 +117,20 @@ def parse_long_prompt(
     return int(long_prompt["over_input_tokens"]), _rates(long_prompt)
 
 
+def rates_for_prompt(
+    rates: LlmPriceRates,
+    input_tokens: int,
+    *,
+    long_prompt_over_tokens: Optional[int],
+    long_prompt_rates: Optional[LlmPriceRates],
+) -> LlmPriceRates:
+    """The rates a prompt of ``input_tokens`` is billed at: the long-prompt tier
+    past its threshold, else ``rates``. Shared by both falaw rate tables."""
+    if long_prompt_rates is not None and input_tokens > long_prompt_over_tokens:
+        return long_prompt_rates
+    return rates
+
+
 @lru_cache(maxsize=1)
 def load_llm_prices() -> LlmPriceTable:
     """The committed table, keyed by ``(provider, model)``. Read once per process."""
@@ -191,12 +205,13 @@ def llm_call_cost_usd(
     known = price is not None
     rates = price.rates if price else _dearest_rates(provider, table)
     counts = llm_token_counts(provider, usage)
-    if (
-        price
-        and price.long_prompt_rates
-        and counts.input > price.long_prompt_over_tokens
-    ):
-        rates = price.long_prompt_rates
+    if price:
+        rates = rates_for_prompt(
+            rates,
+            counts.input,
+            long_prompt_over_tokens=price.long_prompt_over_tokens,
+            long_prompt_rates=price.long_prompt_rates,
+        )
     usd = _usd(rates, counts)
     return round(usd, COST_DECIMALS), known
 
