@@ -962,8 +962,12 @@ window.runMermaid = runMermaid;</script>
 <span class="s2">estimator-only: adding one never moves the cache key or the plan hash.</span>
 
 <span class="s2">The eager `llm_complete_with_receipt` prices the same way --- a receipt for a</span>
-<span class="s2">premium routed model reads $0.01 with `cost_source="rate_table:per_call"`, so a</span>
-<span class="s2">ledger that sums receipts and a gate that reads quotes agree.</span>
+<span class="s2">premium routed model reads $0.01 with `cost_source="rate_table:per_call"`, or more</span>
+<span class="s2">with `cost_source="rate_table:upstream_tokens"` when the response reports usage and</span>
+<span class="s2">those tokens at the routed model's upstream rates exceed that, so a ledger that sums</span>
+<span class="s2">receipts and a gate that reads quotes agree. That figure is an upstream-rate</span>
+<span class="s2">estimate (fal publishes no per-token price), and fal's documented any-llm output</span>
+<span class="s2">carries no `usage`, so receipts read the request price until a response reports it.</span>
 
 <span class="s2">Rates move. Every row carries its own `source` and `date` (`llm_rates.json`);</span>
 <span class="s2">### A saved plan's price is a past fact --- re-quote it before you gate on it</span>

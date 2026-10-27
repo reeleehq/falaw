@@ -352,6 +352,7 @@
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_prices.html">falaw.llm_prices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates.html">falaw.llm_rates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates_refresh.html">falaw.llm_rates_refresh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.llm_regimes.html">falaw.llm_regimes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.local.html">falaw.local</a></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="falaw.operations.html">falaw.operations</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="falaw.operations.audio.html">falaw.operations.audio</a></li>
@@ -497,25 +498,44 @@ recorded at all* (the field signature: real dollars spent beside
 <code class="docutils literal notranslate"><span class="pre">plans:</span> <span class="pre">0</span></code>). A caller that books receipts uses
 <a class="reference internal" href="#falaw.operations.llm.llm_complete_with_receipt" title="falaw.operations.llm.llm_complete_with_receipt"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_complete_with_receipt()</span></code></a> and gets this alongside the text.</p>
 <p>Field semantics, honest by construction:</p>
-<ul class="simple">
+<ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">chars_in</span></code> / <code class="docutils literal notranslate"><span class="pre">chars_out</span></code> are <strong>measured facts</strong> (prompt+system in,
 response text out).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tokens_in</span></code> / <code class="docutils literal notranslate"><span class="pre">tokens_out</span></code> are <strong>best-effort</strong> from the raw
 response’s usage block (OpenAI <code class="docutils literal notranslate"><span class="pre">prompt_tokens</span></code>/<code class="docutils literal notranslate"><span class="pre">completion_tokens</span></code>
-and Anthropic <code class="docutils literal notranslate"><span class="pre">input_tokens</span></code>/<code class="docutils literal notranslate"><span class="pre">output_tokens</span></code> shapes). <code class="docutils literal notranslate"><span class="pre">None</span></code>
-means <em>unrecorded by the provider response</em>, never zero.</p></li>
+and Anthropic <code class="docutils literal notranslate"><span class="pre">input_tokens</span></code>/<code class="docutils literal notranslate"><span class="pre">output_tokens</span></code> shapes, normalized by
+<a class="reference internal" href="falaw.html#falaw.llm_token_counts" title="falaw.llm_token_counts"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_token_counts()</span></code></a>, so an Anthropic <code class="docutils literal notranslate"><span class="pre">tokens_in</span></code> counts</p>
+<blockquote>
+<div><p>its cache reads and writes too). <code class="docutils literal notranslate"><span class="pre">None</span></code> means *unrecorded by the
+provider response* (absent or nonsense, e.g. negative), never zero.</p>
+</div></blockquote>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">estimated_cost_usd</span></code> is <code class="docutils literal notranslate"><span class="pre">0.0</span></code> on a cache hit (nothing was billed),
 else fal’s published per-request price <strong>for the routed model</strong>, read
 off the rate table (<a class="reference internal" href="falaw.html#falaw.llm_ceiling_usd" title="falaw.llm_ceiling_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_ceiling_usd()</span></code></a>) — an estimate, not
-an observed bill. It is the routed model and not the <code class="docutils literal notranslate"><span class="pre">fal-ai/any-llm</span></code>
-record because the record carries fal’s <em>standard</em> tier, and a premium
+an observed bill. When the response reports both token counts and the
+routed model has upstream token rates, it is the greater of that price
+and those tokens at the upstream rates (long-prompt tier included,
+falaw#130), the same max-over-bases a plan-time quote takes, so a long
+prompt is not recorded at the flat request price. fal publishes no
+per-token price for any-llm, so that figure is an upstream-rate
+estimate. fal’s documented any-llm output schema (<code class="docutils literal notranslate"><span class="pre">output</span></code>,
+<code class="docutils literal notranslate"><span class="pre">reasoning</span></code>, <code class="docutils literal notranslate"><span class="pre">partial</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>) carries no <code class="docutils literal notranslate"><span class="pre">usage</span></code> block, so
+an any-llm receipt stays at the request price unless a response
+reports usage, which is priced the moment one does. The rate rows carry
+no cache rates, so cache-read tokens are priced at the full input rate:
+for a cached prompt the figure is an upper estimate. It is the routed
+model and not the <code class="docutils literal notranslate"><span class="pre">fal-ai/any-llm</span></code> record because the record carries fal’s <em>standard</em> tier, and a premium
 routed model bills ten times that: pricing every turn from the record
 under-reported premium spend tenfold in the ledger a consumer sums
 (falaw#55). <code class="docutils literal notranslate"><span class="pre">None</span></code> only when nothing can price it at all.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cost_source</span></code> says which of those cases produced the number, so a
 receipt consumer never has to guess: <code class="docutils literal notranslate"><span class="pre">&quot;cache_hit&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;rate_table:per_call&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;registry:&lt;kind&gt;&quot;</span></code> (the fallback for a
-model the table does not price), or <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">&quot;rate_table:per_call&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;rate_table:upstream_tokens&quot;</span></code> (the
+reported tokens at upstream rates exceeded the request price: an
+upstream-rate estimate, not a fal-published price),
+<code class="docutils literal notranslate"><span class="pre">&quot;registry:&lt;kind&gt;&quot;</span></code> (the fallback for a model the table does not
+price), or <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code>.</p></li>
 </ul>
 <dl class="field-list simple">
 </dl>

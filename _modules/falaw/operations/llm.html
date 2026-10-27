@@ -732,7 +732,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">..cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_call_fal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..cost</span><span class="w"> </span><span class="kn">import</span> <span class="n">estimate_call_cost</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">..llm_rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">llm_ceiling_usd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..llm_prices</span><span class="w"> </span><span class="kn">import</span> <span class="n">llm_token_counts</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..llm_rates</span><span class="w"> </span><span class="kn">import</span> <span class="n">llm_cost_bases</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..routing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ANY_LLM</span><span class="p">,</span> <span class="n">routed_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_model</span><span class="p">,</span> <span class="n">register_tool</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">Beat</span><span class="p">,</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">beat_id</span><span class="p">,</span> <span class="n">make_beat</span><span class="p">,</span> <span class="n">make_shot</span><span class="p">,</span> <span class="n">shot_id</span>
@@ -816,20 +817,36 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">      response text out).</span>
 <span class="sd">    - ``tokens_in`` / ``tokens_out`` are **best-effort** from the raw</span>
 <span class="sd">      response's usage block (OpenAI ``prompt_tokens``/``completion_tokens``</span>
-<span class="sd">      and Anthropic ``input_tokens``/``output_tokens`` shapes). ``None``</span>
-<span class="sd">      means *unrecorded by the provider response*, never zero.</span>
+<span class="sd">      and Anthropic ``input_tokens``/``output_tokens`` shapes, normalized by</span>
+<span class="sd">      :func:`falaw.llm_token_counts`, so an Anthropic ``tokens_in`` counts</span>
+<span class="sd">      its cache reads and writes too). ``None`` means *unrecorded by the</span>
+<span class="sd">      provider response* (absent or nonsense, e.g. negative), never zero.</span>
 <span class="sd">    - ``estimated_cost_usd`` is ``0.0`` on a cache hit (nothing was billed),</span>
 <span class="sd">      else fal's published per-request price **for the routed model**, read</span>
 <span class="sd">      off the rate table (:func:`falaw.llm_ceiling_usd`) — an estimate, not</span>
-<span class="sd">      an observed bill. It is the routed model and not the ``fal-ai/any-llm``</span>
-<span class="sd">      record because the record carries fal's *standard* tier, and a premium</span>
+<span class="sd">      an observed bill. When the response reports both token counts and the</span>
+<span class="sd">      routed model has upstream token rates, it is the greater of that price</span>
+<span class="sd">      and those tokens at the upstream rates (long-prompt tier included,</span>
+<span class="sd">      falaw#130), the same max-over-bases a plan-time quote takes, so a long</span>
+<span class="sd">      prompt is not recorded at the flat request price. fal publishes no</span>
+<span class="sd">      per-token price for any-llm, so that figure is an upstream-rate</span>
+<span class="sd">      estimate. fal's documented any-llm output schema (``output``,</span>
+<span class="sd">      ``reasoning``, ``partial``, ``error``) carries no ``usage`` block, so</span>
+<span class="sd">      an any-llm receipt stays at the request price unless a response</span>
+<span class="sd">      reports usage, which is priced the moment one does. The rate rows carry</span>
+<span class="sd">      no cache rates, so cache-read tokens are priced at the full input rate:</span>
+<span class="sd">      for a cached prompt the figure is an upper estimate. It is the routed</span>
+<span class="sd">      model and not the ``fal-ai/any-llm`` record because the record carries fal's *standard* tier, and a premium</span>
 <span class="sd">      routed model bills ten times that: pricing every turn from the record</span>
 <span class="sd">      under-reported premium spend tenfold in the ledger a consumer sums</span>
 <span class="sd">      (falaw#55). ``None`` only when nothing can price it at all.</span>
 <span class="sd">    - ``cost_source`` says which of those cases produced the number, so a</span>
 <span class="sd">      receipt consumer never has to guess: ``"cache_hit"``,</span>
-<span class="sd">      ``"rate_table:per_call"``, ``"registry:&lt;kind&gt;"`` (the fallback for a</span>
-<span class="sd">      model the table does not price), or ``"unknown"``.</span>
+<span class="sd">      ``"rate_table:per_call"``, ``"rate_table:upstream_tokens"`` (the</span>
+<span class="sd">      reported tokens at upstream rates exceeded the request price: an</span>
+<span class="sd">      upstream-rate estimate, not a fal-published price),</span>
+<span class="sd">      ``"registry:&lt;kind&gt;"`` (the fallback for a model the table does not</span>
+<span class="sd">      price), or ``"unknown"``.</span>
 <span class="sd">    """</span>
 
     <span class="n">application</span><span class="p">:</span> <span class="nb">str</span>
@@ -844,31 +861,46 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<span class="n">_USAGE_SHAPES</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">(</span><span class="s2">"openai"</span><span class="p">,</span> <span class="s2">"prompt_tokens"</span><span class="p">,</span> <span class="s2">"completion_tokens"</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">"anthropic"</span><span class="p">,</span> <span class="s2">"input_tokens"</span><span class="p">,</span> <span class="s2">"output_tokens"</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="sd">"""``(provider, input key, output key)`` per usage shape, in the order tried."""</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_llm_usage</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">"""Best-effort ``(tokens_in, tokens_out)`` from an LLM response's usage block.</span>
 
 <span class="sd">    Recognises the two shapes that exist in the wild — OpenAI</span>
 <span class="sd">    (``usage.prompt_tokens`` / ``usage.completion_tokens``) and Anthropic</span>
 <span class="sd">    (``usage.input_tokens`` / ``usage.output_tokens``) — wherever the</span>
-<span class="sd">    ``usage`` dict sits at the top level. Anything else yields</span>
-<span class="sd">    ``(None, None)``: unrecorded, never invented.</span>
+<span class="sd">    ``usage`` dict sits at the top level, and counts them with</span>
+<span class="sd">    :func:`falaw.llm_token_counts`: Anthropic's ``input_tokens`` excludes</span>
+<span class="sd">    cache reads and writes, which are prompt tokens all the same. Each side is</span>
+<span class="sd">    read from the first shape that reports it, so a block mixing the two still</span>
+<span class="sd">    yields both. A side whose key is absent or not a non-negative ``int`` is</span>
+<span class="sd">    ``None``: unrecorded, never invented, and never above what OpenAI's</span>
+<span class="sd">    ``prompt_tokens`` itself says (its cached part is a subset of it).</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-    <span class="n">usage</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"usage"</span><span class="p">)</span>
+    <span class="n">usage</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"usage"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">usage</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_int_or_none</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_count</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="mi">0</span>
 
-    <span class="n">tokens_in</span> <span class="o">=</span> <span class="n">_int_or_none</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prompt_tokens"</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">tokens_in</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">tokens_in</span> <span class="o">=</span> <span class="n">_int_or_none</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"input_tokens"</span><span class="p">))</span>
-    <span class="n">tokens_out</span> <span class="o">=</span> <span class="n">_int_or_none</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"completion_tokens"</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">tokens_out</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">tokens_out</span> <span class="o">=</span> <span class="n">_int_or_none</span><span class="p">(</span><span class="n">usage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_tokens"</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">tokens_in</span><span class="p">,</span> <span class="n">tokens_out</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_side</span><span class="p">(</span><span class="n">side</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">provider</span><span class="p">,</span> <span class="n">in_key</span><span class="p">,</span> <span class="n">out_key</span> <span class="ow">in</span> <span class="n">_USAGE_SHAPES</span><span class="p">:</span>
+            <span class="n">reported</span> <span class="o">=</span> <span class="n">usage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">in_key</span> <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">"input"</span> <span class="k">else</span> <span class="n">out_key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">reported</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_count</span><span class="p">(</span><span class="n">reported</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">counted</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">llm_token_counts</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">usage</span><span class="p">),</span> <span class="n">side</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">counted</span><span class="p">,</span> <span class="n">reported</span><span class="p">)</span> <span class="k">if</span> <span class="n">provider</span> <span class="o">==</span> <span class="s2">"openai"</span> <span class="k">else</span> <span class="n">counted</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">_side</span><span class="p">(</span><span class="s2">"input"</span><span class="p">),</span> <span class="n">_side</span><span class="p">(</span><span class="s2">"output"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="llm_complete_with_receipt">
@@ -911,7 +943,11 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">cache_hit</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">hit_seen</span><span class="p">)</span>
     <span class="n">served_by</span> <span class="o">=</span> <span class="n">routed_model</span><span class="p">(</span><span class="n">_DEFAULT_LLM</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>  <span class="c1"># arguments always name a model</span>
-    <span class="n">cost</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">"cache_hit"</span><span class="p">)</span> <span class="k">if</span> <span class="n">cache_hit</span> <span class="k">else</span> <span class="n">_billed_cost_of</span><span class="p">(</span><span class="n">served_by</span><span class="p">)</span>
+    <span class="n">cost</span><span class="p">,</span> <span class="n">source</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="s2">"cache_hit"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cache_hit</span>
+        <span class="k">else</span> <span class="n">_billed_cost_of</span><span class="p">(</span><span class="n">served_by</span><span class="p">,</span> <span class="n">tokens_in</span><span class="o">=</span><span class="n">tokens_in</span><span class="p">,</span> <span class="n">tokens_out</span><span class="o">=</span><span class="n">tokens_out</span><span class="p">)</span>
+    <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">text</span><span class="p">,</span> <span class="n">LlmReceipt</span><span class="p">(</span>
         <span class="n">application</span><span class="o">=</span><span class="n">_DEFAULT_LLM</span><span class="p">,</span>
@@ -927,7 +963,12 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_billed_cost_of</span><span class="p">(</span><span class="n">routed_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_billed_cost_of</span><span class="p">(</span>
+    <span class="n">routed_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">tokens_in</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">tokens_out</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">str</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""``(estimated_cost_usd, cost_source)`` for a call that was actually billed.</span>
 
 <span class="sd">    Prices the **routed model** against the rate table (falaw#50, option A),</span>
@@ -942,10 +983,22 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    spent: dropping to ``None`` there deletes a known-approximate number rather</span>
 <span class="sd">    than gating anything, and ``cost_source`` says which case produced it, so</span>
 <span class="sd">    a consumer can tell a table-priced row from a router-priced one.</span>
+
+<span class="sd">    With both token counts reported and token rates on the row, the cost is</span>
+<span class="sd">    the greater of the request price and those tokens at the upstream rates</span>
+<span class="sd">    (falaw#130), computed once by :func:`falaw.llm_rates.llm_cost_bases`;</span>
+<span class="sd">    ``"rate_table:upstream_tokens"`` names the case where the tokens bind,</span>
+<span class="sd">    an upstream-rate estimate since fal publishes no per-token price. Today</span>
+<span class="sd">    that case needs a response that reports ``usage``, which fal's documented</span>
+<span class="sd">    any-llm output does not, so the request price is what a receipt records</span>
+<span class="sd">    until one does.</span>
 <span class="sd">    """</span>
-    <span class="n">table_cost</span> <span class="o">=</span> <span class="n">llm_ceiling_usd</span><span class="p">(</span><span class="n">routed_model</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">table_cost</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">table_cost</span><span class="p">,</span> <span class="s2">"rate_table:per_call"</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="n">llm_cost_bases</span><span class="p">(</span>
+        <span class="n">routed_model</span><span class="p">,</span> <span class="n">input_tokens</span><span class="o">=</span><span class="n">tokens_in</span><span class="p">,</span> <span class="n">output_tokens</span><span class="o">=</span><span class="n">tokens_out</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">bases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">usd</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">bases</span><span class="o">.</span><span class="n">bound</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">usd</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"rate_table:</span><span class="si">{</span><span class="n">basis</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">record</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="n">_DEFAULT_LLM</span><span class="p">)</span>
     <span class="n">ce</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">cost_estimate</span>
     <span class="k">return</span> <span class="p">(</span>

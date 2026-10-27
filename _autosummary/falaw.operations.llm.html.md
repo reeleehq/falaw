@@ -43,20 +43,36 @@ Field semantics, honest by construction:
   response text out).
 - `tokens_in` / `tokens_out` are **best-effort** from the raw
   response’s usage block (OpenAI `prompt_tokens`/`completion_tokens`
-  and Anthropic `input_tokens`/`output_tokens` shapes). `None`
-  means *unrecorded by the provider response*, never zero.
+  and Anthropic `input_tokens`/`output_tokens` shapes, normalized by
+  [`falaw.llm_token_counts()`](falaw.html.md#falaw.llm_token_counts), so an Anthropic `tokens_in` counts
+  > its cache reads and writes too). `None` means \*unrecorded by the
+  > provider response\* (absent or nonsense, e.g. negative), never zero.
 - `estimated_cost_usd` is `0.0` on a cache hit (nothing was billed),
   else fal’s published per-request price **for the routed model**, read
   off the rate table ([`falaw.llm_ceiling_usd()`](falaw.html.md#falaw.llm_ceiling_usd)) — an estimate, not
-  an observed bill. It is the routed model and not the `fal-ai/any-llm`
-  record because the record carries fal’s *standard* tier, and a premium
+  an observed bill. When the response reports both token counts and the
+  routed model has upstream token rates, it is the greater of that price
+  and those tokens at the upstream rates (long-prompt tier included,
+  falaw#130), the same max-over-bases a plan-time quote takes, so a long
+  prompt is not recorded at the flat request price. fal publishes no
+  per-token price for any-llm, so that figure is an upstream-rate
+  estimate. fal’s documented any-llm output schema (`output`,
+  `reasoning`, `partial`, `error`) carries no `usage` block, so
+  an any-llm receipt stays at the request price unless a response
+  reports usage, which is priced the moment one does. The rate rows carry
+  no cache rates, so cache-read tokens are priced at the full input rate:
+  for a cached prompt the figure is an upper estimate. It is the routed
+  model and not the `fal-ai/any-llm` record because the record carries fal’s *standard* tier, and a premium
   routed model bills ten times that: pricing every turn from the record
   under-reported premium spend tenfold in the ledger a consumer sums
   (falaw#55). `None` only when nothing can price it at all.
 - `cost_source` says which of those cases produced the number, so a
   receipt consumer never has to guess: `"cache_hit"`,
-  `"rate_table:per_call"`, `"registry:<kind>"` (the fallback for a
-  model the table does not price), or `"unknown"`.
+  `"rate_table:per_call"`, `"rate_table:upstream_tokens"` (the
+  reported tokens at upstream rates exceeded the request price: an
+  upstream-rate estimate, not a fal-published price),
+  `"registry:<kind>"` (the fallback for a model the table does not
+  price), or `"unknown"`.
 
 ### falaw.operations.llm.apply_note_to_beat(beat, note, , model='anthropic/claude-sonnet-4.5')
 

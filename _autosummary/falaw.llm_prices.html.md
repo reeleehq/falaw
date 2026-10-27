@@ -58,14 +58,11 @@ priced as its family, because older snapshots can cost more.
 | [`llm_prices_table_version`](#falaw.llm_prices.llm_prices_table_version)()                     | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version)).                                                  |
 | [`llm_token_counts`](#falaw.llm_prices.llm_token_counts)(provider, usage)              | The [`LlmTokenCounts`](#falaw.llm_prices.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](#falaw.llm_prices.llm_call_cost_usd) accepts (a mapping or an SDK object). |
 | [`load_llm_prices`](#falaw.llm_prices.load_llm_prices)()                              | The committed table, keyed by `(provider, model)`.                                                                                                                                                                |
-| [`parse_long_prompt`](#falaw.llm_prices.parse_long_prompt)(row)                         | `(over_input_tokens, rates)` from a row's `long_prompt` block, or `(None, None)`.                                                                                                                                 |
-| [`rates_for_prompt`](#falaw.llm_prices.rates_for_prompt)(rates, input_tokens, \*, ...) | The rates a prompt of `input_tokens` is billed at: the long-prompt tier past its threshold, else `rates`.                                                                                                         |
 
 ### Classes
 
 | [`LlmPrice`](#falaw.llm_prices.LlmPrice)(\*, provider, model, rates[, ...])        | One row of the first-party table: a model's rates and where they came from.                                                                                                                                                                                         |
 |-----------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`LlmPriceRates`](#falaw.llm_prices.LlmPriceRates)(\*, input_usd_per_mtok, ...[, ...])  | USD per million tokens for one prompt-length regime of one model.                                                                                                                                                                                                   |
 | [`LlmTokenCounts`](#falaw.llm_prices.LlmTokenCounts)(\*[, fresh_input, cache_read, ...]) | The token counts a first-party call's `usage` reports, normalized across providers: the very counts [`llm_call_cost_usd()`](#falaw.llm_prices.llm_call_cost_usd) prices, so a caller that records them next to the cost cannot disagree with it (falaw#89). |
 
 ### falaw.llm_prices.COST_DECIMALS *= 9*
@@ -77,12 +74,6 @@ Digits the returned USD is rounded to, which only removes float noise.
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One row of the first-party table: a model’s rates and where they came from.
-
-### *class* falaw.llm_prices.LlmPriceRates(, input_usd_per_mtok, output_usd_per_mtok, cache_read_usd_per_mtok=None, cache_write_usd_per_mtok=None, cache_write_1h_usd_per_mtok=None)
-
-Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
-
-USD per million tokens for one prompt-length regime of one model.
 
 ### *class* falaw.llm_prices.LlmTokenCounts(, fresh_input=0, cache_read=0, cache_write=0, cache_write_1h=0, output=0, reasoning=0)
 
@@ -181,21 +172,3 @@ The committed table, keyed by `(provider, model)`. Read once per process.
 
 * **Return type:**
   [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`LlmPrice`](#falaw.llm_prices.LlmPrice)]
-
-### falaw.llm_prices.parse_long_prompt(row)
-
-`(over_input_tokens, rates)` from a row’s `long_prompt` block, or `(None, None)`.
-
-The one reading of the block both falaw rate tables share: the rates replace the
-row’s own once a prompt exceeds `over_input_tokens`.
-
-* **Return type:**
-  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](#falaw.llm_prices.LlmPriceRates)]]
-
-### falaw.llm_prices.rates_for_prompt(rates, input_tokens, , long_prompt_over_tokens, long_prompt_rates)
-
-The rates a prompt of `input_tokens` is billed at: the long-prompt tier
-past its threshold, else `rates`. Shared by both falaw rate tables.
-
-* **Return type:**
-  [`LlmPriceRates`](#falaw.llm_prices.LlmPriceRates)

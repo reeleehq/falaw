@@ -13,6 +13,8 @@ falaw.llm\_rates
       DEFAULT_STALENESS_THRESHOLD_DAYS
       LLM_RATES_TABLE
       CUSTOM_LLM_RATES_TABLE
+      PER_CALL_BASIS
+      UPSTREAM_TOKENS_BASIS
    
    .. rubric:: Functions
 
@@ -21,6 +23,7 @@ falaw.llm\_rates
       get_llm_rate
       list_llm_rates
       llm_ceiling_usd
+      llm_cost_bases
       llm_rates_table_version
       load_llm_rates
       warn_if_stale
@@ -29,6 +32,7 @@ falaw.llm\_rates
 
    .. autosummary::
    
+      LlmCostBases
       LlmRate
    
    .. rubric:: Exceptions

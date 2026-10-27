@@ -789,6 +789,23 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">contain a period of their own."""</span>
 <span class="n">_OPTIONS_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"Options:\s*(?P&lt;opts&gt;(?:`</span><span class="se">\"</span><span class="s2">[^</span><span class="se">\"</span><span class="s2">]+</span><span class="se">\"</span><span class="s2">`,?\s*)+)"</span><span class="p">)</span>
 <span class="n">_QUOTED_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">'`"([^"]+)"`'</span><span class="p">)</span>
+<span class="n">_INPUTS_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"input parameters:(?P&lt;inputs&gt;.*?)### Output Schema"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+<span class="n">_PARAM_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^- \*\*`(\w+)`\*\*"</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+
+<span class="c1">#: any-llm's input parameters as of the last human review. The rate table's ceiling</span>
+<span class="c1">#: assumes none of them lets a call write a prompt cache (falaw#129, see the</span>
+<span class="c1">#: :mod:`falaw.llm_rates` docstring), so the refresh reports any parameter fal adds.</span>
+<span class="n">REVIEWED_ANY_LLM_INPUTS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">"prompt"</span><span class="p">,</span>
+        <span class="s2">"system_prompt"</span><span class="p">,</span>
+        <span class="s2">"reasoning"</span><span class="p">,</span>
+        <span class="s2">"priority"</span><span class="p">,</span>
+        <span class="s2">"temperature"</span><span class="p">,</span>
+        <span class="s2">"max_tokens"</span><span class="p">,</span>
+        <span class="s2">"model"</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="AnyLlmDoc">
@@ -808,12 +825,15 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            table row).</span>
 <span class="sd">        model_enum: Every routed-model id the ``model`` argument accepts, in</span>
 <span class="sd">            the doc's own order.</span>
+<span class="sd">        input_params: The input parameter names the doc lists (empty when the</span>
+<span class="sd">            doc has no input section).</span>
 <span class="sd">    """</span>
 
     <span class="n">base_per_call_usd</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">premium_multiple</span><span class="p">:</span> <span class="nb">int</span>
     <span class="n">premium_models</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-    <span class="n">model_enum</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span></div>
+    <span class="n">model_enum</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="n">input_params</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">()</span></div>
 
 
 
@@ -853,11 +873,17 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">model_enum</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"any-llm doc: `model` Options list parsed empty"</span><span class="p">)</span>
 
+    <span class="n">inputs_match</span> <span class="o">=</span> <span class="n">_INPUTS_RE</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">input_params</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+        <span class="n">_PARAM_RE</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">inputs_match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s2">"inputs"</span><span class="p">))</span> <span class="k">if</span> <span class="n">inputs_match</span> <span class="k">else</span> <span class="p">()</span>
+    <span class="p">)</span>
+
     <span class="k">return</span> <span class="n">AnyLlmDoc</span><span class="p">(</span>
         <span class="n">base_per_call_usd</span><span class="o">=</span><span class="n">base_per_call_usd</span><span class="p">,</span>
         <span class="n">premium_multiple</span><span class="o">=</span><span class="n">premium_multiple</span><span class="p">,</span>
         <span class="n">premium_models</span><span class="o">=</span><span class="n">premium_models</span><span class="p">,</span>
         <span class="n">model_enum</span><span class="o">=</span><span class="n">model_enum</span><span class="p">,</span>
+        <span class="n">input_params</span><span class="o">=</span><span class="n">input_params</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -896,7 +922,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    Pure parse of ``pricing.overrides`` in the ``GET /api/v1/models`` body</span>
 <span class="sd">    (falaw#124): an override bills its ``prompt``/``completion`` rates once a</span>
 <span class="sd">    prompt reaches ``min_prompt_tokens``. The block has the shape the rate</span>
-<span class="sd">    tables share (:func:`falaw.llm_prices.parse_long_prompt`), so</span>
+<span class="sd">    tables share (:func:`falaw.llm_regimes.parse_long_prompt`), so</span>
 <span class="sd">    ``over_input_tokens`` is ``min_prompt_tokens - 1``: the tier starts *at* the</span>
 <span class="sd">    threshold, and a ceiling must not quote the boundary at the cheaper rate.</span>
 
@@ -1204,12 +1230,20 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">diff</span> <span class="o">=</span> <span class="n">diff_llm_rate_tables</span><span class="p">(</span><span class="n">committed_rows</span><span class="p">,</span> <span class="n">proposed_rows</span><span class="p">)</span>
     <span class="n">diff_text</span> <span class="o">=</span> <span class="n">format_llm_rates_diff</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span>
+    <span class="n">unreviewed_inputs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">any_llm</span><span class="o">.</span><span class="n">input_params</span> <span class="o">-</span> <span class="n">REVIEWED_ANY_LLM_INPUTS</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">unreviewed_inputs</span><span class="p">:</span>
+        <span class="n">diff_text</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"any-llm has new input parameters </span><span class="si">{</span><span class="n">unreviewed_inputs</span><span class="si">}</span><span class="s2">: check that none "</span>
+            <span class="s2">"lets a call write a prompt cache before promoting (falaw#129).</span><span class="se">\n\n</span><span class="s2">"</span>
+            <span class="o">+</span> <span class="n">diff_text</span>
+        <span class="p">)</span>
 
     <span class="n">summary</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"fetched_at"</span><span class="p">:</span> <span class="n">stamp</span><span class="p">,</span>
         <span class="s2">"committed_models"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">committed_rows</span><span class="p">),</span>
         <span class="s2">"proposed_models"</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">proposed_rows</span><span class="p">),</span>
         <span class="s2">"diff"</span><span class="p">:</span> <span class="n">diff</span><span class="p">,</span>
+        <span class="s2">"unreviewed_any_llm_inputs"</span><span class="p">:</span> <span class="n">unreviewed_inputs</span><span class="p">,</span>
         <span class="s2">"write"</span><span class="p">:</span> <span class="n">write</span><span class="p">,</span>
         <span class="s2">"proposed_path"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
         <span class="s2">"diff_path"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>

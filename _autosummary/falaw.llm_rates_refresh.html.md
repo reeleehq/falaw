@@ -47,6 +47,7 @@ file is a separate, human step.
 | [`PROPOSED_RATES_FILENAME`](#falaw.llm_rates_refresh.PROPOSED_RATES_FILENAME) | Basename of the proposed table a refresh writes under `falaw/data`.      |
 | [`RATES_DIFF_FILENAME`](#falaw.llm_rates_refresh.RATES_DIFF_FILENAME)     | Basename of the human-readable diff a refresh writes under `falaw/data`. |
 | [`TOKEN_RATE_PRECISION`](#falaw.llm_rates_refresh.TOKEN_RATE_PRECISION)    | Decimal places kept for a converted `*_usd_per_mtok` rate.               |
+| [`REVIEWED_ANY_LLM_INPUTS`](#falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS) | any-llm's input parameters as of the last human review.                  |
 
 ### Functions
 
@@ -61,8 +62,8 @@ file is a separate, human step.
 
 ### Classes
 
-| [`AnyLlmDoc`](#falaw.llm_rates_refresh.AnyLlmDoc)(\*, base_per_call_usd, ...)   | The pricing-relevant facts parsed out of fal's any-llm doc.   |
-|------------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| [`AnyLlmDoc`](#falaw.llm_rates_refresh.AnyLlmDoc)(\*, base_per_call_usd, ...[, ...])   | The pricing-relevant facts parsed out of fal's any-llm doc.   |
+|-------------------------------------------------------------------------------------------------|---------------------------------------------------------------|
 
 ### falaw.llm_rates_refresh.ANY_LLM_DOC_URL *= 'https://fal.ai/models/fal-ai/any-llm/llms.txt'*
 
@@ -71,7 +72,7 @@ model enum, flat price, premium list.
 * **Type:**
   fal’s any-llm endpoint doc
 
-### *class* falaw.llm_rates_refresh.AnyLlmDoc(, base_per_call_usd, premium_multiple, premium_models, model_enum)
+### *class* falaw.llm_rates_refresh.AnyLlmDoc(, base_per_call_usd, premium_multiple, premium_models, model_enum, input_params=frozenset({}))
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -111,6 +112,14 @@ the doc’s own order.
 * **Type:**
   [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
+#### input_params
+
+The input parameter names the doc lists (empty when the
+doc has no input section).
+
+* **Type:**
+  [`frozenset`](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
 ### falaw.llm_rates_refresh.OPENROUTER_MODELS_URL *= 'https://openrouter.ai/api/v1/models'*
 
 upstream per-token list prices.
@@ -125,6 +134,12 @@ Basename of the proposed table a refresh writes under `falaw/data`.
 ### falaw.llm_rates_refresh.RATES_DIFF_FILENAME *= 'llm_rates.diff.txt'*
 
 Basename of the human-readable diff a refresh writes under `falaw/data`.
+
+### falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS *= frozenset({'max_tokens', 'model', 'priority', 'prompt', 'reasoning', 'system_prompt', 'temperature'})*
+
+any-llm’s input parameters as of the last human review. The rate table’s ceiling
+assumes none of them lets a call write a prompt cache (falaw#129, see the
+[`falaw.llm_rates`](falaw.llm_rates.html.md#module-falaw.llm_rates) docstring), so the refresh reports any parameter fal adds.
 
 ### falaw.llm_rates_refresh.TOKEN_RATE_PRECISION *= 6*
 
@@ -189,7 +204,7 @@ Pure parse of fal’s any-llm `llms.txt` into [`AnyLlmDoc`](#falaw.llm_rates_ref
 Pure parse of `pricing.overrides` in the `GET /api/v1/models` body
 (falaw#124): an override bills its `prompt`/`completion` rates once a
 prompt reaches `min_prompt_tokens`. The block has the shape the rate
-tables share ([`falaw.llm_prices.parse_long_prompt()`](falaw.llm_prices.html.md#falaw.llm_prices.parse_long_prompt)), so
+tables share ([`falaw.llm_regimes.parse_long_prompt()`](falaw.llm_regimes.html.md#falaw.llm_regimes.parse_long_prompt)), so
 `over_input_tokens` is `min_prompt_tokens - 1`: the tier starts *at* the
 threshold, and a ceiling must not quote the boundary at the cheaper rate.
 

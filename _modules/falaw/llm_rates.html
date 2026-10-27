@@ -737,6 +737,19 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">composition that cannot under-quote either way, and monotone non-decreasing in</span>
 <span class="sd">both token hints.</span>
 
+<span class="sd">**Prompt caching cannot raise the bill** (falaw#129). OpenRouter lists cache-write</span>
+<span class="sd">rates above the prompt rate for Anthropic models (1.25x, and 2x for the 1-hour cache),</span>
+<span class="sd">so a ceiling that priced every prompt token at the prompt rate would under-quote a prompt</span>
+<span class="sd">that writes the cache. Going by fal's published input schema, an any-llm call cannot</span>
+<span class="sd">write one: its input is a plain ``prompt`` and ``system_prompt`` string with no</span>
+<span class="sd">``cache_control`` breakpoint, and Anthropic's cache, like Gemini's explicit cache (prompt</span>
+<span class="sd">plus a storage charge), needs that opt-in. OpenAI's and Gemini's implicit caching only</span>
+<span class="sd">discounts reads. So the prompt rate bounds the input side. This rests on the schema</span>
+<span class="sd">alone: fal could still set a breakpoint on its side, which nothing published shows. The</span>
+<span class="sd">refresh reports any input parameter beyond the reviewed set</span>
+<span class="sd">(:data:`falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS`); a new one means revisiting</span>
+<span class="sd">this. The scope is ``fal-ai/any-llm``, the router the table prices.</span>
+
 <span class="sd">The table itself is data, not code: :data:`RATES_FILENAME` under ``falaw/data``,</span>
 <span class="sd">versioned, one row per routed model, each row carrying its own ``source`` and</span>
 <span class="sd">``date``. Nothing here touches the network — planning stays free.</span>
@@ -768,7 +781,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_table_version</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.llm_prices</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmPriceRates</span><span class="p">,</span> <span class="n">parse_long_prompt</span><span class="p">,</span> <span class="n">rates_for_prompt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.llm_regimes</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmPriceRates</span><span class="p">,</span> <span class="n">parse_long_prompt</span><span class="p">,</span> <span class="n">rates_for_prompt</span>
 
 <span class="n">RATES_FILENAME</span> <span class="o">=</span> <span class="s2">"llm_rates.json"</span>
 <span class="sd">"""Basename of the rate table under ``falaw/data``."""</span>
@@ -819,7 +832,7 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    issued, else ``None`` (handy for tests, which can assert on it without</span>
 <span class="sd">    a ``pytest.warns`` context).</span>
 
-<span class="sd">    ``stacklevel=2`` attributes the warning to :func:`llm_ceiling_usd`'s call</span>
+<span class="sd">    ``stacklevel=2`` attributes the warning to :func:`llm_cost_bases`'s call</span>
 <span class="sd">    site here rather than to every external caller of *that* — a fixed</span>
 <span class="sd">    location, not one that moves with the caller. That matters because</span>
 <span class="sd">    Python's default warning filter only dedups a repeated warning by its</span>
@@ -892,6 +905,10 @@ window.runMermaid = runMermaid;</script>
             <span class="p">)</span>
         <span class="k">if</span> <span class="n">long_rates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_usd_per_mtok</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_usd_per_mtok</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">: a long-prompt tier needs both base token rates or neither"</span>
+            <span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">over</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">over</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">over</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">: long_prompt_over_tokens must be an int &gt;= 0"</span>
@@ -903,6 +920,17 @@ window.runMermaid = runMermaid;</script>
                     <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">: the long-prompt </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is below the base rate, "</span>
                     <span class="s2">"so a longer prompt would quote less"</span>
                 <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">token_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPriceRates</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The base token rates as the shared regime type, or ``None`` when the</span>
+<span class="sd">        row has no published upstream token rate."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_token_rates</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">LlmPriceRates</span><span class="p">(</span>
+            <span class="n">input_usd_per_mtok</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">,</span>
+            <span class="n">output_usd_per_mtok</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_usd_per_mtok</span><span class="p">,</span>
+        <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_token_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -1102,31 +1130,124 @@ window.runMermaid = runMermaid;</script>
     <span class="n">_require_count</span><span class="p">(</span>
         <span class="n">input_tokens</span><span class="o">=</span><span class="n">input_tokens</span><span class="p">,</span> <span class="n">max_output_tokens</span><span class="o">=</span><span class="n">max_output_tokens</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span>
     <span class="p">)</span>
+    <span class="n">bases</span> <span class="o">=</span> <span class="n">llm_cost_bases</span><span class="p">(</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">input_tokens</span><span class="o">=</span><span class="n">input_tokens</span><span class="p">,</span>
+        <span class="n">output_tokens</span><span class="o">=</span><span class="n">max_output_tokens</span><span class="p">,</span>
+        <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span>
+        <span class="n">rates</span><span class="o">=</span><span class="n">rates</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">bases</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># unpriceable model → unknown, NOT the router's flat price</span>
+    <span class="k">if</span> <span class="n">input_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_output_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">bases</span><span class="o">.</span><span class="n">per_call_usd</span>
+    <span class="k">if</span> <span class="n">bases</span><span class="o">.</span><span class="n">token_usd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># a token quote was asked for and cannot be bounded</span>
+    <span class="n">usd</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">bases</span><span class="o">.</span><span class="n">bound</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">usd</span></div>
+
+
+
+<span class="n">PER_CALL_BASIS</span> <span class="o">=</span> <span class="s2">"per_call"</span>
+<span class="sd">"""Basis name: fal's published per-request price for the routed model."""</span>
+
+<span class="n">UPSTREAM_TOKENS_BASIS</span> <span class="o">=</span> <span class="s2">"upstream_tokens"</span>
+<span class="sd">"""Basis name: token counts at the routed model's upstream (OpenRouter) rates.</span>
+
+<span class="sd">fal publishes no per-token price for any-llm, so a cost on this basis is an</span>
+<span class="sd">*estimate* from what fal resells, never a figure fal itself quoted."""</span>
+
+
+<div class="viewcode-block" id="LlmCostBases">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_rates.html#falaw.LlmCostBases">[docs]</a>
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LlmCostBases</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""What ``count`` calls routing one model cost, on each basis the table prices.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        per_call_usd: The request-price basis, always known for a priced row.</span>
+<span class="sd">        token_usd: The upstream-token basis (long-prompt tier included), or</span>
+<span class="sd">            ``None`` when it cannot be computed: a token count is missing or</span>
+<span class="sd">            the row publishes no token rates.</span>
+<span class="sd">    """</span>
+
+    <span class="n">per_call_usd</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">token_usd</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="LlmCostBases.bound">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_rates.html#falaw.LlmCostBases.bound">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bound</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""``(usd, basis)`` of the basis that binds: the greater of the two.</span>
+
+<span class="sd">        The token basis is named only when it is strictly greater, so a tie</span>
+<span class="sd">        reads as the request price fal actually publishes.</span>
+
+<span class="sd">        &gt;&gt;&gt; LlmCostBases(per_call_usd=0.01, token_usd=0.05).bound()</span>
+<span class="sd">        (0.05, 'upstream_tokens')</span>
+<span class="sd">        &gt;&gt;&gt; LlmCostBases(per_call_usd=0.01).bound()</span>
+<span class="sd">        (0.01, 'per_call')</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_usd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_usd</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_call_usd</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_usd</span><span class="p">,</span> <span class="n">UPSTREAM_TOKENS_BASIS</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">per_call_usd</span><span class="p">,</span> <span class="n">PER_CALL_BASIS</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="llm_cost_bases">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_rates.html#falaw.llm_cost_bases">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">llm_cost_bases</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">input_tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">output_tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">rates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmRateTable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmCostBases</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Every basis ``count`` calls routing ``model`` can be priced on, or ``None``.</span>
+
+<span class="sd">    The one place the rate row is read, staleness warned about and the token</span>
+<span class="sd">    arithmetic done. :func:`llm_ceiling_usd` composes it into a plan-time</span>
+<span class="sd">    ceiling (all or nothing on the token hints); a receipt composes it into a</span>
+<span class="sd">    record of a call already made (the request price when the tokens cannot be</span>
+<span class="sd">    priced). ``None`` means the table does not price ``model`` at all.</span>
+
+<span class="sd">    &gt;&gt;&gt; bases = llm_cost_bases(</span>
+<span class="sd">    ...     'anthropic/claude-haiku-5.5', input_tokens=100_000, output_tokens=0</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; bases.per_call_usd, round(bases.token_usd, 6)</span>
+<span class="sd">    (0.01, 0.05)</span>
+<span class="sd">    &gt;&gt;&gt; llm_cost_bases(</span>
+<span class="sd">    ...     'google/gemini-flash-1.5', input_tokens=50_000, output_tokens=1_000</span>
+<span class="sd">    ... ).token_usd is None</span>
+<span class="sd">    True</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: a token count or ``count`` that is not a plain ``int``.</span>
+<span class="sd">        ValueError: a negative token count or ``count``.</span>
+<span class="sd">    """</span>
+    <span class="n">_require_count</span><span class="p">(</span><span class="n">input_tokens</span><span class="o">=</span><span class="n">input_tokens</span><span class="p">,</span> <span class="n">output_tokens</span><span class="o">=</span><span class="n">output_tokens</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">)</span>
 
     <span class="n">rate</span> <span class="o">=</span> <span class="n">get_llm_rate</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">rates</span><span class="o">=</span><span class="n">rates</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># unpriceable model → unknown, NOT the router's flat price</span>
+        <span class="k">return</span> <span class="kc">None</span>
     <span class="n">warn_if_stale</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">input_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_output_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">rate</span><span class="o">.</span><span class="n">per_call_usd</span> <span class="o">*</span> <span class="n">count</span>
-    <span class="k">if</span> <span class="n">input_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_output_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">rate</span><span class="o">.</span><span class="n">has_token_rates</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># a token quote was asked for and cannot be bounded</span>
+    <span class="n">per_call_usd</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">per_call_usd</span> <span class="o">*</span> <span class="n">count</span>
+    <span class="k">if</span> <span class="n">input_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">output_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">rate</span><span class="o">.</span><span class="n">has_token_rates</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">LlmCostBases</span><span class="p">(</span><span class="n">per_call_usd</span><span class="o">=</span><span class="n">per_call_usd</span><span class="p">)</span>
 
     <span class="n">billed</span> <span class="o">=</span> <span class="n">rates_for_prompt</span><span class="p">(</span>
-        <span class="n">LlmPriceRates</span><span class="p">(</span>
-            <span class="n">input_usd_per_mtok</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">,</span>
-            <span class="n">output_usd_per_mtok</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">output_usd_per_mtok</span><span class="p">,</span>
-        <span class="p">),</span>
+        <span class="n">rate</span><span class="o">.</span><span class="n">token_rates</span><span class="p">,</span>
         <span class="n">input_tokens</span><span class="p">,</span>
         <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span><span class="p">,</span>
         <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">long_prompt_rates</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">token_cost</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">token_usd</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">input_tokens</span> <span class="o">*</span> <span class="n">billed</span><span class="o">.</span><span class="n">input_usd_per_mtok</span>
-        <span class="o">+</span> <span class="n">max_output_tokens</span> <span class="o">*</span> <span class="n">billed</span><span class="o">.</span><span class="n">output_usd_per_mtok</span>
+        <span class="o">+</span> <span class="n">output_tokens</span> <span class="o">*</span> <span class="n">billed</span><span class="o">.</span><span class="n">output_usd_per_mtok</span>
     <span class="p">)</span> <span class="o">/</span> <span class="n">TOKENS_PER_RATE_UNIT</span>
-    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">rate</span><span class="o">.</span><span class="n">per_call_usd</span><span class="p">,</span> <span class="n">token_cost</span><span class="p">)</span> <span class="o">*</span> <span class="n">count</span></div>
+    <span class="k">return</span> <span class="n">LlmCostBases</span><span class="p">(</span><span class="n">per_call_usd</span><span class="o">=</span><span class="n">per_call_usd</span><span class="p">,</span> <span class="n">token_usd</span><span class="o">=</span><span class="n">token_usd</span> <span class="o">*</span> <span class="n">count</span><span class="p">)</span></div>
 
 
 

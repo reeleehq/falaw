@@ -53,7 +53,7 @@
     <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="falaw.local" href="falaw.local.html" />
+    <link rel="next" title="falaw.llm_regimes" href="falaw.llm_regimes.html" />
     <link rel="prev" title="falaw.llm_rates" href="falaw.llm_rates.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
@@ -352,6 +352,7 @@
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_prices.html">falaw.llm_prices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates.html">falaw.llm_rates</a></li>
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">falaw.llm_rates_refresh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.llm_regimes.html">falaw.llm_regimes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.local.html">falaw.local</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="falaw.operations.html">falaw.operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="falaw.operations.audio.html">falaw.operations.audio</a></li>
@@ -499,6 +500,9 @@ file is a separate, human step.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.TOKEN_RATE_PRECISION" title="falaw.llm_rates_refresh.TOKEN_RATE_PRECISION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TOKEN_RATE_PRECISION</span></code></a></p></td>
 <td><p>Decimal places kept for a converted <code class="docutils literal notranslate"><span class="pre">*_usd_per_mtok</span></code> rate.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS" title="falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">REVIEWED_ANY_LLM_INPUTS</span></code></a></p></td>
+<td><p>any-llm's input parameters as of the last human review.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -532,7 +536,7 @@ file is a separate, human step.</p>
 <p class="rubric">Classes</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.AnyLlmDoc" title="falaw.llm_rates_refresh.AnyLlmDoc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnyLlmDoc</span></code></a>(*, base_per_call_usd, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.AnyLlmDoc" title="falaw.llm_rates_refresh.AnyLlmDoc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AnyLlmDoc</span></code></a>(*, base_per_call_usd, ...[, ...])</p></td>
 <td><p>The pricing-relevant facts parsed out of fal's any-llm doc.</p></td>
 </tr>
 </tbody>
@@ -551,7 +555,7 @@ file is a separate, human step.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.llm_rates_refresh.AnyLlmDoc">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">AnyLlmDoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_per_call_usd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">premium_multiple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">premium_models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_enum</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates_refresh.html#AnyLlmDoc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates_refresh.AnyLlmDoc" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">AnyLlmDoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_per_call_usd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">premium_multiple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">premium_models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_enum</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">frozenset({})</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates_refresh.html#AnyLlmDoc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates_refresh.AnyLlmDoc" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>The pricing-relevant facts parsed out of fal’s any-llm doc.</p>
 <dl class="field-list simple">
@@ -606,6 +610,18 @@ the doc’s own order.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.llm_rates_refresh.AnyLlmDoc.input_params">
+<span class="sig-name descname"><span class="pre">input_params</span></span><a class="headerlink" href="#falaw.llm_rates_refresh.AnyLlmDoc.input_params" title="Link to this definition">#</a></dt>
+<dd><p>The input parameter names the doc lists (empty when the
+doc has no input section).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#frozenset" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">frozenset</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py data">
@@ -629,6 +645,14 @@ the doc’s own order.</p>
 <dt class="sig sig-object py" id="falaw.llm_rates_refresh.RATES_DIFF_FILENAME">
 <span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">RATES_DIFF_FILENAME</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'llm_rates.diff.txt'</span></span><a class="headerlink" href="#falaw.llm_rates_refresh.RATES_DIFF_FILENAME" title="Link to this definition">#</a></dt>
 <dd><p>Basename of the human-readable diff a refresh writes under <code class="docutils literal notranslate"><span class="pre">falaw/data</span></code>.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS">
+<span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">REVIEWED_ANY_LLM_INPUTS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'max_tokens',</span> <span class="pre">'model',</span> <span class="pre">'priority',</span> <span class="pre">'prompt',</span> <span class="pre">'reasoning',</span> <span class="pre">'system_prompt',</span> <span class="pre">'temperature'})</span></span><a class="headerlink" href="#falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS" title="Link to this definition">#</a></dt>
+<dd><p>any-llm’s input parameters as of the last human review. The rate table’s ceiling
+assumes none of them lets a call write a prompt cache (falaw#129, see the
+<a class="reference internal" href="falaw.llm_rates.html#module-falaw.llm_rates" title="falaw.llm_rates"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.llm_rates</span></code></a> docstring), so the refresh reports any parameter fal adds.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -710,7 +734,7 @@ what it is); <code class="docutils literal notranslate"><span class="pre">unchan
 <p>Pure parse of <code class="docutils literal notranslate"><span class="pre">pricing.overrides</span></code> in the <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/v1/models</span></code> body
 (falaw#124): an override bills its <code class="docutils literal notranslate"><span class="pre">prompt</span></code>/<code class="docutils literal notranslate"><span class="pre">completion</span></code> rates once a
 prompt reaches <code class="docutils literal notranslate"><span class="pre">min_prompt_tokens</span></code>. The block has the shape the rate
-tables share (<a class="reference internal" href="falaw.llm_prices.html#falaw.llm_prices.parse_long_prompt" title="falaw.llm_prices.parse_long_prompt"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_prices.parse_long_prompt()</span></code></a>), so
+tables share (<a class="reference internal" href="falaw.llm_regimes.html#falaw.llm_regimes.parse_long_prompt" title="falaw.llm_regimes.parse_long_prompt"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_regimes.parse_long_prompt()</span></code></a>), so
 <code class="docutils literal notranslate"><span class="pre">over_input_tokens</span></code> is <code class="docutils literal notranslate"><span class="pre">min_prompt_tokens</span> <span class="pre">-</span> <span class="pre">1</span></code>: the tier starts <em>at</em> the
 threshold, and a ceiling must not quote the boundary at the cheaper rate.</p>
 <p><code class="docutils literal notranslate"><span class="pre">None</span></code> marks a model whose overrides this parse cannot price: more than
@@ -783,11 +807,11 @@ two path keys are <code class="docutils literal notranslate"><span class="pre">N
       </div>
     </a>
     <a class="right-next"
-       href="falaw.local.html"
+       href="falaw.llm_regimes.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">falaw.local</p>
+        <p class="prev-next-title">falaw.llm_regimes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -816,11 +840,13 @@ two path keys are <code class="docutils literal notranslate"><span class="pre">N
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.AnyLlmDoc.premium_multiple"><code class="docutils literal notranslate"><span class="pre">AnyLlmDoc.premium_multiple</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.AnyLlmDoc.premium_models"><code class="docutils literal notranslate"><span class="pre">AnyLlmDoc.premium_models</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.AnyLlmDoc.model_enum"><code class="docutils literal notranslate"><span class="pre">AnyLlmDoc.model_enum</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.AnyLlmDoc.input_params"><code class="docutils literal notranslate"><span class="pre">AnyLlmDoc.input_params</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.OPENROUTER_MODELS_URL"><code class="docutils literal notranslate"><span class="pre">OPENROUTER_MODELS_URL</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.PROPOSED_RATES_FILENAME"><code class="docutils literal notranslate"><span class="pre">PROPOSED_RATES_FILENAME</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.RATES_DIFF_FILENAME"><code class="docutils literal notranslate"><span class="pre">RATES_DIFF_FILENAME</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS"><code class="docutils literal notranslate"><span class="pre">REVIEWED_ANY_LLM_INPUTS</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.TOKEN_RATE_PRECISION"><code class="docutils literal notranslate"><span class="pre">TOKEN_RATE_PRECISION</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.build_proposed_rows"><code class="docutils literal notranslate"><span class="pre">build_proposed_rows()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.diff_llm_rate_tables"><code class="docutils literal notranslate"><span class="pre">diff_llm_rate_tables()</span></code></a></li>

@@ -13,6 +13,7 @@ falaw.llm\_rates\_refresh
       PROPOSED_RATES_FILENAME
       RATES_DIFF_FILENAME
       TOKEN_RATE_PRECISION
+      REVIEWED_ANY_LLM_INPUTS
    
    .. rubric:: Functions
 

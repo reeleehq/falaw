@@ -1,0 +1,20 @@
+falaw.llm\_regimes
+==================
+
+.. automodule:: falaw.llm_regimes
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      parse_long_prompt
+      rates_for_prompt
+      rates_from_row
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      LlmPriceRates
+   

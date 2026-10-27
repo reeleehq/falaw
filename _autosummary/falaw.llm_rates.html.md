@@ -25,6 +25,19 @@ over every basis known for that model\*\* ([`llm_ceiling_usd()`](#falaw.llm_rate
 composition that cannot under-quote either way, and monotone non-decreasing in
 both token hints.
 
+**Prompt caching cannot raise the bill** (falaw#129). OpenRouter lists cache-write
+rates above the prompt rate for Anthropic models (1.25x, and 2x for the 1-hour cache),
+so a ceiling that priced every prompt token at the prompt rate would under-quote a prompt
+that writes the cache. Going by fal’s published input schema, an any-llm call cannot
+write one: its input is a plain `prompt` and `system_prompt` string with no
+`cache_control` breakpoint, and Anthropic’s cache, like Gemini’s explicit cache (prompt
+plus a storage charge), needs that opt-in. OpenAI’s and Gemini’s implicit caching only
+discounts reads. So the prompt rate bounds the input side. This rests on the schema
+alone: fal could still set a breakpoint on its side, which nothing published shows. The
+refresh reports any input parameter beyond the reviewed set
+([`falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS`](falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.REVIEWED_ANY_LLM_INPUTS)); a new one means revisiting
+this. The scope is `fal-ai/any-llm`, the router the table prices.
+
 The table itself is data, not code: [`RATES_FILENAME`](#falaw.llm_rates.RATES_FILENAME) under `falaw/data`,
 versioned, one row per routed model, each row carrying its own `source` and
 `date`. Nothing here touches the network — planning stays free.
@@ -56,6 +69,8 @@ True
 | [`DEFAULT_STALENESS_THRESHOLD_DAYS`](#falaw.llm_rates.DEFAULT_STALENESS_THRESHOLD_DAYS) | Warn once a priced row's `date` is this many days old.                                                                      |
 | [`LLM_RATES_TABLE`](#falaw.llm_rates.LLM_RATES_TABLE)                  | Identity a [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis) records for an LLM-priced call. |
 | [`CUSTOM_LLM_RATES_TABLE`](#falaw.llm_rates.CUSTOM_LLM_RATES_TABLE)           | What a basis records when the caller quoted against their own `rates=` table.                                               |
+| [`PER_CALL_BASIS`](#falaw.llm_rates.PER_CALL_BASIS)                   | fal's published per-request price for the routed model.                                                                     |
+| [`UPSTREAM_TOKENS_BASIS`](#falaw.llm_rates.UPSTREAM_TOKENS_BASIS)            | token counts at the routed model's upstream (OpenRouter) rates.                                                             |
 
 ### Functions
 
@@ -63,14 +78,16 @@ True
 |---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | [`list_llm_rates`](#falaw.llm_rates.list_llm_rates)(\*[, rates])                      | Every row in the table, in file order — the catalogue view.                                                                                    |
 | [`llm_ceiling_usd`](#falaw.llm_rates.llm_ceiling_usd)(model, \*[, input_tokens, ...])  | Ceiling cost in USD of `count` calls routing `model`, or `None`.                                                                               |
+| [`llm_cost_bases`](#falaw.llm_rates.llm_cost_bases)(model, \*[, input_tokens, ...])   | Every basis `count` calls routing `model` can be priced on, or `None`.                                                                         |
 | [`llm_rates_table_version`](#falaw.llm_rates.llm_rates_table_version)()                        | The rate table's version — see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version). |
 | [`load_llm_rates`](#falaw.llm_rates.load_llm_rates)()                                 | The committed rate table, keyed by routed-model id.                                                                                            |
 | [`warn_if_stale`](#falaw.llm_rates.warn_if_stale)(rate, \*[, threshold_days, today]) | Warn (never raise) when `rate` is older than `threshold_days`.                                                                                 |
 
 ### Classes
 
-| [`LlmRate`](#falaw.llm_rates.LlmRate)(\*, model, tier, per_call_usd[, ...])   | What one routed model costs, on every basis the table knows.   |
-|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| [`LlmCostBases`](#falaw.llm_rates.LlmCostBases)(\*, per_call_usd[, token_usd])   | What `count` calls routing one model cost, on each basis the table prices.   |
+|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`LlmRate`](#falaw.llm_rates.LlmRate)(\*, model, tier, per_call_usd[, ...]) | What one routed model costs, on every basis the table knows.                 |
 
 ### Exceptions
 
@@ -101,6 +118,45 @@ row’s `date` against before returning a quote.
 ### falaw.llm_rates.LLM_RATES_TABLE *= 'falaw/data/llm_rates.json'*
 
 Identity a [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis) records for an LLM-priced call.
+
+### *class* falaw.llm_rates.LlmCostBases(, per_call_usd, token_usd=None)
+
+Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
+
+What `count` calls routing one model cost, on each basis the table prices.
+
+#### per_call_usd
+
+The request-price basis, always known for a priced row.
+
+* **Type:**
+  [`float`](https://docs.python.org/3/builtins/functions.html#float)
+
+#### token_usd
+
+The upstream-token basis (long-prompt tier included), or
+`None` when it cannot be computed: a token count is missing or
+the row publishes no token rates.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+#### bound()
+
+`(usd, basis)` of the basis that binds: the greater of the two.
+
+The token basis is named only when it is strictly greater, so a tie
+reads as the request price fal actually publishes.
+
+```pycon
+>>> LlmCostBases(per_call_usd=0.01, token_usd=0.05).bound()
+(0.05, 'upstream_tokens')
+>>> LlmCostBases(per_call_usd=0.01).bound()
+(0.01, 'per_call')
+```
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
 
 ### *class* falaw.llm_rates.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, long_prompt_over_tokens=None, long_prompt_rates=None, source='', date='', notes='')
 
@@ -163,7 +219,7 @@ The token rates that replace the row’s own past
 `long_prompt_over_tokens`.
 
 * **Type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)]
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](falaw.llm_regimes.html.md#falaw.llm_regimes.LlmPriceRates)]
 
 #### source
 
@@ -191,11 +247,23 @@ Free-form caveats.
 
 True when both token columns are populated, so a token quote is possible.
 
+#### *property* token_rates *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[LlmPriceRates](falaw.llm_regimes.html.md#falaw.llm_regimes.LlmPriceRates)]*
+
+The base token rates as the shared regime type, or `None` when the
+row has no published upstream token rate.
+
 ### *exception* falaw.llm_rates.LlmRatesStaleWarning
 
 Bases: [`UserWarning`](https://docs.python.org/3/builtins/exceptions.html#UserWarning)
 
 A quote was served from a rate row older than the staleness threshold.
+
+### falaw.llm_rates.PER_CALL_BASIS *= 'per_call'*
+
+fal’s published per-request price for the routed model.
+
+* **Type:**
+  Basis name
 
 ### falaw.llm_rates.RATES_FILENAME *= 'llm_rates.json'*
 
@@ -204,6 +272,16 @@ Basename of the rate table under `falaw/data`.
 ### falaw.llm_rates.TOKENS_PER_RATE_UNIT *= 1000000*
 
 Token count the table’s `*_per_mtok` columns are quoted per.
+
+### falaw.llm_rates.UPSTREAM_TOKENS_BASIS *= 'upstream_tokens'*
+
+token counts at the routed model’s upstream (OpenRouter) rates.
+
+fal publishes no per-token price for any-llm, so a cost on this basis is an
+*estimate* from what fal resells, never a figure fal itself quoted.
+
+* **Type:**
+  Basis name
 
 ### falaw.llm_rates.get_llm_rate(model, , rates=None)
 
@@ -321,6 +399,34 @@ True
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
 
+### falaw.llm_rates.llm_cost_bases(model, , input_tokens=None, output_tokens=None, count=1, rates=None)
+
+Every basis `count` calls routing `model` can be priced on, or `None`.
+
+The one place the rate row is read, staleness warned about and the token
+arithmetic done. [`llm_ceiling_usd()`](#falaw.llm_rates.llm_ceiling_usd) composes it into a plan-time
+ceiling (all or nothing on the token hints); a receipt composes it into a
+record of a call already made (the request price when the tokens cannot be
+priced). `None` means the table does not price `model` at all.
+
+```pycon
+>>> bases = llm_cost_bases(
+...     'anthropic/claude-haiku-5.5', input_tokens=100_000, output_tokens=0
+... )
+>>> bases.per_call_usd, round(bases.token_usd, 6)
+(0.01, 0.05)
+>>> llm_cost_bases(
+...     'google/gemini-flash-1.5', input_tokens=50_000, output_tokens=1_000
+... ).token_usd is None
+True
+```
+
+* **Raises:**
+  * [**TypeError**](https://docs.python.org/3/builtins/exceptions.html#TypeError) – a token count or `count` that is not a plain `int`.
+  * [**ValueError**](https://docs.python.org/3/builtins/exceptions.html#ValueError) – a negative token count or `count`.
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmCostBases`](#falaw.llm_rates.LlmCostBases)]
+
 ### falaw.llm_rates.llm_rates_table_version()
 
 The rate table’s version — see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version).
@@ -351,7 +457,7 @@ without ever breaking a caller. Returns the warning message when one was
 issued, else `None` (handy for tests, which can assert on it without
 a `pytest.warns` context).
 
-`stacklevel=2` attributes the warning to [`llm_ceiling_usd()`](#falaw.llm_rates.llm_ceiling_usd)’s call
+`stacklevel=2` attributes the warning to [`llm_cost_bases()`](#falaw.llm_rates.llm_cost_bases)’s call
 site here rather than to every external caller of *that* — a fixed
 location, not one that moves with the caller. That matters because
 Python’s default warning filter only dedups a repeated warning by its

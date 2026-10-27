@@ -759,6 +759,14 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_table_version</span>
 
+<span class="c1"># Re-exported: these names lived here before falaw.llm_regimes (falaw#128).</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.llm_regimes</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">LlmPriceRates</span><span class="p">,</span>
+    <span class="n">parse_long_prompt</span><span class="p">,</span>
+    <span class="n">rates_for_prompt</span><span class="p">,</span>
+    <span class="n">rates_from_row</span><span class="p">,</span>
+<span class="p">)</span>
+
 <span class="n">PRICES_FILENAME</span> <span class="o">=</span> <span class="s2">"first_party_llm_prices.json"</span>
 <span class="sd">"""Basename of the price table under ``falaw/data``."""</span>
 
@@ -770,20 +778,6 @@ window.runMermaid = runMermaid;</script>
 
 <span class="n">PROVIDERS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"anthropic"</span><span class="p">,</span> <span class="s2">"openai"</span><span class="p">)</span>
 <span class="sd">"""First-party providers the table prices."""</span>
-
-
-<div class="viewcode-block" id="LlmPriceRates">
-<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.LlmPriceRates">[docs]</a>
-<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">LlmPriceRates</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""USD per million tokens for one prompt-length regime of one model."""</span>
-
-    <span class="n">input_usd_per_mtok</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">output_usd_per_mtok</span><span class="p">:</span> <span class="nb">float</span>
-    <span class="n">cache_read_usd_per_mtok</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">cache_write_usd_per_mtok</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">cache_write_1h_usd_per_mtok</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
-
 
 
 <div class="viewcode-block" id="LlmPrice">
@@ -810,53 +804,6 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">"data"</span><span class="p">,</span> <span class="n">PRICES_FILENAME</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_rates</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">LlmPriceRates</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">opt</span><span class="p">(</span><span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">LlmPriceRates</span><span class="p">(</span>
-        <span class="n">input_usd_per_mtok</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"input_usd_per_mtok"</span><span class="p">]),</span>
-        <span class="n">output_usd_per_mtok</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"output_usd_per_mtok"</span><span class="p">]),</span>
-        <span class="n">cache_read_usd_per_mtok</span><span class="o">=</span><span class="n">opt</span><span class="p">(</span><span class="s2">"cache_read_usd_per_mtok"</span><span class="p">),</span>
-        <span class="n">cache_write_usd_per_mtok</span><span class="o">=</span><span class="n">opt</span><span class="p">(</span><span class="s2">"cache_write_usd_per_mtok"</span><span class="p">),</span>
-        <span class="n">cache_write_1h_usd_per_mtok</span><span class="o">=</span><span class="n">opt</span><span class="p">(</span><span class="s2">"cache_write_1h_usd_per_mtok"</span><span class="p">),</span>
-    <span class="p">)</span>
-
-
-<div class="viewcode-block" id="parse_long_prompt">
-<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.parse_long_prompt">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">parse_long_prompt</span><span class="p">(</span>
-    <span class="n">row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPriceRates</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""``(over_input_tokens, rates)`` from a row's ``long_prompt`` block, or ``(None, None)``.</span>
-
-<span class="sd">    The one reading of the block both falaw rate tables share: the rates replace the</span>
-<span class="sd">    row's own once a prompt exceeds ``over_input_tokens``.</span>
-<span class="sd">    """</span>
-    <span class="n">long_prompt</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"long_prompt"</span><span class="p">)</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">long_prompt</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">long_prompt</span><span class="p">[</span><span class="s2">"over_input_tokens"</span><span class="p">]),</span> <span class="n">_rates</span><span class="p">(</span><span class="n">long_prompt</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="rates_for_prompt">
-<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.rates_for_prompt">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">rates_for_prompt</span><span class="p">(</span>
-    <span class="n">rates</span><span class="p">:</span> <span class="n">LlmPriceRates</span><span class="p">,</span>
-    <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">long_prompt_over_tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-    <span class="n">long_prompt_rates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPriceRates</span><span class="p">],</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LlmPriceRates</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""The rates a prompt of ``input_tokens`` is billed at: the long-prompt tier</span>
-<span class="sd">    past its threshold, else ``rates``. Shared by both falaw rate tables."""</span>
-    <span class="k">if</span> <span class="n">long_prompt_rates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">input_tokens</span> <span class="o">&gt;</span> <span class="n">long_prompt_over_tokens</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">long_prompt_rates</span>
-    <span class="k">return</span> <span class="n">rates</span></div>
-
-
-
 <div class="viewcode-block" id="load_llm_prices">
 <a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.load_llm_prices">[docs]</a>
 <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -870,7 +817,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">out</span><span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="s2">"provider"</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">])]</span> <span class="o">=</span> <span class="n">LlmPrice</span><span class="p">(</span>
             <span class="n">provider</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"provider"</span><span class="p">],</span>
             <span class="n">model</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">],</span>
-            <span class="n">rates</span><span class="o">=</span><span class="n">_rates</span><span class="p">(</span><span class="n">row</span><span class="p">),</span>
+            <span class="n">rates</span><span class="o">=</span><span class="n">rates_from_row</span><span class="p">(</span><span class="n">row</span><span class="p">),</span>
             <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="n">over_tokens</span><span class="p">,</span>
             <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">long_rates</span><span class="p">,</span>
             <span class="n">source</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>

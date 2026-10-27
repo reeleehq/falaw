@@ -1007,7 +1007,7 @@ The token rates that replace the row’s own past
 `long_prompt_over_tokens`.
 
 * **Type:**
-  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)]
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](falaw.llm_regimes.html.md#falaw.llm_regimes.LlmPriceRates)]
 
 #### source
 
@@ -1035,6 +1035,11 @@ Free-form caveats.
 
 True when both token columns are populated, so a token quote is possible.
 
+#### *property* token_rates *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[LlmPriceRates](falaw.llm_regimes.html.md#falaw.llm_regimes.LlmPriceRates)]*
+
+The base token rates as the shared regime type, or `None` when the
+row has no published upstream token rate.
+
 ### *class* falaw.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
@@ -1054,20 +1059,36 @@ Field semantics, honest by construction:
   response text out).
 - `tokens_in` / `tokens_out` are **best-effort** from the raw
   response’s usage block (OpenAI `prompt_tokens`/`completion_tokens`
-  and Anthropic `input_tokens`/`output_tokens` shapes). `None`
-  means *unrecorded by the provider response*, never zero.
+  and Anthropic `input_tokens`/`output_tokens` shapes, normalized by
+  [`falaw.llm_token_counts()`](#falaw.llm_token_counts), so an Anthropic `tokens_in` counts
+  > its cache reads and writes too). `None` means \*unrecorded by the
+  > provider response\* (absent or nonsense, e.g. negative), never zero.
 - `estimated_cost_usd` is `0.0` on a cache hit (nothing was billed),
   else fal’s published per-request price **for the routed model**, read
   off the rate table ([`falaw.llm_ceiling_usd()`](#falaw.llm_ceiling_usd)) — an estimate, not
-  an observed bill. It is the routed model and not the `fal-ai/any-llm`
-  record because the record carries fal’s *standard* tier, and a premium
+  an observed bill. When the response reports both token counts and the
+  routed model has upstream token rates, it is the greater of that price
+  and those tokens at the upstream rates (long-prompt tier included,
+  falaw#130), the same max-over-bases a plan-time quote takes, so a long
+  prompt is not recorded at the flat request price. fal publishes no
+  per-token price for any-llm, so that figure is an upstream-rate
+  estimate. fal’s documented any-llm output schema (`output`,
+  `reasoning`, `partial`, `error`) carries no `usage` block, so
+  an any-llm receipt stays at the request price unless a response
+  reports usage, which is priced the moment one does. The rate rows carry
+  no cache rates, so cache-read tokens are priced at the full input rate:
+  for a cached prompt the figure is an upper estimate. It is the routed
+  model and not the `fal-ai/any-llm` record because the record carries fal’s *standard* tier, and a premium
   routed model bills ten times that: pricing every turn from the record
   under-reported premium spend tenfold in the ledger a consumer sums
   (falaw#55). `None` only when nothing can price it at all.
 - `cost_source` says which of those cases produced the number, so a
   receipt consumer never has to guess: `"cache_hit"`,
-  `"rate_table:per_call"`, `"registry:<kind>"` (the fallback for a
-  model the table does not price), or `"unknown"`.
+  `"rate_table:per_call"`, `"rate_table:upstream_tokens"` (the
+  reported tokens at upstream rates exceeded the request price: an
+  upstream-rate estimate, not a fal-published price),
+  `"registry:<kind>"` (the fallback for a model the table does not
+  price), or `"unknown"`.
 
 ### *class* falaw.LlmTokenCounts(, fresh_input=0, cache_read=0, cache_write=0, cache_write_1h=0, output=0, reasoning=0)
 
@@ -3462,6 +3483,7 @@ Generate speech in a cloned voice.
 | [`llm_prices`](falaw.llm_prices.html.md#module-falaw.llm_prices)               | One first-party LLM price table: what a direct Anthropic / OpenAI call costs (falaw#81).                              |
 | [`llm_rates`](falaw.llm_rates.html.md#module-falaw.llm_rates)                 | Per-routed-model LLM rates: the data behind a *ceiling* quote (falaw#50, option A).                                   |
 | [`llm_rates_refresh`](falaw.llm_rates_refresh.html.md#module-falaw.llm_rates_refresh) | Refresh proposals for the LLM rate table, never a silent overwrite (falaw#56).                                        |
+| [`llm_regimes`](falaw.llm_regimes.html.md#module-falaw.llm_regimes)             | Token-rate regimes: the one vocabulary both falaw LLM rate tables price in (falaw#128).                               |
 | [`local`](falaw.local.html.md#module-falaw.local)                         | Local utilities: ffmpeg + PIL glue for stitching fal outputs.                                                         |
 | [`operations`](falaw.operations.html.md#module-falaw.operations)               | Task-level verbs: stable, agent-friendly entry points.                                                                |
 | [`outcomes`](falaw.outcomes.html.md#module-falaw.outcomes)                   | Per-call outcomes of running a [`falaw.Plan`](#falaw.Plan) — the partial-result type. |

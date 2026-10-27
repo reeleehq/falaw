@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-27T18:37:53Z",
+  "built_at": "2026-10-27T20:17:01Z",
   "package": {
     "name": "falaw",
     "version": "0.0.83",
@@ -9,26 +9,24 @@
   },
   "git": {
     "available": true,
-    "commit": "fafbba21a8d20d0081037a40ce84778a9d981b8b",
-    "short_commit": "fafbba2",
+    "commit": "e86264d4ab770791e4c5908385f1dcd7ed3bfe5b",
+    "short_commit": "e86264d",
     "branch": "main",
-    "tags": [
-      "0.0.83"
-    ],
+    "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/reeleehq/falaw",
-    "commit_url": "https://github.com/reeleehq/falaw/commit/fafbba21a8d20d0081037a40ce84778a9d981b8b",
+    "commit_url": "https://github.com/reeleehq/falaw/commit/e86264d4ab770791e4c5908385f1dcd7ed3bfe5b",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "reeleehq/falaw",
-    "sha": "6feae4b380bd757c34ad90b75abbd41dcc39a87e",
+    "sha": "800f2e5a199558e1a4697aaf896bcbffa70cd7d0",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "40560265906",
-    "run_url": "https://github.com/reeleehq/falaw/actions/runs/40560265906",
+    "run_id": "40568450036",
+    "run_url": "https://github.com/reeleehq/falaw/actions/runs/40568450036",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -57,8 +55,8 @@
     "docs_dir": "docsrc"
   },
   "site": {
-    "modules_documented": 53,
-    "objects_documented": 730
+    "modules_documented": 54,
+    "objects_documented": 742
   },
   "pypi": {
     "checked": true,
@@ -66,7 +64,7 @@
     "relation": "same",
     "error": null
   },
-  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout fafbba21a8d20d0081037a40ce84778a9d981b8b\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout e86264d4ab770791e4c5908385f1dcd7ed3bfe5b\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": true,

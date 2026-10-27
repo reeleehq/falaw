@@ -214,6 +214,7 @@
    llm_prices
    llm_rates
    llm_rates_refresh
+   llm_regimes
    local
    operations
    outcomes

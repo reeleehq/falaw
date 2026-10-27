@@ -352,6 +352,7 @@
 <li class="toctree-l2 current active"><a aria-current="page" class="current reference internal" href="#">falaw.llm_prices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates.html">falaw.llm_rates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates_refresh.html">falaw.llm_rates_refresh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.llm_regimes.html">falaw.llm_regimes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.local.html">falaw.local</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="falaw.operations.html">falaw.operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="falaw.operations.audio.html">falaw.operations.audio</a></li>
@@ -517,12 +518,6 @@ priced as its family, because older snapshots can cost more.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.load_llm_prices" title="falaw.llm_prices.load_llm_prices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_llm_prices</span></code></a>()</p></td>
 <td><p>The committed table, keyed by <code class="docutils literal notranslate"><span class="pre">(provider,</span> <span class="pre">model)</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_prices.parse_long_prompt" title="falaw.llm_prices.parse_long_prompt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_long_prompt</span></code></a>(row)</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">(over_input_tokens,</span> <span class="pre">rates)</span></code> from a row's <code class="docutils literal notranslate"><span class="pre">long_prompt</span></code> block, or <code class="docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">None)</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.rates_for_prompt" title="falaw.llm_prices.rates_for_prompt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rates_for_prompt</span></code></a>(rates, input_tokens, *, ...)</p></td>
-<td><p>The rates a prompt of <code class="docutils literal notranslate"><span class="pre">input_tokens</span></code> is billed at: the long-prompt tier past its threshold, else <code class="docutils literal notranslate"><span class="pre">rates</span></code>.</p></td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -532,10 +527,7 @@ priced as its family, because older snapshots can cost more.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_prices.LlmPrice" title="falaw.llm_prices.LlmPrice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlmPrice</span></code></a>(*, provider, model, rates[, ...])</p></td>
 <td><p>One row of the first-party table: a model's rates and where they came from.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.LlmPriceRates" title="falaw.llm_prices.LlmPriceRates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a>(*, input_usd_per_mtok, ...[, ...])</p></td>
-<td><p>USD per million tokens for one prompt-length regime of one model.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_prices.LlmTokenCounts" title="falaw.llm_prices.LlmTokenCounts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a>(*[, fresh_input, cache_read, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_prices.LlmTokenCounts" title="falaw.llm_prices.LlmTokenCounts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a>(*[, fresh_input, cache_read, ...])</p></td>
 <td><p>The token counts a first-party call's <code class="docutils literal notranslate"><span class="pre">usage</span></code> reports, normalized across providers: the very counts <a class="reference internal" href="#falaw.llm_prices.llm_call_cost_usd" title="falaw.llm_prices.llm_call_cost_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_call_cost_usd()</span></code></a> prices, so a caller that records them next to the cost cannot disagree with it (falaw#89).</p></td>
 </tr>
 </tbody>
@@ -552,15 +544,6 @@ priced as its family, because older snapshots can cost more.</p>
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">LlmPrice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompt_over_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompt_rates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#LlmPrice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.LlmPrice" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>One row of the first-party table: a model’s rates and where they came from.</p>
-<dl class="field-list simple">
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="falaw.llm_prices.LlmPriceRates">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">LlmPriceRates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_usd_per_mtok</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_usd_per_mtok</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_read_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_write_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_write_1h_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#LlmPriceRates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.LlmPriceRates" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>USD per million tokens for one prompt-length regime of one model.</p>
 <dl class="field-list simple">
 </dl>
 </dd></dl>
@@ -697,31 +680,6 @@ own table, e.g. one reconciled against an invoice.</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="falaw.llm_prices.parse_long_prompt">
-<span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">parse_long_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#parse_long_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.parse_long_prompt" title="Link to this definition">#</a></dt>
-<dd><p><code class="docutils literal notranslate"><span class="pre">(over_input_tokens,</span> <span class="pre">rates)</span></code> from a row’s <code class="docutils literal notranslate"><span class="pre">long_prompt</span></code> block, or <code class="docutils literal notranslate"><span class="pre">(None,</span> <span class="pre">None)</span></code>.</p>
-<p>The one reading of the block both falaw rate tables share: the rates replace the
-row’s own once a prompt exceeds <code class="docutils literal notranslate"><span class="pre">over_input_tokens</span></code>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="#falaw.llm_prices.LlmPriceRates" title="falaw.llm_prices.LlmPriceRates"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a>]]</span></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="falaw.llm_prices.rates_for_prompt">
-<span class="sig-prename descclassname"><span class="pre">falaw.llm_prices.</span></span><span class="sig-name descname"><span class="pre">rates_for_prompt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_tokens</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompt_over_tokens</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompt_rates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_prices.html#rates_for_prompt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_prices.rates_for_prompt" title="Link to this definition">#</a></dt>
-<dd><p>The rates a prompt of <code class="docutils literal notranslate"><span class="pre">input_tokens</span></code> is billed at: the long-prompt tier
-past its threshold, else <code class="docutils literal notranslate"><span class="pre">rates</span></code>. Shared by both falaw rate tables.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.llm_prices.LlmPriceRates" title="falaw.llm_prices.LlmPriceRates"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a></span></p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
@@ -773,7 +731,6 @@ past its threshold, else <code class="docutils literal notranslate"><span class=
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.COST_DECIMALS"><code class="docutils literal notranslate"><span class="pre">COST_DECIMALS</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmPrice"><code class="docutils literal notranslate"><span class="pre">LlmPrice</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmPriceRates"><code class="docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmTokenCounts"><code class="docutils literal notranslate"><span class="pre">LlmTokenCounts</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.LlmTokenCounts.input"><code class="docutils literal notranslate"><span class="pre">LlmTokenCounts.input</span></code></a></li>
 </ul>
@@ -787,8 +744,6 @@ past its threshold, else <code class="docutils literal notranslate"><span class=
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.llm_prices_table_version"><code class="docutils literal notranslate"><span class="pre">llm_prices_table_version()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.llm_token_counts"><code class="docutils literal notranslate"><span class="pre">llm_token_counts()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.load_llm_prices"><code class="docutils literal notranslate"><span class="pre">load_llm_prices()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.parse_long_prompt"><code class="docutils literal notranslate"><span class="pre">parse_long_prompt()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_prices.rates_for_prompt"><code class="docutils literal notranslate"><span class="pre">rates_for_prompt()</span></code></a></li>
 </ul>
   </nav></div>
 

@@ -352,6 +352,7 @@
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_prices.html">falaw.llm_prices</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates.html">falaw.llm_rates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.llm_rates_refresh.html">falaw.llm_rates_refresh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="falaw.llm_regimes.html">falaw.llm_regimes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="falaw.local.html">falaw.local</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="falaw.operations.html">falaw.operations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="falaw.operations.audio.html">falaw.operations.audio</a></li>
@@ -2034,7 +2035,7 @@ falaw#124), or <code class="docutils literal notranslate"><span class="pre">None
 <code class="docutils literal notranslate"><span class="pre">long_prompt_over_tokens</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="falaw.llm_prices.html#falaw.llm_prices.LlmPriceRates" title="falaw.llm_prices.LlmPriceRates"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a>]</span></p>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="falaw.llm_regimes.html#falaw.llm_regimes.LlmPriceRates" title="falaw.llm_regimes.LlmPriceRates"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2079,6 +2080,13 @@ fresh as its row.</p>
 <dd><p>True when both token columns are populated, so a token quote is possible.</p>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.LlmRate.token_rates">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">token_rates</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="falaw.llm_regimes.html#falaw.llm_regimes.LlmPriceRates" title="falaw.llm_regimes.LlmPriceRates"><span class="pre">LlmPriceRates</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.LlmRate.token_rates" title="Link to this definition">#</a></dt>
+<dd><p>The base token rates as the shared regime type, or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the
+row has no published upstream token rate.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -2093,25 +2101,44 @@ recorded at all* (the field signature: real dollars spent beside
 <code class="docutils literal notranslate"><span class="pre">plans:</span> <span class="pre">0</span></code>). A caller that books receipts uses
 <a class="reference internal" href="#falaw.llm_complete_with_receipt" title="falaw.llm_complete_with_receipt"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_complete_with_receipt()</span></code></a> and gets this alongside the text.</p>
 <p>Field semantics, honest by construction:</p>
-<ul class="simple">
+<ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">chars_in</span></code> / <code class="docutils literal notranslate"><span class="pre">chars_out</span></code> are <strong>measured facts</strong> (prompt+system in,
 response text out).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">tokens_in</span></code> / <code class="docutils literal notranslate"><span class="pre">tokens_out</span></code> are <strong>best-effort</strong> from the raw
 response’s usage block (OpenAI <code class="docutils literal notranslate"><span class="pre">prompt_tokens</span></code>/<code class="docutils literal notranslate"><span class="pre">completion_tokens</span></code>
-and Anthropic <code class="docutils literal notranslate"><span class="pre">input_tokens</span></code>/<code class="docutils literal notranslate"><span class="pre">output_tokens</span></code> shapes). <code class="docutils literal notranslate"><span class="pre">None</span></code>
-means <em>unrecorded by the provider response</em>, never zero.</p></li>
+and Anthropic <code class="docutils literal notranslate"><span class="pre">input_tokens</span></code>/<code class="docutils literal notranslate"><span class="pre">output_tokens</span></code> shapes, normalized by
+<a class="reference internal" href="#falaw.llm_token_counts" title="falaw.llm_token_counts"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_token_counts()</span></code></a>, so an Anthropic <code class="docutils literal notranslate"><span class="pre">tokens_in</span></code> counts</p>
+<blockquote>
+<div><p>its cache reads and writes too). <code class="docutils literal notranslate"><span class="pre">None</span></code> means *unrecorded by the
+provider response* (absent or nonsense, e.g. negative), never zero.</p>
+</div></blockquote>
+</li>
 <li><p><code class="docutils literal notranslate"><span class="pre">estimated_cost_usd</span></code> is <code class="docutils literal notranslate"><span class="pre">0.0</span></code> on a cache hit (nothing was billed),
 else fal’s published per-request price <strong>for the routed model</strong>, read
 off the rate table (<a class="reference internal" href="#falaw.llm_ceiling_usd" title="falaw.llm_ceiling_usd"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_ceiling_usd()</span></code></a>) — an estimate, not
-an observed bill. It is the routed model and not the <code class="docutils literal notranslate"><span class="pre">fal-ai/any-llm</span></code>
-record because the record carries fal’s <em>standard</em> tier, and a premium
+an observed bill. When the response reports both token counts and the
+routed model has upstream token rates, it is the greater of that price
+and those tokens at the upstream rates (long-prompt tier included,
+falaw#130), the same max-over-bases a plan-time quote takes, so a long
+prompt is not recorded at the flat request price. fal publishes no
+per-token price for any-llm, so that figure is an upstream-rate
+estimate. fal’s documented any-llm output schema (<code class="docutils literal notranslate"><span class="pre">output</span></code>,
+<code class="docutils literal notranslate"><span class="pre">reasoning</span></code>, <code class="docutils literal notranslate"><span class="pre">partial</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>) carries no <code class="docutils literal notranslate"><span class="pre">usage</span></code> block, so
+an any-llm receipt stays at the request price unless a response
+reports usage, which is priced the moment one does. The rate rows carry
+no cache rates, so cache-read tokens are priced at the full input rate:
+for a cached prompt the figure is an upper estimate. It is the routed
+model and not the <code class="docutils literal notranslate"><span class="pre">fal-ai/any-llm</span></code> record because the record carries fal’s <em>standard</em> tier, and a premium
 routed model bills ten times that: pricing every turn from the record
 under-reported premium spend tenfold in the ledger a consumer sums
 (falaw#55). <code class="docutils literal notranslate"><span class="pre">None</span></code> only when nothing can price it at all.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cost_source</span></code> says which of those cases produced the number, so a
 receipt consumer never has to guess: <code class="docutils literal notranslate"><span class="pre">&quot;cache_hit&quot;</span></code>,
-<code class="docutils literal notranslate"><span class="pre">&quot;rate_table:per_call&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;registry:&lt;kind&gt;&quot;</span></code> (the fallback for a
-model the table does not price), or <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code>.</p></li>
+<code class="docutils literal notranslate"><span class="pre">&quot;rate_table:per_call&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;rate_table:upstream_tokens&quot;</span></code> (the
+reported tokens at upstream rates exceeded the request price: an
+upstream-rate estimate, not a fal-published price),
+<code class="docutils literal notranslate"><span class="pre">&quot;registry:&lt;kind&gt;&quot;</span></code> (the fallback for a model the table does not
+price), or <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code>.</p></li>
 </ul>
 <dl class="field-list simple">
 </dl>
@@ -5052,55 +5079,58 @@ shot-list builder shows as its model-limits reference.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="falaw.llm_rates_refresh.html#module-falaw.llm_rates_refresh" title="falaw.llm_rates_refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_rates_refresh</span></code></a></p></td>
 <td><p>Refresh proposals for the LLM rate table, never a silent overwrite (falaw#56).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.local.html#module-falaw.local" title="falaw.local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.llm_regimes.html#module-falaw.llm_regimes" title="falaw.llm_regimes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">llm_regimes</span></code></a></p></td>
+<td><p>Token-rate regimes: the one vocabulary both falaw LLM rate tables price in (falaw#128).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.local.html#module-falaw.local" title="falaw.local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">local</span></code></a></p></td>
 <td><p>Local utilities: ffmpeg + PIL glue for stitching fal outputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.operations.html#module-falaw.operations" title="falaw.operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operations</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.operations.html#module-falaw.operations" title="falaw.operations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operations</span></code></a></p></td>
 <td><p>Task-level verbs: stable, agent-friendly entry points.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.outcomes.html#module-falaw.outcomes" title="falaw.outcomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">outcomes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.outcomes.html#module-falaw.outcomes" title="falaw.outcomes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">outcomes</span></code></a></p></td>
 <td><p>Per-call outcomes of running a <a class="reference internal" href="#falaw.Plan" title="falaw.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.Plan</span></code></a> — the partial-result type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.plan.html#module-falaw.plan" title="falaw.plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.plan.html#module-falaw.plan" title="falaw.plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan</span></code></a></p></td>
 <td><p>Plan / Execute primitives — separate planning (data) from execution (effects).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.pricing.html#module-falaw.pricing" title="falaw.pricing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pricing</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.pricing.html#module-falaw.pricing" title="falaw.pricing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pricing</span></code></a></p></td>
 <td><p>Read fal's pricing API into <code class="docutils literal notranslate"><span class="pre">models.json</span></code> cost estimates (falaw#18).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.prune.html#module-falaw.prune" title="falaw.prune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.prune.html#module-falaw.prune" title="falaw.prune"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prune</span></code></a></p></td>
 <td><p>Capacity management for the falaw cache: see what is on disk, and reclaim it.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.refresh.html#module-falaw.refresh" title="falaw.refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.refresh.html#module-falaw.refresh" title="falaw.refresh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh</span></code></a></p></td>
 <td><p>Refresh fal.ai docs locally with conditional GETs.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.registry.html#module-falaw.registry" title="falaw.registry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">registry</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.registry.html#module-falaw.registry" title="falaw.registry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">registry</span></code></a></p></td>
 <td><p>Tool and model registries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.reprice.html#module-falaw.reprice" title="falaw.reprice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reprice</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.reprice.html#module-falaw.reprice" title="falaw.reprice"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reprice</span></code></a></p></td>
 <td><p>Re-quote a persisted <a class="reference internal" href="#falaw.Plan" title="falaw.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.Plan</span></code></a> at today's rates (falaw#60).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.results.html#module-falaw.results" title="falaw.results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">results</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.results.html#module-falaw.results" title="falaw.results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">results</span></code></a></p></td>
 <td><p>Result wrapper: parse fal responses into typed assets, lazy download.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.routing.html#module-falaw.routing" title="falaw.routing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">routing</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.routing.html#module-falaw.routing" title="falaw.routing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">routing</span></code></a></p></td>
 <td><p>Which model a router call really goes to (falaw#115).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.scene.html#module-falaw.scene" title="falaw.scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.scene.html#module-falaw.scene" title="falaw.scene"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scene</span></code></a></p></td>
 <td><p>Scene IR: the editable structure that survives all the way to the pixels.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.schema_export.html#module-falaw.schema_export" title="falaw.schema_export"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema_export</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.schema_export.html#module-falaw.schema_export" title="falaw.schema_export"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema_export</span></code></a></p></td>
 <td><p>Export the Python SSOT as committed JSON for the TypeScript twin (<code class="docutils literal notranslate"><span class="pre">ts/</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.session.html#module-falaw.session" title="falaw.session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.session.html#module-falaw.session" title="falaw.session"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session</span></code></a></p></td>
 <td><p>Session: optional stateful controller over a sequence of falaw operations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.terms.html#module-falaw.terms" title="falaw.terms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">terms</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.terms.html#module-falaw.terms" title="falaw.terms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">terms</span></code></a></p></td>
 <td><p>The terms ledger: may this <code class="docutils literal notranslate"><span class="pre">(model,</span> <span class="pre">backend)</span></code> be used for <em>this</em> job? (falaw#16)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="falaw.testing.html#module-falaw.testing" title="falaw.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">testing</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="falaw.testing.html#module-falaw.testing" title="falaw.testing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">testing</span></code></a></p></td>
 <td><p>Make a suite that uses falaw genuinely offline — the fake asset transport.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="falaw.validation.html#module-falaw.validation" title="falaw.validation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validation</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="falaw.validation.html#module-falaw.validation" title="falaw.validation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validation</span></code></a></p></td>
 <td><p>Check a call's arguments against the limits its catalogue record states.</p></td>
 </tr>
 </tbody>
@@ -5284,6 +5314,7 @@ shot-list builder shows as its model-limits reference.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.LlmRate.date"><code class="docutils literal notranslate"><span class="pre">LlmRate.date</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.LlmRate.notes"><code class="docutils literal notranslate"><span class="pre">LlmRate.notes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.LlmRate.has_token_rates"><code class="docutils literal notranslate"><span class="pre">LlmRate.has_token_rates</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.LlmRate.token_rates"><code class="docutils literal notranslate"><span class="pre">LlmRate.token_rates</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.LlmReceipt"><code class="docutils literal notranslate"><span class="pre">LlmReceipt</span></code></a></li>
