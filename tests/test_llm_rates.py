@@ -466,3 +466,15 @@ def test_the_quote_never_drops_when_a_prompt_crosses_the_threshold():
         for n in range(20)
     ]
     assert quotes == sorted(quotes)
+
+
+def test_both_tables_share_one_regime_type_and_selector():
+    """falaw#128: one home for the token-rate regime, re-exported where it lived."""
+    import falaw.llm_prices
+    import falaw.llm_regimes
+
+    assert falaw.llm_prices.LlmPriceRates is falaw.llm_regimes.LlmPriceRates
+    assert falaw.llm_prices.rates_for_prompt is falaw.llm_regimes.rates_for_prompt
+    rate = get_llm_rate(PRICED_MODEL)
+    assert rate.token_rates.input_usd_per_mtok == rate.input_usd_per_mtok
+    assert get_llm_rate("deepseek/deepseek-r1").token_rates is None

@@ -54,7 +54,7 @@ from functools import lru_cache
 from typing import Mapping, Optional
 
 from .base import data_table_version
-from .llm_prices import LlmPriceRates, parse_long_prompt, rates_for_prompt
+from .llm_regimes import LlmPriceRates, parse_long_prompt, rates_for_prompt
 
 RATES_FILENAME = "llm_rates.json"
 """Basename of the rate table under ``falaw/data``."""
@@ -181,6 +181,17 @@ class LlmRate:
                     f"{self.model}: the long-prompt {name} is below the base rate, "
                     "so a longer prompt would quote less"
                 )
+
+    @property
+    def token_rates(self) -> Optional[LlmPriceRates]:
+        """The base token rates as the shared regime type, or ``None`` when the
+        row has no published upstream token rate."""
+        if not self.has_token_rates:
+            return None
+        return LlmPriceRates(
+            input_usd_per_mtok=self.input_usd_per_mtok,
+            output_usd_per_mtok=self.output_usd_per_mtok,
+        )
 
     @property
     def has_token_rates(self) -> bool:
@@ -377,10 +388,7 @@ def llm_ceiling_usd(
         return None  # a token quote was asked for and cannot be bounded
 
     billed = rates_for_prompt(
-        LlmPriceRates(
-            input_usd_per_mtok=rate.input_usd_per_mtok,
-            output_usd_per_mtok=rate.output_usd_per_mtok,
-        ),
+        rate.token_rates,
         input_tokens,
         long_prompt_over_tokens=rate.long_prompt_over_tokens,
         long_prompt_rates=rate.long_prompt_rates,

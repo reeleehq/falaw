@@ -171,7 +171,7 @@ def parse_openrouter_long_prompts(payload: dict) -> dict[str, Optional[dict]]:
     Pure parse of ``pricing.overrides`` in the ``GET /api/v1/models`` body
     (falaw#124): an override bills its ``prompt``/``completion`` rates once a
     prompt reaches ``min_prompt_tokens``. The block has the shape the rate
-    tables share (:func:`falaw.llm_prices.parse_long_prompt`), so
+    tables share (:func:`falaw.llm_regimes.parse_long_prompt`), so
     ``over_input_tokens`` is ``min_prompt_tokens - 1``: the tier starts *at* the
     threshold, and a ceiling must not quote the boundary at the cheaper rate.
 

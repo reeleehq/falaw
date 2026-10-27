@@ -44,6 +44,12 @@ from types import MappingProxyType
 from typing import Any, Mapping, Optional
 
 from .base import data_table_version
+from .llm_regimes import (  # noqa: F401  (LlmPriceRates, parse_long_prompt, rates_for_prompt: public here too)
+    LlmPriceRates,
+    parse_long_prompt,
+    rates_for_prompt,
+    rates_from_row,
+)
 
 PRICES_FILENAME = "first_party_llm_prices.json"
 """Basename of the price table under ``falaw/data``."""
@@ -56,17 +62,6 @@ COST_DECIMALS = 9
 
 PROVIDERS = ("anthropic", "openai")
 """First-party providers the table prices."""
-
-
-@dataclass(frozen=True, slots=True, kw_only=True)
-class LlmPriceRates:
-    """USD per million tokens for one prompt-length regime of one model."""
-
-    input_usd_per_mtok: float
-    output_usd_per_mtok: float
-    cache_read_usd_per_mtok: Optional[float] = None
-    cache_write_usd_per_mtok: Optional[float] = None
-    cache_write_1h_usd_per_mtok: Optional[float] = None
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -90,47 +85,6 @@ def _prices_path() -> str:
     return os.path.join(os.path.dirname(__file__), "data", PRICES_FILENAME)
 
 
-def _rates(row: Mapping[str, Any]) -> LlmPriceRates:
-    def opt(key: str) -> Optional[float]:
-        return None if row.get(key) is None else float(row[key])
-
-    return LlmPriceRates(
-        input_usd_per_mtok=float(row["input_usd_per_mtok"]),
-        output_usd_per_mtok=float(row["output_usd_per_mtok"]),
-        cache_read_usd_per_mtok=opt("cache_read_usd_per_mtok"),
-        cache_write_usd_per_mtok=opt("cache_write_usd_per_mtok"),
-        cache_write_1h_usd_per_mtok=opt("cache_write_1h_usd_per_mtok"),
-    )
-
-
-def parse_long_prompt(
-    row: Mapping[str, Any],
-) -> tuple[Optional[int], Optional[LlmPriceRates]]:
-    """``(over_input_tokens, rates)`` from a row's ``long_prompt`` block, or ``(None, None)``.
-
-    The one reading of the block both falaw rate tables share: the rates replace the
-    row's own once a prompt exceeds ``over_input_tokens``.
-    """
-    long_prompt = row.get("long_prompt")
-    if not long_prompt:
-        return None, None
-    return int(long_prompt["over_input_tokens"]), _rates(long_prompt)
-
-
-def rates_for_prompt(
-    rates: LlmPriceRates,
-    input_tokens: int,
-    *,
-    long_prompt_over_tokens: Optional[int],
-    long_prompt_rates: Optional[LlmPriceRates],
-) -> LlmPriceRates:
-    """The rates a prompt of ``input_tokens`` is billed at: the long-prompt tier
-    past its threshold, else ``rates``. Shared by both falaw rate tables."""
-    if long_prompt_rates is not None and input_tokens > long_prompt_over_tokens:
-        return long_prompt_rates
-    return rates
-
-
 @lru_cache(maxsize=1)
 def load_llm_prices() -> LlmPriceTable:
     """The committed table, keyed by ``(provider, model)``. Read once per process."""
@@ -142,7 +96,7 @@ def load_llm_prices() -> LlmPriceTable:
         out[(row["provider"], row["model"])] = LlmPrice(
             provider=row["provider"],
             model=row["model"],
-            rates=_rates(row),
+            rates=rates_from_row(row),
             long_prompt_over_tokens=over_tokens,
             long_prompt_rates=long_rates,
             source=row.get("source", ""),
