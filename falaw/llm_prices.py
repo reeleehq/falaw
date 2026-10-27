@@ -44,7 +44,9 @@ from types import MappingProxyType
 from typing import Any, Mapping, Optional
 
 from .base import data_table_version
-from .llm_regimes import (  # noqa: F401  (LlmPriceRates, parse_long_prompt, rates_for_prompt: public here too)
+
+# Re-exported: these names lived here before falaw.llm_regimes (falaw#128).
+from .llm_regimes import (
     LlmPriceRates,
     parse_long_prompt,
     rates_for_prompt,

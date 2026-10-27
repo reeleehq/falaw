@@ -435,7 +435,7 @@ def _row(**long_prompt):
         model="a/m",
         tier="standard",
         per_call_usd=0.0,
-        input_usd_per_mtok=1.0,
+        input_usd_per_mtok=long_prompt.pop("input_usd_per_mtok", 1.0),
         output_usd_per_mtok=1.0,
         long_prompt_rates=rates
         and LlmPriceRates(input_usd_per_mtok=rates[0], output_usd_per_mtok=rates[1]),
@@ -452,6 +452,11 @@ def _row(**long_prompt):
         {"long_prompt_over_tokens": -1, "rates": (2.0, 2.0)},
         {"long_prompt_over_tokens": True, "rates": (2.0, 2.0)},
         {"long_prompt_over_tokens": 10, "rates": (0.5, 2.0)},  # cheaper past it
+        {
+            "long_prompt_over_tokens": 10,
+            "rates": (2.0, 2.0),
+            "input_usd_per_mtok": None,
+        },
     ],
 )
 def test_a_caller_row_with_an_incoherent_long_prompt_tier_is_refused(long_prompt):

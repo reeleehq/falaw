@@ -170,6 +170,10 @@ class LlmRate:
             )
         if long_rates is None:
             return
+        if (self.input_usd_per_mtok is None) != (self.output_usd_per_mtok is None):
+            raise ValueError(
+                f"{self.model}: a long-prompt tier needs both base token rates or neither"
+            )
         if isinstance(over, bool) or not isinstance(over, int) or over < 0:
             raise ValueError(
                 f"{self.model}: long_prompt_over_tokens must be an int >= 0"

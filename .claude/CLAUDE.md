@@ -41,7 +41,7 @@ cost estimation/repricing, and an agent journal for cross-session notes.
 
 ```bash
 uv venv .venv && uv pip install -e . pytest ruff
-env -u FAL_KEY .venv/bin/pytest -q    # 605 passed, 2 skipped — no network, no key needed
+env -u FAL_KEY .venv/bin/pytest -q    # 960+ passed, 2 skipped — no network, no key needed
 .venv/bin/ruff check .
 ```
 Or `wads ci-local` (Python 3.10+3.12, Windows included).
