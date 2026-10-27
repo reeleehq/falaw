@@ -18,7 +18,8 @@ from typing import Any, Optional
 
 from ..cache import cached_call_fal
 from ..cost import estimate_call_cost
-from ..llm_rates import llm_ceiling_usd
+from ..llm_prices import llm_token_counts
+from ..llm_rates import llm_cost_bases
 from ..routing import ANY_LLM, routed_model
 from ..registry import get_model, register_tool
 from ..scene import Beat, Scene, beat_id, make_beat, make_shot, shot_id
@@ -97,20 +98,36 @@ class LlmReceipt:
       response text out).
     - ``tokens_in`` / ``tokens_out`` are **best-effort** from the raw
       response's usage block (OpenAI ``prompt_tokens``/``completion_tokens``
-      and Anthropic ``input_tokens``/``output_tokens`` shapes). ``None``
-      means *unrecorded by the provider response*, never zero.
+      and Anthropic ``input_tokens``/``output_tokens`` shapes, normalized by
+      :func:`falaw.llm_token_counts`, so an Anthropic ``tokens_in`` counts
+      its cache reads and writes too). ``None`` means *unrecorded by the
+      provider response* (absent or nonsense, e.g. negative), never zero.
     - ``estimated_cost_usd`` is ``0.0`` on a cache hit (nothing was billed),
       else fal's published per-request price **for the routed model**, read
       off the rate table (:func:`falaw.llm_ceiling_usd`) — an estimate, not
-      an observed bill. It is the routed model and not the ``fal-ai/any-llm``
-      record because the record carries fal's *standard* tier, and a premium
+      an observed bill. When the response reports both token counts and the
+      routed model has upstream token rates, it is the greater of that price
+      and those tokens at the upstream rates (long-prompt tier included,
+      falaw#130), the same max-over-bases a plan-time quote takes, so a long
+      prompt is not recorded at the flat request price. fal publishes no
+      per-token price for any-llm, so that figure is an upstream-rate
+      estimate. fal's documented any-llm output schema (``output``,
+      ``reasoning``, ``partial``, ``error``) carries no ``usage`` block, so
+      an any-llm receipt stays at the request price unless a response
+      reports usage, which is priced the moment one does. The rate rows carry
+      no cache rates, so cache-read tokens are priced at the full input rate:
+      for a cached prompt the figure is an upper estimate. It is the routed
+      model and not the ``fal-ai/any-llm`` record because the record carries fal's *standard* tier, and a premium
       routed model bills ten times that: pricing every turn from the record
       under-reported premium spend tenfold in the ledger a consumer sums
       (falaw#55). ``None`` only when nothing can price it at all.
     - ``cost_source`` says which of those cases produced the number, so a
       receipt consumer never has to guess: ``"cache_hit"``,
-      ``"rate_table:per_call"``, ``"registry:<kind>"`` (the fallback for a
-      model the table does not price), or ``"unknown"``.
+      ``"rate_table:per_call"``, ``"rate_table:upstream_tokens"`` (the
+      reported tokens at upstream rates exceeded the request price: an
+      upstream-rate estimate, not a fal-published price),
+      ``"registry:<kind>"`` (the fallback for a model the table does not
+      price), or ``"unknown"``.
     """
 
     application: str
@@ -124,31 +141,46 @@ class LlmReceipt:
     cost_source: str = "unknown"
 
 
+_USAGE_SHAPES = (
+    ("openai", "prompt_tokens", "completion_tokens"),
+    ("anthropic", "input_tokens", "output_tokens"),
+)
+"""``(provider, input key, output key)`` per usage shape, in the order tried."""
+
+
 def _extract_llm_usage(raw: Any) -> tuple[Optional[int], Optional[int]]:
     """Best-effort ``(tokens_in, tokens_out)`` from an LLM response's usage block.
 
     Recognises the two shapes that exist in the wild — OpenAI
     (``usage.prompt_tokens`` / ``usage.completion_tokens``) and Anthropic
     (``usage.input_tokens`` / ``usage.output_tokens``) — wherever the
-    ``usage`` dict sits at the top level. Anything else yields
-    ``(None, None)``: unrecorded, never invented.
+    ``usage`` dict sits at the top level, and counts them with
+    :func:`falaw.llm_token_counts`: Anthropic's ``input_tokens`` excludes
+    cache reads and writes, which are prompt tokens all the same. Each side is
+    read from the first shape that reports it, so a block mixing the two still
+    yields both. A side whose key is absent or not a non-negative ``int`` is
+    ``None``: unrecorded, never invented, and never above what OpenAI's
+    ``prompt_tokens`` itself says (its cached part is a subset of it).
     """
-    if not isinstance(raw, dict):
-        return None, None
-    usage = raw.get("usage")
+    usage = raw.get("usage") if isinstance(raw, dict) else None
     if not isinstance(usage, dict):
         return None, None
 
-    def _int_or_none(value: Any) -> Optional[int]:
-        return value if isinstance(value, int) and not isinstance(value, bool) else None
+    def _is_count(value: Any) -> bool:
+        return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
-    tokens_in = _int_or_none(usage.get("prompt_tokens"))
-    if tokens_in is None:
-        tokens_in = _int_or_none(usage.get("input_tokens"))
-    tokens_out = _int_or_none(usage.get("completion_tokens"))
-    if tokens_out is None:
-        tokens_out = _int_or_none(usage.get("output_tokens"))
-    return tokens_in, tokens_out
+    def _side(side: str) -> Optional[int]:
+        for provider, in_key, out_key in _USAGE_SHAPES:
+            reported = usage.get(in_key if side == "input" else out_key)
+            if reported is None:
+                continue
+            if not _is_count(reported):
+                return None
+            counted = getattr(llm_token_counts(provider, usage), side)
+            return min(counted, reported) if provider == "openai" else counted
+        return None
+
+    return _side("input"), _side("output")
 
 
 def llm_complete_with_receipt(
@@ -189,7 +221,11 @@ def llm_complete_with_receipt(
 
     cache_hit = bool(hit_seen)
     served_by = routed_model(_DEFAULT_LLM, arguments)  # arguments always name a model
-    cost, source = (0.0, "cache_hit") if cache_hit else _billed_cost_of(served_by)
+    cost, source = (
+        (0.0, "cache_hit")
+        if cache_hit
+        else _billed_cost_of(served_by, tokens_in=tokens_in, tokens_out=tokens_out)
+    )
 
     return text, LlmReceipt(
         application=_DEFAULT_LLM,
@@ -204,7 +240,12 @@ def llm_complete_with_receipt(
     )
 
 
-def _billed_cost_of(routed_model: str) -> tuple[Optional[float], str]:
+def _billed_cost_of(
+    routed_model: str,
+    *,
+    tokens_in: Optional[int] = None,
+    tokens_out: Optional[int] = None,
+) -> tuple[Optional[float], str]:
     """``(estimated_cost_usd, cost_source)`` for a call that was actually billed.
 
     Prices the **routed model** against the rate table (falaw#50, option A),
@@ -219,10 +260,22 @@ def _billed_cost_of(routed_model: str) -> tuple[Optional[float], str]:
     spent: dropping to ``None`` there deletes a known-approximate number rather
     than gating anything, and ``cost_source`` says which case produced it, so
     a consumer can tell a table-priced row from a router-priced one.
+
+    With both token counts reported and token rates on the row, the cost is
+    the greater of the request price and those tokens at the upstream rates
+    (falaw#130), computed once by :func:`falaw.llm_rates.llm_cost_bases`;
+    ``"rate_table:upstream_tokens"`` names the case where the tokens bind,
+    an upstream-rate estimate since fal publishes no per-token price. Today
+    that case needs a response that reports ``usage``, which fal's documented
+    any-llm output does not, so the request price is what a receipt records
+    until one does.
     """
-    table_cost = llm_ceiling_usd(routed_model)
-    if table_cost is not None:
-        return table_cost, "rate_table:per_call"
+    bases = llm_cost_bases(
+        routed_model, input_tokens=tokens_in, output_tokens=tokens_out
+    )
+    if bases is not None:
+        usd, basis = bases.bound()
+        return usd, f"rate_table:{basis}"
     record = get_model(_DEFAULT_LLM)
     ce = record.cost_estimate
     return (

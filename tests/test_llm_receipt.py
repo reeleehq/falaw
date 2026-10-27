@@ -168,3 +168,110 @@ def test_receipt_variant_is_not_a_registered_tool():
     names = {t.name for t in list_tools()}
     assert "llm_complete" in names
     assert "llm_complete_with_receipt" not in names
+
+
+def test_a_long_prompt_is_recorded_at_its_token_cost_not_the_request_price(monkeypatch):
+    """falaw#130: the receipt used the per-call price even when usage reported a
+    prompt whose upstream token cost (long-prompt tier included) is far above it."""
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+
+    model = "anthropic/claude-haiku-5.5"
+    usage = {"prompt_tokens": 150_000, "completion_tokens": 2_000}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q", model=model)
+    expected = llm_ceiling_usd(model, input_tokens=150_000, max_output_tokens=2_000)
+    assert expected > llm_ceiling_usd(
+        model
+    )  # the long tier binds, not the request price
+    assert r.estimated_cost_usd == pytest.approx(expected)
+    assert r.cost_source == "rate_table:upstream_tokens"
+
+
+def test_a_short_prompt_still_records_the_request_price(monkeypatch):
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    _install_fake_fal(monkeypatch, response=OPENAI_SHAPED)  # 42 in, 7 out
+    _, r = llm_complete_with_receipt("q")
+    assert r.estimated_cost_usd == pytest.approx(llm_ceiling_usd(_DEFAULT_MODEL))
+    assert r.cost_source == "rate_table:per_call"
+
+
+@pytest.mark.parametrize(
+    "usage",
+    [
+        {"prompt_tokens": 150_000},  # no output count: no token bound
+        {"prompt_tokens": -5, "completion_tokens": 7},  # nonsense count is unrecorded
+    ],
+)
+def test_incomplete_or_nonsense_usage_falls_back_to_the_request_price(
+    monkeypatch, usage
+):
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q")
+    assert r.estimated_cost_usd == pytest.approx(llm_ceiling_usd(_DEFAULT_MODEL))
+    assert r.cost_source == "rate_table:per_call"
+
+
+def test_anthropic_cache_tokens_count_toward_the_long_prompt_tier(monkeypatch):
+    """Anthropic's input_tokens excludes cache reads and writes; the prompt the
+    upstream bills is their sum, so the long-prompt threshold must see it."""
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+
+    model = "anthropic/claude-haiku-5.5"
+    usage = {
+        "input_tokens": 1_000,
+        "cache_read_input_tokens": 120_000,
+        "cache_creation_input_tokens": 30_000,
+        "output_tokens": 2_000,
+    }
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q", model=model)
+    assert (r.tokens_in, r.tokens_out) == (151_000, 2_000)
+    expected = llm_ceiling_usd(model, input_tokens=151_000, max_output_tokens=2_000)
+    assert r.estimated_cost_usd == pytest.approx(expected)
+    assert r.cost_source == "rate_table:upstream_tokens"
+
+
+def test_reported_usage_on_a_model_without_token_rates_records_the_request_price(
+    monkeypatch,
+):
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+    from falaw.llm_rates import get_llm_rate
+
+    model = "google/gemini-flash-1.5"
+    assert not get_llm_rate(model).has_token_rates
+    usage = {"prompt_tokens": 150_000, "completion_tokens": 2_000}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q", model=model)
+    assert (r.tokens_in, r.tokens_out) == (150_000, 2_000)
+    assert r.estimated_cost_usd == pytest.approx(llm_ceiling_usd(model))
+    assert r.cost_source == "rate_table:per_call"
+
+
+def test_a_negative_count_reads_as_unrecorded_not_zero(monkeypatch):
+    from falaw import llm_complete_with_receipt
+
+    usage = {"prompt_tokens": -5, "completion_tokens": 7}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q")
+    assert (r.tokens_in, r.tokens_out) == (None, 7)
+
+
+@pytest.mark.parametrize(
+    "usage, expected",
+    [
+        ({"prompt_tokens": 100, "output_tokens": 50}, (100, 50)),  # mixed shapes
+        (
+            {"prompt_tokens": 10, "prompt_tokens_details": {"cached_tokens": 50}},
+            (10, None),  # cached is a subset of prompt_tokens: never above it
+        ),
+    ],
+)
+def test_usage_counts_are_read_per_side_and_never_invented(usage, expected):
+    from falaw.operations.llm import _extract_llm_usage
+
+    assert _extract_llm_usage({"usage": usage}) == expected
