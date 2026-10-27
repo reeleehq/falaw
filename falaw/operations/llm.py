@@ -102,14 +102,19 @@ class LlmReceipt:
     - ``estimated_cost_usd`` is ``0.0`` on a cache hit (nothing was billed),
       else fal's published per-request price **for the routed model**, read
       off the rate table (:func:`falaw.llm_ceiling_usd`) — an estimate, not
-      an observed bill. It is the routed model and not the ``fal-ai/any-llm``
+      an observed bill. When the response reports both token counts, it is the
+      greater of that price and those tokens at the routed model's upstream
+      rates (its long-prompt tier included, falaw#130), the same max-over-bases
+      a plan-time quote takes, so a long prompt is not recorded at the flat
+      request price. It is the routed model and not the ``fal-ai/any-llm``
       record because the record carries fal's *standard* tier, and a premium
       routed model bills ten times that: pricing every turn from the record
       under-reported premium spend tenfold in the ledger a consumer sums
       (falaw#55). ``None`` only when nothing can price it at all.
     - ``cost_source`` says which of those cases produced the number, so a
       receipt consumer never has to guess: ``"cache_hit"``,
-      ``"rate_table:per_call"``, ``"registry:<kind>"`` (the fallback for a
+      ``"rate_table:per_call"``, ``"rate_table:tokens"`` (the token basis
+      exceeded the request price), ``"registry:<kind>"`` (the fallback for a
       model the table does not price), or ``"unknown"``.
     """
 
@@ -140,7 +145,8 @@ def _extract_llm_usage(raw: Any) -> tuple[Optional[int], Optional[int]]:
         return None, None
 
     def _int_or_none(value: Any) -> Optional[int]:
-        return value if isinstance(value, int) and not isinstance(value, bool) else None
+        is_count = isinstance(value, int) and not isinstance(value, bool)
+        return value if is_count and value >= 0 else None
 
     tokens_in = _int_or_none(usage.get("prompt_tokens"))
     if tokens_in is None:
@@ -189,7 +195,11 @@ def llm_complete_with_receipt(
 
     cache_hit = bool(hit_seen)
     served_by = routed_model(_DEFAULT_LLM, arguments)  # arguments always name a model
-    cost, source = (0.0, "cache_hit") if cache_hit else _billed_cost_of(served_by)
+    cost, source = (
+        (0.0, "cache_hit")
+        if cache_hit
+        else _billed_cost_of(served_by, tokens_in=tokens_in, tokens_out=tokens_out)
+    )
 
     return text, LlmReceipt(
         application=_DEFAULT_LLM,
@@ -204,7 +214,12 @@ def llm_complete_with_receipt(
     )
 
 
-def _billed_cost_of(routed_model: str) -> tuple[Optional[float], str]:
+def _billed_cost_of(
+    routed_model: str,
+    *,
+    tokens_in: Optional[int] = None,
+    tokens_out: Optional[int] = None,
+) -> tuple[Optional[float], str]:
     """``(estimated_cost_usd, cost_source)`` for a call that was actually billed.
 
     Prices the **routed model** against the rate table (falaw#50, option A),
@@ -219,9 +234,19 @@ def _billed_cost_of(routed_model: str) -> tuple[Optional[float], str]:
     spent: dropping to ``None`` there deletes a known-approximate number rather
     than gating anything, and ``cost_source`` says which case produced it, so
     a consumer can tell a table-priced row from a router-priced one.
+
+    With both token counts reported, the cost is the greater of the request
+    price and those tokens at the upstream rates (falaw#130), and
+    ``"rate_table:tokens"`` names the case where the tokens are what bind.
     """
     table_cost = llm_ceiling_usd(routed_model)
     if table_cost is not None:
+        if tokens_in is not None and tokens_out is not None:
+            token_cost = llm_ceiling_usd(
+                routed_model, input_tokens=tokens_in, max_output_tokens=tokens_out
+            )
+            if token_cost is not None and token_cost > table_cost:
+                return token_cost, "rate_table:tokens"
         return table_cost, "rate_table:per_call"
     record = get_model(_DEFAULT_LLM)
     ce = record.cost_estimate

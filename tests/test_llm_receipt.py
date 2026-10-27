@@ -168,3 +168,49 @@ def test_receipt_variant_is_not_a_registered_tool():
     names = {t.name for t in list_tools()}
     assert "llm_complete" in names
     assert "llm_complete_with_receipt" not in names
+
+
+def test_a_long_prompt_is_recorded_at_its_token_cost_not_the_request_price(monkeypatch):
+    """falaw#130: the receipt used the per-call price even when usage reported a
+    prompt whose upstream token cost (long-prompt tier included) is far above it."""
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+
+    model = "anthropic/claude-haiku-5.5"
+    usage = {"prompt_tokens": 150_000, "completion_tokens": 2_000}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q", model=model)
+    expected = llm_ceiling_usd(model, input_tokens=150_000, max_output_tokens=2_000)
+    assert expected > llm_ceiling_usd(
+        model
+    )  # the long tier binds, not the request price
+    assert r.estimated_cost_usd == pytest.approx(expected)
+    assert r.cost_source == "rate_table:tokens"
+
+
+def test_a_short_prompt_still_records_the_request_price(monkeypatch):
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    _install_fake_fal(monkeypatch, response=OPENAI_SHAPED)  # 42 in, 7 out
+    _, r = llm_complete_with_receipt("q")
+    assert r.estimated_cost_usd == pytest.approx(llm_ceiling_usd(_DEFAULT_MODEL))
+    assert r.cost_source == "rate_table:per_call"
+
+
+@pytest.mark.parametrize(
+    "usage",
+    [
+        {"prompt_tokens": 150_000},  # no output count: no token bound
+        {"prompt_tokens": -5, "completion_tokens": 7},  # nonsense count is unrecorded
+    ],
+)
+def test_incomplete_or_nonsense_usage_falls_back_to_the_request_price(
+    monkeypatch, usage
+):
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q")
+    assert r.estimated_cost_usd == pytest.approx(llm_ceiling_usd(_DEFAULT_MODEL))
+    assert r.cost_source == "rate_table:per_call"

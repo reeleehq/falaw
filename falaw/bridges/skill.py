@@ -248,8 +248,9 @@ neither and a capped call still quotes the request price. Hints are
 estimator-only: adding one never moves the cache key or the plan hash.
 
 The eager `llm_complete_with_receipt` prices the same way --- a receipt for a
-premium routed model reads $0.01 with `cost_source="rate_table:per_call"`, so a
-ledger that sums receipts and a gate that reads quotes agree.
+premium routed model reads $0.01 with `cost_source="rate_table:per_call"`, or more
+with `cost_source="rate_table:tokens"` when the reported tokens at upstream rates
+exceed that, so a ledger that sums receipts and a gate that reads quotes agree.
 
 Rates move. Every row carries its own `source` and `date` (`llm_rates.json`);
 ### A saved plan's price is a past fact --- re-quote it before you gate on it
