@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=5c6fbccc"></script>
+    <script src="../../_static/documentation_options.js?v=cfefb2bf"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.80" />
+  <meta name="docsearch:version" content="0.0.82" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -768,6 +768,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_table_version</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.llm_prices</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlmPriceRates</span><span class="p">,</span> <span class="n">parse_long_prompt</span><span class="p">,</span> <span class="n">rates_for_prompt</span>
 
 <span class="n">RATES_FILENAME</span> <span class="o">=</span> <span class="s2">"llm_rates.json"</span>
 <span class="sd">"""Basename of the rate table under ``falaw/data``."""</span>
@@ -858,6 +859,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">            :data:`TOKENS_PER_RATE_UNIT` prompt tokens, or ``None`` when no</span>
 <span class="sd">            upstream rate is published for this id — unknown, never zero.</span>
 <span class="sd">        output_usd_per_mtok: The same for completion tokens.</span>
+<span class="sd">        long_prompt_over_tokens: Prompt length past which the upstream bills</span>
+<span class="sd">            ``long_prompt_rates`` instead (OpenRouter's ``pricing.overrides``,</span>
+<span class="sd">            falaw#124), or ``None`` when the model has one regime.</span>
+<span class="sd">        long_prompt_rates: The token rates that replace the row's own past</span>
+<span class="sd">            ``long_prompt_over_tokens``.</span>
 <span class="sd">        source: Where these numbers came from.</span>
 <span class="sd">        date: ISO date they were read on. Rates move; a quote is only as</span>
 <span class="sd">            fresh as its row.</span>
@@ -869,9 +875,34 @@ window.runMermaid = runMermaid;</script>
     <span class="n">per_call_usd</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">input_usd_per_mtok</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">output_usd_per_mtok</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">long_prompt_over_tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">long_prompt_rates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPriceRates</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># A caller's ``rates=`` table is checked too: a half-set or cheaper tier</span>
+        <span class="c1"># would raise mid-quote or quote less past the threshold.</span>
+        <span class="n">over</span><span class="p">,</span> <span class="n">long_rates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">long_prompt_rates</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">over</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="n">long_rates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">: long_prompt_over_tokens and long_prompt_rates "</span>
+                <span class="s2">"are set together or not at all"</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">long_rates</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">over</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">over</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> <span class="n">over</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">: long_prompt_over_tokens must be an int &gt;= 0"</span>
+            <span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"input_usd_per_mtok"</span><span class="p">,</span> <span class="s2">"output_usd_per_mtok"</span><span class="p">):</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">long_rates</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">base</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="si">}</span><span class="s2">: the long-prompt </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is below the base rate, "</span>
+                    <span class="s2">"so a longer prompt would quote less"</span>
+                <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_token_rates</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -901,20 +932,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    """</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">_rates_path</span><span class="p">(),</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">table</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">]:</span> <span class="n">LlmRate</span><span class="p">(</span>
-            <span class="n">model</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">],</span>
-            <span class="n">tier</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"tier"</span><span class="p">],</span>
-            <span class="n">per_call_usd</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"per_call_usd"</span><span class="p">]),</span>
-            <span class="n">input_usd_per_mtok</span><span class="o">=</span><span class="n">_optional_float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"input_usd_per_mtok"</span><span class="p">)),</span>
-            <span class="n">output_usd_per_mtok</span><span class="o">=</span><span class="n">_optional_float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_usd_per_mtok"</span><span class="p">)),</span>
-            <span class="n">source</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
-            <span class="n">date</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
-            <span class="n">notes</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
-        <span class="p">)</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]</span>
-    <span class="p">}</span></div>
+    <span class="k">return</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">]:</span> <span class="n">_rate_from_row</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]}</span></div>
 
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_rate_from_row</span><span class="p">(</span><span class="n">row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LlmRate</span><span class="p">:</span>
+    <span class="n">over_tokens</span><span class="p">,</span> <span class="n">long_rates</span> <span class="o">=</span> <span class="n">parse_long_prompt</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">LlmRate</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">],</span>
+        <span class="n">tier</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"tier"</span><span class="p">],</span>
+        <span class="n">per_call_usd</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">"per_call_usd"</span><span class="p">]),</span>
+        <span class="n">input_usd_per_mtok</span><span class="o">=</span><span class="n">_optional_float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"input_usd_per_mtok"</span><span class="p">)),</span>
+        <span class="n">output_usd_per_mtok</span><span class="o">=</span><span class="n">_optional_float</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_usd_per_mtok"</span><span class="p">)),</span>
+        <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="n">over_tokens</span><span class="p">,</span>
+        <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">long_rates</span><span class="p">,</span>
+        <span class="n">source</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+        <span class="n">date</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+        <span class="n">notes</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_optional_float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
@@ -1014,6 +1049,16 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    &gt;&gt;&gt; b &gt;= a</span>
 <span class="sd">    True</span>
 
+<span class="sd">    Past a row's long-prompt threshold the upstream bills higher rates for the</span>
+<span class="sd">    whole call (falaw#124), and the quote uses them. Claude Haiku 5.5 costs five</span>
+<span class="sd">    times as much per token above 100,000 prompt tokens:</span>
+
+<span class="sd">    &gt;&gt;&gt; haiku = 'anthropic/claude-haiku-5.5'</span>
+<span class="sd">    &gt;&gt;&gt; below = llm_ceiling_usd(haiku, input_tokens=99_999, max_output_tokens=0)</span>
+<span class="sd">    &gt;&gt;&gt; above = llm_ceiling_usd(haiku, input_tokens=100_000, max_output_tokens=0)</span>
+<span class="sd">    &gt;&gt;&gt; round(below, 6), round(above, 6)</span>
+<span class="sd">    (0.01, 0.05)</span>
+
 <span class="sd">    Both hints are upper bounds the *caller* holds at plan time: the prompt is</span>
 <span class="sd">    already written, and ``max_tokens`` caps the response. Real output length</span>
 <span class="sd">    is unknowable before the call, which is exactly why this quotes the cap and</span>
@@ -1068,9 +1113,18 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">input_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_output_tokens</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">rate</span><span class="o">.</span><span class="n">has_token_rates</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># a token quote was asked for and cannot be bounded</span>
 
+    <span class="n">billed</span> <span class="o">=</span> <span class="n">rates_for_prompt</span><span class="p">(</span>
+        <span class="n">LlmPriceRates</span><span class="p">(</span>
+            <span class="n">input_usd_per_mtok</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">input_usd_per_mtok</span><span class="p">,</span>
+            <span class="n">output_usd_per_mtok</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">output_usd_per_mtok</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">input_tokens</span><span class="p">,</span>
+        <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span><span class="p">,</span>
+        <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">rate</span><span class="o">.</span><span class="n">long_prompt_rates</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">token_cost</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">input_tokens</span> <span class="o">*</span> <span class="n">rate</span><span class="o">.</span><span class="n">input_usd_per_mtok</span>
-        <span class="o">+</span> <span class="n">max_output_tokens</span> <span class="o">*</span> <span class="n">rate</span><span class="o">.</span><span class="n">output_usd_per_mtok</span>
+        <span class="n">input_tokens</span> <span class="o">*</span> <span class="n">billed</span><span class="o">.</span><span class="n">input_usd_per_mtok</span>
+        <span class="o">+</span> <span class="n">max_output_tokens</span> <span class="o">*</span> <span class="n">billed</span><span class="o">.</span><span class="n">output_usd_per_mtok</span>
     <span class="p">)</span> <span class="o">/</span> <span class="n">TOKENS_PER_RATE_UNIT</span>
     <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="n">rate</span><span class="o">.</span><span class="n">per_call_usd</span><span class="p">,</span> <span class="n">token_cost</span><span class="p">)</span> <span class="o">*</span> <span class="n">count</span></div>
 

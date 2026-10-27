@@ -22,6 +22,7 @@ falaw.llm\_rates\_refresh
       diff_llm_rate_tables
       format_llm_rates_diff
       parse_any_llm_doc
+      parse_openrouter_long_prompts
       parse_openrouter_models
       refresh_llm_rates
    

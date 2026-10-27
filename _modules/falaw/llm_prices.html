@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=5c6fbccc"></script>
+    <script src="../../_static/documentation_options.js?v=cfefb2bf"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.80" />
+  <meta name="docsearch:version" content="0.0.82" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -823,6 +823,40 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span>
 
 
+<div class="viewcode-block" id="parse_long_prompt">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.parse_long_prompt">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_long_prompt</span><span class="p">(</span>
+    <span class="n">row</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPriceRates</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""``(over_input_tokens, rates)`` from a row's ``long_prompt`` block, or ``(None, None)``.</span>
+
+<span class="sd">    The one reading of the block both falaw rate tables share: the rates replace the</span>
+<span class="sd">    row's own once a prompt exceeds ``over_input_tokens``.</span>
+<span class="sd">    """</span>
+    <span class="n">long_prompt</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"long_prompt"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">long_prompt</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">long_prompt</span><span class="p">[</span><span class="s2">"over_input_tokens"</span><span class="p">]),</span> <span class="n">_rates</span><span class="p">(</span><span class="n">long_prompt</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="rates_for_prompt">
+<a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.rates_for_prompt">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rates_for_prompt</span><span class="p">(</span>
+    <span class="n">rates</span><span class="p">:</span> <span class="n">LlmPriceRates</span><span class="p">,</span>
+    <span class="n">input_tokens</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">long_prompt_over_tokens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">long_prompt_rates</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">LlmPriceRates</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LlmPriceRates</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The rates a prompt of ``input_tokens`` is billed at: the long-prompt tier</span>
+<span class="sd">    past its threshold, else ``rates``. Shared by both falaw rate tables."""</span>
+    <span class="k">if</span> <span class="n">long_prompt_rates</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">input_tokens</span> <span class="o">&gt;</span> <span class="n">long_prompt_over_tokens</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">long_prompt_rates</span>
+    <span class="k">return</span> <span class="n">rates</span></div>
+
+
+
 <div class="viewcode-block" id="load_llm_prices">
 <a class="viewcode-back" href="../../_autosummary/falaw.llm_prices.html#falaw.load_llm_prices">[docs]</a>
 <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -832,15 +866,13 @@ window.runMermaid = runMermaid;</script>
         <span class="n">table</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="n">out</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">LlmPrice</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table</span><span class="p">[</span><span class="s2">"rows"</span><span class="p">]:</span>
-        <span class="n">long_prompt</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"long_prompt"</span><span class="p">)</span>
+        <span class="n">over_tokens</span><span class="p">,</span> <span class="n">long_rates</span> <span class="o">=</span> <span class="n">parse_long_prompt</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
         <span class="n">out</span><span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="s2">"provider"</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">])]</span> <span class="o">=</span> <span class="n">LlmPrice</span><span class="p">(</span>
             <span class="n">provider</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"provider"</span><span class="p">],</span>
             <span class="n">model</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="s2">"model"</span><span class="p">],</span>
             <span class="n">rates</span><span class="o">=</span><span class="n">_rates</span><span class="p">(</span><span class="n">row</span><span class="p">),</span>
-            <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="p">(</span>
-                <span class="nb">int</span><span class="p">(</span><span class="n">long_prompt</span><span class="p">[</span><span class="s2">"over_input_tokens"</span><span class="p">])</span> <span class="k">if</span> <span class="n">long_prompt</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="p">),</span>
-            <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">_rates</span><span class="p">(</span><span class="n">long_prompt</span><span class="p">)</span> <span class="k">if</span> <span class="n">long_prompt</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="n">over_tokens</span><span class="p">,</span>
+            <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">long_rates</span><span class="p">,</span>
             <span class="n">source</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"source"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">date</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"date"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
             <span class="n">notes</span><span class="o">=</span><span class="n">row</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"notes"</span><span class="p">,</span> <span class="s2">""</span><span class="p">),</span>
@@ -913,12 +945,13 @@ window.runMermaid = runMermaid;</script>
     <span class="n">known</span> <span class="o">=</span> <span class="n">price</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
     <span class="n">rates</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">rates</span> <span class="k">if</span> <span class="n">price</span> <span class="k">else</span> <span class="n">_dearest_rates</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
     <span class="n">counts</span> <span class="o">=</span> <span class="n">llm_token_counts</span><span class="p">(</span><span class="n">provider</span><span class="p">,</span> <span class="n">usage</span><span class="p">)</span>
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="n">price</span>
-        <span class="ow">and</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span>
-        <span class="ow">and</span> <span class="n">counts</span><span class="o">.</span><span class="n">input</span> <span class="o">&gt;</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span>
-    <span class="p">):</span>
-        <span class="n">rates</span> <span class="o">=</span> <span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span>
+    <span class="k">if</span> <span class="n">price</span><span class="p">:</span>
+        <span class="n">rates</span> <span class="o">=</span> <span class="n">rates_for_prompt</span><span class="p">(</span>
+            <span class="n">rates</span><span class="p">,</span>
+            <span class="n">counts</span><span class="o">.</span><span class="n">input</span><span class="p">,</span>
+            <span class="n">long_prompt_over_tokens</span><span class="o">=</span><span class="n">price</span><span class="o">.</span><span class="n">long_prompt_over_tokens</span><span class="p">,</span>
+            <span class="n">long_prompt_rates</span><span class="o">=</span><span class="n">price</span><span class="o">.</span><span class="n">long_prompt_rates</span><span class="p">,</span>
+        <span class="p">)</span>
     <span class="n">usd</span> <span class="o">=</span> <span class="n">_usd</span><span class="p">(</span><span class="n">rates</span><span class="p">,</span> <span class="n">counts</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">usd</span><span class="p">,</span> <span class="n">COST_DECIMALS</span><span class="p">),</span> <span class="n">known</span></div>
 

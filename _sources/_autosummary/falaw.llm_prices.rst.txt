@@ -23,6 +23,8 @@ falaw.llm\_prices
       llm_prices_table_version
       llm_token_counts
       load_llm_prices
+      parse_long_prompt
+      rates_for_prompt
    
    .. rubric:: Classes
 

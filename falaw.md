@@ -1,4 +1,4 @@
-> built 2026-10-27 18:14 UTC from ec90ff4 (main) · falaw 0.0.80. Details: build_info.json
+> built 2026-10-27 18:23 UTC from 2a0f657 (main) · falaw 0.0.82. Details: build_info.json
 
 # index.html.md
 
@@ -4045,7 +4045,7 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One row of the first-party table: a model’s rates and where they came from.
 
-### *class* falaw.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, source='', date='', notes='')
+### *class* falaw.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, long_prompt_over_tokens=None, long_prompt_rates=None, source='', date='', notes='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -4090,6 +4090,23 @@ The same for completion tokens.
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+#### long_prompt_over_tokens
+
+Prompt length past which the upstream bills
+`long_prompt_rates` instead (OpenRouter’s `pricing.overrides`,
+falaw#124), or `None` when the model has one regime.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
+#### long_prompt_rates
+
+The token rates that replace the row’s own past
+`long_prompt_over_tokens`.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)]
 
 #### source
 
@@ -5476,6 +5493,18 @@ Monotone in both hints, so a bigger hint never quotes less:
 True
 ```
 
+Past a row’s long-prompt threshold the upstream bills higher rates for the
+whole call (falaw#124), and the quote uses them. Claude Haiku 5.5 costs five
+times as much per token above 100,000 prompt tokens:
+
+```pycon
+>>> haiku = 'anthropic/claude-haiku-5.5'
+>>> below = llm_ceiling_usd(haiku, input_tokens=99_999, max_output_tokens=0)
+>>> above = llm_ceiling_usd(haiku, input_tokens=100_000, max_output_tokens=0)
+>>> round(below, 6), round(above, 6)
+(0.01, 0.05)
+```
+
 Both hints are upper bounds the *caller* holds at plan time: the prompt is
 already written, and `max_tokens` caps the response. Real output length
 is unknowable before the call, which is exactly why this quotes the cap and
@@ -6789,6 +6818,8 @@ priced as its family, because older snapshots can cost more.
 | [`llm_prices_table_version`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_prices_table_version)()                     | The table's version, a digest of its bytes (see [`falaw.base.data_table_version()`](_autosummary/falaw.base.html.md#falaw.base.data_table_version)).                                                  |
 | [`llm_token_counts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_token_counts)(provider, usage)              | The [`LlmTokenCounts`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts) of a vendor `usage`, in the shapes [`llm_call_cost_usd()`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.llm_call_cost_usd) accepts (a mapping or an SDK object). |
 | [`load_llm_prices`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.load_llm_prices)()                              | The committed table, keyed by `(provider, model)`.                                                                                                                                                                |
+| [`parse_long_prompt`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.parse_long_prompt)(row)                         | `(over_input_tokens, rates)` from a row's `long_prompt` block, or `(None, None)`.                                                                                                                                 |
+| [`rates_for_prompt`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.rates_for_prompt)(rates, input_tokens, \*, ...) | The rates a prompt of `input_tokens` is billed at: the long-prompt tier past its threshold, else `rates`.                                                                                                         |
 
 ### Classes
 
@@ -6911,6 +6942,24 @@ The committed table, keyed by `(provider, model)`. Read once per process.
 * **Return type:**
   [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`LlmPrice`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPrice)]
 
+### falaw.llm_prices.parse_long_prompt(row)
+
+`(over_input_tokens, rates)` from a row’s `long_prompt` block, or `(None, None)`.
+
+The one reading of the block both falaw rate tables share: the rates replace the
+row’s own once a prompt exceeds `over_input_tokens`.
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)], [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)]]
+
+### falaw.llm_prices.rates_for_prompt(rates, input_tokens, , long_prompt_over_tokens, long_prompt_rates)
+
+The rates a prompt of `input_tokens` is billed at: the long-prompt tier
+past its threshold, else `rates`. Shared by both falaw rate tables.
+
+* **Return type:**
+  [`LlmPriceRates`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)
+
 
 # _autosummary/falaw.llm_rates.html.md
 
@@ -7018,7 +7067,7 @@ row’s `date` against before returning a quote.
 
 Identity a [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) records for an LLM-priced call.
 
-### *class* falaw.llm_rates.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, source='', date='', notes='')
+### *class* falaw.llm_rates.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, long_prompt_over_tokens=None, long_prompt_rates=None, source='', date='', notes='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -7063,6 +7112,23 @@ The same for completion tokens.
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+#### long_prompt_over_tokens
+
+Prompt length past which the upstream bills
+`long_prompt_rates` instead (OpenRouter’s `pricing.overrides`,
+falaw#124), or `None` when the model has one regime.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
+#### long_prompt_rates
+
+The token rates that replace the row’s own past
+`long_prompt_over_tokens`.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)]
 
 #### source
 
@@ -7161,6 +7227,18 @@ Monotone in both hints, so a bigger hint never quotes less:
 >>> b = llm_ceiling_usd('openai/gpt-4o', input_tokens=9_000, max_output_tokens=100)
 >>> b >= a
 True
+```
+
+Past a row’s long-prompt threshold the upstream bills higher rates for the
+whole call (falaw#124), and the quote uses them. Claude Haiku 5.5 costs five
+times as much per token above 100,000 prompt tokens:
+
+```pycon
+>>> haiku = 'anthropic/claude-haiku-5.5'
+>>> below = llm_ceiling_usd(haiku, input_tokens=99_999, max_output_tokens=0)
+>>> above = llm_ceiling_usd(haiku, input_tokens=100_000, max_output_tokens=0)
+>>> round(below, 6), round(above, 6)
+(0.01, 0.05)
 ```
 
 Both hints are upper bounds the *caller* holds at plan time: the prompt is
@@ -7310,6 +7388,7 @@ file is a separate, human step.
 | [`diff_llm_rate_tables`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.diff_llm_rate_tables)(committed_rows, ...) | Compare two `rows` lists (as loaded from the table JSON) by model id.                                               |
 | [`format_llm_rates_diff`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.format_llm_rates_diff)(diff)               | Render [`diff_llm_rate_tables()`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.diff_llm_rate_tables)'s result as a human-readable report. |
 | [`parse_any_llm_doc`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.parse_any_llm_doc)(text)                   | Pure parse of fal's any-llm `llms.txt` into [`AnyLlmDoc`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.AnyLlmDoc).             |
+| [`parse_openrouter_long_prompts`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.parse_openrouter_long_prompts)(payload)    | `{model_id: long_prompt block or None}` for every OpenRouter model with overrides.                                  |
 | [`parse_openrouter_models`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.parse_openrouter_models)(payload)          | `{model_id: (input_usd_per_mtok, output_usd_per_mtok)}` from OpenRouter.                                            |
 | [`refresh_llm_rates`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.refresh_llm_rates)(\*[, write, ...])       | Fetch both sources, propose a fresh table, diff it — never overwrite.                                               |
 
@@ -7384,9 +7463,13 @@ Basename of the human-readable diff a refresh writes under `falaw/data`.
 
 Decimal places kept for a converted `*_usd_per_mtok` rate.
 
-### falaw.llm_rates_refresh.build_proposed_rows(any_llm, openrouter_rates, , date)
+### falaw.llm_rates_refresh.build_proposed_rows(any_llm, openrouter_rates, , date, long_prompts)
 
 One rate-table row per id in `any_llm.model_enum`, freshly derived.
+
+`long_prompts` ([`parse_openrouter_long_prompts()`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.parse_openrouter_long_prompts)) adds a
+`long_prompt` block to a priced row whose model has one; a model whose
+tier could not be parsed (`None`) gets no token rates at all.
 
 The whole table is regenerated from the two sources every run — there is
 no merge with the committed file here. The committed file only changes
@@ -7431,6 +7514,25 @@ Pure parse of fal’s any-llm `llms.txt` into [`AnyLlmDoc`](_autosummary/falaw.l
       refresh should guess.
 * **Return type:**
   [`AnyLlmDoc`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.AnyLlmDoc)
+
+### falaw.llm_rates_refresh.parse_openrouter_long_prompts(payload)
+
+`{model_id: long_prompt block or None}` for every OpenRouter model with overrides.
+
+Pure parse of `pricing.overrides` in the `GET /api/v1/models` body
+(falaw#124): an override bills its `prompt`/`completion` rates once a
+prompt reaches `min_prompt_tokens`. The block has the shape the rate
+tables share ([`falaw.llm_prices.parse_long_prompt()`](_autosummary/falaw.llm_prices.html.md#falaw.llm_prices.parse_long_prompt)), so
+`over_input_tokens` is `min_prompt_tokens - 1`: the tier starts *at* the
+threshold, and a ceiling must not quote the boundary at the cheaper rate.
+
+`None` marks a model whose overrides this parse cannot price: more than
+one, or one without an integer threshold and two positive rates.
+[`build_proposed_rows()`](_autosummary/falaw.llm_rates_refresh.html.md#falaw.llm_rates_refresh.build_proposed_rows) then drops that model’s token rates, because
+quoting its base rates alone is the under-quote this tier exists to prevent.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]]
 
 ### falaw.llm_rates_refresh.parse_openrouter_models(payload)
 
@@ -10988,7 +11090,7 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-27 18:14 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/ec90ff4c013d03bc0408361acf6e894565aab956"><code>ec90ff4</code></a> on branch <code>main</code>, for **falaw 0.0.80** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-27 18:23 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/2a0f6575474420d7bba8f581a6ed4481967ad90a"><code>2a0f657</code></a> on branch <code>main</code>, for **falaw 0.0.82** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -10997,9 +11099,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/ec90ff4c013d03bc0408361acf6e894565aab956"><code>ec90ff4c013d03bc0408361acf6e894565aab956</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/2a0f6575474420d7bba8f581a6ed4481967ad90a"><code>2a0f6575474420d7bba8f581a6ed4481967ad90a</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
-| Tags at this commit | none                                                                                                                                                  |
+| Tags at this commit | <code>0.0.82</code>                                                                                                                                   |
 | Working tree        | clean                                                                                                                                                 |
 | Remote              | <code>https://github.com/reeleehq/falaw</code>                                                                                                        |
 
@@ -11008,9 +11110,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40557599457">40557599457</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40558240004">40558240004</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>ec90ff4c013d03bc0408361acf6e894565aab956</code> (in the history of the built commit) |
+| Event commit | <code>7e4a99f5164d73b0d1fde52a1ad6b81be4d9b0e9</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11035,13 +11137,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.80/">0.0.80</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.82/">0.0.82</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout ec90ff4c013d03bc0408361acf6e894565aab956
+git checkout 2a0f6575474420d7bba8f581a6ed4481967ad90a
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

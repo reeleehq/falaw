@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=5c6fbccc"></script>
+    <script src="../_static/documentation_options.js?v=cfefb2bf"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.80" />
+  <meta name="docsearch:version" content="0.0.82" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -517,10 +517,13 @@ file is a separate, human step.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.parse_any_llm_doc" title="falaw.llm_rates_refresh.parse_any_llm_doc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_any_llm_doc</span></code></a>(text)</p></td>
 <td><p>Pure parse of fal's any-llm <code class="docutils literal notranslate"><span class="pre">llms.txt</span></code> into <a class="reference internal" href="#falaw.llm_rates_refresh.AnyLlmDoc" title="falaw.llm_rates_refresh.AnyLlmDoc"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyLlmDoc</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.parse_openrouter_models" title="falaw.llm_rates_refresh.parse_openrouter_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_openrouter_models</span></code></a>(payload)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.parse_openrouter_long_prompts" title="falaw.llm_rates_refresh.parse_openrouter_long_prompts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_openrouter_long_prompts</span></code></a>(payload)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">{model_id:</span> <span class="pre">long_prompt</span> <span class="pre">block</span> <span class="pre">or</span> <span class="pre">None}</span></code> for every OpenRouter model with overrides.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.parse_openrouter_models" title="falaw.llm_rates_refresh.parse_openrouter_models"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_openrouter_models</span></code></a>(payload)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">{model_id:</span> <span class="pre">(input_usd_per_mtok,</span> <span class="pre">output_usd_per_mtok)}</span></code> from OpenRouter.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.refresh_llm_rates" title="falaw.llm_rates_refresh.refresh_llm_rates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_llm_rates</span></code></a>(*[, write, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.llm_rates_refresh.refresh_llm_rates" title="falaw.llm_rates_refresh.refresh_llm_rates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">refresh_llm_rates</span></code></a>(*[, write, ...])</p></td>
 <td><p>Fetch both sources, propose a fresh table, diff it — never overwrite.</p></td>
 </tr>
 </tbody>
@@ -636,8 +639,11 @@ the doc’s own order.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.llm_rates_refresh.build_proposed_rows">
-<span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">build_proposed_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">any_llm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">openrouter_rates</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates_refresh.html#build_proposed_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates_refresh.build_proposed_rows" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">build_proposed_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">any_llm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">openrouter_rates</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates_refresh.html#build_proposed_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates_refresh.build_proposed_rows" title="Link to this definition">#</a></dt>
 <dd><p>One rate-table row per id in <code class="docutils literal notranslate"><span class="pre">any_llm.model_enum</span></code>, freshly derived.</p>
+<p><code class="docutils literal notranslate"><span class="pre">long_prompts</span></code> (<a class="reference internal" href="#falaw.llm_rates_refresh.parse_openrouter_long_prompts" title="falaw.llm_rates_refresh.parse_openrouter_long_prompts"><code class="xref py py-func docutils literal notranslate"><span class="pre">parse_openrouter_long_prompts()</span></code></a>) adds a
+<code class="docutils literal notranslate"><span class="pre">long_prompt</span></code> block to a priced row whose model has one; a model whose
+tier could not be parsed (<code class="docutils literal notranslate"><span class="pre">None</span></code>) gets no token rates at all.</p>
 <p>The whole table is regenerated from the two sources every run — there is
 no merge with the committed file here. The committed file only changes
 when a human promotes a proposal, so there is nothing stale to carry
@@ -693,6 +699,27 @@ what it is); <code class="docutils literal notranslate"><span class="pre">unchan
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.llm_rates_refresh.AnyLlmDoc" title="falaw.llm_rates_refresh.AnyLlmDoc"><code class="xref py py-class docutils literal notranslate"><span class="pre">AnyLlmDoc</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.llm_rates_refresh.parse_openrouter_long_prompts">
+<span class="sig-prename descclassname"><span class="pre">falaw.llm_rates_refresh.</span></span><span class="sig-name descname"><span class="pre">parse_openrouter_long_prompts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">payload</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates_refresh.html#parse_openrouter_long_prompts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates_refresh.parse_openrouter_long_prompts" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">{model_id:</span> <span class="pre">long_prompt</span> <span class="pre">block</span> <span class="pre">or</span> <span class="pre">None}</span></code> for every OpenRouter model with overrides.</p>
+<p>Pure parse of <code class="docutils literal notranslate"><span class="pre">pricing.overrides</span></code> in the <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/v1/models</span></code> body
+(falaw#124): an override bills its <code class="docutils literal notranslate"><span class="pre">prompt</span></code>/<code class="docutils literal notranslate"><span class="pre">completion</span></code> rates once a
+prompt reaches <code class="docutils literal notranslate"><span class="pre">min_prompt_tokens</span></code>. The block has the shape the rate
+tables share (<a class="reference internal" href="falaw.llm_prices.html#falaw.llm_prices.parse_long_prompt" title="falaw.llm_prices.parse_long_prompt"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.llm_prices.parse_long_prompt()</span></code></a>), so
+<code class="docutils literal notranslate"><span class="pre">over_input_tokens</span></code> is <code class="docutils literal notranslate"><span class="pre">min_prompt_tokens</span> <span class="pre">-</span> <span class="pre">1</span></code>: the tier starts <em>at</em> the
+threshold, and a ceiling must not quote the boundary at the cheaper rate.</p>
+<p><code class="docutils literal notranslate"><span class="pre">None</span></code> marks a model whose overrides this parse cannot price: more than
+one, or one without an integer threshold and two positive rates.
+<a class="reference internal" href="#falaw.llm_rates_refresh.build_proposed_rows" title="falaw.llm_rates_refresh.build_proposed_rows"><code class="xref py py-func docutils literal notranslate"><span class="pre">build_proposed_rows()</span></code></a> then drops that model’s token rates, because
+quoting its base rates alone is the under-quote this tier exists to prevent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>]]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -799,6 +826,7 @@ two path keys are <code class="docutils literal notranslate"><span class="pre">N
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.diff_llm_rate_tables"><code class="docutils literal notranslate"><span class="pre">diff_llm_rate_tables()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.format_llm_rates_diff"><code class="docutils literal notranslate"><span class="pre">format_llm_rates_diff()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.parse_any_llm_doc"><code class="docutils literal notranslate"><span class="pre">parse_any_llm_doc()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.parse_openrouter_long_prompts"><code class="docutils literal notranslate"><span class="pre">parse_openrouter_long_prompts()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.parse_openrouter_models"><code class="docutils literal notranslate"><span class="pre">parse_openrouter_models()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates_refresh.refresh_llm_rates"><code class="docutils literal notranslate"><span class="pre">refresh_llm_rates()</span></code></a></li>
 </ul>

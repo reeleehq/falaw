@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=5c6fbccc"></script>
+    <script src="../_static/documentation_options.js?v=cfefb2bf"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.80" />
+  <meta name="docsearch:version" content="0.0.82" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -581,7 +581,7 @@ row’s <code class="docutils literal notranslate"><span class="pre">date</span>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.llm_rates.LlmRate">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_rates.</span></span><span class="sig-name descname"><span class="pre">LlmRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_call_usd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates.html#LlmRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates.LlmRate" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.llm_rates.</span></span><span class="sig-name descname"><span class="pre">LlmRate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tier</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_call_usd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_usd_per_mtok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompt_over_tokens</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">long_prompt_rates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/llm_rates.html#LlmRate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.llm_rates.LlmRate" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>What one routed model costs, on every basis the table knows.</p>
 <dl class="field-list simple">
@@ -642,6 +642,31 @@ upstream rate is published for this id — unknown, never zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.llm_rates.LlmRate.long_prompt_over_tokens">
+<span class="sig-name descname"><span class="pre">long_prompt_over_tokens</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.long_prompt_over_tokens" title="Link to this definition">#</a></dt>
+<dd><p>Prompt length past which the upstream bills
+<code class="docutils literal notranslate"><span class="pre">long_prompt_rates</span></code> instead (OpenRouter’s <code class="docutils literal notranslate"><span class="pre">pricing.overrides</span></code>,
+falaw#124), or <code class="docutils literal notranslate"><span class="pre">None</span></code> when the model has one regime.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="falaw.llm_rates.LlmRate.long_prompt_rates">
+<span class="sig-name descname"><span class="pre">long_prompt_rates</span></span><a class="headerlink" href="#falaw.llm_rates.LlmRate.long_prompt_rates" title="Link to this definition">#</a></dt>
+<dd><p>The token rates that replace the row’s own past
+<code class="docutils literal notranslate"><span class="pre">long_prompt_over_tokens</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference internal" href="falaw.llm_prices.html#falaw.llm_prices.LlmPriceRates" title="falaw.llm_prices.LlmPriceRates"><code class="xref py py-class docutils literal notranslate"><span class="pre">LlmPriceRates</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -764,6 +789,16 @@ alone under-quotes the other case.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">llm_ceiling_usd</span><span class="p">(</span><span class="s1">'openai/gpt-4o'</span><span class="p">,</span> <span class="n">input_tokens</span><span class="o">=</span><span class="mi">9_000</span><span class="p">,</span> <span class="n">max_output_tokens</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">&gt;=</span> <span class="n">a</span>
 <span class="go">True</span>
+</pre></div>
+</div>
+<p>Past a row’s long-prompt threshold the upstream bills higher rates for the
+whole call (falaw#124), and the quote uses them. Claude Haiku 5.5 costs five
+times as much per token above 100,000 prompt tokens:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">haiku</span> <span class="o">=</span> <span class="s1">'anthropic/claude-haiku-5.5'</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">below</span> <span class="o">=</span> <span class="n">llm_ceiling_usd</span><span class="p">(</span><span class="n">haiku</span><span class="p">,</span> <span class="n">input_tokens</span><span class="o">=</span><span class="mi">99_999</span><span class="p">,</span> <span class="n">max_output_tokens</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">above</span> <span class="o">=</span> <span class="n">llm_ceiling_usd</span><span class="p">(</span><span class="n">haiku</span><span class="p">,</span> <span class="n">input_tokens</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span> <span class="n">max_output_tokens</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">below</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">above</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="go">(0.01, 0.05)</span>
 </pre></div>
 </div>
 <p>Both hints are upper bounds the <em>caller</em> holds at plan time: the prompt is
@@ -924,6 +959,8 @@ stale) sees the warning once per process, not once per call.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.per_call_usd"><code class="docutils literal notranslate"><span class="pre">LlmRate.per_call_usd</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.input_usd_per_mtok"><code class="docutils literal notranslate"><span class="pre">LlmRate.input_usd_per_mtok</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.output_usd_per_mtok"><code class="docutils literal notranslate"><span class="pre">LlmRate.output_usd_per_mtok</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.long_prompt_over_tokens"><code class="docutils literal notranslate"><span class="pre">LlmRate.long_prompt_over_tokens</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.long_prompt_rates"><code class="docutils literal notranslate"><span class="pre">LlmRate.long_prompt_rates</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.source"><code class="docutils literal notranslate"><span class="pre">LlmRate.source</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.date"><code class="docutils literal notranslate"><span class="pre">LlmRate.date</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.llm_rates.LlmRate.notes"><code class="docutils literal notranslate"><span class="pre">LlmRate.notes</span></code></a></li>

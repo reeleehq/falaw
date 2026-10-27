@@ -55,6 +55,7 @@ file is a separate, human step.
 | [`diff_llm_rate_tables`](#falaw.llm_rates_refresh.diff_llm_rate_tables)(committed_rows, ...) | Compare two `rows` lists (as loaded from the table JSON) by model id.                                               |
 | [`format_llm_rates_diff`](#falaw.llm_rates_refresh.format_llm_rates_diff)(diff)               | Render [`diff_llm_rate_tables()`](#falaw.llm_rates_refresh.diff_llm_rate_tables)'s result as a human-readable report. |
 | [`parse_any_llm_doc`](#falaw.llm_rates_refresh.parse_any_llm_doc)(text)                   | Pure parse of fal's any-llm `llms.txt` into [`AnyLlmDoc`](#falaw.llm_rates_refresh.AnyLlmDoc).             |
+| [`parse_openrouter_long_prompts`](#falaw.llm_rates_refresh.parse_openrouter_long_prompts)(payload)    | `{model_id: long_prompt block or None}` for every OpenRouter model with overrides.                                  |
 | [`parse_openrouter_models`](#falaw.llm_rates_refresh.parse_openrouter_models)(payload)          | `{model_id: (input_usd_per_mtok, output_usd_per_mtok)}` from OpenRouter.                                            |
 | [`refresh_llm_rates`](#falaw.llm_rates_refresh.refresh_llm_rates)(\*[, write, ...])       | Fetch both sources, propose a fresh table, diff it — never overwrite.                                               |
 
@@ -129,9 +130,13 @@ Basename of the human-readable diff a refresh writes under `falaw/data`.
 
 Decimal places kept for a converted `*_usd_per_mtok` rate.
 
-### falaw.llm_rates_refresh.build_proposed_rows(any_llm, openrouter_rates, , date)
+### falaw.llm_rates_refresh.build_proposed_rows(any_llm, openrouter_rates, , date, long_prompts)
 
 One rate-table row per id in `any_llm.model_enum`, freshly derived.
+
+`long_prompts` ([`parse_openrouter_long_prompts()`](#falaw.llm_rates_refresh.parse_openrouter_long_prompts)) adds a
+`long_prompt` block to a priced row whose model has one; a model whose
+tier could not be parsed (`None`) gets no token rates at all.
 
 The whole table is regenerated from the two sources every run — there is
 no merge with the committed file here. The committed file only changes
@@ -176,6 +181,25 @@ Pure parse of fal’s any-llm `llms.txt` into [`AnyLlmDoc`](#falaw.llm_rates_ref
       refresh should guess.
 * **Return type:**
   [`AnyLlmDoc`](#falaw.llm_rates_refresh.AnyLlmDoc)
+
+### falaw.llm_rates_refresh.parse_openrouter_long_prompts(payload)
+
+`{model_id: long_prompt block or None}` for every OpenRouter model with overrides.
+
+Pure parse of `pricing.overrides` in the `GET /api/v1/models` body
+(falaw#124): an override bills its `prompt`/`completion` rates once a
+prompt reaches `min_prompt_tokens`. The block has the shape the rate
+tables share ([`falaw.llm_prices.parse_long_prompt()`](falaw.llm_prices.html.md#falaw.llm_prices.parse_long_prompt)), so
+`over_input_tokens` is `min_prompt_tokens - 1`: the tier starts *at* the
+threshold, and a ceiling must not quote the boundary at the cheaper rate.
+
+`None` marks a model whose overrides this parse cannot price: more than
+one, or one without an integer threshold and two positive rates.
+[`build_proposed_rows()`](#falaw.llm_rates_refresh.build_proposed_rows) then drops that model’s token rates, because
+quoting its base rates alone is the under-quote this tier exists to prevent.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]]
 
 ### falaw.llm_rates_refresh.parse_openrouter_models(payload)
 

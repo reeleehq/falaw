@@ -102,7 +102,7 @@ row’s `date` against before returning a quote.
 
 Identity a [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis) records for an LLM-priced call.
 
-### *class* falaw.llm_rates.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, source='', date='', notes='')
+### *class* falaw.llm_rates.LlmRate(, model, tier, per_call_usd, input_usd_per_mtok=None, output_usd_per_mtok=None, long_prompt_over_tokens=None, long_prompt_rates=None, source='', date='', notes='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -147,6 +147,23 @@ The same for completion tokens.
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+#### long_prompt_over_tokens
+
+Prompt length past which the upstream bills
+`long_prompt_rates` instead (OpenRouter’s `pricing.overrides`,
+falaw#124), or `None` when the model has one regime.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`int`](https://docs.python.org/3/builtins/functions.html#int)]
+
+#### long_prompt_rates
+
+The token rates that replace the row’s own past
+`long_prompt_over_tokens`.
+
+* **Type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmPriceRates`](falaw.llm_prices.html.md#falaw.llm_prices.LlmPriceRates)]
 
 #### source
 
@@ -245,6 +262,18 @@ Monotone in both hints, so a bigger hint never quotes less:
 >>> b = llm_ceiling_usd('openai/gpt-4o', input_tokens=9_000, max_output_tokens=100)
 >>> b >= a
 True
+```
+
+Past a row’s long-prompt threshold the upstream bills higher rates for the
+whole call (falaw#124), and the quote uses them. Claude Haiku 5.5 costs five
+times as much per token above 100,000 prompt tokens:
+
+```pycon
+>>> haiku = 'anthropic/claude-haiku-5.5'
+>>> below = llm_ceiling_usd(haiku, input_tokens=99_999, max_output_tokens=0)
+>>> above = llm_ceiling_usd(haiku, input_tokens=100_000, max_output_tokens=0)
+>>> round(below, 6), round(above, 6)
+(0.01, 0.05)
 ```
 
 Both hints are upper bounds the *caller* holds at plan time: the prompt is

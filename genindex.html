@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="_static/documentation_options.js?v=5c6fbccc"></script>
+    <script src="_static/documentation_options.js?v=cfefb2bf"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.80" />
+  <meta name="docsearch:version" content="0.0.82" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -2135,12 +2135,12 @@ window.runMermaid = runMermaid;</script>
         <li><a href="_autosummary/falaw.llm_prices.html#falaw.llm_prices.llm_prices_table_version">(in module falaw.llm_prices)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/falaw.reprice.html#falaw.reprice.LLM_RATES_PRICER">LLM_RATES_PRICER (in module falaw.reprice)</a>
 </li>
       <li><a href="_autosummary/falaw.llm_rates.html#falaw.llm_rates.LLM_RATES_TABLE">LLM_RATES_TABLE (in module falaw.llm_rates)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="_autosummary/falaw.llm_rates.html#falaw.llm_rates.llm_rates_table_version">llm_rates_table_version() (in module falaw.llm_rates)</a>
 </li>
       <li><a href="_autosummary/falaw.html#falaw.llm_token_counts">llm_token_counts() (in module falaw)</a>
@@ -2195,6 +2195,18 @@ window.runMermaid = runMermaid;</script>
 
       <ul>
         <li><a href="_autosummary/falaw.html#falaw.AccountStatus.locked">(falaw.AccountStatus attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/falaw.llm_rates.html#falaw.llm_rates.LlmRate.long_prompt_over_tokens">long_prompt_over_tokens (falaw.llm_rates.LlmRate attribute)</a>
+
+      <ul>
+        <li><a href="_autosummary/falaw.html#falaw.LlmRate.long_prompt_over_tokens">(falaw.LlmRate attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/falaw.llm_rates.html#falaw.llm_rates.LlmRate.long_prompt_rates">long_prompt_rates (falaw.llm_rates.LlmRate attribute)</a>
+
+      <ul>
+        <li><a href="_autosummary/falaw.html#falaw.LlmRate.long_prompt_rates">(falaw.LlmRate attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -2504,6 +2516,10 @@ window.runMermaid = runMermaid;</script>
       </ul></li>
       <li><a href="_autosummary/falaw.llm_rates_refresh.html#falaw.llm_rates_refresh.parse_any_llm_doc">parse_any_llm_doc() (in module falaw.llm_rates_refresh)</a>
 </li>
+      <li><a href="_autosummary/falaw.llm_prices.html#falaw.llm_prices.parse_long_prompt">parse_long_prompt() (in module falaw.llm_prices)</a>
+</li>
+      <li><a href="_autosummary/falaw.llm_rates_refresh.html#falaw.llm_rates_refresh.parse_openrouter_long_prompts">parse_openrouter_long_prompts() (in module falaw.llm_rates_refresh)</a>
+</li>
       <li><a href="_autosummary/falaw.llm_rates_refresh.html#falaw.llm_rates_refresh.parse_openrouter_models">parse_openrouter_models() (in module falaw.llm_rates_refresh)</a>
 </li>
       <li><a href="_autosummary/falaw.html#falaw.parse_response">parse_response() (in module falaw)</a>
@@ -2588,10 +2604,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="_autosummary/falaw.html#falaw.plan_llm_complete">plan_llm_complete() (in module falaw)</a>
 </li>
-      <li><a href="_autosummary/falaw.html#falaw.plan_reference_to_video">plan_reference_to_video() (in module falaw)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/falaw.html#falaw.plan_reference_to_video">plan_reference_to_video() (in module falaw)</a>
+</li>
       <li><a href="_autosummary/falaw.html#falaw.plan_text_to_speech">plan_text_to_speech() (in module falaw)</a>
 </li>
       <li><a href="_autosummary/falaw.html#falaw.plan_text_to_video">plan_text_to_video() (in module falaw)</a>
@@ -2729,6 +2745,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="_autosummary/falaw.llm_rates_refresh.html#falaw.llm_rates_refresh.RATES_DIFF_FILENAME">RATES_DIFF_FILENAME (in module falaw.llm_rates_refresh)</a>
 </li>
       <li><a href="_autosummary/falaw.llm_rates.html#falaw.llm_rates.RATES_FILENAME">RATES_FILENAME (in module falaw.llm_rates)</a>
+</li>
+      <li><a href="_autosummary/falaw.llm_prices.html#falaw.llm_prices.rates_for_prompt">rates_for_prompt() (in module falaw.llm_prices)</a>
 </li>
       <li><a href="_autosummary/falaw.html#falaw.CallOutcome.reason">reason (falaw.CallOutcome attribute)</a>
 
