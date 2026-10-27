@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../../_static/documentation_options.js?v=cfefb2bf"></script>
+    <script src="../../_static/documentation_options.js?v=6b9736a6"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.82" />
+  <meta name="docsearch:version" content="0.0.83" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -722,22 +722,37 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">a single ``call_fal`` invocation:</span>
 
 <span class="sd">- ``queued``      — call submitted to fal</span>
-<span class="sd">- ``progress``    — fal pushed an InProgress update with no message body</span>
-<span class="sd">- ``log``         — fal pushed an InProgress update with a log line</span>
+<span class="sd">- ``progress``    — fal pushed an InProgress update with no new log line</span>
+<span class="sd">- ``log``         — a log line fal reported while the call ran (with IN_PROGRESS, or the</span>
+<span class="sd">  run's last lines, which arrive with COMPLETED)</span>
 <span class="sd">- ``done``        — call returned a result; ``metrics`` carries fal's ``Completed.metrics``</span>
-<span class="sd">- ``error``       — call raised</span>
+<span class="sd">- ``error``       — call raised; ``message`` adds fal's own ``Completed.error`` when it</span>
+<span class="sd">  reported one, and ``metrics`` is set when a failed run reported them</span>
 <span class="sd">- ``cache_hit``   — :func:`falaw.cached_call_fal` found a hit and skipped the network</span>
 <span class="sd">- ``provider_queued`` — fal reported the call waiting in ITS line (``queue_position``)</span>
 
 <span class="sd">``queued`` is falaw's own (the call was submitted). ``provider_phase`` is fal's word on</span>
 <span class="sd">where the call is: ``"in_queue"`` on a ``provider_queued`` event, ``"in_progress"`` on the</span>
-<span class="sd">``progress`` / ``log`` events fal's IN_PROGRESS updates produce. It is ``None`` on every</span>
-<span class="sd">event fal said nothing about (a cache hit, ``queued``, ``done``), so a consumer that sees</span>
-<span class="sd">no phase knows nothing, which is not the same as "in progress".</span>
+<span class="sd">``progress`` / ``log`` events. It is ``None`` on every event fal said nothing about (a</span>
+<span class="sd">cache hit, ``queued``) and on falaw's own verdicts (``done``, ``error``), so a consumer</span>
+<span class="sd">that sees no phase knows nothing, which is not the same as "in progress". The TypeScript</span>
+<span class="sd">client (``ts/src/transport.ts``) uses the same kinds and phases, exported as</span>
+<span class="sd">``event_kinds`` / ``provider_phases`` in ``schema/constants.json``.</span>
+
+<span class="sd">A ``COMPLETED`` status that carries fal's ``error`` follows one rule on both sides: the</span>
+<span class="sd">call fails unless a result is already in hand, and a result in hand is never thrown away</span>
+<span class="sd">(the run is billed). The TypeScript client does not fetch a result after such a status,</span>
+<span class="sd">so it fails (an ``error`` event). In Python, ``fal_client`` fetches it anyway: when that</span>
+<span class="sd">raises, the ``error`` event's message adds fal's error; when it returns a result, falaw</span>
+<span class="sd">keeps it, emits ``done``, and reports fal's error through</span>
+<span class="sd">:func:`falaw.degrade.emit_degradation` instead of raising. Log lines a later status</span>
+<span class="sd">repeats are reported once (a line is known by its ``timestamp`` and ``message``; one</span>
+<span class="sd">without a string timestamp is always reported).</span>
 
 <span class="sd">``metrics`` is fal's own account of the finished run, as its final ``Completed`` status</span>
 <span class="sd">reported it (e.g. ``{"inference_time": 3.2}``, seconds the runner spent processing). It</span>
-<span class="sd">rides the ``done`` event only, and stays out of the model's response so a cached response</span>
+<span class="sd">rides the ``done`` event (and an ``error`` event, when a failed run reported any), and</span>
+<span class="sd">stays out of the model's response so a cached response</span>
 <span class="sd">is still exactly what the model returned. It is ``None`` when fal reported none, and on a</span>
 <span class="sd">``cache_hit`` (nothing ran, nothing was billed). fal does not say whether</span>
 <span class="sd">``inference_time`` is the billed quantity: a cost derived from it is an observed run time.</span>

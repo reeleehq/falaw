@@ -86,7 +86,10 @@ and its threads (`with falaw.listening(callback): ...`); the legacy
 
 fal’s own word on where a call is rides the events as `provider_phase`
 (`"in_queue"` with `queue_position`, or `"in_progress"`); it is `None` when fal said
-nothing (a cache hit, a provider that reports no queue state), never a guess.
+nothing (a cache hit, a provider that reports no queue state), never a guess. The `done`
+event carries fal’s run `metrics` (e.g. `inference_time`) when it reported any, and the
+run’s last log lines, which fal sends with its final status, arrive as `log` events. The
+TypeScript client’s `onEvent` speaks the same kinds and phases (`providerPhase`).
 
 ```python
 from falaw import subscribe, generate_image

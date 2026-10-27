@@ -1,4 +1,4 @@
-> built 2026-10-27 18:23 UTC from 2a0f657 (main) · falaw 0.0.82. Details: build_info.json
+> built 2026-10-27 18:37 UTC from fafbba2 (main) · falaw 0.0.83. Details: build_info.json
 
 # index.html.md
 
@@ -90,7 +90,10 @@ and its threads (`with falaw.listening(callback): ...`); the legacy
 
 fal’s own word on where a call is rides the events as `provider_phase`
 (`"in_queue"` with `queue_position`, or `"in_progress"`); it is `None` when fal said
-nothing (a cache hit, a provider that reports no queue state), never a guess.
+nothing (a cache hit, a provider that reports no queue state), never a guess. The `done`
+event carries fal’s run `metrics` (e.g. `inference_time`) when it reported any, and the
+run’s last log lines, which fal sends with its final status, arrive as `log` events. The
+TypeScript client’s `onEvent` speaks the same kinds and phases (`providerPhase`).
 
 ```python
 from falaw import subscribe, generate_image
@@ -2922,22 +2925,37 @@ A `ProgressEvent` is emitted at every major lifecycle transition of
 a single `call_fal` invocation:
 
 - `queued`      — call submitted to fal
-- `progress`    — fal pushed an InProgress update with no message body
-- `log`         — fal pushed an InProgress update with a log line
+- `progress`    — fal pushed an InProgress update with no new log line
+- `log`         — a log line fal reported while the call ran (with IN_PROGRESS, or the
+  run’s last lines, which arrive with COMPLETED)
 - `done`        — call returned a result; `metrics` carries fal’s `Completed.metrics`
-- `error`       — call raised
+- `error`       — call raised; `message` adds fal’s own `Completed.error` when it
+  reported one, and `metrics` is set when a failed run reported them
 - `cache_hit`   — [`falaw.cached_call_fal()`](_autosummary/falaw.html.md#falaw.cached_call_fal) found a hit and skipped the network
 - `provider_queued` — fal reported the call waiting in ITS line (`queue_position`)
 
 `queued` is falaw’s own (the call was submitted). `provider_phase` is fal’s word on
 where the call is: `"in_queue"` on a `provider_queued` event, `"in_progress"` on the
-`progress` / `log` events fal’s IN_PROGRESS updates produce. It is `None` on every
-event fal said nothing about (a cache hit, `queued`, `done`), so a consumer that sees
-no phase knows nothing, which is not the same as “in progress”.
+`progress` / `log` events. It is `None` on every event fal said nothing about (a
+cache hit, `queued`) and on falaw’s own verdicts (`done`, `error`), so a consumer
+that sees no phase knows nothing, which is not the same as “in progress”. The TypeScript
+client (`ts/src/transport.ts`) uses the same kinds and phases, exported as
+`event_kinds` / `provider_phases` in `schema/constants.json`.
+
+A `COMPLETED` status that carries fal’s `error` follows one rule on both sides: the
+call fails unless a result is already in hand, and a result in hand is never thrown away
+(the run is billed). The TypeScript client does not fetch a result after such a status,
+so it fails (an `error` event). In Python, `fal_client` fetches it anyway: when that
+raises, the `error` event’s message adds fal’s error; when it returns a result, falaw
+keeps it, emits `done`, and reports fal’s error through
+[`falaw.degrade.emit_degradation()`](_autosummary/falaw.degrade.html.md#falaw.degrade.emit_degradation) instead of raising. Log lines a later status
+repeats are reported once (a line is known by its `timestamp` and `message`; one
+without a string timestamp is always reported).
 
 `metrics` is fal’s own account of the finished run, as its final `Completed` status
 reported it (e.g. `{"inference_time": 3.2}`, seconds the runner spent processing). It
-rides the `done` event only, and stays out of the model’s response so a cached response
+rides the `done` event (and an `error` event, when a failed run reported any), and
+stays out of the model’s response so a cached response
 is still exactly what the model returned. It is `None` when fal reported none, and on a
 `cache_hit` (nothing ran, nothing was billed). fal does not say whether
 `inference_time` is the billed quantity: a cost derived from it is an observed run time.
@@ -11090,7 +11108,7 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-27 18:23 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/2a0f6575474420d7bba8f581a6ed4481967ad90a"><code>2a0f657</code></a> on branch <code>main</code>, for **falaw 0.0.82** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-27 18:37 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/fafbba21a8d20d0081037a40ce84778a9d981b8b"><code>fafbba2</code></a> on branch <code>main</code>, for **falaw 0.0.83** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -11099,9 +11117,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/2a0f6575474420d7bba8f581a6ed4481967ad90a"><code>2a0f6575474420d7bba8f581a6ed4481967ad90a</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/fafbba21a8d20d0081037a40ce84778a9d981b8b"><code>fafbba21a8d20d0081037a40ce84778a9d981b8b</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
-| Tags at this commit | <code>0.0.82</code>                                                                                                                                   |
+| Tags at this commit | <code>0.0.83</code>                                                                                                                                   |
 | Working tree        | clean                                                                                                                                                 |
 | Remote              | <code>https://github.com/reeleehq/falaw</code>                                                                                                        |
 
@@ -11110,9 +11128,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40558240004">40558240004</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/40560265906">40560265906</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>7e4a99f5164d73b0d1fde52a1ad6b81be4d9b0e9</code> (in the history of the built commit) |
+| Event commit | <code>6feae4b380bd757c34ad90b75abbd41dcc39a87e</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11137,13 +11155,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.82/">0.0.82</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.83/">0.0.83</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 2a0f6575474420d7bba8f581a6ed4481967ad90a
+git checkout fafbba21a8d20d0081037a40ce84778a9d981b8b
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

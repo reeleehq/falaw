@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
 
-    <script src="../_static/documentation_options.js?v=cfefb2bf"></script>
+    <script src="../_static/documentation_options.js?v=6b9736a6"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.82" />
+  <meta name="docsearch:version" content="0.0.83" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -453,21 +453,35 @@ to (UI progress bars, cost telemetry, billing dashboards, etc.).</p>
 a single <code class="docutils literal notranslate"><span class="pre">call_fal</span></code> invocation:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">queued</span></code>      — call submitted to fal</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">progress</span></code>    — fal pushed an InProgress update with no message body</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">log</span></code>         — fal pushed an InProgress update with a log line</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">progress</span></code>    — fal pushed an InProgress update with no new log line</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">log</span></code>         — a log line fal reported while the call ran (with IN_PROGRESS, or the
+run’s last lines, which arrive with COMPLETED)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">done</span></code>        — call returned a result; <code class="docutils literal notranslate"><span class="pre">metrics</span></code> carries fal’s <code class="docutils literal notranslate"><span class="pre">Completed.metrics</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">error</span></code>       — call raised</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">error</span></code>       — call raised; <code class="docutils literal notranslate"><span class="pre">message</span></code> adds fal’s own <code class="docutils literal notranslate"><span class="pre">Completed.error</span></code> when it
+reported one, and <code class="docutils literal notranslate"><span class="pre">metrics</span></code> is set when a failed run reported them</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>   — <a class="reference internal" href="falaw.html#falaw.cached_call_fal" title="falaw.cached_call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.cached_call_fal()</span></code></a> found a hit and skipped the network</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> — fal reported the call waiting in ITS line (<code class="docutils literal notranslate"><span class="pre">queue_position</span></code>)</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">queued</span></code> is falaw’s own (the call was submitted). <code class="docutils literal notranslate"><span class="pre">provider_phase</span></code> is fal’s word on
 where the call is: <code class="docutils literal notranslate"><span class="pre">&quot;in_queue&quot;</span></code> on a <code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> event, <code class="docutils literal notranslate"><span class="pre">&quot;in_progress&quot;</span></code> on the
-<code class="docutils literal notranslate"><span class="pre">progress</span></code> / <code class="docutils literal notranslate"><span class="pre">log</span></code> events fal’s IN_PROGRESS updates produce. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> on every
-event fal said nothing about (a cache hit, <code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">done</span></code>), so a consumer that sees
-no phase knows nothing, which is not the same as “in progress”.</p>
+<code class="docutils literal notranslate"><span class="pre">progress</span></code> / <code class="docutils literal notranslate"><span class="pre">log</span></code> events. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> on every event fal said nothing about (a
+cache hit, <code class="docutils literal notranslate"><span class="pre">queued</span></code>) and on falaw’s own verdicts (<code class="docutils literal notranslate"><span class="pre">done</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>), so a consumer
+that sees no phase knows nothing, which is not the same as “in progress”. The TypeScript
+client (<code class="docutils literal notranslate"><span class="pre">ts/src/transport.ts</span></code>) uses the same kinds and phases, exported as
+<code class="docutils literal notranslate"><span class="pre">event_kinds</span></code> / <code class="docutils literal notranslate"><span class="pre">provider_phases</span></code> in <code class="docutils literal notranslate"><span class="pre">schema/constants.json</span></code>.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">COMPLETED</span></code> status that carries fal’s <code class="docutils literal notranslate"><span class="pre">error</span></code> follows one rule on both sides: the
+call fails unless a result is already in hand, and a result in hand is never thrown away
+(the run is billed). The TypeScript client does not fetch a result after such a status,
+so it fails (an <code class="docutils literal notranslate"><span class="pre">error</span></code> event). In Python, <code class="docutils literal notranslate"><span class="pre">fal_client</span></code> fetches it anyway: when that
+raises, the <code class="docutils literal notranslate"><span class="pre">error</span></code> event’s message adds fal’s error; when it returns a result, falaw
+keeps it, emits <code class="docutils literal notranslate"><span class="pre">done</span></code>, and reports fal’s error through
+<a class="reference internal" href="falaw.degrade.html#falaw.degrade.emit_degradation" title="falaw.degrade.emit_degradation"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.degrade.emit_degradation()</span></code></a> instead of raising. Log lines a later status
+repeats are reported once (a line is known by its <code class="docutils literal notranslate"><span class="pre">timestamp</span></code> and <code class="docutils literal notranslate"><span class="pre">message</span></code>; one
+without a string timestamp is always reported).</p>
 <p><code class="docutils literal notranslate"><span class="pre">metrics</span></code> is fal’s own account of the finished run, as its final <code class="docutils literal notranslate"><span class="pre">Completed</span></code> status
 reported it (e.g. <code class="docutils literal notranslate"><span class="pre">{&quot;inference_time&quot;:</span> <span class="pre">3.2}</span></code>, seconds the runner spent processing). It
-rides the <code class="docutils literal notranslate"><span class="pre">done</span></code> event only, and stays out of the model’s response so a cached response
+rides the <code class="docutils literal notranslate"><span class="pre">done</span></code> event (and an <code class="docutils literal notranslate"><span class="pre">error</span></code> event, when a failed run reported any), and
+stays out of the model’s response so a cached response
 is still exactly what the model returned. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> when fal reported none, and on a
 <code class="docutils literal notranslate"><span class="pre">cache_hit</span></code> (nothing ran, nothing was billed). fal does not say whether
 <code class="docutils literal notranslate"><span class="pre">inference_time</span></code> is the billed quantity: a cost derived from it is an observed run time.</p>
