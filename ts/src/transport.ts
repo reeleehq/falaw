@@ -146,8 +146,8 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
   return async (call, ctx) => {
     const { signal } = ctx;
     const { application } = call;
-    const fail = (error: FalError): never => {
-      ctx.onEvent?.({ kind: 'error', application, message: error.message });
+    const fail = (error: FalError, extra: Partial<ProgressEvent> = {}): never => {
+      ctx.onEvent?.({ kind: 'error', application, message: error.message, ...extra });
       throw error;
     };
     let submitted: QueueSubmission;
@@ -172,10 +172,12 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
       for (;;) {
         const status = (await request('GET', submitted.status_url, undefined, signal)) as QueueStatus;
         if (status.status === 'COMPLETED') {
+          // A failed run reports its metrics too: read them first, for the error event.
+          metrics = isRecord(status.metrics) && Object.keys(status.metrics).length ? status.metrics : undefined;
           if (status.error) {
+            // No result is fetched, so the run fails (the Python side keeps a result in hand).
             throw new FalError(`fal request ${requestId ?? ''} failed: ${status.error_type ?? 'error'}: ${status.error}`);
           }
-          metrics = isRecord(status.metrics) && Object.keys(status.metrics).length ? status.metrics : undefined;
           break;
         }
         if (status.status === 'IN_QUEUE') {
@@ -184,6 +186,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
             ctx.onEvent?.({ kind: 'provider_queued', application, requestId, status: status.status, providerPhase: 'in_queue', queuePosition: status.queue_position });
           }
         } else if (status.status === 'IN_PROGRESS') {
+          lastPosition = null; // a runner failure sends the call back to IN_QUEUE: report that wait again
           ctx.onEvent?.({ kind: 'progress', application, requestId, status: status.status, providerPhase: 'in_progress' });
         } else if (status.status) {
           throw new FalError(`fal request ${requestId ?? ''} ended with status ${status.status}`);
@@ -200,7 +203,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
     } catch (e) {
       const error = e instanceof FalError ? e : new FalError(String(e));
       if (signal?.aborted) await cancel(submitted); // stop billing for a job nobody will collect
-      return fail(error);
+      return fail(error, metrics ? { metrics } : {});
     }
   };
 }

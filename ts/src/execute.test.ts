@@ -225,6 +225,32 @@ describe('review-driven edges', () => {
     expect(events.at(-1)!.kind).toBe('error');
   });
 
+  it("a failed run's error event carries the metrics fal reported for it", async () => {
+    const events: ProgressEvent[] = [];
+    const statuses = [{ status: 'COMPLETED', error: 'CUDA out of memory', metrics: { inference_time: 0.5 } }];
+    await expect(
+      queueTransport({ key: 'k', fetch: scriptedQueue(statuses), pollIntervalMs: 1 })(planGenerateImage({ prompt: 'x' }), {
+        onEvent: (e) => events.push(e),
+      }),
+    ).rejects.toThrow(FalError);
+    expect(events.at(-1)).toMatchObject({ kind: 'error', metrics: { inference_time: 0.5 } });
+  });
+
+  it("a retried run (fal sends it back to IN_QUEUE) reports fal's line again", async () => {
+    const statuses = [
+      { status: 'IN_QUEUE', queue_position: 0 },
+      { status: 'IN_PROGRESS' },
+      { status: 'IN_QUEUE', queue_position: 0 },
+      { status: 'COMPLETED' },
+    ];
+    const events: ProgressEvent[] = [];
+    await queueTransport({ key: 'k', fetch: scriptedQueue(statuses), pollIntervalMs: 1 })(
+      planGenerateImage({ prompt: 'x' }),
+      { onEvent: (e) => events.push(e) },
+    );
+    expect(events.filter((e) => e.kind === 'provider_queued').map((e) => e.queuePosition)).toEqual([0, 0]);
+  });
+
   it('never reaches the network by default (the vitest guard)', async () => {
     await expect(
       execute([planGenerateImage({ prompt: 'x' })], { transport: queueTransport({ key: 'k' }) }),

@@ -17,6 +17,7 @@ from __future__ import annotations
 import time
 import uuid
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from typing import Any, Callable, Iterator, Mapping, Optional
 
 from ._credentials import current_credentials, resolve_credential, using_credentials
@@ -113,6 +114,122 @@ def _check_against_catalogue(application: str, arguments: Mapping[str, Any]) -> 
     check_call_arguments(record, arguments)
 
 
+#: ``_FalStatusTranslator.last_position`` before any queue position was reported.
+_NO_POSITION = object()
+
+
+@dataclass(kw_only=True)
+class _FalStatusTranslator:
+    """Turns fal's queue statuses into falaw events, for one :func:`call_fal`.
+
+    Passed to ``fal_client.subscribe`` as ``on_queue_update``. It runs inside
+    subscribe, before the result is read, so it never raises: an exception here
+    would lose a run fal may already have billed. What it learns from the final
+    ``Completed`` status (``metrics``, ``provider_error``) is read back by
+    :func:`call_fal` once subscribe returns or raises.
+    """
+
+    emit: Callable[..., None]  # call_fal's event emitter: ``emit(kind, **fields)``
+    log: Callable[[str], None]  # the legacy ``on_log`` line callback
+    application: str
+    fal_client: Any  # for its status classes; test stubs may lack Queued / Completed
+    last_position: Any = field(default=_NO_POSITION, init=False)
+    metrics: dict = field(default_factory=dict, init=False)
+    provider_error: dict = field(default_factory=dict, init=False)
+    seen_logs: set = field(default_factory=set, init=False)
+
+    def __call__(self, update: Any) -> None:
+        queued_cls = getattr(self.fal_client, "Queued", None)
+        completed_cls = getattr(self.fal_client, "Completed", None)
+        if completed_cls is not None and isinstance(update, completed_cls):
+            self._on_completed(update)
+        elif queued_cls is not None and isinstance(update, queued_cls):
+            self._on_queued(update)
+        elif isinstance(update, self.fal_client.InProgress):
+            self._on_in_progress(update)
+
+    def _on_queued(self, update: Any) -> None:
+        # fal re-reports the queue ~10x/s: say it on a change only.
+        position = getattr(update, "position", None)
+        if position != self.last_position:
+            self.last_position = position
+            self.emit(
+                "provider_queued", provider_phase="in_queue", queue_position=position
+            )
+
+    def _on_in_progress(self, update: Any) -> None:
+        # A runner failure sends the call back to IN_QUEUE (fal retries it): forget
+        # the position, so the retry's wait is reported even at the same position.
+        self.last_position = _NO_POSITION
+        lines = self._new_log_lines(update)
+        if not lines:
+            # IN_PROGRESS is reported even when it carries no (new) log line.
+            self.emit("progress", provider_phase="in_progress")
+            return
+        self._emit_log_lines(lines)
+
+    def _on_completed(self, update: Any) -> None:
+        reported = getattr(update, "metrics", None)
+        if isinstance(reported, Mapping):
+            self.metrics.update(reported)
+        elif reported is not None:
+            emit_degradation(
+                f"fal reported non-mapping metrics for {self.application!r}: "
+                f"{reported!r}; the done event carries none."
+            )
+        for name in ("error", "error_type"):
+            value = getattr(update, name, None)
+            if value:
+                self.provider_error[name] = (
+                    value if isinstance(value, str) else repr(value)
+                )
+        # The run's last lines arrive with COMPLETED; they were written while it ran.
+        self._emit_log_lines(self._new_log_lines(update))
+
+    def _new_log_lines(self, update: Any) -> list:
+        """The messages in ``update.logs`` not reported yet.
+
+        fal may re-send earlier lines with a later status (IN_PROGRESS polls, then
+        COMPLETED). A line is known by its ``(timestamp, message)``, and only when
+        the timestamp is a string: a line without one is always reported. An entry
+        whose message is not a string is skipped.
+        """
+        logs = getattr(update, "logs", None)
+        lines = []
+        for entry in logs if isinstance(logs, (list, tuple)) else ():
+            message = entry.get("message") if isinstance(entry, Mapping) else None
+            if not isinstance(message, str) or not message:
+                continue
+            timestamp = entry.get("timestamp")
+            if isinstance(timestamp, str):
+                key = (timestamp, message)
+                if key in self.seen_logs:
+                    continue
+                self.seen_logs.add(key)
+            lines.append(message)
+        return lines
+
+    def _emit_log_lines(self, lines: list) -> None:
+        for msg in lines:
+            self.log(msg)
+            self.emit("log", message=msg, provider_phase="in_progress")
+
+
+def _describe_provider_error(provider_error: Mapping[str, str]) -> str:
+    """fal's own ``Completed.error`` as ``"<error_type>: <error>"``."""
+    return f"{provider_error.get('error_type') or 'error'}: {provider_error['error']}"
+
+
+def _error_message(exc: BaseException, provider_error: Mapping[str, str]) -> str:
+    """The ``error`` event's message: falaw's exception, plus fal's own error when
+    it reported one the exception does not already say."""
+    message = repr(exc)
+    error = provider_error.get("error")
+    if error and error not in message:
+        message += f" (fal: {_describe_provider_error(provider_error)})"
+    return message
+
+
 def call_fal(
     application: str,
     arguments: Mapping[str, Any],
@@ -190,69 +307,12 @@ def call_fal(
             also=(on_event,) if on_event else (),
         )
 
-    log = on_log if on_log is not None else (lambda _msg: None)
-
-    last_position: list = []  # fal re-reports the queue ~10x/s: say it on a change only
-    metrics: dict = {}  # fal's Completed.metrics, for the `done` / `error` event (#125)
-    provider_error: dict = {}  # Completed.error / error_type, for the error path (#118)
-    logged: set = set()  # log entries already emitted, so Completed adds only new ones
-
-    def _log_lines(update, *, only_new: bool = False) -> list:
-        lines = []
-        for entry in update.logs or ():
-            message = entry.get("message") if isinstance(entry, dict) else None
-            if not message:
-                continue
-            key = (entry.get("timestamp"), message)
-            if only_new and key in logged:
-                continue
-            logged.add(key)
-            lines.append(message)
-        return lines
-
-    def _emit_log_lines(lines) -> None:
-        for msg in lines:
-            log(msg)
-            _ev("log", message=msg, provider_phase="in_progress")
-
-    def _on_completed(update) -> None:
-        # Inside subscribe, before the result is read: raising here would lose a
-        # run fal has already billed, so a malformed value degrades instead.
-        reported = getattr(update, "metrics", None)
-        if isinstance(reported, Mapping):
-            metrics.update(reported)
-        elif reported is not None:
-            emit_degradation(
-                f"fal reported non-mapping metrics for {application!r}: "
-                f"{reported!r}; the done event carries none."
-            )
-        for field in ("error", "error_type"):
-            if getattr(update, field, None):
-                provider_error[field] = getattr(update, field)
-        # The run's last lines arrive with COMPLETED; they were written while it ran.
-        _emit_log_lines(_log_lines(update, only_new=True))
-
-    def _on_queue_update(update):
-        queued_cls = getattr(fal_client, "Queued", None)
-        completed_cls = getattr(fal_client, "Completed", None)
-        if completed_cls is not None and isinstance(update, completed_cls):
-            _on_completed(update)
-        elif queued_cls is not None and isinstance(update, queued_cls):
-            position = getattr(update, "position", None)
-            if last_position != [position]:
-                last_position[:] = [position]
-                _ev(
-                    "provider_queued",
-                    provider_phase="in_queue",
-                    queue_position=position,
-                )
-        elif isinstance(update, fal_client.InProgress):
-            lines = _log_lines(update)
-            if not lines:
-                # IN_PROGRESS is reported even when it carries no log line.
-                _ev("progress", provider_phase="in_progress")
-                return
-            _emit_log_lines(lines)
+    translator = _FalStatusTranslator(
+        emit=_ev,
+        log=on_log if on_log is not None else (lambda _msg: None),
+        application=application,
+        fal_client=fal_client,
+    )
 
     _ev("queued")
     try:
@@ -263,16 +323,17 @@ def call_fal(
             application,
             arguments=dict(arguments),
             with_logs=with_logs,
-            on_queue_update=_on_queue_update,
+            on_queue_update=translator,
         )
     except Exception as raw_exc:
         # Translate fal_client errors into typed falaw exceptions so callers
         # can catch FalAccountLocked / FalRateLimited / etc. specifically.
         exc = _translate_error(raw_exc, application=application)
-        message = repr(exc)
-        if provider_error.get("error") and provider_error["error"] not in message:
-            message += f" (fal: {provider_error.get('error_type') or 'error'}: {provider_error['error']})"
-        _ev("error", message=message, metrics=metrics or None)
+        _ev(
+            "error",
+            message=_error_message(exc, translator.provider_error),
+            metrics=translator.metrics or None,
+        )
         if journal_errors:
             _default_journal().append(
                 kind="issue",
@@ -283,9 +344,19 @@ def call_fal(
                     "arguments": dict(arguments),
                     "duration_s": time.time() - started,
                     "status_code": getattr(exc, "status_code", None),
-                    **{f"provider_{k}": v for k, v in provider_error.items()},
+                    **{
+                        f"provider_{k}": v for k, v in translator.provider_error.items()
+                    },
                 },
             )
         raise exc from raw_exc
-    _ev("done", metrics=metrics or None)
+    if translator.provider_error.get("error"):
+        # fal said the run failed, yet handed back a result: keep it (it is billed),
+        # and say so rather than raising over a result the caller can still use.
+        emit_degradation(
+            f"fal reported an error for {application!r} "
+            f"({_describe_provider_error(translator.provider_error)}) but returned "
+            "a result; falaw kept it."
+        )
+    _ev("done", metrics=translator.metrics or None)
     return result

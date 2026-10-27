@@ -8,7 +8,7 @@ A ``ProgressEvent`` is emitted at every major lifecycle transition of
 a single ``call_fal`` invocation:
 
 - ``queued``      — call submitted to fal
-- ``progress``    — fal pushed an InProgress update with no message body
+- ``progress``    — fal pushed an InProgress update with no new log line
 - ``log``         — a log line fal reported while the call ran (with IN_PROGRESS, or the
   run's last lines, which arrive with COMPLETED)
 - ``done``        — call returned a result; ``metrics`` carries fal's ``Completed.metrics``
@@ -24,6 +24,16 @@ cache hit, ``queued``) and on falaw's own verdicts (``done``, ``error``), so a c
 that sees no phase knows nothing, which is not the same as "in progress". The TypeScript
 client (``ts/src/transport.ts``) uses the same kinds and phases, exported as
 ``event_kinds`` / ``provider_phases`` in ``schema/constants.json``.
+
+A ``COMPLETED`` status that carries fal's ``error`` follows one rule on both sides: the
+call fails unless a result is already in hand, and a result in hand is never thrown away
+(the run is billed). The TypeScript client does not fetch a result after such a status,
+so it fails (an ``error`` event). In Python, ``fal_client`` fetches it anyway: when that
+raises, the ``error`` event's message adds fal's error; when it returns a result, falaw
+keeps it, emits ``done``, and reports fal's error through
+:func:`falaw.degrade.emit_degradation` instead of raising. Log lines a later status
+repeats are reported once (a line is known by its ``timestamp`` and ``message``; one
+without a string timestamp is always reported).
 
 ``metrics`` is fal's own account of the finished run, as its final ``Completed`` status
 reported it (e.g. ``{"inference_time": 3.2}``, seconds the runner spent processing). It

@@ -356,7 +356,9 @@ def test_cached_call_fal_reports_metrics_on_a_run_and_none_on_a_hit(monkeypatch)
     assert [e.kind for e in hit] == ["cache_hit"] and hit[0].metrics is None
 
 
-def _install_fake_fal_client_with_completion(monkeypatch, updates, *, raises=None):
+def _install_fake_fal_client_with_completion(
+    monkeypatch, updates, *, raises=None, http_error_cls=None
+):
     """A stub replaying InProgress / Completed updates, then returning or raising."""
 
     class _InProgress:
@@ -378,6 +380,8 @@ def _install_fake_fal_client_with_completion(monkeypatch, updates, *, raises=Non
     fake = types.SimpleNamespace(
         InProgress=_InProgress, Completed=_Completed, subscribe=subscribe
     )
+    if http_error_cls is not None:  # what `falaw.errors.translate` recognises
+        fake.FalClientHTTPError = http_error_cls
     monkeypatch.setitem(sys.modules, "fal_client", fake)
 
 
@@ -385,32 +389,97 @@ def _line(message, timestamp):
     return {"message": message, "timestamp": timestamp, "level": "INFO"}
 
 
-def test_the_runs_last_log_lines_arrive_with_completed(monkeypatch):
-    """Whether fal re-sends earlier lines with COMPLETED or only the new ones, each
-    line is reported once, and the final ones are not lost."""
-    a, b, c = _line("a", "t1"), _line("b", "t2"), _line("c", "t3")
-    for completed_logs in ([a, b, c], [c]):  # cumulative or incremental
-        _install_fake_fal_client_with_completion(
-            monkeypatch,
-            [lambda I, C: I([a]), lambda I, C: I([b]), lambda I, C: C(completed_logs)],
-        )
-        from falaw import call_fal
+_A, _B, _C = _line("a", "t1"), _line("b", "t2"), _line("c", "t3")
 
-        events, legacy = [], []
-        call_fal("fal-ai/x", {}, on_event=events.append, on_log=legacy.append)
-        logs = [(e.message, e.provider_phase) for e in events if e.kind == "log"]
-        assert logs == [
-            ("a", "in_progress"),
-            ("b", "in_progress"),
-            ("c", "in_progress"),
-        ]
-        assert legacy == ["a", "b", "c"]
-        assert events[-1].kind == "done"
+
+@pytest.mark.parametrize(
+    "updates",
+    [
+        # fal re-sends every earlier line with each status (cumulative)
+        [lambda I, C: I([_A]), lambda I, C: I([_A, _B]), lambda I, C: C([_A, _B, _C])],
+        # or only the lines written since the last one (incremental)
+        [lambda I, C: I([_A]), lambda I, C: I([_B]), lambda I, C: C([_C])],
+    ],
+    ids=["cumulative", "incremental"],
+)
+def test_each_log_line_is_reported_once_and_the_last_ones_arrive_with_completed(
+    monkeypatch, updates
+):
+    _install_fake_fal_client_with_completion(monkeypatch, updates)
+    from falaw import call_fal
+
+    events, legacy = [], []
+    call_fal("fal-ai/x", {}, on_event=events.append, on_log=legacy.append)
+    logs = [(e.message, e.provider_phase) for e in events if e.kind == "log"]
+    assert logs == [("a", "in_progress"), ("b", "in_progress"), ("c", "in_progress")]
+    assert legacy == ["a", "b", "c"]
+    assert events[-1].kind == "done"
+
+
+def test_an_in_progress_poll_with_no_new_line_is_progress(monkeypatch):
+    untimed = {"message": "tick"}  # no timestamp: cannot be told apart, so said again
+    _install_fake_fal_client_with_completion(
+        monkeypatch,
+        [
+            lambda I, C: I([_A]),
+            lambda I, C: I([_A]),
+            lambda I, C: I([untimed]),
+            lambda I, C: I([untimed]),
+        ],
+    )
+    from falaw import call_fal
+
+    events = []
+    call_fal("fal-ai/x", {}, on_event=events.append)
+    assert [(e.kind, e.message) for e in events[1:-1]] == [
+        ("log", "a"),
+        ("progress", ""),
+        ("log", "tick"),
+        ("log", "tick"),
+    ]
+
+
+def test_malformed_log_entries_are_skipped_never_raised_on(monkeypatch):
+    weird = [
+        {"message": ["not", "a", "str"], "timestamp": "t1"},
+        {"message": {"m": 1}, "timestamp": "t2"},
+        {"message": "list ts", "timestamp": ["t3"]},  # unhashable: never a key
+        {"message": "dict ts", "timestamp": {"at": 3}},
+        "not a dict",
+    ]
+    _install_fake_fal_client_with_completion(
+        monkeypatch,
+        [lambda I, C: I(weird), lambda I, C: C(weird), lambda I, C: C(logs=42)],
+    )
+    from falaw import call_fal
+
+    events = []
+    assert call_fal("fal-ai/x", {}, on_event=events.append) == {"ok": True}
+    logs = [e.message for e in events if e.kind == "log"]
+    assert logs == ["list ts", "dict ts"] * 2  # no str timestamp: always reported
+
+
+def test_a_retried_run_reports_fals_line_again():
+    """fal retries a failed runner by sending the call back to IN_QUEUE."""
+    _install_fake_fal_client_with_queue(
+        [lambda Q, I: Q(0), lambda Q, I: I(), lambda Q, I: Q(0), lambda Q, I: I()]
+    )
+    from falaw import call_fal
+
+    events = []
+    call_fal("fal-ai/x", {}, on_event=events.append)
+    assert [e.queue_position for e in events if e.kind == "provider_queued"] == [0, 0]
 
 
 def test_a_failed_run_reports_fals_own_error_and_its_metrics(monkeypatch):
+    from falaw.errors import FalServerError
     from falaw.journal import _default_journal
 
+    # Other tests leave a stub in sys.modules["fal_client"]: reach the real one.
+    monkeypatch.delitem(sys.modules, "fal_client", raising=False)
+    real = pytest.importorskip("fal_client.client")
+    response = MagicMock(text="request failed")
+    response.json.side_effect = ValueError("no json")
     _install_fake_fal_client_with_completion(
         monkeypatch,
         [
@@ -420,12 +489,15 @@ def test_a_failed_run_reports_fals_own_error_and_its_metrics(monkeypatch):
                 error_type="runner_error",
             )
         ],
-        raises=RuntimeError("request failed"),
+        raises=real.FalClientHTTPError(
+            "request failed", 500, {}, response=response, error_type="runner_error"
+        ),
+        http_error_cls=real.FalClientHTTPError,
     )
     from falaw import call_fal
 
     events = []
-    with pytest.raises(Exception):
+    with pytest.raises(FalServerError):
         call_fal("fal-ai/x", {}, on_event=events.append)
     error = events[-1]
     assert error.kind == "error" and error.metrics == {"inference_time": 0.5}
@@ -433,3 +505,20 @@ def test_a_failed_run_reports_fals_own_error_and_its_metrics(monkeypatch):
     (entry,) = [e for e in _default_journal() if "call_fal" in e.tags]
     assert entry.context["provider_error"] == "CUDA out of memory"
     assert entry.context["provider_error_type"] == "runner_error"
+
+
+def test_fals_error_on_a_run_that_still_returned_a_result_degrades(monkeypatch):
+    """The result is in hand and billed: keep it, and say what fal reported."""
+    _install_fake_fal_client_with_completion(
+        monkeypatch,
+        [lambda I, C: C(metrics={"inference_time": 0.5}, error="partial output")],
+    )
+    from falaw import call_fal
+    from falaw.degrade import deferred_degrade_warnings
+
+    events = []
+    with deferred_degrade_warnings() as complaints:
+        response = call_fal("fal-ai/x", {}, on_event=events.append)
+    assert response == {"ok": True}
+    assert events[-1].kind == "done" and events[-1].metrics == {"inference_time": 0.5}
+    assert any("error: partial output" in c for c in complaints)
