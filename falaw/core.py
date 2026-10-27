@@ -144,7 +144,9 @@ def call_fal(
             global or an env var.
 
     Returns:
-        The raw response dict from the model.
+        The raw response dict from the model. fal's run metrics (its final
+        ``Completed`` status, e.g. ``inference_time``) are not in it: they ride
+        the ``done`` event's ``metrics`` (see :mod:`falaw.events`).
     """
     _check_against_catalogue(application, arguments)  # refuse before any network
     from .terms import check_terms, current_terms_context
@@ -170,6 +172,7 @@ def call_fal(
         pct: float | None = None,
         provider_phase: str | None = None,
         queue_position: int | None = None,
+        metrics: Mapping[str, Any] | None = None,
     ) -> None:
         emit(
             ProgressEvent(
@@ -181,6 +184,7 @@ def call_fal(
                 elapsed_s=time.time() - started,
                 provider_phase=provider_phase,  # type: ignore[arg-type]
                 queue_position=queue_position,
+                metrics=metrics,
             ),
             also=(on_event,) if on_event else (),
         )
@@ -188,10 +192,14 @@ def call_fal(
     log = on_log if on_log is not None else (lambda _msg: None)
 
     last_position: list = []  # fal re-reports the queue ~10x/s: say it on a change only
+    metrics: dict = {}  # fal's Completed.metrics, for the `done` event (#125)
 
     def _on_queue_update(update):
         queued_cls = getattr(fal_client, "Queued", None)
-        if queued_cls is not None and isinstance(update, queued_cls):
+        completed_cls = getattr(fal_client, "Completed", None)
+        if completed_cls is not None and isinstance(update, completed_cls):
+            metrics.update(getattr(update, "metrics", None) or {})
+        elif queued_cls is not None and isinstance(update, queued_cls):
             position = getattr(update, "position", None)
             if last_position != [position]:
                 last_position[:] = [position]
@@ -243,5 +251,5 @@ def call_fal(
                 },
             )
         raise exc from raw_exc
-    _ev("done")
+    _ev("done", metrics=metrics or None)
     return result

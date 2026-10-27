@@ -275,7 +275,9 @@ def cached_call_fal(
         refresh: if True, bypass the cache and overwrite it with a fresh result.
         on_event: Per-call subscriber for :class:`falaw.events.ProgressEvent`.
             On a cache hit, a synthetic ``cache_hit`` event is emitted so
-            UIs can show "skipped" instead of "running".
+            UIs can show "skipped" instead of "running". On a call that ran, the
+            ``done`` event's ``metrics`` carries fal's run metrics (e.g.
+            ``inference_time``); a hit has none, since nothing ran.
         backend: which execution backend serves this call (falaw#15) —
             resolved via :mod:`falaw.backends`. Also joins the cache key
             (non-default only), so two backends never share an entry. Despite

@@ -264,3 +264,60 @@ def test_a_queue_that_does_not_move_is_reported_once():
     subscribe(events.append)
     call_fal("fal-ai/x", {})
     assert [e.queue_position for e in events if e.kind == "provider_queued"] == [4, 3]
+
+
+def _install_fake_fal_client_completing(metrics, *, result=None):
+    """A stub whose ``subscribe`` ends with fal's ``Completed(logs, metrics)``."""
+
+    class _InProgress:
+        def __init__(self, logs=()):
+            self.logs = logs
+
+    class _Completed:
+        def __init__(self, logs, metrics):
+            self.logs, self.metrics = logs, metrics
+
+    def subscribe(application, *, arguments, with_logs, on_queue_update):
+        on_queue_update(_InProgress())
+        on_queue_update(_Completed(None, metrics))
+        return result if result is not None else {"video": {"url": "u"}}
+
+    sys.modules["fal_client"] = types.SimpleNamespace(
+        InProgress=_InProgress, Completed=_Completed, subscribe=subscribe
+    )
+
+
+def test_completed_metrics_ride_the_done_event_not_the_response():
+    _install_fake_fal_client_completing({"inference_time": 3.25})
+    from falaw import call_fal
+
+    events = []
+    response = call_fal("fal-ai/x", {}, on_event=events.append)
+    assert response == {"video": {"url": "u"}}  # the model's output, untouched
+    done = events[-1]
+    assert done.kind == "done" and dict(done.metrics) == {"inference_time": 3.25}
+    assert all(e.metrics is None for e in events[:-1])
+    with pytest.raises(TypeError):  # one subscriber cannot edit it for the others
+        done.metrics["inference_time"] = 0
+    hash(done)  # events stay hashable
+
+
+@pytest.mark.parametrize("metrics", [{}, None])
+def test_no_completed_metrics_is_none_not_empty(metrics):
+    _install_fake_fal_client_completing(metrics)
+    from falaw import call_fal
+
+    events = []
+    call_fal("fal-ai/x", {}, on_event=events.append)
+    assert events[-1].kind == "done" and events[-1].metrics is None
+
+
+def test_cached_call_fal_reports_metrics_on_a_run_and_none_on_a_hit():
+    _install_fake_fal_client_completing({"inference_time": 1.5})
+    from falaw import cached_call_fal
+
+    ran, hit = [], []
+    cached_call_fal("fal-ai/x", {"prompt": "p"}, on_event=ran.append)
+    cached_call_fal("fal-ai/x", {"prompt": "p"}, on_event=hit.append)
+    assert dict(ran[-1].metrics) == {"inference_time": 1.5}
+    assert [e.kind for e in hit] == ["cache_hit"] and hit[0].metrics is None

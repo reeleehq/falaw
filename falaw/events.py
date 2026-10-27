@@ -10,7 +10,7 @@ a single ``call_fal`` invocation:
 - ``queued``      — call submitted to fal
 - ``progress``    — fal pushed an InProgress update with no message body
 - ``log``         — fal pushed an InProgress update with a log line
-- ``done``        — call returned a result
+- ``done``        — call returned a result; ``metrics`` carries fal's ``Completed.metrics``
 - ``error``       — call raised
 - ``cache_hit``   — :func:`falaw.cached_call_fal` found a hit and skipped the network
 - ``provider_queued`` — fal reported the call waiting in ITS line (``queue_position``)
@@ -20,6 +20,13 @@ where the call is: ``"in_queue"`` on a ``provider_queued`` event, ``"in_progress
 ``progress`` / ``log`` events fal's IN_PROGRESS updates produce. It is ``None`` on every
 event fal said nothing about (a cache hit, ``queued``, ``done``), so a consumer that sees
 no phase knows nothing, which is not the same as "in progress".
+
+``metrics`` is fal's own account of the finished run, as its final ``Completed`` status
+reported it (e.g. ``{"inference_time": 3.2}``, seconds the runner spent processing). It
+rides the ``done`` event only, and stays out of the model's response so a cached response
+is still exactly what the model returned. It is ``None`` when fal reported none, and on a
+``cache_hit`` (nothing ran, nothing was billed). fal does not say whether
+``inference_time`` is the billed quantity: a cost derived from it is an observed run time.
 
 Subscribers can be registered globally via :func:`subscribe` or
 per-call via the ``on_event=`` argument on :func:`call_fal` /
@@ -33,8 +40,9 @@ from __future__ import annotations
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
-from typing import Callable, Iterable, Literal, Optional
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Any, Callable, Iterable, Literal, Mapping, Optional
 
 
 EventKind = Literal[
@@ -64,6 +72,8 @@ class ProgressEvent:
         provider_phase: fal's reported phase (see the module docstring), or ``None``.
         queue_position: fal's ``queue_position`` on a ``"provider_queued"`` event
             (0 = next); ``None`` on every other event.
+        metrics: fal's ``Completed.metrics`` on a ``"done"`` event (read-only), or
+            ``None`` (see the module docstring).
     """
 
     kind: EventKind
@@ -74,6 +84,11 @@ class ProgressEvent:
     elapsed_s: float = 0.0
     provider_phase: Optional[ProviderPhase] = None
     queue_position: Optional[int] = None
+    metrics: Optional[Mapping[str, Any]] = field(default=None, hash=False)
+
+    def __post_init__(self) -> None:
+        if self.metrics is not None:  # a snapshot no subscriber can edit for the others
+            object.__setattr__(self, "metrics", MappingProxyType(dict(self.metrics)))
 
 
 # --- subscriber registry ---------------------------------------------------
