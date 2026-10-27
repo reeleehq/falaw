@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import Any, Mapping, get_args
 
 from .base import CostEstimate, ModelRecord
+from .events import EventKind, ProviderPhase
 from .canonical import (
     DFLT_BACKEND,
     cache_key_payload,
@@ -541,6 +542,8 @@ def _constants() -> dict:
         "default_video_aspect": DFLT_VIDEO_ASPECT,
         "output_kinds": list(get_args(OutputKind)),
         "cache_statuses": list(get_args(CacheStatus)),
+        "event_kinds": list(get_args(EventKind)),
+        "provider_phases": list(get_args(ProviderPhase)),
     }
 
 

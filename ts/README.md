@@ -20,7 +20,7 @@ console.log(totalCostUsd(plan));            // e.g. 0.483
 // fal.ai forbids browser-held keys, so execution goes through a relay.
 const done = await execute(plan, {
   transport: queueTransport({ proxyUrl: '/api/fal/proxy', key: () => userKey }),
-  onEvent: (e) => console.log(e.kind, e.queuePosition),
+  onEvent: (e) => console.log(e.kind, e.providerPhase, e.queuePosition),  // the Python event vocabulary
 });
 done[1].result.assets[0].url;               // the clip
 done[1].requestId;                          // fal's id — provenance

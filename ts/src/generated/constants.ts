@@ -14,6 +14,15 @@ export const CONSTANTS = {
   "default_video_aspect": "16:9",
   "default_video_resolution": "720p",
   "dflt_backend": "fal",
+  "event_kinds": [
+    "queued",
+    "progress",
+    "log",
+    "done",
+    "error",
+    "cache_hit",
+    "provider_queued"
+  ],
   "file_prefix": "<file ",
   "kind_keys": [
     [
@@ -57,6 +66,10 @@ export const CONSTANTS = {
   ],
   "placeholder_prefix": "<from ",
   "plan_dict_schema": "falaw.plan/v1",
+  "provider_phases": [
+    "in_queue",
+    "in_progress"
+  ],
   "tier_order": [
     "fast",
     "balanced",
