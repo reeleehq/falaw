@@ -114,9 +114,10 @@ class LlmReceipt:
       estimate. fal's documented any-llm output schema (``output``,
       ``reasoning``, ``partial``, ``error``) carries no ``usage`` block, so
       an any-llm receipt stays at the request price unless a response
-      reports usage, which is priced the moment one does. It is the routed
-      model and not the ``fal-ai/any-llm``
-      record because the record carries fal's *standard* tier, and a premium
+      reports usage, which is priced the moment one does. The rate rows carry
+      no cache rates, so cache-read tokens are priced at the full input rate:
+      for a cached prompt the figure is an upper estimate. It is the routed
+      model and not the ``fal-ai/any-llm`` record because the record carries fal's *standard* tier, and a premium
       routed model bills ten times that: pricing every turn from the record
       under-reported premium spend tenfold in the ledger a consumer sums
       (falaw#55). ``None`` only when nothing can price it at all.
@@ -155,9 +156,11 @@ def _extract_llm_usage(raw: Any) -> tuple[Optional[int], Optional[int]]:
     (``usage.input_tokens`` / ``usage.output_tokens``) — wherever the
     ``usage`` dict sits at the top level, and counts them with
     :func:`falaw.llm_token_counts`: Anthropic's ``input_tokens`` excludes
-    cache reads and writes, which are prompt tokens all the same. A side
-    whose key is absent or not a non-negative ``int`` is ``None``:
-    unrecorded, never invented.
+    cache reads and writes, which are prompt tokens all the same. Each side is
+    read from the first shape that reports it, so a block mixing the two still
+    yields both. A side whose key is absent or not a non-negative ``int`` is
+    ``None``: unrecorded, never invented, and never above what OpenAI's
+    ``prompt_tokens`` itself says (its cached part is a subset of it).
     """
     usage = raw.get("usage") if isinstance(raw, dict) else None
     if not isinstance(usage, dict):
@@ -166,15 +169,18 @@ def _extract_llm_usage(raw: Any) -> tuple[Optional[int], Optional[int]]:
     def _is_count(value: Any) -> bool:
         return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
-    for provider, in_key, out_key in _USAGE_SHAPES:
-        if usage.get(in_key) is None and usage.get(out_key) is None:
-            continue
-        counts = llm_token_counts(provider, usage)
-        return (
-            counts.input if _is_count(usage.get(in_key)) else None,
-            counts.output if _is_count(usage.get(out_key)) else None,
-        )
-    return None, None
+    def _side(side: str) -> Optional[int]:
+        for provider, in_key, out_key in _USAGE_SHAPES:
+            reported = usage.get(in_key if side == "input" else out_key)
+            if reported is None:
+                continue
+            if not _is_count(reported):
+                return None
+            counted = getattr(llm_token_counts(provider, usage), side)
+            return min(counted, reported) if provider == "openai" else counted
+        return None
+
+    return _side("input"), _side("output")
 
 
 def llm_complete_with_receipt(

@@ -259,3 +259,19 @@ def test_a_negative_count_reads_as_unrecorded_not_zero(monkeypatch):
     _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
     _, r = llm_complete_with_receipt("q")
     assert (r.tokens_in, r.tokens_out) == (None, 7)
+
+
+@pytest.mark.parametrize(
+    "usage, expected",
+    [
+        ({"prompt_tokens": 100, "output_tokens": 50}, (100, 50)),  # mixed shapes
+        (
+            {"prompt_tokens": 10, "prompt_tokens_details": {"cached_tokens": 50}},
+            (10, None),  # cached is a subset of prompt_tokens: never above it
+        ),
+    ],
+)
+def test_usage_counts_are_read_per_side_and_never_invented(usage, expected):
+    from falaw.operations.llm import _extract_llm_usage
+
+    assert _extract_llm_usage({"usage": usage}) == expected
