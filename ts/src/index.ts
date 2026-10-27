@@ -35,7 +35,7 @@ export type { Plan, CallPlan, OutputKind, GenerateImageInput, ImageToVideoInput,
 export { execute, hasPlaceholder } from './execute';
 export type { ExecutedCall, ExecuteOptions } from './execute';
 export { queueTransport } from './transport';
-export type { Transport, TransportContext, TransportResult, ProgressEvent, QueueTransportOptions } from './transport';
+export type { Transport, TransportContext, TransportResult, ProgressEvent, EventKind, ProviderPhase, QueueTransportOptions } from './transport';
 export { parseResponse } from './results';
 export type { Result, Asset } from './results';
 export { listModels, getModel, pickModel, TIER_ORDER } from './registry';

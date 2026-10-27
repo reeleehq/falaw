@@ -354,3 +354,82 @@ def test_cached_call_fal_reports_metrics_on_a_run_and_none_on_a_hit(monkeypatch)
     cached_call_fal("fal-ai/x", {"prompt": "p"}, on_event=hit.append)
     assert ran[-1].metrics == {"inference_time": 1.5}
     assert [e.kind for e in hit] == ["cache_hit"] and hit[0].metrics is None
+
+
+def _install_fake_fal_client_with_completion(monkeypatch, updates, *, raises=None):
+    """A stub replaying InProgress / Completed updates, then returning or raising."""
+
+    class _InProgress:
+        def __init__(self, logs=()):
+            self.logs = logs
+
+    class _Completed:
+        def __init__(self, logs=(), metrics=None, error=None, error_type=None):
+            self.logs, self.metrics = logs, metrics
+            self.error, self.error_type = error, error_type
+
+    def subscribe(application, *, arguments, with_logs, on_queue_update):
+        for make in updates:
+            on_queue_update(make(_InProgress, _Completed))
+        if raises is not None:
+            raise raises
+        return {"ok": True}
+
+    fake = types.SimpleNamespace(
+        InProgress=_InProgress, Completed=_Completed, subscribe=subscribe
+    )
+    monkeypatch.setitem(sys.modules, "fal_client", fake)
+
+
+def _line(message, timestamp):
+    return {"message": message, "timestamp": timestamp, "level": "INFO"}
+
+
+def test_the_runs_last_log_lines_arrive_with_completed(monkeypatch):
+    """Whether fal re-sends earlier lines with COMPLETED or only the new ones, each
+    line is reported once, and the final ones are not lost."""
+    a, b, c = _line("a", "t1"), _line("b", "t2"), _line("c", "t3")
+    for completed_logs in ([a, b, c], [c]):  # cumulative or incremental
+        _install_fake_fal_client_with_completion(
+            monkeypatch,
+            [lambda I, C: I([a]), lambda I, C: I([b]), lambda I, C: C(completed_logs)],
+        )
+        from falaw import call_fal
+
+        events, legacy = [], []
+        call_fal("fal-ai/x", {}, on_event=events.append, on_log=legacy.append)
+        logs = [(e.message, e.provider_phase) for e in events if e.kind == "log"]
+        assert logs == [
+            ("a", "in_progress"),
+            ("b", "in_progress"),
+            ("c", "in_progress"),
+        ]
+        assert legacy == ["a", "b", "c"]
+        assert events[-1].kind == "done"
+
+
+def test_a_failed_run_reports_fals_own_error_and_its_metrics(monkeypatch):
+    from falaw.journal import _default_journal
+
+    _install_fake_fal_client_with_completion(
+        monkeypatch,
+        [
+            lambda I, C: C(
+                metrics={"inference_time": 0.5},
+                error="CUDA out of memory",
+                error_type="runner_error",
+            )
+        ],
+        raises=RuntimeError("request failed"),
+    )
+    from falaw import call_fal
+
+    events = []
+    with pytest.raises(Exception):
+        call_fal("fal-ai/x", {}, on_event=events.append)
+    error = events[-1]
+    assert error.kind == "error" and error.metrics == {"inference_time": 0.5}
+    assert "runner_error: CUDA out of memory" in error.message
+    (entry,) = [e for e in _default_journal() if "call_fal" in e.tags]
+    assert entry.context["provider_error"] == "CUDA out of memory"
+    assert entry.context["provider_error_type"] == "runner_error"

@@ -18,6 +18,7 @@
 
 import { FalError } from './errors';
 import type { CallPlan } from './generated/call-plan';
+import { CONSTANTS } from './generated/constants';
 
 export type Json = Record<string, unknown>;
 
@@ -26,13 +27,28 @@ export interface TransportContext {
   readonly onEvent?: (event: ProgressEvent) => void;
 }
 
+/** Every event kind the Python side emits (`falaw.events.EventKind`); the transport uses a subset. */
+export type EventKind = (typeof CONSTANTS.event_kinds)[number];
+/** fal's word on where a call is (`falaw.events.ProviderPhase`). */
+export type ProviderPhase = (typeof CONSTANTS.provider_phases)[number];
+
+/**
+ * One step of a call, in the Python `ProgressEvent` vocabulary (camelCased):
+ * `queued` (submitted), `provider_queued` (waiting in fal's line, `queuePosition`
+ * ahead, reported on a change only), `progress` (being made), `done` (with fal's run
+ * `metrics`, e.g. `inference_time`, when it reported any), `error`. `providerPhase` is
+ * set only on what fal reported (`in_queue` / `in_progress`); `status` is fal's raw
+ * status string.
+ */
 export interface ProgressEvent {
-  readonly kind: 'queued' | 'progress' | 'done' | 'error';
+  readonly kind: EventKind;
   readonly application: string;
   readonly requestId?: string;
+  readonly providerPhase?: ProviderPhase;
   readonly queuePosition?: number;
   readonly status?: string;
   readonly message?: string;
+  readonly metrics?: Json;
 }
 
 export interface TransportResult {
@@ -71,6 +87,9 @@ interface QueueStatus {
   status?: string;
   queue_position?: number;
   response_url?: string;
+  metrics?: Json;
+  error?: string | null;
+  error_type?: string | null;
 }
 
 export function queueTransport(opts: QueueTransportOptions = {}): Transport {
@@ -147,12 +166,26 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
     }
     ctx.onEvent?.({ kind: 'queued', application, requestId });
     const deadline = Date.now() + timeout;
+    let lastPosition: number | undefined | null = null; // fal re-reports the line: say it on a change only
+    let metrics: Json | undefined;
     try {
       for (;;) {
         const status = (await request('GET', submitted.status_url, undefined, signal)) as QueueStatus;
-        ctx.onEvent?.({ kind: 'progress', application, requestId, status: status.status, queuePosition: status.queue_position });
-        if (status.status === 'COMPLETED') break;
-        if (status.status && status.status !== 'IN_QUEUE' && status.status !== 'IN_PROGRESS') {
+        if (status.status === 'COMPLETED') {
+          if (status.error) {
+            throw new FalError(`fal request ${requestId ?? ''} failed: ${status.error_type ?? 'error'}: ${status.error}`);
+          }
+          metrics = isRecord(status.metrics) && Object.keys(status.metrics).length ? status.metrics : undefined;
+          break;
+        }
+        if (status.status === 'IN_QUEUE') {
+          if (status.queue_position !== lastPosition) {
+            lastPosition = status.queue_position;
+            ctx.onEvent?.({ kind: 'provider_queued', application, requestId, status: status.status, providerPhase: 'in_queue', queuePosition: status.queue_position });
+          }
+        } else if (status.status === 'IN_PROGRESS') {
+          ctx.onEvent?.({ kind: 'progress', application, requestId, status: status.status, providerPhase: 'in_progress' });
+        } else if (status.status) {
           throw new FalError(`fal request ${requestId ?? ''} ended with status ${status.status}`);
         }
         if (Date.now() > deadline) {
@@ -162,7 +195,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
         await sleep(pollInterval, signal);
       }
       const raw = await request('GET', submitted.response_url, undefined, signal);
-      ctx.onEvent?.({ kind: 'done', application, requestId });
+      ctx.onEvent?.({ kind: 'done', application, requestId, ...(metrics ? { metrics } : {}) });
       return { raw, requestId };
     } catch (e) {
       const error = e instanceof FalError ? e : new FalError(String(e));
@@ -170,6 +203,10 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
       return fail(error);
     }
   };
+}
+
+function isRecord(value: unknown): value is Json {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {

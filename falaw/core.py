@@ -193,22 +193,50 @@ def call_fal(
     log = on_log if on_log is not None else (lambda _msg: None)
 
     last_position: list = []  # fal re-reports the queue ~10x/s: say it on a change only
-    metrics: dict = {}  # fal's Completed.metrics, for the `done` event (#125)
+    metrics: dict = {}  # fal's Completed.metrics, for the `done` / `error` event (#125)
+    provider_error: dict = {}  # Completed.error / error_type, for the error path (#118)
+    logged: set = set()  # log entries already emitted, so Completed adds only new ones
+
+    def _log_lines(update, *, only_new: bool = False) -> list:
+        lines = []
+        for entry in update.logs or ():
+            message = entry.get("message") if isinstance(entry, dict) else None
+            if not message:
+                continue
+            key = (entry.get("timestamp"), message)
+            if only_new and key in logged:
+                continue
+            logged.add(key)
+            lines.append(message)
+        return lines
+
+    def _emit_log_lines(lines) -> None:
+        for msg in lines:
+            log(msg)
+            _ev("log", message=msg, provider_phase="in_progress")
+
+    def _on_completed(update) -> None:
+        # Inside subscribe, before the result is read: raising here would lose a
+        # run fal has already billed, so a malformed value degrades instead.
+        reported = getattr(update, "metrics", None)
+        if isinstance(reported, Mapping):
+            metrics.update(reported)
+        elif reported is not None:
+            emit_degradation(
+                f"fal reported non-mapping metrics for {application!r}: "
+                f"{reported!r}; the done event carries none."
+            )
+        for field in ("error", "error_type"):
+            if getattr(update, field, None):
+                provider_error[field] = getattr(update, field)
+        # The run's last lines arrive with COMPLETED; they were written while it ran.
+        _emit_log_lines(_log_lines(update, only_new=True))
 
     def _on_queue_update(update):
         queued_cls = getattr(fal_client, "Queued", None)
         completed_cls = getattr(fal_client, "Completed", None)
         if completed_cls is not None and isinstance(update, completed_cls):
-            # Inside subscribe, before the result is read: raising here would lose a
-            # run fal has already billed, so a malformed value degrades instead.
-            reported = getattr(update, "metrics", None)
-            if isinstance(reported, Mapping):
-                metrics.update(reported)
-            elif reported is not None:
-                emit_degradation(
-                    f"fal reported non-mapping metrics for {application!r}: "
-                    f"{reported!r}; the done event carries none."
-                )
+            _on_completed(update)
         elif queued_cls is not None and isinstance(update, queued_cls):
             position = getattr(update, "position", None)
             if last_position != [position]:
@@ -219,18 +247,12 @@ def call_fal(
                     queue_position=position,
                 )
         elif isinstance(update, fal_client.InProgress):
-            messages = [
-                entry.get("message") if isinstance(entry, dict) else None
-                for entry in (update.logs or ())
-            ]
-            messages = [m for m in messages if m]
-            if not messages:
+            lines = _log_lines(update)
+            if not lines:
                 # IN_PROGRESS is reported even when it carries no log line.
                 _ev("progress", provider_phase="in_progress")
                 return
-            for msg in messages:
-                log(msg)
-                _ev("log", message=msg, provider_phase="in_progress")
+            _emit_log_lines(lines)
 
     _ev("queued")
     try:
@@ -247,7 +269,10 @@ def call_fal(
         # Translate fal_client errors into typed falaw exceptions so callers
         # can catch FalAccountLocked / FalRateLimited / etc. specifically.
         exc = _translate_error(raw_exc, application=application)
-        _ev("error", message=repr(exc))
+        message = repr(exc)
+        if provider_error.get("error") and provider_error["error"] not in message:
+            message += f" (fal: {provider_error.get('error_type') or 'error'}: {provider_error['error']})"
+        _ev("error", message=message, metrics=metrics or None)
         if journal_errors:
             _default_journal().append(
                 kind="issue",
@@ -258,6 +283,7 @@ def call_fal(
                     "arguments": dict(arguments),
                     "duration_s": time.time() - started,
                     "status_code": getattr(exc, "status_code", None),
+                    **{f"provider_{k}": v for k, v in provider_error.items()},
                 },
             )
         raise exc from raw_exc

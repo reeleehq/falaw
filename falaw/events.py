@@ -9,21 +9,26 @@ a single ``call_fal`` invocation:
 
 - ``queued``      — call submitted to fal
 - ``progress``    — fal pushed an InProgress update with no message body
-- ``log``         — fal pushed an InProgress update with a log line
+- ``log``         — a log line fal reported while the call ran (with IN_PROGRESS, or the
+  run's last lines, which arrive with COMPLETED)
 - ``done``        — call returned a result; ``metrics`` carries fal's ``Completed.metrics``
-- ``error``       — call raised
+- ``error``       — call raised; ``message`` adds fal's own ``Completed.error`` when it
+  reported one, and ``metrics`` is set when a failed run reported them
 - ``cache_hit``   — :func:`falaw.cached_call_fal` found a hit and skipped the network
 - ``provider_queued`` — fal reported the call waiting in ITS line (``queue_position``)
 
 ``queued`` is falaw's own (the call was submitted). ``provider_phase`` is fal's word on
 where the call is: ``"in_queue"`` on a ``provider_queued`` event, ``"in_progress"`` on the
-``progress`` / ``log`` events fal's IN_PROGRESS updates produce. It is ``None`` on every
-event fal said nothing about (a cache hit, ``queued``, ``done``), so a consumer that sees
-no phase knows nothing, which is not the same as "in progress".
+``progress`` / ``log`` events. It is ``None`` on every event fal said nothing about (a
+cache hit, ``queued``) and on falaw's own verdicts (``done``, ``error``), so a consumer
+that sees no phase knows nothing, which is not the same as "in progress". The TypeScript
+client (``ts/src/transport.ts``) uses the same kinds and phases, exported as
+``event_kinds`` / ``provider_phases`` in ``schema/constants.json``.
 
 ``metrics`` is fal's own account of the finished run, as its final ``Completed`` status
 reported it (e.g. ``{"inference_time": 3.2}``, seconds the runner spent processing). It
-rides the ``done`` event only, and stays out of the model's response so a cached response
+rides the ``done`` event (and an ``error`` event, when a failed run reported any), and
+stays out of the model's response so a cached response
 is still exactly what the model returned. It is ``None`` when fal reported none, and on a
 ``cache_hit`` (nothing ran, nothing was billed). fal does not say whether
 ``inference_time`` is the billed quantity: a cost derived from it is an observed run time.

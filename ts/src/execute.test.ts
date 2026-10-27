@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { FalError } from './errors';
 import { execute } from './execute';
 import { makePlan, planGenerateImage, planImageToVideo } from './plan';
-import { type Transport, queueTransport } from './transport';
+import { CONSTANTS } from './generated/constants';
+import { type ProgressEvent, type Transport, queueTransport } from './transport';
 
 describe('execute', () => {
   it('runs calls in order, parses results, and chains "<from N>" by the upstream asset URL', async () => {
@@ -63,6 +64,18 @@ function fakeQueue() {
   return { fetch, calls };
 }
 
+/** A direct-mode fetch whose status polls replay `statuses` in order (the last one repeats). */
+function scriptedQueue(statuses: Record<string, unknown>[]) {
+  let polls = 0;
+  return (async (input: RequestInfo | URL) => {
+    const url = String(input);
+    const json = (o: unknown) => new Response(JSON.stringify(o), { status: 200 });
+    if (url.endsWith('/status')) return json(statuses[Math.min(polls++, statuses.length - 1)]);
+    if (url.endsWith('/requests/r')) return json({ images: [{ url: 'https://v3.fal.media/out.png' }] });
+    return json({ request_id: 'r', status_url: 'https://queue.fal.run/x/requests/r/status', response_url: 'https://queue.fal.run/x/requests/r' });
+  }) as typeof globalThis.fetch;
+}
+
 describe('queueTransport', () => {
   it('through a relay: every hop goes to the proxy with the fal URL in X-Fal-Target-Url and the key in X-Fal-Key', async () => {
     const q = fakeQueue();
@@ -81,7 +94,7 @@ describe('queueTransport', () => {
     expect(q.calls[0]!.headers.has('authorization')).toBe(false);
     expect(JSON.parse(q.calls[0]!.body!)).toMatchObject({ prompt: 'x' });
     expect(q.calls.slice(1).every((c) => c.method === 'GET')).toBe(true);
-    expect(events).toEqual(['queued', 'progress', 'progress', 'done']);
+    expect(events).toEqual(['queued', 'provider_queued', 'done']);
   });
 
   it('through a relay without a key: sends no key header and lets the relay decide', async () => {
@@ -165,6 +178,51 @@ describe('review-driven edges', () => {
     ).rejects.toThrow(/aborted/);
     expect(calls.some((c) => c === 'PUT https://queue.fal.run/x/requests/r/cancel')).toBe(true);
     expect(events.at(-1)).toBe('error');
+  });
+
+  it("speaks the Python event vocabulary: fal's line on a change only, then being made, then done with metrics", async () => {
+    const statuses = [
+      { status: 'IN_QUEUE', queue_position: 2 },
+      { status: 'IN_QUEUE', queue_position: 2 },
+      { status: 'IN_QUEUE', queue_position: 0 },
+      { status: 'IN_PROGRESS' },
+      { status: 'COMPLETED', metrics: { inference_time: 3.25 } },
+    ];
+    const events: ProgressEvent[] = [];
+    await queueTransport({ key: 'k', fetch: scriptedQueue(statuses), pollIntervalMs: 1 })(
+      planGenerateImage({ prompt: 'x' }),
+      { onEvent: (e) => events.push(e) },
+    );
+    expect(events.map((e) => [e.kind, e.providerPhase, e.queuePosition])).toEqual([
+      ['queued', undefined, undefined],
+      ['provider_queued', 'in_queue', 2],
+      ['provider_queued', 'in_queue', 0],
+      ['progress', 'in_progress', undefined],
+      ['done', undefined, undefined],
+    ]);
+    expect(events.at(-1)!.metrics).toEqual({ inference_time: 3.25 });
+    for (const e of events) expect(CONSTANTS.event_kinds).toContain(e.kind);
+  });
+
+  it('a COMPLETED status without metrics gives a done event without them', async () => {
+    const events: ProgressEvent[] = [];
+    await queueTransport({ key: 'k', fetch: scriptedQueue([{ status: 'COMPLETED', metrics: {} }]), pollIntervalMs: 1 })(
+      planGenerateImage({ prompt: 'x' }),
+      { onEvent: (e) => events.push(e) },
+    );
+    expect(events.at(-1)!.kind).toBe('done');
+    expect(events.at(-1)!.metrics).toBeUndefined();
+  });
+
+  it("a COMPLETED status carrying fal's error fails with it, without fetching a result", async () => {
+    const events: ProgressEvent[] = [];
+    const statuses = [{ status: 'COMPLETED', error: 'CUDA out of memory', error_type: 'runner_error' }];
+    await expect(
+      queueTransport({ key: 'k', fetch: scriptedQueue(statuses), pollIntervalMs: 1 })(planGenerateImage({ prompt: 'x' }), {
+        onEvent: (e) => events.push(e),
+      }),
+    ).rejects.toThrow(/runner_error: CUDA out of memory/);
+    expect(events.at(-1)!.kind).toBe('error');
   });
 
   it('never reaches the network by default (the vitest guard)', async () => {
