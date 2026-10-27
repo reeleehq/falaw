@@ -1,34 +1,34 @@
 {
   "schema_version": 1,
-  "built_at": "2026-10-27T20:25:02Z",
+  "built_at": "2026-10-27T20:44:02Z",
   "package": {
     "name": "falaw",
-    "version": "0.0.84",
+    "version": "0.0.86",
     "display_name": "falaw",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "d1df008c2c7e0b9e40e458bec02a043541034adc",
-    "short_commit": "d1df008",
+    "commit": "a83bb5f5bbec058ade70ae430285e0264f396812",
+    "short_commit": "a83bb5f",
     "branch": "main",
     "tags": [
-      "0.0.84"
+      "0.0.86"
     ],
     "dirty": false,
     "remote_url": "https://github.com/reeleehq/falaw",
-    "commit_url": "https://github.com/reeleehq/falaw/commit/d1df008c2c7e0b9e40e458bec02a043541034adc",
+    "commit_url": "https://github.com/reeleehq/falaw/commit/a83bb5f5bbec058ade70ae430285e0264f396812",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "reeleehq/falaw",
-    "sha": "3f749554be82cb04e40d0b8af893ce47081e8ce6",
+    "sha": "e86264d4ab770791e4c5908385f1dcd7ed3bfe5b",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "40570184511",
-    "run_url": "https://github.com/reeleehq/falaw/actions/runs/40570184511",
+    "run_id": "40574943167",
+    "run_url": "https://github.com/reeleehq/falaw/actions/runs/40574943167",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -62,14 +62,16 @@
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.84",
-    "relation": "same",
+    "latest": "0.0.85",
+    "relation": "ahead",
     "error": null
   },
-  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout d1df008c2c7e0b9e40e458bec02a043541034adc\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/reeleehq/falaw && cd falaw\ngit checkout a83bb5f5bbec058ade70ae430285e0264f396812\npip install \"epythet==0.2.22\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
-    "aligned": true,
-    "notes": []
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.86) is ahead of the latest release on PyPI (0.0.85): these docs describe unreleased code."
+    ]
   }
 }
