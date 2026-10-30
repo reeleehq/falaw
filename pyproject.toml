@@ -8,6 +8,7 @@ build-backend = "hatchling.build"
 name = "falaw"
 version = "0.0.86"
 description = "Agent-friendly Python facade over fal.ai for generating and managing AI media (images, video, audio)."
+license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.10"
 keywords = []
@@ -34,9 +35,6 @@ dependencies = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["falaw"]
-
-[project.license]
-text = "mit"
 
 [project.urls]
 Homepage = "https://github.com/thorwhalen/falaw"
