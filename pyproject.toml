@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "falaw"
-version = "0.0.86"
+version = "0.0.87"
 description = "Agent-friendly Python facade over fal.ai for generating and managing AI media (images, video, audio)."
 license = "Apache-2.0"
 readme = "README.md"
