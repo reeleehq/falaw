@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=ab2062fb"></script>
+    <script src="../_static/documentation_options.js?v=0f58e6e2"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.92" />
+  <meta name="docsearch:version" content="0.0.93" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -462,13 +462,16 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.operations.images.generate_image" title="falaw.operations.images.generate_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_image</span></code></a>(prompt, *[, quality, ...])</p></td>
 <td><p>Generate an image from a text prompt.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.operations.images.generate_image_with_refs" title="falaw.operations.images.generate_image_with_refs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_image_with_refs</span></code></a>(prompt, ...[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.operations.images.generate_image_with_control" title="falaw.operations.images.generate_image_with_control"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_image_with_control</span></code></a>(prompt, control, *)</p></td>
+<td><p>Generate an image conditioned on a guide image's structure (falaw#140).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.operations.images.generate_image_with_refs" title="falaw.operations.images.generate_image_with_refs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_image_with_refs</span></code></a>(prompt, ...[, ...])</p></td>
 <td><p>Generate a new image conditioned on one or more reference images.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.operations.images.remove_background" title="falaw.operations.images.remove_background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_background</span></code></a>(image_url, *[, quality, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.operations.images.remove_background" title="falaw.operations.images.remove_background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_background</span></code></a>(image_url, *[, quality, ...])</p></td>
 <td><p>Remove the background from an image.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.operations.images.upscale_image" title="falaw.operations.images.upscale_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upscale_image</span></code></a>(image_url, *[, scale, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.operations.images.upscale_image" title="falaw.operations.images.upscale_image"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upscale_image</span></code></a>(image_url, *[, scale, ...])</p></td>
 <td><p>Upscale an image.</p></td>
 </tr>
 </tbody>
@@ -514,6 +517,25 @@ balanced/high tier). Pass <code class="docutils literal notranslate"><span class
 model’s cap raises <a class="reference internal" href="falaw.html#falaw.FalPromptTooLong" title="falaw.FalPromptTooLong"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.FalPromptTooLong</span></code></a> before any call. Check
 <a class="reference internal" href="falaw.html#falaw.model_params" title="falaw.model_params"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.model_params()</span></code></a> for enums whose default may not be what you
 want (Recraft <code class="docutils literal notranslate"><span class="pre">style</span></code> defaults to photoreal).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.results.html#falaw.results.Result" title="falaw.results.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.operations.images.generate_image_with_control">
+<span class="sig-prename descclassname"><span class="pre">falaw.operations.images.</span></span><span class="sig-name descname"><span class="pre">generate_image_with_control</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">quality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'balanced'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'landscape_4_3'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/images.html#generate_image_with_control"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.operations.images.generate_image_with_control" title="Link to this definition">#</a></dt>
+<dd><p>Generate an image conditioned on a guide image’s structure (falaw#140).</p>
+<p><code class="docutils literal notranslate"><span class="pre">control</span></code> is <code class="docutils literal notranslate"><span class="pre">[{&quot;mode&quot;:</span> <span class="pre">&quot;canny&quot;</span> <span class="pre">|</span> <span class="pre">&quot;depth&quot;</span> <span class="pre">|</span> <span class="pre">&quot;pose&quot;</span> <span class="pre">|</span> <span class="pre">...,</span> <span class="pre">&quot;image&quot;:</span> <span class="pre">url,</span>
+<span class="pre">&quot;scale&quot;:</span> <span class="pre">0.6}]</span></code> (<code class="docutils literal notranslate"><span class="pre">scale</span></code> defaults to fal’s 1.0). It is sent as fal’s
+<code class="docutils literal notranslate"><span class="pre">easycontrols</span></code>; <code class="docutils literal notranslate"><span class="pre">controlnet_unions</span></code> and the subject-style EasyControl
+methods pass through <code class="docutils literal notranslate"><span class="pre">extra</span></code>. A local guide image (a <code class="docutils literal notranslate"><span class="pre">pathlib.Path</span></code>) is
+uploaded with <a class="reference internal" href="falaw.html#falaw.upload" title="falaw.upload"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.upload()</span></code></a> (swap the transfer with
+<a class="reference internal" href="falaw.html#falaw.using_uploader" title="falaw.using_uploader"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.using_uploader()</span></code></a>) once the call is known to be well formed. Plan
+the call with <a class="reference internal" href="falaw.html#falaw.plan_generate_image_with_control" title="falaw.plan_generate_image_with_control"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.plan_generate_image_with_control()</span></code></a> instead to
+upload only on a cache miss and key the cache on the file’s bytes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.results.html#falaw.results.Result" title="falaw.results.Result"><code class="xref py py-class docutils literal notranslate"><span class="pre">Result</span></code></a></span></p>
@@ -615,6 +637,7 @@ actually ingests references. This routes to the <code class="docutils literal no
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.composite_character_in_environment"><code class="docutils literal notranslate"><span class="pre">composite_character_in_environment()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.edit_image"><code class="docutils literal notranslate"><span class="pre">edit_image()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.generate_image"><code class="docutils literal notranslate"><span class="pre">generate_image()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.generate_image_with_control"><code class="docutils literal notranslate"><span class="pre">generate_image_with_control()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.generate_image_with_refs"><code class="docutils literal notranslate"><span class="pre">generate_image_with_refs()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.remove_background"><code class="docutils literal notranslate"><span class="pre">remove_background()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.operations.images.upscale_image"><code class="docutils literal notranslate"><span class="pre">upscale_image()</span></code></a></li>

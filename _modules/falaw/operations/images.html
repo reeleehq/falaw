@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=ab2062fb"></script>
+    <script src="../../../_static/documentation_options.js?v=0f58e6e2"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.92" />
+  <meta name="docsearch:version" content="0.0.93" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -721,7 +721,14 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..core</span><span class="w"> </span><span class="kn">import</span> <span class="n">call_fal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">pick_model</span><span class="p">,</span> <span class="n">register_tool</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..results</span><span class="w"> </span><span class="kn">import</span> <span class="n">Result</span><span class="p">,</span> <span class="n">parse_response</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">._image_args</span><span class="w"> </span><span class="kn">import</span> <span class="n">image_arguments</span><span class="p">,</span> <span class="n">known_record</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..upload</span><span class="w"> </span><span class="kn">import</span> <span class="n">localize_paths</span><span class="p">,</span> <span class="n">resolve_local_files</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._image_args</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CONTROL_CATEGORY</span><span class="p">,</span>
+    <span class="n">EASYCONTROL_SPATIAL_MODES</span><span class="p">,</span>
+    <span class="n">controlled_image_arguments</span><span class="p">,</span>
+    <span class="n">image_arguments</span><span class="p">,</span>
+    <span class="n">known_record</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="generate_image">
@@ -905,6 +912,95 @@ window.runMermaid = runMermaid;</script>
         <span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="s2">"image_edit"</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
     <span class="n">arguments</span> <span class="o">=</span> <span class="n">_refs_arguments</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">call_fal</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="generate_image_with_control">
+<a class="viewcode-back" href="../../../_autosummary/falaw.operations.images.html#falaw.generate_image_with_control">[docs]</a>
+<span class="nd">@register_tool</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">"generate_image_with_control"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="p">(</span>
+        <span class="s2">"Generate an image whose layout follows a guide image's STRUCTURE: its "</span>
+        <span class="s2">"edges (canny), depth, pose, HED sketch or segmentation. Use it to make "</span>
+        <span class="s2">"a subject land where a rig, a sketch or a reference photo puts it "</span>
+        <span class="s2">"(hands on a wheel at the rig's shoulders) instead of where the model "</span>
+        <span class="s2">"guesses. Routes to a structural-conditioning model (FLUX.1 [dev] "</span>
+        <span class="s2">"General with EasyControl). Returns a falaw.Result."</span>
+    <span class="p">),</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">(</span><span class="s2">"image"</span><span class="p">,</span> <span class="s2">"generate"</span><span class="p">,</span> <span class="s2">"control"</span><span class="p">,</span> <span class="s2">"structure"</span><span class="p">),</span>
+    <span class="n">input_schema</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+        <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"prompt"</span><span class="p">,</span> <span class="s2">"control"</span><span class="p">],</span>
+        <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+            <span class="s2">"control"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"array"</span><span class="p">,</span>
+                <span class="s2">"minItems"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="s2">"items"</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span>
+                    <span class="s2">"required"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"mode"</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">],</span>
+                    <span class="s2">"properties"</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="s2">"mode"</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                            <span class="s2">"enum"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">EASYCONTROL_SPATIAL_MODES</span><span class="p">),</span>
+                        <span class="p">},</span>
+                        <span class="s2">"image"</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"URL of the guide image."</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="s2">"scale"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"number"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">},</span>
+                    <span class="p">},</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">"quality"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                <span class="s2">"enum"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"fast"</span><span class="p">,</span> <span class="s2">"balanced"</span><span class="p">,</span> <span class="s2">"high"</span><span class="p">,</span> <span class="s2">"ultra"</span><span class="p">],</span>
+                <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"balanced"</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">"image_size"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"landscape_4_3"</span><span class="p">},</span>
+            <span class="s2">"model_id"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
+            <span class="s2">"extra"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">},</span>
+        <span class="p">},</span>
+    <span class="p">},</span>
+    <span class="n">output_schema</span><span class="o">=</span><span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"falaw.Result"</span><span class="p">},</span>
+    <span class="n">examples</span><span class="o">=</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="s2">"a driver's hands on a steering wheel, cel-shaded"</span><span class="p">,</span>
+            <span class="s2">"control"</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span><span class="s2">"mode"</span><span class="p">:</span> <span class="s2">"pose"</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">:</span> <span class="s2">"https://x/rig-pose.png"</span><span class="p">,</span> <span class="s2">"scale"</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">}</span>
+            <span class="p">],</span>
+        <span class="p">},</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_image_with_control</span><span class="p">(</span>
+    <span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">control</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"balanced"</span><span class="p">,</span>
+    <span class="n">image_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"landscape_4_3"</span><span class="p">,</span>
+    <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Generate an image conditioned on a guide image's structure (falaw#140).</span>
+
+<span class="sd">    ``control`` is ``[{"mode": "canny" | "depth" | "pose" | ..., "image": url,</span>
+<span class="sd">    "scale": 0.6}]`` (``scale`` defaults to fal's 1.0). It is sent as fal's</span>
+<span class="sd">    ``easycontrols``; ``controlnet_unions`` and the subject-style EasyControl</span>
+<span class="sd">    methods pass through ``extra``. A local guide image (a ``pathlib.Path``) is</span>
+<span class="sd">    uploaded with :func:`falaw.upload` (swap the transfer with</span>
+<span class="sd">    :func:`falaw.using_uploader`) once the call is known to be well formed. Plan</span>
+<span class="sd">    the call with :func:`falaw.plan_generate_image_with_control` instead to</span>
+<span class="sd">    upload only on a cache miss and key the cache on the file's bytes.</span>
+<span class="sd">    """</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">CONTROL_CATEGORY</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
+    <span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span> <span class="o">=</span> <span class="n">localize_paths</span><span class="p">(</span>
+        <span class="n">controlled_image_arguments</span><span class="p">(</span>
+            <span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">extra</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">resolve_local_files</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wire"</span><span class="p">)</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">call_fal</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span></div>
 

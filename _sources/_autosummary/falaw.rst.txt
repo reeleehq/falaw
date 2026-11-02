@@ -69,6 +69,7 @@
       uncached_plan
       extract_models_from_corpus
       generate_image
+      generate_image_with_control
       generate_image_with_refs
       get_model
       get_tool
@@ -94,6 +95,7 @@
       plan_composite_character_in_environment
       plan_edit_image
       plan_generate_image
+      plan_generate_image_with_control
       plan_generate_image_with_refs
       plan_image_to_video
       plan_reference_to_video

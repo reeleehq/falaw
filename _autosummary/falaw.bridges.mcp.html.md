@@ -38,7 +38,7 @@ should run it over its own composed preamble too.
 | [`serve`](#falaw.bridges.mcp.serve)(\*[, transport])                             | Run the standalone falaw MCP server.                                |
 | [`unresolved_tool_references`](#falaw.bridges.mcp.unresolved_tool_references)(text, \*[, tool_names]) | Tool names and `name_*` families named in `text` that do not exist. |
 
-### falaw.bridges.mcp.COSTED_TOOLS *= ('animate_face', 'apply_note_to_beat', 'apply_note_to_scene', 'cast_character', 'cast_voice', 'composite_character_in_environment', 'edit_image', 'establish_environment', 'generate_audio', 'generate_image', 'generate_image_with_refs', 'image_to_video', 'lipsync', 'llm_complete', 'parse_screenplay', 'remove_background', 'render_beat', 'render_scene', 'render_shot', 'storyboard_shot', 'talking_avatar_from_text', 'text_to_speech', 'text_to_video', 'upscale_image', 'voice_clone')*
+### falaw.bridges.mcp.COSTED_TOOLS *= ('animate_face', 'apply_note_to_beat', 'apply_note_to_scene', 'cast_character', 'cast_voice', 'composite_character_in_environment', 'edit_image', 'establish_environment', 'generate_audio', 'generate_image', 'generate_image_with_control', 'generate_image_with_refs', 'image_to_video', 'lipsync', 'llm_complete', 'parse_screenplay', 'remove_background', 'render_beat', 'render_scene', 'render_shot', 'storyboard_shot', 'talking_avatar_from_text', 'text_to_speech', 'text_to_video', 'upscale_image', 'voice_clone')*
 
 Snapshot of [`costed_tools()`](#falaw.bridges.mcp.costed_tools) for consumers that want a constant. Prefer
 the function when tools may be registered after import.

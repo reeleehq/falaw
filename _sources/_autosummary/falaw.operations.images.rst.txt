@@ -11,6 +11,7 @@ falaw.operations.images
       composite_character_in_environment
       edit_image
       generate_image
+      generate_image_with_control
       generate_image_with_refs
       remove_background
       upscale_image

@@ -91,6 +91,7 @@ Leave notes for future sessions:
 | [`uncached_plan`](#falaw.uncached_plan)(plan)                                | `plan` as a run that will not read the cache bills it: every call a miss.                                                                                                                                          |
 | [`extract_models_from_corpus`](#falaw.extract_models_from_corpus)(path)                   | Yield ModelRecord-shaped dicts parsed from llms-full.txt.                                                                                                                                                          |
 | [`generate_image`](#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                              |
+| [`generate_image_with_control`](#falaw.generate_image_with_control)(prompt, control, \*)   | Generate an image conditioned on a guide image's structure (falaw#140).                                                                                                                                            |
 | [`generate_image_with_refs`](#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                                  |
 | `get_model`(id)                                                                                     |                                                                                                                                                                                                                    |
 | `get_tool`(name)                                                                                    |                                                                                                                                                                                                                    |
@@ -116,6 +117,7 @@ Leave notes for future sessions:
 | [`plan_composite_character_in_environment`](#falaw.plan_composite_character_in_environment)(...)       | Plan a [`falaw.composite_character_in_environment()`](#falaw.composite_character_in_environment) call.                                                                                                           |
 | [`plan_edit_image`](#falaw.plan_edit_image)(image_url, prompt, \*[, ...])      | Plan a [`falaw.edit_image()`](#falaw.edit_image) call (Flux Kontext / SeedEdit / OmniGen).                                                                                               |
 | [`plan_generate_image`](#falaw.plan_generate_image)(prompt, \*[, quality, ...])    | Plan a [`falaw.generate_image()`](#falaw.generate_image) call without executing it.                                                                                                          |
+| [`plan_generate_image_with_control`](#falaw.plan_generate_image_with_control)(prompt, ...)      | Plan a [`falaw.generate_image_with_control()`](#falaw.generate_image_with_control) call.                                                                                                                  |
 | [`plan_generate_image_with_refs`](#falaw.plan_generate_image_with_refs)(prompt, ...[, ...])  | Plan a [`falaw.generate_image_with_refs()`](#falaw.generate_image_with_refs) call.                                                                                                                     |
 | [`plan_image_to_video`](#falaw.plan_image_to_video)(image_url[, prompt, ...])      | Plan a [`falaw.image_to_video()`](#falaw.image_to_video) call.                                                                                                                               |
 | [`plan_reference_to_video`](#falaw.plan_reference_to_video)(prompt, \*[, ...])         | Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.                                                                                                             |
@@ -2324,6 +2326,22 @@ want (Recraft `style` defaults to photoreal).
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
+### falaw.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+
+Generate an image conditioned on a guide image’s structure (falaw#140).
+
+`control` is `[{"mode": "canny" | "depth" | "pose" | ..., "image": url,
+"scale": 0.6}]` (`scale` defaults to fal’s 1.0). It is sent as fal’s
+`easycontrols`; `controlnet_unions` and the subject-style EasyControl
+methods pass through `extra`. A local guide image (a `pathlib.Path`) is
+uploaded with [`falaw.upload()`](#falaw.upload) (swap the transfer with
+[`falaw.using_uploader()`](#falaw.using_uploader)) once the call is known to be well formed. Plan
+the call with [`falaw.plan_generate_image_with_control()`](#falaw.plan_generate_image_with_control) instead to
+upload only on a cache miss and key the cache on the file’s bytes.
+
+* **Return type:**
+  [`Result`](falaw.results.html.md#falaw.results.Result)
+
 ### falaw.generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None)
 
 Generate a new image conditioned on one or more reference images.
@@ -2846,6 +2864,17 @@ with no duration argument it is estimator-only.
 ### falaw.plan_generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
 
 Plan a [`falaw.generate_image()`](#falaw.generate_image) call without executing it.
+
+* **Return type:**
+  [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
+
+### falaw.plan_generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
+
+Plan a [`falaw.generate_image_with_control()`](#falaw.generate_image_with_control) call.
+
+A control `image` may be a URL or a local path (`pathlib.Path`): the
+path is uploaded only when the call actually runs, and the cache is keyed
+on its bytes.
 
 * **Return type:**
   [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)

@@ -4,13 +4,14 @@ Image-generation and image-manipulation operations.
 
 ### Functions
 
-| [`composite_character_in_environment`](#falaw.operations.images.composite_character_in_environment)(...[, ...])    | Place a character into an environment as one composited still.    |
-|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| [`edit_image`](#falaw.operations.images.edit_image)(image_url, prompt, \*[, quality, ...]) | Edit an image with a natural-language instruction.                |
-| [`generate_image`](#falaw.operations.images.generate_image)(prompt, \*[, quality, ...])        | Generate an image from a text prompt.                             |
-| [`generate_image_with_refs`](#falaw.operations.images.generate_image_with_refs)(prompt, ...[, ...])      | Generate a new image conditioned on one or more reference images. |
-| [`remove_background`](#falaw.operations.images.remove_background)(image_url, \*[, quality, ...])  | Remove the background from an image.                              |
-| [`upscale_image`](#falaw.operations.images.upscale_image)(image_url, \*[, scale, ...])        | Upscale an image.                                                 |
+| [`composite_character_in_environment`](#falaw.operations.images.composite_character_in_environment)(...[, ...])    | Place a character into an environment as one composited still.          |
+|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| [`edit_image`](#falaw.operations.images.edit_image)(image_url, prompt, \*[, quality, ...]) | Edit an image with a natural-language instruction.                      |
+| [`generate_image`](#falaw.operations.images.generate_image)(prompt, \*[, quality, ...])        | Generate an image from a text prompt.                                   |
+| [`generate_image_with_control`](#falaw.operations.images.generate_image_with_control)(prompt, control, \*)  | Generate an image conditioned on a guide image's structure (falaw#140). |
+| [`generate_image_with_refs`](#falaw.operations.images.generate_image_with_refs)(prompt, ...[, ...])      | Generate a new image conditioned on one or more reference images.       |
+| [`remove_background`](#falaw.operations.images.remove_background)(image_url, \*[, quality, ...])  | Remove the background from an image.                                    |
+| [`upscale_image`](#falaw.operations.images.upscale_image)(image_url, \*[, scale, ...])        | Upscale an image.                                                       |
 
 ### falaw.operations.images.composite_character_in_environment(character_image_url, environment_image_url, , prompt='', quality='balanced', model_id=None, extra=None)
 
@@ -46,6 +47,22 @@ Generate an image from a text prompt.
 model’s cap raises [`falaw.FalPromptTooLong`](falaw.html.md#falaw.FalPromptTooLong) before any call. Check
 [`falaw.model_params()`](falaw.html.md#falaw.model_params) for enums whose default may not be what you
 want (Recraft `style` defaults to photoreal).
+
+* **Return type:**
+  [`Result`](falaw.results.html.md#falaw.results.Result)
+
+### falaw.operations.images.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+
+Generate an image conditioned on a guide image’s structure (falaw#140).
+
+`control` is `[{"mode": "canny" | "depth" | "pose" | ..., "image": url,
+"scale": 0.6}]` (`scale` defaults to fal’s 1.0). It is sent as fal’s
+`easycontrols`; `controlnet_unions` and the subject-style EasyControl
+methods pass through `extra`. A local guide image (a `pathlib.Path`) is
+uploaded with [`falaw.upload()`](falaw.html.md#falaw.upload) (swap the transfer with
+[`falaw.using_uploader()`](falaw.html.md#falaw.using_uploader)) once the call is known to be well formed. Plan
+the call with [`falaw.plan_generate_image_with_control()`](falaw.html.md#falaw.plan_generate_image_with_control) instead to
+upload only on a cache miss and key the cache on the file’s bytes.
 
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)

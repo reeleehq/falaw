@@ -1,4 +1,4 @@
-> built 2026-11-02 20:29 UTC from 094c18f (main) · falaw 0.0.92. Details: build_info.json
+> built 2026-11-02 20:43 UTC from 8307e42 (main) · falaw 0.0.93. Details: build_info.json
 
 # index.html.md
 
@@ -756,7 +756,7 @@ should run it over its own composed preamble too.
 | [`serve`](_autosummary/falaw.bridges.mcp.html.md#falaw.bridges.mcp.serve)(\*[, transport])                             | Run the standalone falaw MCP server.                                |
 | [`unresolved_tool_references`](_autosummary/falaw.bridges.mcp.html.md#falaw.bridges.mcp.unresolved_tool_references)(text, \*[, tool_names]) | Tool names and `name_*` families named in `text` that do not exist. |
 
-### falaw.bridges.mcp.COSTED_TOOLS *= ('animate_face', 'apply_note_to_beat', 'apply_note_to_scene', 'cast_character', 'cast_voice', 'composite_character_in_environment', 'edit_image', 'establish_environment', 'generate_audio', 'generate_image', 'generate_image_with_refs', 'image_to_video', 'lipsync', 'llm_complete', 'parse_screenplay', 'remove_background', 'render_beat', 'render_scene', 'render_shot', 'storyboard_shot', 'talking_avatar_from_text', 'text_to_speech', 'text_to_video', 'upscale_image', 'voice_clone')*
+### falaw.bridges.mcp.COSTED_TOOLS *= ('animate_face', 'apply_note_to_beat', 'apply_note_to_scene', 'cast_character', 'cast_voice', 'composite_character_in_environment', 'edit_image', 'establish_environment', 'generate_audio', 'generate_image', 'generate_image_with_control', 'generate_image_with_refs', 'image_to_video', 'lipsync', 'llm_complete', 'parse_screenplay', 'remove_background', 'render_beat', 'render_scene', 'render_shot', 'storyboard_shot', 'talking_avatar_from_text', 'text_to_speech', 'text_to_video', 'upscale_image', 'voice_clone')*
 
 Snapshot of [`costed_tools()`](_autosummary/falaw.bridges.mcp.html.md#falaw.bridges.mcp.costed_tools) for consumers that want a constant. Prefer
 the function when tools may be registered after import.
@@ -3272,6 +3272,7 @@ Leave notes for future sessions:
 | [`uncached_plan`](_autosummary/falaw.html.md#falaw.uncached_plan)(plan)                                | `plan` as a run that will not read the cache bills it: every call a miss.                                                                                                                                          |
 | [`extract_models_from_corpus`](_autosummary/falaw.html.md#falaw.extract_models_from_corpus)(path)                   | Yield ModelRecord-shaped dicts parsed from llms-full.txt.                                                                                                                                                          |
 | [`generate_image`](_autosummary/falaw.html.md#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                              |
+| [`generate_image_with_control`](_autosummary/falaw.html.md#falaw.generate_image_with_control)(prompt, control, \*)   | Generate an image conditioned on a guide image's structure (falaw#140).                                                                                                                                            |
 | [`generate_image_with_refs`](_autosummary/falaw.html.md#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                                  |
 | `get_model`(id)                                                                                     |                                                                                                                                                                                                                    |
 | `get_tool`(name)                                                                                    |                                                                                                                                                                                                                    |
@@ -3297,6 +3298,7 @@ Leave notes for future sessions:
 | [`plan_composite_character_in_environment`](_autosummary/falaw.html.md#falaw.plan_composite_character_in_environment)(...)       | Plan a [`falaw.composite_character_in_environment()`](_autosummary/falaw.html.md#falaw.composite_character_in_environment) call.                                                                                                           |
 | [`plan_edit_image`](_autosummary/falaw.html.md#falaw.plan_edit_image)(image_url, prompt, \*[, ...])      | Plan a [`falaw.edit_image()`](_autosummary/falaw.html.md#falaw.edit_image) call (Flux Kontext / SeedEdit / OmniGen).                                                                                               |
 | [`plan_generate_image`](_autosummary/falaw.html.md#falaw.plan_generate_image)(prompt, \*[, quality, ...])    | Plan a [`falaw.generate_image()`](_autosummary/falaw.html.md#falaw.generate_image) call without executing it.                                                                                                          |
+| [`plan_generate_image_with_control`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_control)(prompt, ...)      | Plan a [`falaw.generate_image_with_control()`](_autosummary/falaw.html.md#falaw.generate_image_with_control) call.                                                                                                                  |
 | [`plan_generate_image_with_refs`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_refs)(prompt, ...[, ...])  | Plan a [`falaw.generate_image_with_refs()`](_autosummary/falaw.html.md#falaw.generate_image_with_refs) call.                                                                                                                     |
 | [`plan_image_to_video`](_autosummary/falaw.html.md#falaw.plan_image_to_video)(image_url[, prompt, ...])      | Plan a [`falaw.image_to_video()`](_autosummary/falaw.html.md#falaw.image_to_video) call.                                                                                                                               |
 | [`plan_reference_to_video`](_autosummary/falaw.html.md#falaw.plan_reference_to_video)(prompt, \*[, ...])         | Plan a reference-to-video call (Seedance 2.0): a prompt steered by reference images, videos and audio.                                                                                                             |
@@ -5505,6 +5507,22 @@ want (Recraft `style` defaults to photoreal).
 * **Return type:**
   [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)
 
+### falaw.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+
+Generate an image conditioned on a guide image’s structure (falaw#140).
+
+`control` is `[{"mode": "canny" | "depth" | "pose" | ..., "image": url,
+"scale": 0.6}]` (`scale` defaults to fal’s 1.0). It is sent as fal’s
+`easycontrols`; `controlnet_unions` and the subject-style EasyControl
+methods pass through `extra`. A local guide image (a `pathlib.Path`) is
+uploaded with [`falaw.upload()`](_autosummary/falaw.html.md#falaw.upload) (swap the transfer with
+[`falaw.using_uploader()`](_autosummary/falaw.html.md#falaw.using_uploader)) once the call is known to be well formed. Plan
+the call with [`falaw.plan_generate_image_with_control()`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_control) instead to
+upload only on a cache miss and key the cache on the file’s bytes.
+
+* **Return type:**
+  [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)
+
 ### falaw.generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None)
 
 Generate a new image conditioned on one or more reference images.
@@ -6027,6 +6045,17 @@ with no duration argument it is estimator-only.
 ### falaw.plan_generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
 
 Plan a [`falaw.generate_image()`](_autosummary/falaw.html.md#falaw.generate_image) call without executing it.
+
+* **Return type:**
+  [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)
+
+### falaw.plan_generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
+
+Plan a [`falaw.generate_image_with_control()`](_autosummary/falaw.html.md#falaw.generate_image_with_control) call.
+
+A control `image` may be a URL or a local path (`pathlib.Path`): the
+path is uploaded only when the call actually runs, and the cache is keyed
+on its bytes.
 
 * **Return type:**
   [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan)
@@ -8133,13 +8162,14 @@ Image-generation and image-manipulation operations.
 
 ### Functions
 
-| [`composite_character_in_environment`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.composite_character_in_environment)(...[, ...])    | Place a character into an environment as one composited still.    |
-|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| [`edit_image`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.edit_image)(image_url, prompt, \*[, quality, ...]) | Edit an image with a natural-language instruction.                |
-| [`generate_image`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.generate_image)(prompt, \*[, quality, ...])        | Generate an image from a text prompt.                             |
-| [`generate_image_with_refs`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.generate_image_with_refs)(prompt, ...[, ...])      | Generate a new image conditioned on one or more reference images. |
-| [`remove_background`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.remove_background)(image_url, \*[, quality, ...])  | Remove the background from an image.                              |
-| [`upscale_image`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.upscale_image)(image_url, \*[, scale, ...])        | Upscale an image.                                                 |
+| [`composite_character_in_environment`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.composite_character_in_environment)(...[, ...])    | Place a character into an environment as one composited still.          |
+|----------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| [`edit_image`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.edit_image)(image_url, prompt, \*[, quality, ...]) | Edit an image with a natural-language instruction.                      |
+| [`generate_image`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.generate_image)(prompt, \*[, quality, ...])        | Generate an image from a text prompt.                                   |
+| [`generate_image_with_control`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.generate_image_with_control)(prompt, control, \*)  | Generate an image conditioned on a guide image's structure (falaw#140). |
+| [`generate_image_with_refs`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.generate_image_with_refs)(prompt, ...[, ...])      | Generate a new image conditioned on one or more reference images.       |
+| [`remove_background`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.remove_background)(image_url, \*[, quality, ...])  | Remove the background from an image.                                    |
+| [`upscale_image`](_autosummary/falaw.operations.images.html.md#falaw.operations.images.upscale_image)(image_url, \*[, scale, ...])        | Upscale an image.                                                       |
 
 ### falaw.operations.images.composite_character_in_environment(character_image_url, environment_image_url, , prompt='', quality='balanced', model_id=None, extra=None)
 
@@ -8175,6 +8205,22 @@ Generate an image from a text prompt.
 model’s cap raises [`falaw.FalPromptTooLong`](_autosummary/falaw.html.md#falaw.FalPromptTooLong) before any call. Check
 [`falaw.model_params()`](_autosummary/falaw.html.md#falaw.model_params) for enums whose default may not be what you
 want (Recraft `style` defaults to photoreal).
+
+* **Return type:**
+  [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)
+
+### falaw.operations.images.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+
+Generate an image conditioned on a guide image’s structure (falaw#140).
+
+`control` is `[{"mode": "canny" | "depth" | "pose" | ..., "image": url,
+"scale": 0.6}]` (`scale` defaults to fal’s 1.0). It is sent as fal’s
+`easycontrols`; `controlnet_unions` and the subject-style EasyControl
+methods pass through `extra`. A local guide image (a `pathlib.Path`) is
+uploaded with [`falaw.upload()`](_autosummary/falaw.html.md#falaw.upload) (swap the transfer with
+[`falaw.using_uploader()`](_autosummary/falaw.html.md#falaw.using_uploader)) once the call is known to be well formed. Plan
+the call with [`falaw.plan_generate_image_with_control()`](_autosummary/falaw.html.md#falaw.plan_generate_image_with_control) instead to
+upload only on a cache miss and key the cache on the file’s bytes.
 
 * **Return type:**
   [`Result`](_autosummary/falaw.results.html.md#falaw.results.Result)
@@ -11620,18 +11666,16 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-02 20:29 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/094c18fe5892873517e83d8ad89500d756fcd2cc"><code>094c18f</code></a> on branch <code>main</code>, for **falaw 0.0.92** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 20:43 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/8307e42e31cc6aa40c3d78f14a67c2e167db4b22"><code>8307e42</code></a> on branch <code>main</code>, for **falaw 0.0.93** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.92) is behind the latest release on PyPI (0.0.93): `pip install falaw` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/094c18fe5892873517e83d8ad89500d756fcd2cc"><code>094c18fe5892873517e83d8ad89500d756fcd2cc</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/8307e42e31cc6aa40c3d78f14a67c2e167db4b22"><code>8307e42e31cc6aa40c3d78f14a67c2e167db4b22</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11642,9 +11686,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41519369792">41519369792</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41521565699">41521565699</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>094c18fe5892873517e83d8ad89500d756fcd2cc</code> (in the history of the built commit) |
+| Event commit | <code>8307e42e31cc6aa40c3d78f14a67c2e167db4b22</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11669,13 +11713,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.93/">0.0.93</a>, newer than the documented version (0.0.92).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.93/">0.0.93</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 094c18fe5892873517e83d8ad89500d756fcd2cc
+git checkout 8307e42e31cc6aa40c3d78f14a67c2e167db4b22
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
