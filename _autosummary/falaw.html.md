@@ -793,7 +793,7 @@ Outcomes whose call raised, in plan order.
 
 #### *property* has_unknown_costs *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
-True when a call that actually billed has no price estimate.
+True when a call that may have billed has no price estimate.
 
 The run-level twin of [`falaw.Plan.has_unknown_costs`](#falaw.Plan.has_unknown_costs), and the
 reason [`estimated_spend_usd`](#falaw.ExecutionReport.estimated_spend_usd) must never be read on its own: an
@@ -801,6 +801,15 @@ unpriced call contributes `0.0` to the sum, so a report reading
 `$0.00` means *either* “nothing was spent” *or* “we do not know what
 was spent”. Those are not the same answer, and a budget gate that
 cannot tell them apart approves the second one.
+
+“May have billed” is a succeeded call that was not a cache hit, \*\*or a
+failed call\*\* (falaw#141): a call that raised may have been billed
+first (a paid request whose conversion failed, an in-process backend
+that spent before raising), and for an unpriced one there is no
+estimate to put a bound on that. A failed *priced* call is not unknown,
+only excluded from [`estimated_spend_usd`](#falaw.ExecutionReport.estimated_spend_usd) (see there). A blocked
+call never ran and cannot have billed. On a dry run nothing bills, but an
+unpriced call there reads as unknown all the same: the report is a forecast.
 
 #### *property* is_complete *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 

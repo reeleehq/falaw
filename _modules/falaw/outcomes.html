@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=7ffc8fc3"></script>
+    <script src="../../_static/documentation_options.js?v=db840bda"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.88" />
+  <meta name="docsearch:version" content="0.0.89" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -973,7 +973,7 @@ window.runMermaid = runMermaid;</script>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">has_unknown_costs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""True when a call that actually billed has no price estimate.</span>
+<span class="w">        </span><span class="sd">"""True when a call that may have billed has no price estimate.</span>
 
 <span class="sd">        The run-level twin of :attr:`falaw.Plan.has_unknown_costs`, and the</span>
 <span class="sd">        reason :attr:`estimated_spend_usd` must never be read on its own: an</span>
@@ -981,11 +981,24 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">        ``$0.00`` means *either* "nothing was spent" *or* "we do not know what</span>
 <span class="sd">        was spent". Those are not the same answer, and a budget gate that</span>
 <span class="sd">        cannot tell them apart approves the second one.</span>
+
+<span class="sd">        "May have billed" is a succeeded call that was not a cache hit, **or a</span>
+<span class="sd">        failed call** (falaw#141): a call that raised may have been billed</span>
+<span class="sd">        first (a paid request whose conversion failed, an in-process backend</span>
+<span class="sd">        that spent before raising), and for an unpriced one there is no</span>
+<span class="sd">        estimate to put a bound on that. A failed *priced* call is not unknown,</span>
+<span class="sd">        only excluded from :attr:`estimated_spend_usd` (see there). A blocked</span>
+<span class="sd">        call never ran and cannot have billed. On a dry run nothing bills, but an</span>
+<span class="sd">        unpriced call there reads as unknown all the same: the report is a forecast.</span>
 <span class="sd">        """</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_may_have_billed</span><span class="p">(</span><span class="n">o</span><span class="p">:</span> <span class="n">CallOutcome</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">o</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">"failed"</span> <span class="ow">or</span> <span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">"succeeded"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">o</span><span class="o">.</span><span class="n">cache_hit</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="nb">any</span><span class="p">(</span>
             <span class="n">o</span><span class="o">.</span><span class="n">call</span><span class="o">.</span><span class="n">estimated_cost_usd</span> <span class="ow">is</span> <span class="kc">None</span>
             <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outcomes</span>
-            <span class="k">if</span> <span class="n">o</span><span class="o">.</span><span class="n">status</span> <span class="o">==</span> <span class="s2">"succeeded"</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">o</span><span class="o">.</span><span class="n">cache_hit</span>
+            <span class="k">if</span> <span class="n">_may_have_billed</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="nd">@property</span>

@@ -2,18 +2,18 @@
 
 # About this build
 
-This documentation was built on **2026-11-02 19:27 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/cf2f606b7f14b04ee842fb7574c45709fd7f97b5"><code>cf2f606</code></a> on branch <code>main</code>, for **falaw 0.0.88** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:47 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c450f3e3632eb22e3fcaef10d3c4273c8e5e182c"><code>c450f3e</code></a> on branch <code>main</code>, for **falaw 0.0.89** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.88) is ahead of the latest release on PyPI (0.0.87): these docs describe unreleased code.
+- The documented version (0.0.89) is behind the latest release on PyPI (0.0.90): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/cf2f606b7f14b04ee842fb7574c45709fd7f97b5"><code>cf2f606b7f14b04ee842fb7574c45709fd7f97b5</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c450f3e3632eb22e3fcaef10d3c4273c8e5e182c"><code>c450f3e3632eb22e3fcaef10d3c4273c8e5e182c</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -24,9 +24,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41509884221">41509884221</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41512800774">41512800774</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>cf2f606b7f14b04ee842fb7574c45709fd7f97b5</code> (in the history of the built commit) |
+| Event commit | <code>c450f3e3632eb22e3fcaef10d3c4273c8e5e182c</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -51,13 +51,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.87/">0.0.87</a>, older than the documented version (0.0.88).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.90/">0.0.90</a>, newer than the documented version (0.0.89).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout cf2f606b7f14b04ee842fb7574c45709fd7f97b5
+git checkout c450f3e3632eb22e3fcaef10d3c4273c8e5e182c
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

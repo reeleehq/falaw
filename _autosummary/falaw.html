@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=7ffc8fc3"></script>
+    <script src="../_static/documentation_options.js?v=db840bda"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.88" />
+  <meta name="docsearch:version" content="0.0.89" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1748,13 +1748,21 @@ estimate for it would be inventing a number. Read
 <dl class="py property">
 <dt class="sig sig-object py" id="falaw.ExecutionReport.has_unknown_costs">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">has_unknown_costs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.ExecutionReport.has_unknown_costs" title="Link to this definition">#</a></dt>
-<dd><p>True when a call that actually billed has no price estimate.</p>
+<dd><p>True when a call that may have billed has no price estimate.</p>
 <p>The run-level twin of <a class="reference internal" href="#falaw.Plan.has_unknown_costs" title="falaw.Plan.has_unknown_costs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">falaw.Plan.has_unknown_costs</span></code></a>, and the
 reason <a class="reference internal" href="#falaw.ExecutionReport.estimated_spend_usd" title="falaw.ExecutionReport.estimated_spend_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimated_spend_usd</span></code></a> must never be read on its own: an
 unpriced call contributes <code class="docutils literal notranslate"><span class="pre">0.0</span></code> to the sum, so a report reading
 <code class="docutils literal notranslate"><span class="pre">$0.00</span></code> means <em>either</em> “nothing was spent” <em>or</em> “we do not know what
 was spent”. Those are not the same answer, and a budget gate that
 cannot tell them apart approves the second one.</p>
+<p>“May have billed” is a succeeded call that was not a cache hit, **or a
+failed call** (falaw#141): a call that raised may have been billed
+first (a paid request whose conversion failed, an in-process backend
+that spent before raising), and for an unpriced one there is no
+estimate to put a bound on that. A failed <em>priced</em> call is not unknown,
+only excluded from <a class="reference internal" href="#falaw.ExecutionReport.estimated_spend_usd" title="falaw.ExecutionReport.estimated_spend_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">estimated_spend_usd</span></code></a> (see there). A blocked
+call never ran and cannot have billed. On a dry run nothing bills, but an
+unpriced call there reads as unknown all the same: the report is a forecast.</p>
 </dd></dl>
 
 <dl class="py property">
