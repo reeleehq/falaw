@@ -14,6 +14,7 @@ import { CONSTANTS } from './generated/constants';
 import { hasUnknownCosts, makePlan, planGenerateImage, planHash, planImageToVideo, planReferenceToVideo, planTextToVideo, totalCostUsd } from './plan';
 import { pickModel } from './registry';
 import { parseResponse } from './results';
+import { newLogLines } from './transport';
 
 const FIXTURES = resolve(__dirname, '../../schema/fixtures');
 const load = <T>(name: string): T => JSON.parse(readFileSync(resolve(FIXTURES, name), 'utf8')) as T;
@@ -139,5 +140,14 @@ describe('catalogue', () => {
     expect(MODELS.map((m) => m.id)).toEqual(rows.map((r) => r.id));
     rows.forEach((row, i) => expect(MODELS[i]).toMatchObject(row)); // defaults added, nothing changed
     expect(MODELS_TABLE_VERSION).toHaveLength(12);
+  });
+});
+
+describe('log lines (falaw#149)', () => {
+  // One `seen` set per case = one call; each poll's lines must match what Python reported.
+  const cases = load<{ name: string; polls: unknown[]; expected: string[][] }[]>('log_lines.json');
+  it.each(cases.map((c) => [c.name, c] as const))('%s', (_name, c) => {
+    const seen = new Set<string>();
+    expect(c.polls.map((logs) => newLogLines(logs, seen))).toEqual(c.expected);
   });
 });

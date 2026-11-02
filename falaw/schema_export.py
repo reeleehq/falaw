@@ -26,6 +26,8 @@ What lands in ``<out_dir>``:
 - ``fixtures/pick_model.json``, ``fixtures/cost.json``, ``fixtures/canonical.json``
   — model selection, cost estimation, and the canonical blob + SHA-256 for a set
   of payloads (the byte-form parity that makes ``plan_hash`` agree).
+- ``fixtures/log_lines.json`` — fal's ``logs`` arrays, one per status poll, and
+  the lines each poll reports once (:func:`falaw.core.new_log_lines`).
 
 ``tests/test_schema_export.py`` pins the committed directory to a fresh export,
 so a change here that forgets ``python -m falaw export-schema`` fails CI on this
@@ -46,6 +48,7 @@ from pathlib import Path
 from typing import Any, Mapping, get_args
 
 from .base import CostEstimate, ModelRecord
+from .core import new_log_lines
 from .events import EventKind, ProviderPhase
 from .canonical import (
     DFLT_BACKEND,
@@ -375,6 +378,73 @@ CANONICAL_CASES: tuple[Any, ...] = (
     ["<from 0>", {"image_url": "<from 0>"}],
 )
 
+#: Sequences of fal ``logs`` arrays, one per status poll of one call: the TS twin
+#: must report the same lines per poll (:func:`falaw.core.new_log_lines`).
+LOG_LINE_CASES: tuple[dict, ...] = (
+    {
+        "name": "a re-sent timed line is reported once",
+        "polls": [
+            [{"timestamp": "t1", "message": "loading"}],
+            [
+                {"timestamp": "t1", "message": "loading"},
+                {"timestamp": "t2", "message": "step 1"},
+            ],
+            [{"timestamp": "t2", "message": "step 1"}],
+        ],
+    },
+    {
+        "name": "a line without a string timestamp is reported every time",
+        "polls": [
+            [{"message": "no ts"}, {"timestamp": 5, "message": "number ts"}],
+            [
+                {"message": "no ts"},
+                {"timestamp": 5, "message": "number ts"},
+                {"timestamp": ["t"], "message": "list ts"},
+                {"timestamp": {"at": "t"}, "message": "object ts"},
+            ],
+        ],
+    },
+    {
+        "name": "the same message at two timestamps is two lines",
+        "polls": [
+            [
+                {"timestamp": "t1", "message": "tick"},
+                {"timestamp": "t2", "message": "tick"},
+            ],
+        ],
+    },
+    {
+        "name": "the key is the (timestamp, message) pair, within a poll too",
+        "polls": [
+            [
+                {"timestamp": "t1", "message": "a"},
+                {"timestamp": "t1", "message": "b"},
+                {"timestamp": "t1", "message": "a"},
+            ],
+            [
+                {"timestamp": "t1", "message": "b"},
+                {"timestamp": "t1", "message": "ab"},
+                {"timestamp": "t1a", "message": "b"},
+            ],
+        ],
+    },
+    {
+        "name": "malformed entries and logs are skipped",
+        "polls": [
+            [
+                {"timestamp": "t1", "message": ""},
+                {"timestamp": "t2", "message": 42},
+                {"timestamp": "t3"},
+                "a bare string",
+                None,
+                {"timestamp": "t4", "message": "kept"},
+            ],
+            {"not": "a list"},
+            None,
+        ],
+    },
+)
+
 #: ``(application, arguments, tool, backend, key_extra)`` whose two identity
 #: projections the TS side must build identically (omit-if-default rules).
 IDENTITY_CASES: tuple[dict, ...] = (
@@ -426,6 +496,7 @@ def export_schema(out_dir: "str | Path | None" = None) -> list[Path]:
         _write(fixtures / "pick_model.json", _pick_model_fixtures()),
         _write(fixtures / "cost.json", _cost_fixtures()),
         _write(fixtures / "canonical.json", _canonical_fixtures()),
+        _write(fixtures / "log_lines.json", _log_line_fixtures()),
     ]
 
 
@@ -679,6 +750,16 @@ def _canonical_fixtures() -> dict:
             }
         )
     return {"blobs": blobs, "identities": identities}
+
+
+def _log_line_fixtures() -> list[dict]:
+    """Each case's polls with the lines each one reports, one ``seen`` per call."""
+    out = []
+    for case in LOG_LINE_CASES:
+        seen: set = set()
+        reported = [new_log_lines(logs, seen) for logs in case["polls"]]
+        out.append({**case, "expected": reported})
+    return out
 
 
 # --- io -------------------------------------------------------------------------

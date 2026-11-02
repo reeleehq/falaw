@@ -187,32 +187,44 @@ class _FalStatusTranslator:
         self._emit_log_lines(self._new_log_lines(update))
 
     def _new_log_lines(self, update: Any) -> list:
-        """The messages in ``update.logs`` not reported yet.
-
-        fal may re-send earlier lines with a later status (IN_PROGRESS polls, then
-        COMPLETED). A line is known by its ``(timestamp, message)``, and only when
-        the timestamp is a string: a line without one is always reported. An entry
-        whose message is not a string is skipped.
-        """
-        logs = getattr(update, "logs", None)
-        lines = []
-        for entry in logs if isinstance(logs, (list, tuple)) else ():
-            message = entry.get("message") if isinstance(entry, Mapping) else None
-            if not isinstance(message, str) or not message:
-                continue
-            timestamp = entry.get("timestamp")
-            if isinstance(timestamp, str):
-                key = (timestamp, message)
-                if key in self.seen_logs:
-                    continue
-                self.seen_logs.add(key)
-            lines.append(message)
-        return lines
+        """The messages in ``update.logs`` not reported yet (see :func:`new_log_lines`)."""
+        return new_log_lines(getattr(update, "logs", None), self.seen_logs)
 
     def _emit_log_lines(self, lines: list) -> None:
         for msg in lines:
             self.log(msg)
             self.emit("log", message=msg, provider_phase="in_progress")
+
+
+def new_log_lines(logs: Any, seen: set) -> list:
+    """The messages in fal's ``logs`` not reported yet, recording them in ``seen``.
+
+    fal may re-send earlier lines with a later status (IN_PROGRESS polls, then
+    COMPLETED). A line is known by its ``(timestamp, message)``, and only when
+    the timestamp is a string: a line without one is always reported. An entry
+    whose message is not a non-empty string is skipped. The TypeScript twin
+    (``ts/src/transport.ts`` ``newLogLines``) replays the ``log_lines`` parity
+    fixture against this rule (falaw#149).
+
+    >>> seen = set()
+    >>> new_log_lines([{"timestamp": "t1", "message": "a"}], seen)
+    ['a']
+    >>> new_log_lines([{"timestamp": "t1", "message": "a"}, {"message": "b"}], seen)
+    ['b']
+    """
+    lines = []
+    for entry in logs if isinstance(logs, (list, tuple)) else ():
+        message = entry.get("message") if isinstance(entry, Mapping) else None
+        if not isinstance(message, str) or not message:
+            continue
+        timestamp = entry.get("timestamp")
+        if isinstance(timestamp, str):
+            key = (timestamp, message)
+            if key in seen:
+                continue
+            seen.add(key)
+        lines.append(message)
+    return lines
 
 
 def _describe_provider_error(provider_error: Mapping[str, str]) -> str:

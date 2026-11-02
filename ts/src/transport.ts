@@ -247,13 +247,14 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
 
 /**
  * The messages in fal's `logs` not reported yet, recording them in `seen`: the Python
- * side's rule (`falaw.core`). fal re-sends earlier lines with later statuses; a line is
+ * side's rule (`falaw.core.new_log_lines`), kept in step by the `log_lines` parity
+ * fixture (`parity.test.ts`). fal re-sends earlier lines with later statuses; a line is
  * known by its `(timestamp, message)`, and only when the timestamp is a string (a line
  * without one is always reported). An entry whose message is not a non-empty string is
  * skipped.
  *
- * Exported so its rules are tested directly, not re-exported from `index.ts`: it is
- * how the transport reads fal's logs, not part of the package's API.
+ * Exported for the parity fixture (`parity.test.ts`), not re-exported from `index.ts`:
+ * it is how the transport reads fal's logs, not part of the package's API.
  */
 export function newLogLines(logs: unknown, seen: Set<string>): string[] {
   const lines: string[] = [];

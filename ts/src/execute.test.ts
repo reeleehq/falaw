@@ -133,49 +133,17 @@ describe('queueTransport', () => {
   });
 });
 
-describe('newLogLines (the Python side\'s rule, tests/test_events.py)', () => {
-  it('reports a line with a string timestamp once, however often fal re-sends it', () => {
+// The rule itself is pinned by the `log_lines` parity fixture (parity.test.ts), which
+// Python computed. These cover only what that JSON cannot show.
+describe('newLogLines: beyond the parity fixture', () => {
+  it('records no key for a line without a string timestamp', () => {
     const seen = new Set<string>();
-    expect(newLogLines([{ timestamp: 't1', message: 'a' }], seen)).toEqual(['a']);
-    expect(newLogLines([{ timestamp: 't1', message: 'a' }, { timestamp: 't2', message: 'b' }], seen)).toEqual(['b']);
-    // the same message at another time is another line
-    expect(newLogLines([{ timestamp: 't3', message: 'a' }], seen)).toEqual(['a']);
-  });
-
-  it('reports a line without a string timestamp again on every poll', () => {
-    const seen = new Set<string>();
-    const untimed = [{ message: 'tick' }];
-    expect(newLogLines(untimed, seen)).toEqual(['tick']);
-    expect(newLogLines(untimed, seen)).toEqual(['tick']);
-  });
-
-  it('never uses a list, object or number timestamp as a dedup key', () => {
-    const seen = new Set<string>();
-    const odd = [
-      { message: 'list ts', timestamp: ['t3'] },
-      { message: 'dict ts', timestamp: { at: 3 } },
-      { message: 'number ts', timestamp: 3 },
-    ];
-    expect(newLogLines(odd, seen)).toEqual(['list ts', 'dict ts', 'number ts']);
-    expect(newLogLines(odd, seen)).toEqual(['list ts', 'dict ts', 'number ts']);
+    newLogLines([{ message: 'list ts', timestamp: ['t'] }, { message: 'number ts', timestamp: 3 }, { message: 'none' }], seen);
     expect(seen.size).toBe(0);
   });
 
-  it('skips an entry whose message is empty or not a string, and a non-object entry', () => {
-    const weird = [
-      { message: ['not', 'a', 'str'], timestamp: 't1' },
-      { message: { m: 1 }, timestamp: 't2' },
-      { message: 42, timestamp: 't3' },
-      { message: '', timestamp: 't4' },
-      { timestamp: 't5' },
-      'not a dict',
-      null,
-    ];
-    expect(newLogLines(weird, new Set())).toEqual([]);
-  });
-
-  it('a `logs` that is not an array yields nothing', () => {
-    for (const logs of [42, 'line', { message: 'm' }, null, undefined]) expect(newLogLines(logs, new Set())).toEqual([]);
+  it('a missing or non-array `logs` yields nothing', () => {
+    for (const logs of [undefined, 42, 'line']) expect(newLogLines(logs, new Set())).toEqual([]);
   });
 });
 
