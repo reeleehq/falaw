@@ -254,7 +254,7 @@ class ExecutionReport:
 
     @property
     def has_unknown_costs(self) -> bool:
-        """True when a call that actually billed has no price estimate.
+        """True when a call that may have billed has no price estimate.
 
         The run-level twin of :attr:`falaw.Plan.has_unknown_costs`, and the
         reason :attr:`estimated_spend_usd` must never be read on its own: an
@@ -262,11 +262,23 @@ class ExecutionReport:
         ``$0.00`` means *either* "nothing was spent" *or* "we do not know what
         was spent". Those are not the same answer, and a budget gate that
         cannot tell them apart approves the second one.
+
+        "May have billed" is a succeeded call that was not a cache hit, **or a
+        failed call** (falaw#141): a call that raised may have been billed
+        first (a paid request whose conversion failed, an in-process backend
+        that spent before raising), and for an unpriced one there is no
+        estimate to put a bound on that. A failed *priced* call is not unknown,
+        only excluded from :attr:`estimated_spend_usd` (see there). A blocked
+        call never ran and cannot have billed.
         """
+
+        def _may_have_billed(o: CallOutcome) -> bool:
+            return o.status == "failed" or (o.status == "succeeded" and not o.cache_hit)
+
         return any(
             o.call.estimated_cost_usd is None
             for o in self.outcomes
-            if o.status == "succeeded" and not o.cache_hit
+            if _may_have_billed(o)
         )
 
     @property

@@ -331,6 +331,48 @@ def test_an_unpriced_cache_hit_is_not_an_unknown_cost(fal):
     assert second.has_unknown_costs is False
 
 
+def test_an_unpriced_call_that_failed_is_an_unknown_cost_not_a_known_zero(fal):
+    """falaw#141: a call that raised may have billed first; unpriced, that is unknown."""
+    unpriced = CallPlan(
+        tool="t", application="m/x", arguments={"prompt": "p"}, output_kind="image"
+    )
+    fal.raises("m/x", RuntimeError("billed, then the conversion failed"))
+
+    report = execute_plan_isolated(Plan(calls=(unpriced, _image("m/a"))))
+
+    assert [o.status for o in report.outcomes] == ["failed", "succeeded"]
+    assert report.estimated_spend_usd == pytest.approx(0.025)
+    assert report.has_unknown_costs is True
+    assert report.summary()["has_unknown_costs"] is True
+
+
+def test_a_priced_call_that_failed_is_not_an_unknown_cost(fal):
+    """Priced failures stay excluded from spend, without lighting up unknown."""
+    fal.raises("m/x", RuntimeError("boom"))
+
+    report = execute_plan_isolated(Plan(calls=(_image("m/x"), _image("m/a"))))
+
+    assert report.outcomes[0].status == "failed"
+    assert report.has_unknown_costs is False
+
+
+def test_an_unpriced_call_that_was_blocked_is_not_an_unknown_cost(fal):
+    """A blocked call never ran, so it cannot have billed."""
+    fal.raises("m/a", RuntimeError("upstream failed"))
+    downstream = CallPlan(
+        tool="t",
+        application="m/x",
+        arguments={"image_url": "<from 0>"},
+        output_kind="image",
+    )
+    assert downstream.estimated_cost_usd is None
+
+    report = execute_plan_isolated(Plan(calls=(_image("m/a"), downstream)))
+
+    assert [o.status for o in report.outcomes] == ["failed", "blocked"]
+    assert report.has_unknown_costs is False
+
+
 # --- the per-artifact cost stamp (falaw#26) ----------------------------------
 
 
