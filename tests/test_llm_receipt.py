@@ -16,9 +16,9 @@ What these pin:
 
 from __future__ import annotations
 
-import contextlib
 import sys
 import types
+import warnings
 
 import pytest
 
@@ -416,36 +416,29 @@ def test_a_cache_hit_beats_a_reported_usage_cost(monkeypatch):
     assert (r.rates_table_version, r.rate_date) == ("", "")
 
 
-_UNCACHEABLE = "could not cache the response"
-"""falaw's warning when a response carrying a non-finite float cannot be cached."""
-
-
 @pytest.mark.parametrize(
-    "cost, uncacheable",
+    "cost",
     [
-        (-0.01, False),
-        ("0.01", False),
-        (True, False),
-        (float("nan"), True),
-        (float("inf"), True),
-        (10**400, False),  # an int too large for a float: OverflowError
-        (None, False),
-        ([0.01], False),
+        -0.01,
+        "0.01",
+        True,
+        float("nan"),  # cached as-is since falaw#142, no longer a warning
+        float("inf"),
+        10**400,  # an int too large for a float: OverflowError
+        None,
+        [0.01],
     ],
 )
-def test_a_nonsense_usage_cost_is_not_a_cost(monkeypatch, cost, uncacheable):
+def test_a_nonsense_usage_cost_is_not_a_cost(monkeypatch, cost):
     from falaw import llm_complete_with_receipt
     from falaw.operations.llm import _extract_usage_cost
 
     assert _extract_usage_cost({"usage": {"cost": cost}}) is None
     usage = {"prompt_tokens": 42, "completion_tokens": 7, "cost": cost}
     _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
-    warns = (
-        pytest.warns(UserWarning, match=_UNCACHEABLE)
-        if uncacheable
-        else contextlib.nullcontext()
-    )
-    with warns:
+    with warnings.catch_warnings():
+        # falaw#142: a non-finite cost is cached, not dropped with a warning
+        warnings.simplefilter("error", UserWarning)
         _, r = llm_complete_with_receipt("q")
     assert r.cost_source == "rate_table:per_call"
 

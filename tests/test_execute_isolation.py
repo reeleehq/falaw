@@ -855,18 +855,29 @@ def _mentions(recorded, needle: str) -> bool:
 # --- cache isolation under concurrency ---------------------------------------
 
 
-def test_a_failed_cache_write_leaves_no_entry_behind():
-    """A half-written manifest is worse than none: it fails every future read."""
+def test_a_failed_cache_write_leaves_no_entry_behind(monkeypatch):
+    """A half-written manifest is worse than none: it fails every future read.
+
+    The move into place fails after the ``.part`` file is fully written, so
+    this exercises cache_put's cleanup — and the billed response survives.
+    """
     import os
 
-    from falaw.cache import _entry_dir, _key, _manifest_path, cache_get, cache_put
+    import falaw.cache
+    from falaw.cache import _entry_dir, _key, _manifest_path, cache_get
 
-    circular: dict = {"pad": "x" * 4096}
-    circular["self"] = circular  # json.dump writes, then raises
+    billed = {"images": [{"url": "http://x/billed.png"}]}
 
-    with pytest.raises(ValueError):
-        cache_put("m/a", {"prompt": "p"}, circular)
+    def full_disk(src, dst):
+        assert os.path.exists(src)  # the .part was written before the failure
+        raise OSError(28, "No space left on device")
 
+    monkeypatch.setattr("falaw.core.call_fal", lambda app, args, **kw: billed)
+    with monkeypatch.context() as m, pytest.warns(UserWarning, match="could not"):
+        m.setattr(falaw.cache.os, "replace", full_disk)
+        got = falaw.cache.cached_call_fal("m/a", {"prompt": "p"})
+
+    assert got is billed
     key = _key("m/a", {"prompt": "p"})
     assert not os.path.exists(_manifest_path(key))
     assert cache_get("m/a", {"prompt": "p"}) is None

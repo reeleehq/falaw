@@ -12,6 +12,8 @@ cache survives.
 
 from __future__ import annotations
 
+import json
+import math
 import os
 from decimal import Decimal
 from pathlib import Path
@@ -82,12 +84,21 @@ def test_nan_in_arguments_raises_at_plan_time():
 
 def test_cache_put_never_writes_a_manifest_containing_bare_nan():
     """Python's json happily writes a bare `NaN` — valid to itself, invalid
-    JSON to every strict parser. The manifest must never carry one."""
+    JSON to every strict parser. The manifest must never carry one: a
+    non-finite response is kept as embedded JSON text instead (falaw#142)."""
     args = {"prompt": "ok"}
-    with pytest.raises(ValueError):
-        cache_put("fal-ai/flux/dev", args, {"score": float("nan")})
+    raw = {"score": float("nan"), "best": float("inf"), "worst": float("-inf")}
+    cache_put("fal-ai/flux/dev", args, raw)
     entry = _entry_dir(_key("fal-ai/flux/dev", args))
-    assert os.listdir(entry) == []  # no manifest, and no .part left behind
+    assert os.listdir(entry) == ["manifest.json"]  # no .part left behind
+    with open(os.path.join(entry, "manifest.json")) as f:
+        text = f.read()
+
+    def refuse(constant):
+        raise ValueError(f"bare {constant} in the manifest")
+
+    manifest = json.loads(text, parse_constant=refuse)  # strict: no bare NaN
+    assert "raw" not in manifest and isinstance(manifest["raw_json"], str)
 
 
 # --- the refusal is free: it happens before any network call ------------------
@@ -278,17 +289,48 @@ def test_deep_nesting_never_dies_in_the_validator():
 # --- adversarial-review fixes: a paid result is never discarded ---------------
 
 
-def test_a_nan_bearing_response_is_returned_and_warned_not_destroyed(monkeypatch):
-    """Review finding 2: fal_client's json.loads accepts bare NaN, and the
-    strict manifest write then raised AFTER the billed call — losing the
-    response. It must degrade: warn, skip the cache, return the response."""
+def test_a_nan_bearing_response_is_cached_not_billed_again(monkeypatch):
+    """Review finding 2 (and falaw#142): fal_client's json.loads accepts bare
+    NaN. The strict manifest used to refuse it after the billed call, so the
+    response went uncached and the next identical call billed again. It is now
+    cached losslessly, and the second call is a hit."""
+    import math
+    import warnings
+
     from falaw.cache import cache_get
 
-    nan_raw = {"images": [], "score": float("nan")}
-    monkeypatch.setattr("falaw.core.call_fal", lambda app, args, **kw: nan_raw)
+    nan_raw = {"images": [], "score": float("nan"), "cost": float("inf")}
+    billed: list = []
+
+    def call(app, args, **kw):
+        billed.append(app)
+        return nan_raw
+
+    monkeypatch.setattr("falaw.core.call_fal", call)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")  # no "could not cache" warning
+        got = cached_call_fal("fal-ai/flux/dev", {"prompt": "p"})
+        again = cached_call_fal("fal-ai/flux/dev", {"prompt": "p"})
+    assert got is nan_raw
+    assert billed == ["fal-ai/flux/dev"]  # the second call was a hit
+    assert math.isnan(again["score"]) and again["cost"] == float("inf")
+    assert again["images"] == []
+    assert cache_get("fal-ai/flux/dev", {"prompt": "p"})["cost"] == float("inf")
+
+
+def test_a_response_json_cannot_encode_is_returned_and_warned_not_destroyed(
+    monkeypatch,
+):
+    """The degrade path still holds for a write that genuinely fails: warn,
+    skip the cache, return the billed response."""
+    from falaw.cache import cache_get
+
+    circular: dict = {"images": []}
+    circular["self"] = circular
+    monkeypatch.setattr("falaw.core.call_fal", lambda app, args, **kw: circular)
     with pytest.warns(UserWarning, match="could not cache"):
         got = cached_call_fal("fal-ai/flux/dev", {"prompt": "p"})
-    assert got is nan_raw
+    assert got is circular
     assert cache_get("fal-ai/flux/dev", {"prompt": "p"}) is None
 
 
@@ -302,10 +344,9 @@ def test_a_failed_refresh_drops_the_stale_entry_instead_of_reserving_it(monkeypa
     cache_put("fal-ai/flux/dev", args, {"images": ["old"]})
     assert cache_get("fal-ai/flux/dev", args) == {"images": ["old"]}
 
-    monkeypatch.setattr(
-        "falaw.core.call_fal",
-        lambda app, a, **kw: {"images": ["new"], "score": float("nan")},
-    )
+    fresh = {"images": ["new"]}
+    fresh["self"] = fresh  # a response no manifest can hold
+    monkeypatch.setattr("falaw.core.call_fal", lambda app, a, **kw: fresh)
     with pytest.warns(UserWarning, match="could not cache"):
         got = cached_call_fal("fal-ai/flux/dev", args, refresh=True)
     assert got["images"] == ["new"]  # the billed fresh response survives
@@ -338,3 +379,19 @@ def test_dry_run_isolated_reports_a_junk_call_instead_of_raising():
     assert report.outcomes[0].status == "succeeded"
     assert report.outcomes[1].status == "failed"
     assert isinstance(report.outcomes[1].error, FalNonCanonicalArgument)
+
+
+def test_only_the_field_strict_json_cannot_hold_is_embedded():
+    """falaw#142: a finite response stays readable as-is beside embedded wire args."""
+    from falaw.cache import cache_get
+
+    args, raw = {"prompt": "w"}, {"images": [{"url": "u"}]}
+    cache_put("fal-ai/flux/dev", args, raw, wire_arguments={"s": float("nan")})
+    with open(
+        os.path.join(_entry_dir(_key("fal-ai/flux/dev", args)), "manifest.json")
+    ) as f:
+        manifest = json.load(f)
+    assert manifest["raw"] == raw and "raw_json" not in manifest
+    assert "wire_arguments" not in manifest
+    assert math.isnan(json.loads(manifest["wire_arguments_json"])["s"])
+    assert cache_get("fal-ai/flux/dev", args) == raw
