@@ -457,3 +457,15 @@ def test_a_negative_zero_usage_cost_reads_as_zero():
 
     usd = _extract_usage_cost({"usage": {"cost": -0.0}})
     assert usd == 0.0 and math.copysign(1.0, usd) == 1.0
+
+
+def test_an_observed_cost_equal_to_the_estimate_reads_as_the_estimate(monkeypatch):
+    """Strictly above binds; a tie keeps the table's source and provenance."""
+    from falaw import llm_ceiling_usd, llm_complete_with_receipt
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    tie = llm_ceiling_usd(_DEFAULT_MODEL)
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": {"cost": tie}})
+    _, r = llm_complete_with_receipt("q")
+    assert (r.estimated_cost_usd, r.cost_source) == (tie, "rate_table:per_call")
+    assert r.rates_table_version and r.rate_date
