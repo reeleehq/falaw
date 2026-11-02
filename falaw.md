@@ -1,4 +1,4 @@
-> built 2026-11-02 19:47 UTC from c450f3e (main) · falaw 0.0.89. Details: build_info.json
+> built 2026-11-02 19:57 UTC from dac49d7 (main) · falaw 0.0.90. Details: build_info.json
 
 # index.html.md
 
@@ -3233,6 +3233,8 @@ Leave notes for future sessions:
 | [`establish_environment`](_autosummary/falaw.html.md#falaw.establish_environment)(name, description, \*)       | Create an Environment with a canonical establishing image.                                                                                                                                                         |
 | [`execute_plan`](_autosummary/falaw.html.md#falaw.execute_plan)(plan, \*[, on_event, dry_run, ...])   | Execute a Plan, returning a list of materialized :class:<br/><br/>```<br/>`<br/>```<br/><br/>lacing.Artifact\`s.                                                                                                   |
 | [`execute_plan_isolated`](_autosummary/falaw.html.md#falaw.execute_plan_isolated)(plan, \*[, on_event, ...])   | Execute a Plan with **per-call failure isolation**, returning a report.                                                                                                                                            |
+| [`priced_as_run`](_autosummary/falaw.html.md#falaw.priced_as_run)(plan, \*[, use_cache, refresh])      | `plan` as `execute()` with these cache keywords would bill it.                                                                                                                                                     |
+| [`uncached_plan`](_autosummary/falaw.html.md#falaw.uncached_plan)(plan)                                | `plan` as a run that will not read the cache bills it: every call a miss.                                                                                                                                          |
 | [`extract_models_from_corpus`](_autosummary/falaw.html.md#falaw.extract_models_from_corpus)(path)                   | Yield ModelRecord-shaped dicts parsed from llms-full.txt.                                                                                                                                                          |
 | [`generate_image`](_autosummary/falaw.html.md#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                              |
 | [`generate_image_with_refs`](_autosummary/falaw.html.md#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                                  |
@@ -6185,6 +6187,31 @@ so a future breaking change is detectable.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
+### falaw.priced_as_run(plan, , use_cache=True, refresh=False)
+
+`plan` as `execute()` with these cache keywords would bill it.
+
+Pass the very `use_cache` / `refresh` the run will get: the default
+mode reads the cache, so `plan` is its own quote; the other two skip the
+read, so the quote is `uncached()` `(plan)`. Quoting from `use_cache`
+alone gets `refresh=True` wrong, pricing predicted hits that run will
+pay for as free. `use_cache=False, refresh=True` raises, as it does in
+`execute()`. For quoting only — see `uncached()`.
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> plan = Plan(calls=(hit,))
+>>> priced_as_run(plan).total_cost_usd
+0.0
+>>> priced_as_run(plan, refresh=True).total_cost_usd
+0.03
+```
+
+* **Return type:**
+  [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan)
+
 ### falaw.prune_assets(, older_than=None, max_bytes=None, dry_run=True, store=None)
 
 Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22).
@@ -6538,6 +6565,34 @@ unsure — the cheap 80%, so a router can drop an incompatible backend.
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### falaw.uncached_plan(plan)
+
+`plan` as a run that will not read the cache bills it: every call a miss.
+
+A run with `use_cache=False`, or `refresh=True`, skips the cache read and
+pays for every call, so a quote for it must too: a predicted cache hit is
+billed at its estimate, and an unpriced one is unknown rather than free
+(falaw#139). [`priced_as_run()`](_autosummary/falaw.html.md#falaw.priced_as_run) picks between this and `plan` from
+`execute()`’s own cache keywords.
+
+**For quoting only.** It rewrites every predicted `"hit"` and
+`"unknown"` to `"miss"`, so it is no longer what the planner observed:
+execute and save the original `plan` (a saved executed plan is a receipt
+downstream), and read only [`Plan.total_cost_usd`](_autosummary/falaw.html.md#falaw.Plan.total_cost_usd) and
+[`Plan.has_unknown_costs`](_autosummary/falaw.html.md#falaw.Plan.has_unknown_costs) off this one. It is a shallow copy: each
+call’s `arguments` and `metadata` dicts are shared with the input.
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd
+(0.0, 0.03)
+```
+
+* **Return type:**
+  [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan)
 
 ### falaw.unsubscribe(callback)
 
@@ -8797,6 +8852,8 @@ append it to a scene-level Plan:
 | [`plan_from_dict`](_autosummary/falaw.plan.html.md#falaw.plan.plan_from_dict)(d)                                 | Rebuild a [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan) from a [`plan_to_dict()`](_autosummary/falaw.plan.html.md#falaw.plan.plan_to_dict) dict.            |
 | [`plan_hash`](_autosummary/falaw.plan.html.md#falaw.plan.plan_hash)(plan)                                   | Stable, plan-scoped **structural idempotency key** for a whole [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan).                                   |
 | [`plan_to_dict`](_autosummary/falaw.plan.html.md#falaw.plan.plan_to_dict)(plan)                                | Convert a [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan) to a plain JSON-serializable dict.                                                      |
+| [`priced_as_run`](_autosummary/falaw.plan.html.md#falaw.plan.priced_as_run)(plan, \*[, use_cache, refresh])     | `plan` as [`execute()`](_autosummary/falaw.plan.html.md#falaw.plan.execute) with these cache keywords would bill it.                                           |
+| [`uncached`](_autosummary/falaw.plan.html.md#falaw.plan.uncached)(plan)                                    | `plan` as a run that will not read the cache bills it: every call a miss.                                                                               |
 
 ### Classes
 
@@ -9519,6 +9576,59 @@ so a future breaking change is detectable.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.plan.priced_as_run(plan, , use_cache=True, refresh=False)
+
+`plan` as [`execute()`](_autosummary/falaw.plan.html.md#falaw.plan.execute) with these cache keywords would bill it.
+
+Pass the very `use_cache` / `refresh` the run will get: the default
+mode reads the cache, so `plan` is its own quote; the other two skip the
+read, so the quote is [`uncached()`](_autosummary/falaw.plan.html.md#falaw.plan.uncached) `(plan)`. Quoting from `use_cache`
+alone gets `refresh=True` wrong, pricing predicted hits that run will
+pay for as free. `use_cache=False, refresh=True` raises, as it does in
+[`execute()`](_autosummary/falaw.plan.html.md#falaw.plan.execute). For quoting only — see [`uncached()`](_autosummary/falaw.plan.html.md#falaw.plan.uncached).
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> plan = Plan(calls=(hit,))
+>>> priced_as_run(plan).total_cost_usd
+0.0
+>>> priced_as_run(plan, refresh=True).total_cost_usd
+0.03
+```
+
+* **Return type:**
+  [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan)
+
+### falaw.plan.uncached(plan)
+
+`plan` as a run that will not read the cache bills it: every call a miss.
+
+A run with `use_cache=False`, or `refresh=True`, skips the cache read and
+pays for every call, so a quote for it must too: a predicted cache hit is
+billed at its estimate, and an unpriced one is unknown rather than free
+(falaw#139). [`priced_as_run()`](_autosummary/falaw.plan.html.md#falaw.plan.priced_as_run) picks between this and `plan` from
+[`execute()`](_autosummary/falaw.plan.html.md#falaw.plan.execute)’s own cache keywords.
+
+**For quoting only.** It rewrites every predicted `"hit"` and
+`"unknown"` to `"miss"`, so it is no longer what the planner observed:
+execute and save the original `plan` (a saved executed plan is a receipt
+downstream), and read only [`Plan.total_cost_usd`](_autosummary/falaw.plan.html.md#falaw.plan.Plan.total_cost_usd) and
+[`Plan.has_unknown_costs`](_autosummary/falaw.plan.html.md#falaw.plan.Plan.has_unknown_costs) off this one. It is a shallow copy: each
+call’s `arguments` and `metadata` dicts are shared with the input.
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd
+(0.0, 0.03)
+```
+
+* **Return type:**
+  [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan)
 
 
 # _autosummary/falaw.pricing.html.md
@@ -11473,18 +11583,16 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-02 19:47 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c450f3e3632eb22e3fcaef10d3c4273c8e5e182c"><code>c450f3e</code></a> on branch <code>main</code>, for **falaw 0.0.89** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:57 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/dac49d780084b8e2b2c5026800a9db4b99c50ecf"><code>dac49d7</code></a> on branch <code>main</code>, for **falaw 0.0.90** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.89) is behind the latest release on PyPI (0.0.90): `pip install falaw` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c450f3e3632eb22e3fcaef10d3c4273c8e5e182c"><code>c450f3e3632eb22e3fcaef10d3c4273c8e5e182c</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/dac49d780084b8e2b2c5026800a9db4b99c50ecf"><code>dac49d780084b8e2b2c5026800a9db4b99c50ecf</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11495,9 +11603,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41512800774">41512800774</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41514418567">41514418567</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>c450f3e3632eb22e3fcaef10d3c4273c8e5e182c</code> (in the history of the built commit) |
+| Event commit | <code>dac49d780084b8e2b2c5026800a9db4b99c50ecf</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11522,13 +11630,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.90/">0.0.90</a>, newer than the documented version (0.0.89).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.90/">0.0.90</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout c450f3e3632eb22e3fcaef10d3c4273c8e5e182c
+git checkout dac49d780084b8e2b2c5026800a9db4b99c50ecf
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

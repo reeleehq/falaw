@@ -90,6 +90,8 @@ append it to a scene-level Plan:
 | [`plan_from_dict`](#falaw.plan.plan_from_dict)(d)                                 | Rebuild a [`Plan`](#falaw.plan.Plan) from a [`plan_to_dict()`](#falaw.plan.plan_to_dict) dict.            |
 | [`plan_hash`](#falaw.plan.plan_hash)(plan)                                   | Stable, plan-scoped **structural idempotency key** for a whole [`Plan`](#falaw.plan.Plan).                                   |
 | [`plan_to_dict`](#falaw.plan.plan_to_dict)(plan)                                | Convert a [`Plan`](#falaw.plan.Plan) to a plain JSON-serializable dict.                                                      |
+| [`priced_as_run`](#falaw.plan.priced_as_run)(plan, \*[, use_cache, refresh])     | `plan` as [`execute()`](#falaw.plan.execute) with these cache keywords would bill it.                                           |
+| [`uncached`](#falaw.plan.uncached)(plan)                                    | `plan` as a run that will not read the cache bills it: every call a miss.                                                                               |
 
 ### Classes
 
@@ -812,3 +814,56 @@ so a future breaking change is detectable.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.plan.priced_as_run(plan, , use_cache=True, refresh=False)
+
+`plan` as [`execute()`](#falaw.plan.execute) with these cache keywords would bill it.
+
+Pass the very `use_cache` / `refresh` the run will get: the default
+mode reads the cache, so `plan` is its own quote; the other two skip the
+read, so the quote is [`uncached()`](#falaw.plan.uncached) `(plan)`. Quoting from `use_cache`
+alone gets `refresh=True` wrong, pricing predicted hits that run will
+pay for as free. `use_cache=False, refresh=True` raises, as it does in
+[`execute()`](#falaw.plan.execute). For quoting only — see [`uncached()`](#falaw.plan.uncached).
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> plan = Plan(calls=(hit,))
+>>> priced_as_run(plan).total_cost_usd
+0.0
+>>> priced_as_run(plan, refresh=True).total_cost_usd
+0.03
+```
+
+* **Return type:**
+  [`Plan`](#falaw.plan.Plan)
+
+### falaw.plan.uncached(plan)
+
+`plan` as a run that will not read the cache bills it: every call a miss.
+
+A run with `use_cache=False`, or `refresh=True`, skips the cache read and
+pays for every call, so a quote for it must too: a predicted cache hit is
+billed at its estimate, and an unpriced one is unknown rather than free
+(falaw#139). [`priced_as_run()`](#falaw.plan.priced_as_run) picks between this and `plan` from
+[`execute()`](#falaw.plan.execute)’s own cache keywords.
+
+**For quoting only.** It rewrites every predicted `"hit"` and
+`"unknown"` to `"miss"`, so it is no longer what the planner observed:
+execute and save the original `plan` (a saved executed plan is a receipt
+downstream), and read only [`Plan.total_cost_usd`](#falaw.plan.Plan.total_cost_usd) and
+[`Plan.has_unknown_costs`](#falaw.plan.Plan.has_unknown_costs) off this one. It is a shallow copy: each
+call’s `arguments` and `metadata` dicts are shared with the input.
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd
+(0.0, 0.03)
+```
+
+* **Return type:**
+  [`Plan`](#falaw.plan.Plan)

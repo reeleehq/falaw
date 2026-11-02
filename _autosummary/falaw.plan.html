@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=db840bda"></script>
+    <script src="../_static/documentation_options.js?v=38a06c88"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.89" />
+  <meta name="docsearch:version" content="0.0.90" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -569,6 +569,12 @@ append it to a scene-level Plan:</p>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.plan_to_dict" title="falaw.plan.plan_to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_to_dict</span></code></a>(plan)</p></td>
 <td><p>Convert a <a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a> to a plain JSON-serializable dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.priced_as_run" title="falaw.plan.priced_as_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">priced_as_run</span></code></a>(plan, *[, use_cache, refresh])</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> as <a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a> with these cache keywords would bill it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.uncached" title="falaw.plan.uncached"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uncached</span></code></a>(plan)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> as a run that will not read the cache bills it: every call a miss.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1394,6 +1400,62 @@ so a future breaking change is detectable.</p>
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.plan.priced_as_run">
+<span class="sig-prename descclassname"><span class="pre">falaw.plan.</span></span><span class="sig-name descname"><span class="pre">priced_as_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#priced_as_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.plan.priced_as_run" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> as <a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a> with these cache keywords would bill it.</p>
+<p>Pass the very <code class="docutils literal notranslate"><span class="pre">use_cache</span></code> / <code class="docutils literal notranslate"><span class="pre">refresh</span></code> the run will get: the default
+mode reads the cache, so <code class="docutils literal notranslate"><span class="pre">plan</span></code> is its own quote; the other two skip the
+read, so the quote is <a class="reference internal" href="#falaw.plan.uncached" title="falaw.plan.uncached"><code class="xref py py-func docutils literal notranslate"><span class="pre">uncached()</span></code></a> <code class="docutils literal notranslate"><span class="pre">(plan)</span></code>. Quoting from <code class="docutils literal notranslate"><span class="pre">use_cache</span></code>
+alone gets <code class="docutils literal notranslate"><span class="pre">refresh=True</span></code> wrong, pricing predicted hits that run will
+pay for as free. <code class="docutils literal notranslate"><span class="pre">use_cache=False,</span> <span class="pre">refresh=True</span></code> raises, as it does in
+<a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a>. For quoting only — see <a class="reference internal" href="#falaw.plan.uncached" title="falaw.plan.uncached"><code class="xref py py-func docutils literal notranslate"><span class="pre">uncached()</span></code></a>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hit</span> <span class="o">=</span> <span class="n">CallPlan</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s2">"t"</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="s2">"fal-ai/x"</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="p">{},</span>
+<span class="gp">... </span>               <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span> <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">cache_status</span><span class="o">=</span><span class="s2">"hit"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plan</span> <span class="o">=</span> <span class="n">Plan</span><span class="p">(</span><span class="n">calls</span><span class="o">=</span><span class="p">(</span><span class="n">hit</span><span class="p">,))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">priced_as_run</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span><span class="o">.</span><span class="n">total_cost_usd</span>
+<span class="go">0.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">priced_as_run</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">total_cost_usd</span>
+<span class="go">0.03</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.plan.uncached">
+<span class="sig-prename descclassname"><span class="pre">falaw.plan.</span></span><span class="sig-name descname"><span class="pre">uncached</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#uncached"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.plan.uncached" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> as a run that will not read the cache bills it: every call a miss.</p>
+<p>A run with <code class="docutils literal notranslate"><span class="pre">use_cache=False</span></code>, or <code class="docutils literal notranslate"><span class="pre">refresh=True</span></code>, skips the cache read and
+pays for every call, so a quote for it must too: a predicted cache hit is
+billed at its estimate, and an unpriced one is unknown rather than free
+(falaw#139). <a class="reference internal" href="#falaw.plan.priced_as_run" title="falaw.plan.priced_as_run"><code class="xref py py-func docutils literal notranslate"><span class="pre">priced_as_run()</span></code></a> picks between this and <code class="docutils literal notranslate"><span class="pre">plan</span></code> from
+<a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a>’s own cache keywords.</p>
+<p><strong>For quoting only.</strong> It rewrites every predicted <code class="docutils literal notranslate"><span class="pre">&quot;hit&quot;</span></code> and
+<code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code> to <code class="docutils literal notranslate"><span class="pre">&quot;miss&quot;</span></code>, so it is no longer what the planner observed:
+execute and save the original <code class="docutils literal notranslate"><span class="pre">plan</span></code> (a saved executed plan is a receipt
+downstream), and read only <a class="reference internal" href="#falaw.plan.Plan.total_cost_usd" title="falaw.plan.Plan.total_cost_usd"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Plan.total_cost_usd</span></code></a> and
+<a class="reference internal" href="#falaw.plan.Plan.has_unknown_costs" title="falaw.plan.Plan.has_unknown_costs"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Plan.has_unknown_costs</span></code></a> off this one. It is a shallow copy: each
+call’s <code class="docutils literal notranslate"><span class="pre">arguments</span></code> and <code class="docutils literal notranslate"><span class="pre">metadata</span></code> dicts are shared with the input.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">hit</span> <span class="o">=</span> <span class="n">CallPlan</span><span class="p">(</span><span class="n">tool</span><span class="o">=</span><span class="s2">"t"</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="s2">"fal-ai/x"</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="p">{},</span>
+<span class="gp">... </span>               <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span> <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">cache_status</span><span class="o">=</span><span class="s2">"hit"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Plan</span><span class="p">(</span><span class="n">calls</span><span class="o">=</span><span class="p">(</span><span class="n">hit</span><span class="p">,))</span><span class="o">.</span><span class="n">total_cost_usd</span><span class="p">,</span> <span class="n">uncached</span><span class="p">(</span><span class="n">Plan</span><span class="p">(</span><span class="n">calls</span><span class="o">=</span><span class="p">(</span><span class="n">hit</span><span class="p">,)))</span><span class="o">.</span><span class="n">total_cost_usd</span>
+<span class="go">(0.0, 0.03)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -1496,6 +1558,8 @@ so a future breaking change is detectable.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.plan_from_dict"><code class="docutils literal notranslate"><span class="pre">plan_from_dict()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.plan_hash"><code class="docutils literal notranslate"><span class="pre">plan_hash()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.plan_to_dict"><code class="docutils literal notranslate"><span class="pre">plan_to_dict()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.priced_as_run"><code class="docutils literal notranslate"><span class="pre">priced_as_run()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.uncached"><code class="docutils literal notranslate"><span class="pre">uncached()</span></code></a></li>
 </ul>
   </nav></div>
 

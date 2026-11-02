@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=db840bda"></script>
+    <script src="../../_static/documentation_options.js?v=38a06c88"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.89" />
+  <meta name="docsearch:version" content="0.0.90" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1548,6 +1548,72 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_reads_cache</span><span class="p">(</span><span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Whether a run in this cache mode reads the cache: only the default one.</span>
+
+<span class="sd">    The one rule the executor's read (:func:`_execute_call`) and the quote for</span>
+<span class="sd">    a run (:func:`priced_as_run`) share, so they cannot disagree about which</span>
+<span class="sd">    mode bills a predicted hit.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">use_cache</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">refresh</span>
+
+
+<div class="viewcode-block" id="uncached">
+<a class="viewcode-back" href="../../_autosummary/falaw.plan.html#falaw.uncached">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">uncached</span><span class="p">(</span><span class="n">plan</span><span class="p">:</span> <span class="n">Plan</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Plan</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``plan`` as a run that will not read the cache bills it: every call a miss.</span>
+
+<span class="sd">    A run with ``use_cache=False``, or ``refresh=True``, skips the cache read and</span>
+<span class="sd">    pays for every call, so a quote for it must too: a predicted cache hit is</span>
+<span class="sd">    billed at its estimate, and an unpriced one is unknown rather than free</span>
+<span class="sd">    (falaw#139). :func:`priced_as_run` picks between this and ``plan`` from</span>
+<span class="sd">    :func:`execute`'s own cache keywords.</span>
+
+<span class="sd">    **For quoting only.** It rewrites every predicted ``"hit"`` and</span>
+<span class="sd">    ``"unknown"`` to ``"miss"``, so it is no longer what the planner observed:</span>
+<span class="sd">    execute and save the original ``plan`` (a saved executed plan is a receipt</span>
+<span class="sd">    downstream), and read only :attr:`Plan.total_cost_usd` and</span>
+<span class="sd">    :attr:`Plan.has_unknown_costs` off this one. It is a shallow copy: each</span>
+<span class="sd">    call's ``arguments`` and ``metadata`` dicts are shared with the input.</span>
+
+<span class="sd">    &gt;&gt;&gt; hit = CallPlan(tool="t", application="fal-ai/x", arguments={},</span>
+<span class="sd">    ...                output_kind="image", estimated_cost_usd=0.03,</span>
+<span class="sd">    ...                cache_status="hit")</span>
+<span class="sd">    &gt;&gt;&gt; Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd</span>
+<span class="sd">    (0.0, 0.03)</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">replace</span><span class="p">(</span>
+        <span class="n">plan</span><span class="p">,</span> <span class="n">calls</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">replace</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">cache_status</span><span class="o">=</span><span class="s2">"miss"</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">plan</span><span class="o">.</span><span class="n">calls</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="priced_as_run">
+<a class="viewcode-back" href="../../_autosummary/falaw.plan.html#falaw.priced_as_run">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">priced_as_run</span><span class="p">(</span><span class="n">plan</span><span class="p">:</span> <span class="n">Plan</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">use_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Plan</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``plan`` as :func:`execute` with these cache keywords would bill it.</span>
+
+<span class="sd">    Pass the very ``use_cache`` / ``refresh`` the run will get: the default</span>
+<span class="sd">    mode reads the cache, so ``plan`` is its own quote; the other two skip the</span>
+<span class="sd">    read, so the quote is :func:`uncached` ``(plan)``. Quoting from ``use_cache``</span>
+<span class="sd">    alone gets ``refresh=True`` wrong, pricing predicted hits that run will</span>
+<span class="sd">    pay for as free. ``use_cache=False, refresh=True`` raises, as it does in</span>
+<span class="sd">    :func:`execute`. For quoting only — see :func:`uncached`.</span>
+
+<span class="sd">    &gt;&gt;&gt; hit = CallPlan(tool="t", application="fal-ai/x", arguments={},</span>
+<span class="sd">    ...                output_kind="image", estimated_cost_usd=0.03,</span>
+<span class="sd">    ...                cache_status="hit")</span>
+<span class="sd">    &gt;&gt;&gt; plan = Plan(calls=(hit,))</span>
+<span class="sd">    &gt;&gt;&gt; priced_as_run(plan).total_cost_usd</span>
+<span class="sd">    0.0</span>
+<span class="sd">    &gt;&gt;&gt; priced_as_run(plan, refresh=True).total_cost_usd</span>
+<span class="sd">    0.03</span>
+<span class="sd">    """</span>
+    <span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span> <span class="o">=</span> <span class="n">_resolved_cache_mode</span><span class="p">(</span><span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">plan</span> <span class="k">if</span> <span class="n">_reads_cache</span><span class="p">(</span><span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span><span class="p">)</span> <span class="k">else</span> <span class="n">uncached</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="execute">
 <a class="viewcode-back" href="../../_autosummary/falaw.plan.html#falaw.execute">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
@@ -2155,12 +2221,12 @@ window.runMermaid = runMermaid;</script>
     <span class="n">key_arguments</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">key_args</span> <span class="ow">is</span> <span class="n">wire_args</span> <span class="k">else</span> <span class="n">key_args</span>
     <span class="n">wire</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">resolve_wire</span><span class="p">()</span> <span class="k">if</span> <span class="n">resolve_wire</span> <span class="k">else</span> <span class="n">wire_args</span>  <span class="c1"># noqa: E731</span>
     <span class="k">if</span> <span class="n">use_cache</span><span class="p">:</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_get</span>
-
         <span class="c1"># ``refresh`` suppresses the read and nothing else: execution falls</span>
         <span class="c1"># through to ``cached_call_fal`` below, which still writes (falaw#49).</span>
         <span class="n">hit</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">refresh</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_reads_cache</span><span class="p">(</span><span class="n">use_cache</span><span class="p">,</span> <span class="n">refresh</span><span class="p">):</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.cache</span><span class="w"> </span><span class="kn">import</span> <span class="n">cache_get</span>
+
             <span class="n">hit</span> <span class="o">=</span> <span class="n">cache_get</span><span class="p">(</span>
                 <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span>
                 <span class="n">key_args</span><span class="p">,</span>

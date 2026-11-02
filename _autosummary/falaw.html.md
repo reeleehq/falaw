@@ -87,6 +87,8 @@ Leave notes for future sessions:
 | [`establish_environment`](#falaw.establish_environment)(name, description, \*)       | Create an Environment with a canonical establishing image.                                                                                                                                                         |
 | [`execute_plan`](#falaw.execute_plan)(plan, \*[, on_event, dry_run, ...])   | Execute a Plan, returning a list of materialized :class:<br/><br/>```<br/>`<br/>```<br/><br/>lacing.Artifact\`s.                                                                                                   |
 | [`execute_plan_isolated`](#falaw.execute_plan_isolated)(plan, \*[, on_event, ...])   | Execute a Plan with **per-call failure isolation**, returning a report.                                                                                                                                            |
+| [`priced_as_run`](#falaw.priced_as_run)(plan, \*[, use_cache, refresh])      | `plan` as `execute()` with these cache keywords would bill it.                                                                                                                                                     |
+| [`uncached_plan`](#falaw.uncached_plan)(plan)                                | `plan` as a run that will not read the cache bills it: every call a miss.                                                                                                                                          |
 | [`extract_models_from_corpus`](#falaw.extract_models_from_corpus)(path)                   | Yield ModelRecord-shaped dicts parsed from llms-full.txt.                                                                                                                                                          |
 | [`generate_image`](#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                              |
 | [`generate_image_with_refs`](#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                                  |
@@ -3039,6 +3041,31 @@ so a future breaking change is detectable.
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
+### falaw.priced_as_run(plan, , use_cache=True, refresh=False)
+
+`plan` as `execute()` with these cache keywords would bill it.
+
+Pass the very `use_cache` / `refresh` the run will get: the default
+mode reads the cache, so `plan` is its own quote; the other two skip the
+read, so the quote is `uncached()` `(plan)`. Quoting from `use_cache`
+alone gets `refresh=True` wrong, pricing predicted hits that run will
+pay for as free. `use_cache=False, refresh=True` raises, as it does in
+`execute()`. For quoting only — see `uncached()`.
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> plan = Plan(calls=(hit,))
+>>> priced_as_run(plan).total_cost_usd
+0.0
+>>> priced_as_run(plan, refresh=True).total_cost_usd
+0.03
+```
+
+* **Return type:**
+  [`Plan`](falaw.plan.html.md#falaw.plan.Plan)
+
 ### falaw.prune_assets(, older_than=None, max_bytes=None, dry_run=True, store=None)
 
 Reclaim materialized asset copies — the cheapest disk in the cache (falaw#22).
@@ -3392,6 +3419,34 @@ unsure — the cheap 80%, so a router can drop an incompatible backend.
 
 * **Return type:**
   [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
+
+### falaw.uncached_plan(plan)
+
+`plan` as a run that will not read the cache bills it: every call a miss.
+
+A run with `use_cache=False`, or `refresh=True`, skips the cache read and
+pays for every call, so a quote for it must too: a predicted cache hit is
+billed at its estimate, and an unpriced one is unknown rather than free
+(falaw#139). [`priced_as_run()`](#falaw.priced_as_run) picks between this and `plan` from
+`execute()`’s own cache keywords.
+
+**For quoting only.** It rewrites every predicted `"hit"` and
+`"unknown"` to `"miss"`, so it is no longer what the planner observed:
+execute and save the original `plan` (a saved executed plan is a receipt
+downstream), and read only [`Plan.total_cost_usd`](#falaw.Plan.total_cost_usd) and
+[`Plan.has_unknown_costs`](#falaw.Plan.has_unknown_costs) off this one. It is a shallow copy: each
+call’s `arguments` and `metadata` dicts are shared with the input.
+
+```pycon
+>>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                output_kind="image", estimated_cost_usd=0.03,
+...                cache_status="hit")
+>>> Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd
+(0.0, 0.03)
+```
+
+* **Return type:**
+  [`Plan`](falaw.plan.html.md#falaw.plan.Plan)
 
 ### falaw.unsubscribe(callback)
 

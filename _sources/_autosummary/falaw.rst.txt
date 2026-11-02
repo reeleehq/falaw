@@ -65,6 +65,8 @@
       establish_environment
       execute_plan
       execute_plan_isolated
+      priced_as_run
+      uncached_plan
       extract_models_from_corpus
       generate_image
       generate_image_with_refs
