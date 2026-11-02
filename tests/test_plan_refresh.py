@@ -356,3 +356,164 @@ def test_refresh_is_keyword_only():
     """A positional third argument must not silently land on ``refresh``."""
     with pytest.raises(TypeError):
         execute(_image_plan(), None, False, True, True)  # type: ignore[misc]
+
+
+# --- uncached(plan): the quote for a cache-skipping run (falaw#139) ---------
+
+
+def _quoted(status: str, cost):
+    return CallPlan(
+        tool="generate_image",
+        application=IMAGE_APPLICATION,
+        arguments={"prompt": status},
+        output_kind="image",
+        estimated_cost_usd=cost,
+        cache_status=status,
+    )
+
+
+def test_uncached_bills_every_call_a_predicted_hit_included():
+    from falaw import uncached_plan
+
+    plan = Plan(
+        calls=(_quoted("hit", 0.03), _quoted("miss", 0.05), _quoted("unknown", 0.07))
+    )
+    assert plan.total_cost_usd == pytest.approx(0.12)
+    billed = uncached_plan(plan)
+    assert [c.cache_status for c in billed.calls] == ["miss"] * 3
+    assert billed.total_cost_usd == pytest.approx(0.15)
+    assert billed.cache_hit_savings_usd == 0.0
+
+
+def test_uncached_makes_an_unpriced_hit_unknown_not_free():
+    from falaw import uncached_plan
+
+    plan = Plan(calls=(_quoted("hit", None),))
+    assert plan.has_unknown_costs is False  # a hit bills nothing
+    assert uncached_plan(plan).has_unknown_costs is True
+
+
+def test_uncached_changes_nothing_but_cache_status_and_leaves_the_plan_alone(
+    tmp_path,
+):
+    """Every other field survives, on the wire and in identity.
+
+    Built with every optional :class:`CallPlan` field off its default, so a
+    rewrite that dropped or reset one (a fresh ``CallPlan(...)`` instead of
+    ``replace``) shows up in the serialized dict.
+    """
+    from falaw import (
+        CostBasis,
+        plan_from_dict,
+        plan_hash,
+        plan_to_dict,
+        uncached_plan,
+    )
+    from falaw.upload import localize_paths
+
+    source = tmp_path / "ref.png"
+    source.write_bytes(b"reference")
+    arguments, local_files = localize_paths({"prompt": "p", "image": source})
+    call = CallPlan(
+        tool="generate_image",
+        application=IMAGE_APPLICATION,
+        backend="other-backend",
+        arguments=arguments,
+        output_kind="image",
+        estimated_cost_usd=0.03,
+        cache_status="hit",
+        expected_duration_s=(1.0, 2.0),
+        expected_wall_time_s=(3.0, 4.0),
+        metadata={"shot_id": "s1"},
+        key_extra={"impl_version": "2"},
+        local_files=local_files,
+        cost_basis=CostBasis(
+            pricer="model_catalogue",
+            priced=IMAGE_APPLICATION,
+            quantities={"images": 1},
+            table="t.json",
+            table_version="v1",
+        ),
+    )
+    plan = Plan(calls=(call,))
+    billed = uncached_plan(plan)
+
+    assert plan.calls[0].cache_status == "hit"  # the input is not mutated
+    assert billed.calls[0].cache_status == "miss"
+
+    def without_status(d):
+        return {**d, "calls": [{**c, "cache_status": None} for c in d["calls"]]}
+
+    assert without_status(plan_to_dict(billed)) == without_status(plan_to_dict(plan))
+    assert plan_from_dict(plan_to_dict(billed)) == billed
+    assert plan_hash(billed) == plan_hash(plan)  # same work, different quote
+
+
+# --- priced_as_run: the quote for a run, from execute's own keywords --------
+
+
+def _total_billed(artifacts) -> float:
+    return sum(a.cost_usd for a in artifacts)
+
+
+def test_priced_as_run_quotes_what_each_cache_mode_bills(monkeypatch):
+    """The quote and the run agree, mode by mode, over a predicted hit.
+
+    The cache is warmed for one call, so the planner predicts a hit there and a
+    miss for the other. The default run reads the cache and bills only the
+    miss; ``refresh=True`` and ``use_cache=False`` skip the read and bill both.
+    Quoting ``refresh=True`` from ``use_cache`` alone would price it as the
+    default run, the under-quote ``priced_as_run`` exists to prevent.
+    """
+    from falaw import make_call_plan, priced_as_run, uncached_plan
+
+    called = _install_counting_fal(monkeypatch)
+    execute(_image_plan("warm"))
+    assert len(called) == 1
+
+    def planned(prompt, cost):
+        return make_call_plan(
+            tool="generate_image",
+            application=IMAGE_APPLICATION,
+            arguments={"prompt": prompt},
+            output_kind="image",
+            estimated_cost_usd=cost,
+        )
+
+    plan = Plan(calls=(planned("warm", 0.025), planned("cold", 0.04)))
+    assert [c.cache_status for c in plan.calls] == ["hit", "miss"]
+    assert priced_as_run(plan) is plan
+    assert plan.total_cost_usd == pytest.approx(0.04)
+
+    # Order matters: the default run writes "cold", which the later runs skip
+    # reading anyway.
+    assert _total_billed(execute(plan)) == pytest.approx(plan.total_cost_usd)
+    assert len(called) == 1 + 1  # independent of the cost stamp: one vendor call
+
+    refreshed = priced_as_run(plan, use_cache=True, refresh=True)
+    assert refreshed.total_cost_usd == pytest.approx(0.065)
+    assert _total_billed(execute(plan, refresh=True)) == pytest.approx(
+        refreshed.total_cost_usd
+    )
+    assert len(called) == 2 + 2
+
+    bypassed = priced_as_run(plan, use_cache=False)
+    assert bypassed.total_cost_usd == uncached_plan(plan).total_cost_usd
+    assert _total_billed(execute(plan, use_cache=False)) == pytest.approx(
+        bypassed.total_cost_usd
+    )
+    assert len(called) == 4 + 2
+
+
+def test_priced_as_run_refuses_the_fourth_corner_like_execute():
+    from falaw import priced_as_run
+
+    with pytest.raises(ValueError, match="refresh=True requires use_cache=True"):
+        priced_as_run(_image_plan(), use_cache=False, refresh=True)
+
+
+def test_priced_as_run_cache_keywords_are_keyword_only():
+    from falaw import priced_as_run
+
+    with pytest.raises(TypeError):
+        priced_as_run(_image_plan(), False)  # type: ignore[misc]

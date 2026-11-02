@@ -798,6 +798,66 @@ def _resolved_cache_mode(use_cache: bool, refresh: bool) -> tuple[bool, bool]:
     return use_cache, refresh
 
 
+def _reads_cache(use_cache: bool, refresh: bool) -> bool:
+    """Whether a run in this cache mode reads the cache: only the default one.
+
+    The one rule the executor's read (:func:`_execute_call`) and the quote for
+    a run (:func:`priced_as_run`) share, so they cannot disagree about which
+    mode bills a predicted hit.
+    """
+    return use_cache and not refresh
+
+
+def uncached(plan: Plan) -> Plan:
+    """``plan`` as a run that will not read the cache bills it: every call a miss.
+
+    A run with ``use_cache=False``, or ``refresh=True``, skips the cache read and
+    pays for every call, so a quote for it must too: a predicted cache hit is
+    billed at its estimate, and an unpriced one is unknown rather than free
+    (falaw#139). :func:`priced_as_run` picks between this and ``plan`` from
+    :func:`execute`'s own cache keywords.
+
+    **For quoting only.** It rewrites every predicted ``"hit"`` and
+    ``"unknown"`` to ``"miss"``, so it is no longer what the planner observed:
+    execute and save the original ``plan`` (a saved executed plan is a receipt
+    downstream), and read only :attr:`Plan.total_cost_usd` and
+    :attr:`Plan.has_unknown_costs` off this one. It is a shallow copy: each
+    call's ``arguments`` and ``metadata`` dicts are shared with the input.
+
+    >>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+    ...                output_kind="image", estimated_cost_usd=0.03,
+    ...                cache_status="hit")
+    >>> Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd
+    (0.0, 0.03)
+    """
+    return replace(
+        plan, calls=tuple(replace(c, cache_status="miss") for c in plan.calls)
+    )
+
+
+def priced_as_run(plan: Plan, *, use_cache: bool = True, refresh: bool = False) -> Plan:
+    """``plan`` as :func:`execute` with these cache keywords would bill it.
+
+    Pass the very ``use_cache`` / ``refresh`` the run will get: the default
+    mode reads the cache, so ``plan`` is its own quote; the other two skip the
+    read, so the quote is :func:`uncached` ``(plan)``. Quoting from ``use_cache``
+    alone gets ``refresh=True`` wrong, pricing predicted hits that run will
+    pay for as free. ``use_cache=False, refresh=True`` raises, as it does in
+    :func:`execute`. For quoting only — see :func:`uncached`.
+
+    >>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+    ...                output_kind="image", estimated_cost_usd=0.03,
+    ...                cache_status="hit")
+    >>> plan = Plan(calls=(hit,))
+    >>> priced_as_run(plan).total_cost_usd
+    0.0
+    >>> priced_as_run(plan, refresh=True).total_cost_usd
+    0.03
+    """
+    use_cache, refresh = _resolved_cache_mode(use_cache, refresh)
+    return plan if _reads_cache(use_cache, refresh) else uncached(plan)
+
+
 def execute(
     plan: Plan,
     *,
@@ -1399,12 +1459,12 @@ def _execute_call(
     key_arguments = None if key_args is wire_args else key_args
     wire = lambda: resolve_wire() if resolve_wire else wire_args  # noqa: E731
     if use_cache:
-        from .cache import cache_get
-
         # ``refresh`` suppresses the read and nothing else: execution falls
         # through to ``cached_call_fal`` below, which still writes (falaw#49).
         hit = None
-        if not refresh:
+        if _reads_cache(use_cache, refresh):
+            from .cache import cache_get
+
             hit = cache_get(
                 call.application,
                 key_args,
