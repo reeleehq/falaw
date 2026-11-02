@@ -237,6 +237,23 @@ def test_prune_content_counts_the_entries_it_makes_unmaterializable():
     assert report.rebillable_entries == 1, report.summary()
 
 
+def test_prune_content_counts_an_entry_whose_response_was_embedded():
+    """falaw#142: a NaN-bearing response is stored as ``raw_json``; it still counts."""
+    from falaw.content import content_ref_for_url, default_content_store
+
+    url = "https://fal.media/files/shared.png"
+    ref = content_ref_for_url(url, fetcher=lambda _u: [b"shared-bytes"])
+    cache.cache_put("fal-ai/x", {"p": 1}, {"images": [{"url": url}]})
+    nan_raw = {"images": [{"url": url}], "score": float("nan")}
+    cache.cache_put("fal-ai/x", {"p": 2}, nan_raw)
+    old = time.time() - 100 * DAY
+    os.utime(default_content_store().blob_path(ref.content_hash), (old, old))
+
+    report = prune.prune_content(older_than=90 * DAY)
+
+    assert report.rebillable_entries == 2, report.summary()
+
+
 def test_prune_content_does_not_count_entries_that_were_already_broken():
     """An entry with no recoverable asset is not made worse by this prune."""
     cache.cache_put("fal-ai/x", {"p": 1}, {"text": "no asset here"})

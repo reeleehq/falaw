@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 import types
+import warnings
 
 import pytest
 
@@ -435,7 +436,10 @@ def test_a_nonsense_usage_cost_is_not_a_cost(monkeypatch, cost):
     assert _extract_usage_cost({"usage": {"cost": cost}}) is None
     usage = {"prompt_tokens": 42, "completion_tokens": 7, "cost": cost}
     _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
-    _, r = llm_complete_with_receipt("q")
+    with warnings.catch_warnings():
+        # falaw#142: a non-finite cost is cached, not dropped with a warning
+        warnings.simplefilter("error", UserWarning)
+        _, r = llm_complete_with_receipt("q")
     assert r.cost_source == "rate_table:per_call"
 
 

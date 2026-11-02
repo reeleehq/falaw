@@ -13,6 +13,7 @@ cache survives.
 from __future__ import annotations
 
 import json
+import math
 import os
 from decimal import Decimal
 from pathlib import Path
@@ -392,5 +393,5 @@ def test_only_the_field_strict_json_cannot_hold_is_embedded():
         manifest = json.load(f)
     assert manifest["raw"] == raw and "raw_json" not in manifest
     assert "wire_arguments" not in manifest
-    assert json.loads(manifest["wire_arguments_json"])["s"] != 0  # NaN, kept
+    assert math.isnan(json.loads(manifest["wire_arguments_json"])["s"])
     assert cache_get("fal-ai/flux/dev", args) == raw

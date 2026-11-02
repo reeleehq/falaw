@@ -67,14 +67,13 @@ ValueError: prune_content needs a bound: pass older_than= and/or max_bytes=...
 
 from __future__ import annotations
 
-import json
 import os
 import time
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Iterator, Optional, Sequence, Union
 
-from .cache import ASSETS_DIRNAME, _cache_dir
+from .cache import ASSETS_DIRNAME, _cache_dir, load_manifest
 from .content import CONTENT_STORE_DIRNAME, URL_INDEX_DIRNAME, remembered_ref
 from .upload import UPLOAD_INDEX_DIRNAME
 
@@ -685,8 +684,7 @@ def _reference_counts(doomed_hashes: set[str], root: str) -> tuple[int, int]:
     referenced: set[str] = set()
     for path in _iter_manifest_paths(root):
         try:
-            with open(path) as f:
-                manifest = json.load(f)
+            manifest = load_manifest(path)
         except Exception:  # noqa: BLE001 — a corrupt manifest is already a miss
             continue
         url = extract_first_url(manifest.get("raw") or {})
@@ -788,8 +786,7 @@ def _manifest_candidates(root: str) -> list[PruneCandidate]:
         # mtime is the fallback for an entry too corrupt to parse.
         stored_at: Optional[float] = None
         try:
-            with open(path) as f:
-                stored_at = float(json.load(f).get("stored_at"))
+            stored_at = float(load_manifest(path).get("stored_at"))
         except Exception:  # noqa: BLE001 — fall back to the filesystem's opinion
             try:
                 stored_at = os.path.getmtime(path)

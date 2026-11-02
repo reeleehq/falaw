@@ -104,34 +104,15 @@ def _manifest_path(key: str) -> str:
     return os.path.join(_entry_dir(key), "manifest.json")
 
 
-# --- public API -----------------------------------------------------------
-
-
-def cache_get(
-    application: str,
-    arguments: Mapping[str, Any],
-    *,
-    backend: str = DFLT_BACKEND,
-    key_extra: Optional[Mapping[str, Any]] = None,
-) -> Optional[dict]:
-    """Return the raw fal response if cached, else None."""
-    path = _manifest_path(
-        _key(application, arguments, backend=backend, key_extra=key_extra)
-    )
-    if not os.path.exists(path):
-        return None
-    with open(path) as f:
-        manifest = json.load(f)
-    if _EMBEDDED_KEY.format("raw") in manifest:
-        return json.loads(manifest[_EMBEDDED_KEY.format("raw")])
-    return manifest.get("raw")
-
-
-_EMBEDDED_KEY = "{}_json"
-"""Where a manifest field strict JSON cannot hold is kept, as JSON text (falaw#142)."""
+# --- manifest encoding ------------------------------------------------------
 
 _EMBEDDABLE_FIELDS = ("raw", "wire_arguments")
 """Manifest fields that carry a response or what was sent, as received."""
+
+
+def _embedded_key(name: str) -> str:
+    """Where field ``name`` is kept when strict JSON cannot hold it (falaw#142)."""
+    return f"{name}_json"
 
 
 def _manifest_text(manifest: dict) -> str:
@@ -141,9 +122,9 @@ def _manifest_text(manifest: dict) -> str:
     ``fal_client`` parses them, and refusing one here would leave a call fal
     has already billed uncached, to be billed again (falaw#142). Bare ``NaN``
     in the file would be invalid JSON to every strict parser, so such a field
-    is stored instead as JSON text under ``<field>_json``: the manifest stays
-    strict, and :func:`cache_get` restores the value exactly with
-    :func:`json.loads`. A field that strict JSON can hold is written as-is.
+    is stored instead as JSON text under :func:`_embedded_key`: the manifest
+    stays strict, and :func:`_decoded` restores the value exactly. A field
+    that strict JSON can hold is written as-is.
     """
 
     def dump(obj, *, allow_nan: bool) -> str:
@@ -161,10 +142,47 @@ def _manifest_text(manifest: dict) -> str:
         try:
             dump(embedded[name], allow_nan=False)
         except ValueError:
-            embedded[_EMBEDDED_KEY.format(name)] = json.dumps(
-                embedded.pop(name), default=str
-            )
+            embedded[_embedded_key(name)] = json.dumps(embedded.pop(name), default=str)
     return dump(embedded, allow_nan=False)
+
+
+def _decoded(manifest: dict) -> dict:
+    """Inverse of :func:`_manifest_text`: each embedded field restored."""
+    decoded = dict(manifest)
+    for name in _EMBEDDABLE_FIELDS:
+        if _embedded_key(name) in decoded:
+            decoded[name] = json.loads(decoded.pop(_embedded_key(name)))
+    return decoded
+
+
+def load_manifest(path: str) -> dict:
+    """The cache manifest at ``path``, embedded fields restored.
+
+    The one reader of a manifest file: anything that looks inside one (a cache
+    hit, a prune counting what still points at a blob) goes through here, so a
+    field :func:`_manifest_text` embedded is never mistaken for an absent one.
+    """
+    with open(path) as f:
+        return _decoded(json.load(f))
+
+
+# --- public API -----------------------------------------------------------
+
+
+def cache_get(
+    application: str,
+    arguments: Mapping[str, Any],
+    *,
+    backend: str = DFLT_BACKEND,
+    key_extra: Optional[Mapping[str, Any]] = None,
+) -> Optional[dict]:
+    """Return the raw fal response if cached, else None."""
+    path = _manifest_path(
+        _key(application, arguments, backend=backend, key_extra=key_extra)
+    )
+    if not os.path.exists(path):
+        return None
+    return load_manifest(path).get("raw")
 
 
 def cache_put(
