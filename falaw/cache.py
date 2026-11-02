@@ -133,7 +133,7 @@ def _manifest_text(manifest: dict) -> str:
 
     try:
         return dump(manifest, allow_nan=False)
-    except ValueError:
+    except ValueError:  # a non-finite float, or a circular reference (re-raised below)
         pass
     embedded = dict(manifest)
     for name in _EMBEDDABLE_FIELDS:
@@ -380,8 +380,7 @@ def cached_call_fal(
         # A paid result is never discarded (see falaw.plan.execute's failure
         # policy): fal has already run — and billed — this call, so a cache
         # WRITE failure (a full disk, a permission error, a response json
-        # cannot encode at all) must
-        # degrade to "uncached", not destroy the response. On refresh=True the
+        # cannot encode at all) must degrade to "uncached", not destroy the response. On refresh=True the
         # pre-refresh entry is dropped too — the caller explicitly asked for
         # fresh, so letting the old entry keep serving would quietly undo the
         # refresh on every later call.
