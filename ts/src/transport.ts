@@ -253,8 +253,8 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
  * without one is always reported). An entry whose message is not a non-empty string is
  * skipped.
  *
- * Exported so its rules are tested directly, not re-exported from `index.ts`: it is
- * how the transport reads fal's logs, not part of the package's API.
+ * Exported for the parity fixture (`parity.test.ts`), not re-exported from `index.ts`:
+ * it is how the transport reads fal's logs, not part of the package's API.
  */
 export function newLogLines(logs: unknown, seen: Set<string>): string[] {
   const lines: string[] = [];

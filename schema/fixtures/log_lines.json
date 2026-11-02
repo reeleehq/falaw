@@ -106,6 +106,49 @@
   {
     "expected": [
       [
+        "a",
+        "b"
+      ],
+      [
+        "ab",
+        "b"
+      ]
+    ],
+    "name": "the key is the (timestamp, message) pair, within a poll too",
+    "polls": [
+      [
+        {
+          "message": "a",
+          "timestamp": "t1"
+        },
+        {
+          "message": "b",
+          "timestamp": "t1"
+        },
+        {
+          "message": "a",
+          "timestamp": "t1"
+        }
+      ],
+      [
+        {
+          "message": "b",
+          "timestamp": "t1"
+        },
+        {
+          "message": "ab",
+          "timestamp": "t1"
+        },
+        {
+          "message": "b",
+          "timestamp": "t1a"
+        }
+      ]
+    ]
+  },
+  {
+    "expected": [
+      [
         "kept"
       ],
       [],

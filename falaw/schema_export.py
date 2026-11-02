@@ -414,6 +414,21 @@ LOG_LINE_CASES: tuple[dict, ...] = (
         ],
     },
     {
+        "name": "the key is the (timestamp, message) pair, within a poll too",
+        "polls": [
+            [
+                {"timestamp": "t1", "message": "a"},
+                {"timestamp": "t1", "message": "b"},
+                {"timestamp": "t1", "message": "a"},
+            ],
+            [
+                {"timestamp": "t1", "message": "b"},
+                {"timestamp": "t1", "message": "ab"},
+                {"timestamp": "t1a", "message": "b"},
+            ],
+        ],
+    },
+    {
         "name": "malformed entries and logs are skipped",
         "polls": [
             [
