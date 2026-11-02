@@ -48,7 +48,11 @@ BackendExecutor = Callable[..., dict]
 shape :func:`falaw.core.call_fal` returns: the vendor's raw response, ready
 for the existing artifact converter. An executor's only job is *making the
 call*; it must not attempt caching (the registry sits below the cache) or
-artifact conversion (``execute`` owns that, uniformly across backends)."""
+artifact conversion (``execute`` owns that, uniformly across backends).
+A run's metrics reach a plan's :class:`~falaw.CallOutcome` only when the
+executor emits its ``done`` event through :func:`falaw.events.emit` on the
+calling thread (as ``call_fal`` does); calling only the passed ``on_event``
+is not heard by :func:`falaw.events.listening` (falaw#127)."""
 
 
 def _fal_executor(

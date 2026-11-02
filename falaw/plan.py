@@ -66,6 +66,7 @@ import warnings
 from contextlib import contextmanager
 from contextvars import ContextVar, copy_context
 from dataclasses import dataclass, field, replace
+from functools import partial
 from typing import Any, Callable, Iterator, Literal, Optional
 
 from .canonical import DFLT_BACKEND
@@ -813,6 +814,9 @@ def execute(
 ) -> list:
     """Execute a Plan, returning a list of materialized :class:`lacing.Artifact`s.
 
+    Artifacts only: each call's run metrics (falaw#127) are on the
+    :class:`~falaw.CallOutcome` objects that :func:`execute_isolated` returns.
+
     This is the **halt** policy: the first call that raises ends the run, and its
     exception propagates unchanged (falaw's typed hierarchy — see
     :mod:`falaw.errors` — is what a caller classifies on, so it is never
@@ -1261,13 +1265,14 @@ def _outcome_from_future(call: CallPlan, index: int, future) -> CallOutcome:
         if not isinstance(error, Exception):
             raise error
         return CallOutcome(index=index, call=call, status="failed", error=error)
-    artifact, cache_hit = future.result()
+    artifact, cache_hit, metrics = future.result()
     return CallOutcome(
         index=index,
         call=call,
         status="succeeded",
         artifact=artifact,
         cache_hit=cache_hit,
+        metrics=metrics,
     )
 
 
@@ -1361,7 +1366,7 @@ def _execute_call(
     on_event,
     resolve_wire: Optional[Callable[[], dict]] = None,
 ) -> tuple:
-    """Run one :class:`CallPlan`, returning ``(artifact, cache_hit)``.
+    """Run one :class:`CallPlan`, returning ``(artifact, cache_hit, metrics)``.
 
     ``resolve_wire``, when given, produces the wire arguments lazily (a local
     file is uploaded only when the call actually goes out, never on a cache
@@ -1371,7 +1376,9 @@ def _execute_call(
     from a cache entry that proved usable, which is what run-level cost
     accounting must be based on (a plan-time ``cache_status`` can be wrong in
     both directions). The returned artifact's ``cost_usd`` is stamped from
-    this observed outcome too — see :func:`_stamp_observed_cost`.
+    this observed outcome too — see :func:`_stamp_observed_cost`. ``metrics``
+    is fal's account of the run that went out (``None`` on a cache hit, where
+    nothing ran) — see :func:`_run_with_metrics`.
 
     ``use_cache`` and ``refresh`` are read/write halves, not one switch
     (falaw#49). ``refresh=True`` suppresses the ``cache_get`` and falls
@@ -1415,7 +1422,7 @@ def _execute_call(
                 for message in deferred:
                     warnings.warn(message, UserWarning, stacklevel=3)
                 emit_cache_hit(call.application, on_event)
-                return _stamp_observed_cost(artifact, call, cache_hit=True), True
+                return _stamp_observed_cost(artifact, call, cache_hit=True), True, None
             warnings.warn(
                 f"Dropping the falaw cache entry for {call.application!r}: its "
                 "recorded result names an asset that can no longer be read "
@@ -1431,9 +1438,8 @@ def _execute_call(
                 backend=call.backend,
                 key_extra=call.key_extra or None,
             )
-        raw = cached_call_fal(
-            call.application,
-            wire(),
+        run = partial(
+            cached_call_fal,
             key_arguments=key_arguments,
             refresh=True,
             on_event=on_event,
@@ -1441,10 +1447,33 @@ def _execute_call(
             key_extra=call.key_extra or None,
         )
     else:
-        raw = get_backend_executor(call.backend)(
-            call.application, wire(), on_event=on_event
-        )
-    return _stamp_observed_cost(converter(raw, call), call, cache_hit=False), False
+        run = partial(get_backend_executor(call.backend), on_event=on_event)
+    raw, metrics = _run_with_metrics(run, call.application, wire())
+    artifact = converter(raw, call)
+    return _stamp_observed_cost(artifact, call, cache_hit=False), False, metrics
+
+
+def _run_with_metrics(run: Callable[..., dict], application: str, arguments: dict):
+    """``(run(application, arguments), metrics)``: the response and fal's run metrics.
+
+    ``metrics`` is a copy of the ``metrics`` on the last ``done`` event heard
+    while ``run`` executes (falaw#127), or ``None`` when none was reported.
+    Heard through :func:`falaw.events.listening`, so it scopes to this call
+    (each plan worker runs in its own copied context), wraps nothing but the
+    execution itself, and never disturbs the caller's ``on_event``.
+    """
+    from .events import listening
+
+    metrics = None
+
+    def _capture(event) -> None:
+        nonlocal metrics
+        if event.kind == "done":
+            metrics = dict(event.metrics) if event.metrics else None
+
+    with listening(_capture):
+        raw = run(application, arguments)
+    return raw, metrics
 
 
 def _stamp_observed_cost(artifact, call: CallPlan, *, cache_hit: bool):
