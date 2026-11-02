@@ -35,10 +35,11 @@ export type ProviderPhase = (typeof CONSTANTS.provider_phases)[number];
 /**
  * One step of a call, in the Python `ProgressEvent` vocabulary (camelCased):
  * `queued` (submitted), `provider_queued` (waiting in fal's line, `queuePosition`
- * ahead, reported on a change only), `progress` (being made), `done` (with fal's run
- * `metrics`, e.g. `inference_time`, when it reported any), `error`. `providerPhase` is
- * set only on what fal reported (`in_queue` / `in_progress`); `status` is fal's raw
- * status string.
+ * ahead, reported on a change only), `progress` (being made, with no new log line),
+ * `log` (one line the runner wrote, in `message`, reported once), `done` (with fal's
+ * run `metrics`, e.g. `inference_time`, when it reported any), `error` (with the
+ * `requestId` once fal assigned one). `providerPhase` is set only on what fal reported
+ * (`in_queue` / `in_progress`); `status` is fal's raw status string.
  */
 export interface ProgressEvent {
   readonly kind: EventKind;
@@ -70,6 +71,8 @@ export interface QueueTransportOptions {
   readonly pollIntervalMs?: number;
   /** Give up waiting for a result after this long (default 10 minutes). */
   readonly timeoutMs?: number;
+  /** Ask fal for the runner's log lines and emit them as `log` events (default `true`, as the Python side does). */
+  readonly logs?: boolean;
 }
 
 const DFLT_QUEUE_BASE_URL = 'https://queue.fal.run';
@@ -85,8 +88,14 @@ interface QueueSubmission {
   cancel_url?: string;
 }
 
+interface QueueLogLine {
+  message?: unknown;
+  timestamp?: unknown;
+}
+
 interface QueueStatus {
   status?: string;
+  logs?: unknown;
   queue_position?: number;
   response_url?: string;
   metrics?: Json;
@@ -100,6 +109,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
   const pollInterval = opts.pollIntervalMs ?? DFLT_POLL_INTERVAL_MS;
   const timeout = opts.timeoutMs ?? DFLT_TIMEOUT_MS;
   const readKey = () => (typeof opts.key === 'function' ? opts.key() : opts.key) ?? null;
+  const withLogs = opts.logs ?? true;
 
   async function request(method: 'GET' | 'POST' | 'PUT', target: string, body: unknown, signal?: AbortSignal): Promise<Json> {
     const key = readKey();
@@ -148,8 +158,9 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
   return async (call, ctx) => {
     const { signal } = ctx;
     const { application } = call;
+    let requestId: string | undefined;
     const fail = (error: FalError, extra: Partial<ProgressEvent> = {}): never => {
-      ctx.onEvent?.({ kind: 'error', application, message: error.message, ...extra });
+      ctx.onEvent?.({ kind: 'error', application, ...(requestId ? { requestId } : {}), message: error.message, ...extra });
       throw error;
     };
     let submitted: QueueSubmission;
@@ -158,7 +169,7 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
     } catch (e) {
       return fail(e instanceof FalError ? e : new FalError(String(e)));
     }
-    const requestId = submitted.request_id;
+    requestId = submitted.request_id;
     if (!submitted.status_url || !submitted.response_url) {
       // The queue host never answers synchronously; a 2xx JSON without the queue
       // fields is a relay speaking for itself ({"detail": "quota exceeded"} with 200).
@@ -170,10 +181,19 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
     const deadline = Date.now() + timeout;
     let lastPosition: unknown = NO_POSITION; // fal re-reports the line: say it on a change only
     let metrics: Json | undefined;
+    const seenLogs = new Set<string>();
+    const statusUrl = withLogs ? withQuery(submitted.status_url, 'logs=1') : submitted.status_url;
+    /** Emit the runner's lines not reported yet; how many there were. */
+    const emitNewLogLines = (status: QueueStatus): number => {
+      const lines = withLogs ? newLogLines(status.logs, seenLogs) : [];
+      for (const message of lines) ctx.onEvent?.({ kind: 'log', application, requestId, providerPhase: 'in_progress', message });
+      return lines.length;
+    };
     try {
       for (;;) {
-        const status = (await request('GET', submitted.status_url, undefined, signal)) as QueueStatus;
+        const status = (await request('GET', statusUrl, undefined, signal)) as QueueStatus;
         if (status.status === 'COMPLETED') {
+          emitNewLogLines(status); // the run's last lines arrive with COMPLETED; they were written while it ran
           // A failed run reports its metrics too: read them first, for the error event.
           metrics = isRecord(status.metrics) && Object.keys(status.metrics).length ? status.metrics : undefined;
           if (status.error) {
@@ -189,7 +209,9 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
           }
         } else if (status.status === 'IN_PROGRESS') {
           lastPosition = NO_POSITION; // a runner failure sends the call back to IN_QUEUE: report that wait again
-          ctx.onEvent?.({ kind: 'progress', application, requestId, status: status.status, providerPhase: 'in_progress' });
+          if (!emitNewLogLines(status)) {
+            ctx.onEvent?.({ kind: 'progress', application, requestId, status: status.status, providerPhase: 'in_progress' });
+          }
         } else if (status.status) {
           throw new FalError(`fal request ${requestId ?? ''} ended with status ${status.status}`);
         }
@@ -208,6 +230,32 @@ export function queueTransport(opts: QueueTransportOptions = {}): Transport {
       return fail(error, metrics ? { metrics } : {});
     }
   };
+}
+
+/**
+ * The messages in fal's `logs` not reported yet, recording them in `seen`: the Python
+ * side's rule (`falaw.core`). fal re-sends earlier lines with later statuses; a line is
+ * known by its `(timestamp, message)`, and only when the timestamp is a string (a line
+ * without one is always reported). An entry whose message is not a non-empty string is
+ * skipped.
+ */
+export function newLogLines(logs: unknown, seen: Set<string>): string[] {
+  const lines: string[] = [];
+  for (const entry of Array.isArray(logs) ? (logs as QueueLogLine[]) : []) {
+    const message = isRecord(entry) ? entry.message : undefined;
+    if (typeof message !== 'string' || !message) continue;
+    if (typeof entry.timestamp === 'string') {
+      const key = JSON.stringify([entry.timestamp, message]);
+      if (seen.has(key)) continue;
+      seen.add(key);
+    }
+    lines.push(message);
+  }
+  return lines;
+}
+
+function withQuery(url: string, param: string): string {
+  return `${url}${url.includes('?') ? '&' : '?'}${param}`;
 }
 
 function isRecord(value: unknown): value is Json {

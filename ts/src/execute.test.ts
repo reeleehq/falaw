@@ -40,6 +40,9 @@ describe('execute', () => {
   });
 });
 
+/** A URL without its query string: status polls carry `?logs=1`. */
+const pathOf = (url: string) => url.split('?')[0];
+
 /** A fetch that plays fal's queue protocol: submit → status (twice) → response. */
 function fakeQueue() {
   const calls: { url: string; method: string; headers: Headers; body: string | null }[] = [];
@@ -50,7 +53,7 @@ function fakeQueue() {
     calls.push({ url, method: init?.method ?? 'GET', headers, body: (init?.body as string | undefined) ?? null });
     const target = headers.get('x-fal-target-url') ?? url;
     const json = (o: unknown) => new Response(JSON.stringify(o), { status: 200 });
-    if (target.endsWith('/status')) {
+    if (pathOf(target).endsWith('/status')) {
       polls += 1;
       return json(polls < 2 ? { status: 'IN_QUEUE', queue_position: 3 } : { status: 'COMPLETED' });
     }
@@ -70,7 +73,7 @@ function scriptedQueue(statuses: Record<string, unknown>[]) {
   return (async (input: RequestInfo | URL) => {
     const url = String(input);
     const json = (o: unknown) => new Response(JSON.stringify(o), { status: 200 });
-    if (url.endsWith('/status')) return json(statuses[Math.min(polls++, statuses.length - 1)]);
+    if (pathOf(url).endsWith('/status')) return json(statuses[Math.min(polls++, statuses.length - 1)]);
     if (url.endsWith('/requests/r')) return json({ images: [{ url: 'https://v3.fal.media/out.png' }] });
     return json({ request_id: 'r', status_url: 'https://queue.fal.run/x/requests/r/status', response_url: 'https://queue.fal.run/x/requests/r' });
   }) as typeof globalThis.fetch;
@@ -159,7 +162,7 @@ describe('review-driven edges', () => {
       const target = new Headers(init?.headers).get('x-fal-target-url') ?? String(input);
       calls.push(`${init?.method} ${target}`);
       if (target.endsWith('/cancel')) return new Response('{}', { status: 200 });
-      if (target.endsWith('/status')) {
+      if (pathOf(target).endsWith('/status')) {
         controller.abort(); // abort lands during the following sleep
         return new Response(JSON.stringify({ status: 'IN_QUEUE' }), { status: 200 });
       }
@@ -249,6 +252,67 @@ describe('review-driven edges', () => {
       { onEvent: (e) => events.push(e) },
     );
     expect(events.filter((e) => e.kind === 'provider_queued').map((e) => e.queuePosition)).toEqual([0, 0]);
+  });
+
+  it("asks fal for the runner's log lines and reports each once, as the Python side does", async () => {
+    const urls: string[] = [];
+    const line = (timestamp: string | undefined, message: unknown) => ({ timestamp, message });
+    const statuses = [
+      { status: 'IN_PROGRESS', logs: [line('t1', 'loading weights')] },
+      { status: 'IN_PROGRESS', logs: [line('t1', 'loading weights'), line('t2', 'step 1/2')] },
+      { status: 'IN_PROGRESS', logs: [line('t1', 'loading weights'), line('t2', 'step 1/2')] },
+      {
+        status: 'COMPLETED',
+        logs: [line('t2', 'step 1/2'), line('t3', 'step 2/2'), line(undefined, 'no timestamp'), line('t4', 42), line('t5', '')],
+      },
+    ];
+    const scripted = scriptedQueue(statuses);
+    const fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      urls.push(String(input));
+      return scripted(input, init);
+    }) as typeof globalThis.fetch;
+    const events: ProgressEvent[] = [];
+    await queueTransport({ key: 'k', fetch, pollIntervalMs: 1 })(planGenerateImage({ prompt: 'x' }), {
+      onEvent: (e) => events.push(e),
+    });
+    expect(urls.filter((u) => pathOf(u).endsWith('/status')).every((u) => u.endsWith('/status?logs=1'))).toBe(true);
+    expect(events.map((e) => [e.kind, e.message])).toEqual([
+      ['queued', undefined],
+      ['log', 'loading weights'],
+      ['log', 'step 1/2'],
+      ['progress', undefined], // a poll with no new line still says the call is being made
+      ['log', 'step 2/2'],
+      ['log', 'no timestamp'],
+      ['done', undefined],
+    ]);
+    for (const e of events.filter((x) => x.kind === 'log')) expect(e).toMatchObject({ requestId: 'r', providerPhase: 'in_progress' });
+  });
+
+  it('logs: false polls without logs=1 and emits no log events', async () => {
+    const urls: string[] = [];
+    const scripted = scriptedQueue([{ status: 'IN_PROGRESS', logs: [{ timestamp: 't', message: 'm' }] }, { status: 'COMPLETED' }]);
+    const fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+      urls.push(String(input));
+      return scripted(input, init);
+    }) as typeof globalThis.fetch;
+    const events: ProgressEvent[] = [];
+    await queueTransport({ key: 'k', fetch, pollIntervalMs: 1, logs: false })(planGenerateImage({ prompt: 'x' }), {
+      onEvent: (e) => events.push(e),
+    });
+    expect(urls.some((u) => u.includes('logs=1'))).toBe(false);
+    // the transport still ignores lines fal sends unasked: logs: false is a promise to the caller
+    expect(events.map((e) => e.kind)).toEqual(['queued', 'progress', 'done']);
+  });
+
+  it('every error event after submission carries the requestId', async () => {
+    const events: ProgressEvent[] = [];
+    const statuses = [{ status: 'COMPLETED', error: 'boom', error_type: 'runner_error' }];
+    await expect(
+      queueTransport({ key: 'k', fetch: scriptedQueue(statuses), pollIntervalMs: 1 })(planGenerateImage({ prompt: 'x' }), {
+        onEvent: (e) => events.push(e),
+      }),
+    ).rejects.toThrow(FalError);
+    expect(events.at(-1)).toMatchObject({ kind: 'error', requestId: 'r' });
   });
 
   it('never reaches the network by default (the vitest guard)', async () => {
