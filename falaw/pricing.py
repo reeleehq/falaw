@@ -17,8 +17,9 @@ Design rules, in order of importance:
   a free string ("image", "megapixel", GPU/compute units, …); only units with
   an unambiguous :data:`~falaw.base.CostKind` mapping become estimates. A
   GPU-second is machine time, not output time — mapping it to ``per_second``
-  would misprice by the model's realtime factor, so it stays unpriced and
-  visible in the summary instead.
+  would misprice by the model's realtime factor, so "compute seconds" map to
+  their own kind, ``per_compute_second``, which a plan leaves unknown and a
+  run prices from fal's reported ``inference_time`` (falaw#144).
 - **The API wins, loudly.** A hand-written price the API disagrees with is
   overwritten, and the delta is reported — stale pricing data is the normal
   case, not the exception.
@@ -46,6 +47,7 @@ _UNIT_TO_COST_KIND: dict[str, str] = {
     "megapixel": "per_megapixel",
     "second": "per_second",
     "video_second": "per_second",
+    "compute second": "per_compute_second",
     "audio_second": "per_second",
     "token": "per_token",
     "call": "per_call",
@@ -56,8 +58,7 @@ _UNIT_TO_COST_KIND: dict[str, str] = {
 Keyed in the singular; :func:`_cost_rule_for_unit` also accepts the plural
 forms the live API actually returns ("megapixels", "seconds") and a few
 unambiguous *scaled* units ("minutes", "10 seconds", "1m tokens"). Anything
-else — "compute seconds" (GPU time, not output time), "units",
-"generations", "video segments", "steps", "1000 characters" — is
+else — "units", "generations", "video segments", "steps", "1000 characters" — is
 deliberately unmapped — see the module docstring for why guessing would be
 worse than staying unpriced.
 """
@@ -403,7 +404,7 @@ def refresh_model_prices(
         "Fetch fal's unit pricing for every model in `falaw/data/models.json` "
         "and write structured cost_estimates with source='api'. Hand-written "
         "prices the API disagrees with are overwritten and the delta reported. "
-        "Units with no CostKind mapping (GPU/compute units) are recorded, not "
+        "Units with no CostKind mapping (e.g. 'units', characters) are recorded, not "
         "guessed. Reads the vendor's free pricing endpoint; makes no billed "
         "call. Pass `write=True` to persist; default is a dry-run summary."
     ),

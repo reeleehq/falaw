@@ -82,7 +82,7 @@ from .degrade import (
     deferred_degrade_warnings,
     emit_degradation,
 )
-from .outcomes import CallOutcome, ExecutionReport
+from .outcomes import CallOutcome, ExecutionReport, billed_cost_usd, inference_time_s
 
 
 CacheStatus = Literal["hit", "miss", "stale", "unknown"]
@@ -1510,7 +1510,11 @@ def _execute_call(
         run = partial(get_backend_executor(call.backend), on_event=on_event)
     raw, metrics = _run_with_metrics(run, call.application, wire())
     artifact = converter(raw, call)
-    return _stamp_observed_cost(artifact, call, cache_hit=False), False, metrics
+    return (
+        _stamp_observed_cost(artifact, call, cache_hit=False, metrics=metrics),
+        False,
+        metrics,
+    )
 
 
 def _run_with_metrics(run: Callable[..., dict], application: str, arguments: dict):
@@ -1536,7 +1540,9 @@ def _run_with_metrics(run: Callable[..., dict], application: str, arguments: dic
     return raw, metrics
 
 
-def _stamp_observed_cost(artifact, call: CallPlan, *, cache_hit: bool):
+def _stamp_observed_cost(
+    artifact, call: CallPlan, *, cache_hit: bool, metrics: Optional[dict] = None
+):
     """Return ``artifact`` with ``cost_usd`` set from the run's *observed* outcome.
 
     The converter cannot know whether its response came from the cache — its
@@ -1549,13 +1555,20 @@ def _stamp_observed_cost(artifact, call: CallPlan, *, cache_hit: bool):
 
     - observed cache hit → ``0.0`` — a *known* zero, nothing was billed;
     - observed miss, priced model → ``call.estimated_cost_usd``;
-    - observed miss, unpriced model → ``None`` — unknown, never "free".
+    - observed miss, a model priced per compute second → its rate times the
+      run time fal reported in ``metrics`` (falaw#144);
+    - observed miss, otherwise unpriced → ``None`` — unknown, never "free".
+
+    One rule with :class:`~falaw.ExecutionReport`'s sums:
+    :func:`falaw.outcomes.billed_cost_usd`.
 
     Still an estimate on a miss (prices come from the cost tables, not a
     vendor receipt) — run-level truth with the unknown-price flag lives on
     :class:`~falaw.ExecutionReport`.
     """
-    cost = 0.0 if cache_hit else call.estimated_cost_usd
+    cost = billed_cost_usd(
+        call, cache_hit=cache_hit, inference_time_s=inference_time_s(metrics)
+    )
     return artifact.model_copy(update={"cost_usd": cost})
 
 

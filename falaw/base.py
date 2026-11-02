@@ -32,7 +32,14 @@ def data_table_version(path: str) -> str:
         return hashlib.sha256(f.read()).hexdigest()[:TABLE_VERSION_CHARS]
 
 
-CostKind = Literal["per_call", "per_image", "per_second", "per_token", "per_megapixel"]
+CostKind = Literal[
+    "per_call",
+    "per_image",
+    "per_second",
+    "per_token",
+    "per_megapixel",
+    "per_compute_second",
+]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -45,7 +52,10 @@ class CostEstimate:
             applies to video / TTS where output length matters.
             ``per_image`` covers batch image gen. ``per_megapixel``
             covers high-res image generation. ``per_token`` covers
-            LLM-style endpoints.
+            LLM-style endpoints. ``per_compute_second`` is the runner's
+            machine time, not output length: unknown before the call, and
+            priced afterwards from fal's reported ``inference_time``
+            (:func:`falaw.cost.compute_time_cost_usd`).
         amount: USD (or ``currency``) per unit defined by ``kind``.
         currency: ISO 4217 code. ``"USD"`` is the only supported value
             today; the field exists so we can extend without a schema

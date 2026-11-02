@@ -319,7 +319,8 @@ class TestFetch:
         # duration), which falaw cannot supply at plan time — mapping it
         # would make those calls unpriceable. Deliberately unmapped.
         assert _cost_rule_for_unit("1m tokens") is None
-        assert _cost_rule_for_unit("compute seconds") is None
+        # machine time has its own kind (falaw#144), never per_second
+        assert _cost_rule_for_unit("compute seconds") == ("per_compute_second", 1.0)
         assert _cost_rule_for_unit("units") is None
         assert _cost_rule_for_unit("1000 characters") is None
 
