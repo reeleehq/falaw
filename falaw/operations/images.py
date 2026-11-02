@@ -7,7 +7,13 @@ from typing import Optional
 from ..core import call_fal
 from ..registry import pick_model, register_tool
 from ..results import Result, parse_response
-from ._image_args import image_arguments, known_record
+from ._image_args import (
+    CONTROL_CATEGORY,
+    EASYCONTROL_SPATIAL_MODES,
+    controlled_image_arguments,
+    image_arguments,
+    known_record,
+)
 
 
 @register_tool(
@@ -183,6 +189,87 @@ def generate_image_with_refs(
         )
     model = model_id or pick_model(category="image_edit", quality_tier=quality).id
     arguments = _refs_arguments(prompt, refs, extra)
+    raw = call_fal(model, arguments)
+    return parse_response(raw, application=model, arguments=arguments)
+
+
+@register_tool(
+    name="generate_image_with_control",
+    description=(
+        "Generate an image whose layout follows a guide image's STRUCTURE: its "
+        "edges (canny), depth, pose, HED sketch or segmentation. Use it to make "
+        "a subject land where a rig, a sketch or a reference photo puts it "
+        "(hands on a wheel at the rig's shoulders) instead of where the model "
+        "guesses. Routes to a structural-conditioning model (FLUX.1 [dev] "
+        "General with EasyControl). Returns a falaw.Result."
+    ),
+    tags=("image", "generate", "control", "structure"),
+    input_schema={
+        "type": "object",
+        "required": ["prompt", "control"],
+        "properties": {
+            "prompt": {"type": "string"},
+            "control": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "type": "object",
+                    "required": ["mode", "image"],
+                    "properties": {
+                        "mode": {
+                            "type": "string",
+                            "enum": list(EASYCONTROL_SPATIAL_MODES),
+                        },
+                        "image": {
+                            "type": "string",
+                            "description": "URL of the guide image.",
+                        },
+                        "scale": {"type": "number", "default": 1.0},
+                    },
+                },
+            },
+            "quality": {
+                "type": "string",
+                "enum": ["fast", "balanced", "high", "ultra"],
+                "default": "balanced",
+            },
+            "image_size": {"type": "string", "default": "landscape_4_3"},
+            "model_id": {"type": "string"},
+            "extra": {"type": "object"},
+        },
+    },
+    output_schema={"type": "object", "description": "falaw.Result"},
+    examples=(
+        {
+            "prompt": "a driver's hands on a steering wheel, cel-shaded",
+            "control": [
+                {"mode": "pose", "image": "https://x/rig-pose.png", "scale": 0.7}
+            ],
+        },
+    ),
+)
+def generate_image_with_control(
+    prompt: str,
+    control: list[dict],
+    *,
+    quality: str = "balanced",
+    image_size: str = "landscape_4_3",
+    model_id: Optional[str] = None,
+    extra: Optional[dict] = None,
+) -> Result:
+    """Generate an image conditioned on a guide image's structure (falaw#140).
+
+    ``control`` is ``[{"mode": "canny" | "depth" | "pose" | ..., "image": url,
+    "scale": 0.6}]`` (``scale`` defaults to fal's 1.0). It is sent as fal's
+    ``easycontrols``; ``controlnet_unions`` and the subject-style EasyControl
+    methods pass through ``extra``. For a local guide image, plan the call with
+    :func:`falaw.plan_generate_image_with_control` and a path: the plan uploads
+    it on execution, and keys the cache on its bytes.
+    """
+    model = model_id or pick_model(category=CONTROL_CATEGORY, quality_tier=quality).id
+    arguments = controlled_image_arguments(
+        known_record(model), prompt, image_size, control, extra
+    )
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
 

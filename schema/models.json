@@ -115,6 +115,24 @@
     }
   },
   {
+    "id": "fal-ai/flux-general",
+    "category": "image_control",
+    "description": "FLUX.1 [dev] with structural conditioning: EasyControl (canny, depth, pose, HED sketch, segmentation), ControlNet unions, LoRAs and IP-adapters. The image lands on a guide image's edges, depth or pose.",
+    "aliases": [
+      "flux-general"
+    ],
+    "quality_tier": "balanced",
+    "cost_hint": "low",
+    "docs_url": "https://fal.ai/models/fal-ai/flux-general",
+    "cost_estimate": {
+      "kind": "per_megapixel",
+      "amount": 0.075,
+      "currency": "USD",
+      "notes": "fal model page (llms.txt), fetched 2026-11-02: '$0.075 per megapixels'.",
+      "source": "docs"
+    }
+  },
+  {
     "id": "fal-ai/ideogram/v3",
     "category": "image",
     "description": "Typography-focused image generation",

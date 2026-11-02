@@ -60,6 +60,36 @@
     "quality_tier": "weird"
   },
   {
+    "category": "image_control",
+    "error": null,
+    "expected": "fal-ai/flux-general",
+    "quality_tier": "fast"
+  },
+  {
+    "category": "image_control",
+    "error": null,
+    "expected": "fal-ai/flux-general",
+    "quality_tier": "balanced"
+  },
+  {
+    "category": "image_control",
+    "error": null,
+    "expected": "fal-ai/flux-general",
+    "quality_tier": "high"
+  },
+  {
+    "category": "image_control",
+    "error": null,
+    "expected": "fal-ai/flux-general",
+    "quality_tier": "ultra"
+  },
+  {
+    "category": "image_control",
+    "error": null,
+    "expected": "fal-ai/flux-general",
+    "quality_tier": "weird"
+  },
+  {
     "category": "image_to_video",
     "error": null,
     "expected": "fal-ai/minimax/hailuo-02/pro/image-to-video",

@@ -120,6 +120,49 @@ def plan_generate_image(
 
 
 # ---------------------------------------------------------------------------
+# generate_image_with_control (structural conditioning, falaw#140)
+# ---------------------------------------------------------------------------
+
+
+def plan_generate_image_with_control(
+    prompt: str,
+    control: list[dict],
+    *,
+    quality: str = "balanced",
+    image_size: str = "landscape_4_3",
+    model_id: Optional[str] = None,
+    extra: Optional[dict] = None,
+    metadata: Optional[dict] = None,
+    consult_cache: bool = True,
+    terms_context: Optional[TermsContext] = None,
+) -> CallPlan:
+    """Plan a :func:`falaw.generate_image_with_control` call.
+
+    A control ``image`` may be a URL or a local path (``pathlib.Path``): the
+    path is uploaded only when the call actually runs, and the cache is keyed
+    on its bytes.
+    """
+    from ._image_args import CONTROL_CATEGORY, controlled_image_arguments
+
+    application, record = _resolve_model_id_and_record(
+        model_id=model_id, category=CONTROL_CATEGORY, quality_tier=quality
+    )
+    arguments = controlled_image_arguments(record, prompt, image_size, control, extra)
+    cost, basis = _catalogue_price(record)
+    return make_call_plan(
+        tool="generate_image_with_control",
+        application=application,
+        arguments=arguments,
+        output_kind="image",
+        estimated_cost_usd=cost,
+        metadata=metadata,
+        consult_cache=consult_cache,
+        terms_context=terms_context,
+        cost_basis=basis,
+    )
+
+
+# ---------------------------------------------------------------------------
 # edit_image
 # ---------------------------------------------------------------------------
 

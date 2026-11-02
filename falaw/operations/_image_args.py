@@ -7,7 +7,9 @@ hold, so ``generate_image`` and ``plan_generate_image`` cannot drift apart
 
 from __future__ import annotations
 
-from typing import Optional
+import math
+import os
+from typing import Any, Optional, Sequence
 
 from ..base import ModelRecord
 from ..errors import FalPromptTooLong
@@ -73,3 +75,95 @@ def image_arguments(
             "a 'W:H' ratio."
         )
     return {"prompt": prompt, record.size_param: ratio, **(extra or {})}
+
+
+CONTROL_CATEGORY = "image_control"
+"""Catalogue category of the models that take structural conditioning."""
+
+EASYCONTROL_SPATIAL_MODES = ("canny", "depth", "hedsketch", "pose", "seg")
+"""fal's EasyControl methods that condition on a guide image's *structure*.
+
+Each ``mode`` is sent as ``control_method_url`` with ``image_control_type``
+``"spatial"`` (fal-ai/flux-general's ``easycontrols``). Subject-style methods
+(``subject``, ``ghibli``), custom weights and ``controlnet_unions`` stay
+reachable through ``extra``."""
+
+DFLT_CONTROL_SCALE = 1.0
+"""fal's own default strength for an EasyControl entry."""
+
+
+def easycontrols(control: Sequence[dict]) -> list[dict]:
+    """fal's ``easycontrols`` list for ``control``: ``[{"mode", "image", "scale"?}]``.
+
+    ``image`` is a URL fal can fetch, or (in a plan) an :class:`os.PathLike`
+    that :func:`falaw.make_call_plan` turns into an upload marker.
+
+    >>> easycontrols([{"mode": "canny", "image": "https://x/edges.png", "scale": 0.6}])
+    [{'control_method_url': 'canny', 'image_url': 'https://x/edges.png', 'image_control_type': 'spatial', 'scale': 0.6}]
+
+    Raises:
+        ValueError: no entry, an unknown mode, a missing image, or a scale that
+            is not a finite number.
+    """
+    if not control:
+        raise ValueError(
+            "control needs at least one {'mode', 'image'} entry; use "
+            "generate_image for an unconditioned image."
+        )
+    return [_easycontrol(entry) for entry in control]
+
+
+def _easycontrol(entry: Any) -> dict:
+    if not isinstance(entry, dict):
+        raise ValueError(
+            f"a control entry is a dict with 'mode' and 'image'; got {entry!r}"
+        )
+    unknown = set(entry) - {"mode", "image", "scale"}
+    if unknown:
+        raise ValueError(
+            f"unknown control key(s) {sorted(unknown)}: an entry takes 'mode', "
+            "'image' and 'scale'; pass anything else through extra."
+        )
+    mode = entry.get("mode")
+    if mode not in EASYCONTROL_SPATIAL_MODES:
+        raise ValueError(
+            f"control mode {mode!r} is not one of {list(EASYCONTROL_SPATIAL_MODES)}."
+        )
+    image = entry.get("image")
+    if not (isinstance(image, os.PathLike) or (isinstance(image, str) and image)):
+        raise ValueError(
+            f"control entry {mode!r} needs an 'image': a URL, or a path in a plan."
+        )
+    scale = entry.get("scale", DFLT_CONTROL_SCALE)
+    if (
+        isinstance(scale, bool)
+        or not isinstance(scale, (int, float))
+        or not math.isfinite(scale)
+    ):
+        raise ValueError(f"control scale must be a finite number; got {scale!r}")
+    return {
+        "control_method_url": mode,
+        "image_url": image,
+        "image_control_type": "spatial",
+        "scale": float(scale),
+    }
+
+
+def controlled_image_arguments(
+    record: Optional[ModelRecord],
+    prompt: str,
+    image_size: str,
+    control: Sequence[dict],
+    extra: Optional[dict],
+) -> dict:
+    """The wire arguments for a structurally conditioned image call.
+
+    :func:`image_arguments` plus ``easycontrols``; ``extra`` still wins over
+    everything. Shared by the eager op and its ``plan_*`` sibling so the two
+    hash alike.
+    """
+    return {
+        **image_arguments(record, prompt, image_size, None),
+        "easycontrols": easycontrols(control),
+        **(extra or {}),
+    }

@@ -434,6 +434,14 @@ Examples:
   - `falaw.generate_image_with_refs(**{'prompt': 'Alex looks up at the bell, candlelight on his face', 'reference_image_urls': ['https://x/alex-modelsheet.png'], 'quality': 'balanced'})`
 
 
+### `falaw.generate_image_with_control`
+
+Generate an image whose layout follows a guide image's STRUCTURE: its edges (canny), depth, pose, HED sketch or segmentation. Use it to make a subject land where a rig, a sketch or a reference photo puts it (hands on a wheel at the rig's shoulders) instead of where the model guesses. Routes to a structural-conditioning model (FLUX.1 [dev] General with EasyControl). Returns a falaw.Result.
+
+Examples:
+  - `falaw.generate_image_with_control(**{'prompt': "a driver's hands on a steering wheel, cel-shaded", 'control': [{'mode': 'pose', 'image': 'https://x/rig-pose.png', 'scale': 0.7}]})`
+
+
 ### `falaw.composite_character_in_environment`
 
 Place a specific character into a specific environment as a single still image, preserving the character's identity. Uses an image-edit model that accepts multiple reference images (Flux Kontext, OmniGen v2, SeedEdit). The character image anchors identity; the environment image anchors location, lighting, and palette. Returns a falaw.Result with the composited still.
@@ -587,6 +595,7 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   image                ultra      fal-ai/flux-pro/v1.1-ultra
   image                ultra      fal-ai/nano-banana-pro
   image                unranked   fal-ai/flux-pro
+  image_control        balanced   fal-ai/flux-general
   image_edit           balanced   fal-ai/flux-kontext/dev
   image_edit           balanced   fal-ai/omnigen-v2
   image_edit           high       fal-ai/bytedance/seededit/v3/edit-image
