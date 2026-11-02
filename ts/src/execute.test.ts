@@ -1,12 +1,12 @@
 // execute() and the queue transport against fakes: no test ever hits the network.
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { FalError } from './errors';
 import { execute } from './execute';
 import { makePlan, planGenerateImage, planImageToVideo } from './plan';
 import { CONSTANTS } from './generated/constants';
-import { type ProgressEvent, type Transport, queueTransport } from './transport';
+import { type ProgressEvent, type Transport, newLogLines, queueTransport } from './transport';
 
 describe('execute', () => {
   it('runs calls in order, parses results, and chains "<from N>" by the upstream asset URL', async () => {
@@ -97,6 +97,8 @@ describe('queueTransport', () => {
     expect(q.calls[0]!.headers.has('authorization')).toBe(false);
     expect(JSON.parse(q.calls[0]!.body!)).toMatchObject({ prompt: 'x' });
     expect(q.calls.slice(1).every((c) => c.method === 'GET')).toBe(true);
+    // the relay forwards the query too: the status poll asks fal for the runner's logs
+    expect(q.calls[1]!.headers.get('x-fal-target-url')).toMatch(/\/status\?logs=1$/);
     expect(events).toEqual(['queued', 'provider_queued', 'done']);
   });
 
@@ -128,6 +130,52 @@ describe('queueTransport', () => {
     await expect(
       execute([planGenerateImage({ prompt: 'x' })], { transport: queueTransport({ key: 'SECRET', fetch }) }),
     ).rejects.not.toThrow(/SECRET/);
+  });
+});
+
+describe('newLogLines (the Python side\'s rule, tests/test_events.py)', () => {
+  it('reports a line with a string timestamp once, however often fal re-sends it', () => {
+    const seen = new Set<string>();
+    expect(newLogLines([{ timestamp: 't1', message: 'a' }], seen)).toEqual(['a']);
+    expect(newLogLines([{ timestamp: 't1', message: 'a' }, { timestamp: 't2', message: 'b' }], seen)).toEqual(['b']);
+    // the same message at another time is another line
+    expect(newLogLines([{ timestamp: 't3', message: 'a' }], seen)).toEqual(['a']);
+  });
+
+  it('reports a line without a string timestamp again on every poll', () => {
+    const seen = new Set<string>();
+    const untimed = [{ message: 'tick' }];
+    expect(newLogLines(untimed, seen)).toEqual(['tick']);
+    expect(newLogLines(untimed, seen)).toEqual(['tick']);
+  });
+
+  it('never uses a list, object or number timestamp as a dedup key', () => {
+    const seen = new Set<string>();
+    const odd = [
+      { message: 'list ts', timestamp: ['t3'] },
+      { message: 'dict ts', timestamp: { at: 3 } },
+      { message: 'number ts', timestamp: 3 },
+    ];
+    expect(newLogLines(odd, seen)).toEqual(['list ts', 'dict ts', 'number ts']);
+    expect(newLogLines(odd, seen)).toEqual(['list ts', 'dict ts', 'number ts']);
+    expect(seen.size).toBe(0);
+  });
+
+  it('skips an entry whose message is empty or not a string, and a non-object entry', () => {
+    const weird = [
+      { message: ['not', 'a', 'str'], timestamp: 't1' },
+      { message: { m: 1 }, timestamp: 't2' },
+      { message: 42, timestamp: 't3' },
+      { message: '', timestamp: 't4' },
+      { timestamp: 't5' },
+      'not a dict',
+      null,
+    ];
+    expect(newLogLines(weird, new Set())).toEqual([]);
+  });
+
+  it('a `logs` that is not an array yields nothing', () => {
+    for (const logs of [42, 'line', { message: 'm' }, null, undefined]) expect(newLogLines(logs, new Set())).toEqual([]);
   });
 });
 
@@ -171,16 +219,62 @@ describe('review-driven edges', () => {
         { status: 200 },
       );
     }) as typeof globalThis.fetch;
-    const events: string[] = [];
+    const events: ProgressEvent[] = [];
     await expect(
       execute([planGenerateImage({ prompt: 'x' })], {
         transport: queueTransport({ key: 'k', fetch, pollIntervalMs: 50 }),
         signal: controller.signal,
-        onEvent: (e) => events.push(e.kind),
+        onEvent: (e) => events.push(e),
       }),
     ).rejects.toThrow(/aborted/);
     expect(calls.some((c) => c === 'PUT https://queue.fal.run/x/requests/r/cancel')).toBe(true);
-    expect(events.at(-1)).toBe('error');
+    expect(events.at(-1)).toMatchObject({ kind: 'error', requestId: 'r' });
+  });
+
+  it('a timeout is a FalError whose error event carries the requestId', async () => {
+    const events: ProgressEvent[] = [];
+    await expect(
+      queueTransport({ key: 'k', fetch: scriptedQueue([{ status: 'IN_QUEUE', queue_position: 1 }]), pollIntervalMs: 5, timeoutMs: 0 })(
+        planGenerateImage({ prompt: 'x' }),
+        { onEvent: (e) => events.push(e) },
+      ),
+    ).rejects.toThrow(/timed out/);
+    expect(events.at(-1)).toMatchObject({ kind: 'error', requestId: 'r' });
+  });
+
+  it('an onEvent that throws cannot fail a run: the result still arrives', async () => {
+    const seen: string[] = [];
+    const onEvent = (e: ProgressEvent) => {
+      seen.push(e.kind);
+      if (e.kind === 'done') throw new Error('UI hook bug');
+    };
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { raw, requestId } = await queueTransport({ key: 'k', fetch: scriptedQueue([{ status: 'COMPLETED' }]), pollIntervalMs: 1 })(
+        planGenerateImage({ prompt: 'x' }),
+        { onEvent },
+      );
+      expect(raw).toEqual({ images: [{ url: 'https://v3.fal.media/out.png' }] });
+      expect(requestId).toBe('r');
+      expect(seen.at(-1)).toBe('done');
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('a relative status_url is resolved against the queue host, and logs=1 is never sent twice', async () => {
+    const urls: string[] = [];
+    const fetch = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      urls.push(url);
+      const json = (o: unknown) => new Response(JSON.stringify(o), { status: 200 });
+      if (pathOf(url).endsWith('/status')) return json({ status: 'COMPLETED' });
+      if (url.endsWith('/requests/r')) return json({ images: [] });
+      return json({ request_id: 'r', status_url: '/x/requests/r/status?logs=0', response_url: 'https://queue.fal.run/x/requests/r' });
+    }) as typeof globalThis.fetch;
+    await queueTransport({ key: 'k', fetch, pollIntervalMs: 1 })(planGenerateImage({ prompt: 'x' }), {});
+    expect(urls[1]).toBe('https://queue.fal.run/x/requests/r/status?logs=1');
   });
 
   it("speaks the Python event vocabulary: fal's line on a change only, then being made, then done with metrics", async () => {
