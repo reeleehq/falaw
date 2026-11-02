@@ -238,6 +238,12 @@ those tokens at the routed model's upstream rates exceed that, so a ledger that 
 receipts and a gate that reads quotes agree. That figure is an upstream-rate
 estimate (fal publishes no per-token price), and fal's documented any-llm output
 carries no `usage`, so receipts read the request price until a response reports it.
+A cost the response reports itself (`usage.cost`) is one more basis in that max,
+never an override: fal bills any-llm a flat per-request price, and an OpenRouter
+`usage.cost` passed through is the upstream cost, often far below fal's bill. It
+binds (`cost_source="observed:usage_cost"`) only when it exceeds the estimate.
+A table-priced receipt names the table and the row it read (`rates_table_version`,
+`rate_date`), so it can be audited later.
 
 Rates move. Every row carries its own `source` and `date` (`llm_rates.json`);
 ### A saved plan's price is a past fact --- re-quote it before you gate on it
