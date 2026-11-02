@@ -25,6 +25,7 @@ both `on_log` and `on_event` are given, both fire.
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | [`current_fal_key`](#falaw.core.current_fal_key)()                             | The fal API key bound for the current context, or `None`.                                                               |
 | [`fal_client_for`](#falaw.core.fal_client_for)([api_key])                     | The object whose `subscribe` / `upload_file` falaw calls fal through.                                                   |
+| [`new_log_lines`](#falaw.core.new_log_lines)(logs, seen)                     | The messages in fal's `logs` not reported yet, recording them in `seen`.                                                |
 | [`using_fal_credentials`](#falaw.core.using_fal_credentials)(key)                    | Bind `key` as the fal credential for every [`call_fal()`](#falaw.core.call_fal) in this context. |
 
 ### falaw.core.FAL_KEY_ENVVARS *= ('FAL_KEY', 'FAL_API_KEY')*
@@ -100,6 +101,28 @@ the SDK’s own resolution is preserved exactly.
 
 * **Return type:**
   [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### falaw.core.new_log_lines(logs, seen)
+
+The messages in fal’s `logs` not reported yet, recording them in `seen`.
+
+fal may re-send earlier lines with a later status (IN_PROGRESS polls, then
+COMPLETED). A line is known by its `(timestamp, message)`, and only when
+the timestamp is a string: a line without one is always reported. An entry
+whose message is not a non-empty string is skipped. The TypeScript twin
+(`ts/src/transport.ts` `newLogLines`) replays the `log_lines` parity
+fixture against this rule (falaw#149).
+
+```pycon
+>>> seen = set()
+>>> new_log_lines([{"timestamp": "t1", "message": "a"}], seen)
+['a']
+>>> new_log_lines([{"timestamp": "t1", "message": "a"}, {"message": "b"}], seen)
+['b']
+```
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
 
 ### falaw.core.using_fal_credentials(key)
 

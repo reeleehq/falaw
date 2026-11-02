@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=9cd8e891"></script>
+    <script src="../_static/documentation_options.js?v=ab2062fb"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.91" />
+  <meta name="docsearch:version" content="0.0.92" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -472,6 +472,8 @@ parses them into.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">fixtures/pick_model.json</span></code>, <code class="docutils literal notranslate"><span class="pre">fixtures/cost.json</span></code>, <code class="docutils literal notranslate"><span class="pre">fixtures/canonical.json</span></code>
 — model selection, cost estimation, and the canonical blob + SHA-256 for a set
 of payloads (the byte-form parity that makes <code class="docutils literal notranslate"><span class="pre">plan_hash</span></code> agree).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fixtures/log_lines.json</span></code> — fal’s <code class="docutils literal notranslate"><span class="pre">logs</span></code> arrays, one per status poll, and
+the lines each poll reports once (<a class="reference internal" href="falaw.core.html#falaw.core.new_log_lines" title="falaw.core.new_log_lines"><code class="xref py py-func docutils literal notranslate"><span class="pre">falaw.core.new_log_lines()</span></code></a>).</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">tests/test_schema_export.py</span></code> pins the committed directory to a fresh export,
 so a change here that forgets <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">falaw</span> <span class="pre">export-schema</span></code> fails CI on this

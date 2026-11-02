@@ -28,6 +28,8 @@ What lands in `<out_dir>`:
 - `fixtures/pick_model.json`, `fixtures/cost.json`, `fixtures/canonical.json`
   — model selection, cost estimation, and the canonical blob + SHA-256 for a set
   of payloads (the byte-form parity that makes `plan_hash` agree).
+- `fixtures/log_lines.json` — fal’s `logs` arrays, one per status poll, and
+  the lines each poll reports once ([`falaw.core.new_log_lines()`](falaw.core.html.md#falaw.core.new_log_lines)).
 
 `tests/test_schema_export.py` pins the committed directory to a fresh export,
 so a change here that forgets `python -m falaw export-schema` fails CI on this

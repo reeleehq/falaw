@@ -18,5 +18,6 @@ falaw.core
       call_fal
       current_fal_key
       fal_client_for
+      new_log_lines
       using_fal_credentials
    

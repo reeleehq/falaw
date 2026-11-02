@@ -1,4 +1,4 @@
-> built 2026-11-02 20:09 UTC from c9d56e6 (main) · falaw 0.0.91. Details: build_info.json
+> built 2026-11-02 20:29 UTC from 094c18f (main) · falaw 0.0.92. Details: build_info.json
 
 # index.html.md
 
@@ -2285,6 +2285,7 @@ both `on_log` and `on_event` are given, both fire.
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | [`current_fal_key`](_autosummary/falaw.core.html.md#falaw.core.current_fal_key)()                             | The fal API key bound for the current context, or `None`.                                                               |
 | [`fal_client_for`](_autosummary/falaw.core.html.md#falaw.core.fal_client_for)([api_key])                     | The object whose `subscribe` / `upload_file` falaw calls fal through.                                                   |
+| [`new_log_lines`](_autosummary/falaw.core.html.md#falaw.core.new_log_lines)(logs, seen)                     | The messages in fal's `logs` not reported yet, recording them in `seen`.                                                |
 | [`using_fal_credentials`](_autosummary/falaw.core.html.md#falaw.core.using_fal_credentials)(key)                    | Bind `key` as the fal credential for every [`call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_fal) in this context. |
 
 ### falaw.core.FAL_KEY_ENVVARS *= ('FAL_KEY', 'FAL_API_KEY')*
@@ -2360,6 +2361,28 @@ the SDK’s own resolution is preserved exactly.
 
 * **Return type:**
   [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)
+
+### falaw.core.new_log_lines(logs, seen)
+
+The messages in fal’s `logs` not reported yet, recording them in `seen`.
+
+fal may re-send earlier lines with a later status (IN_PROGRESS polls, then
+COMPLETED). A line is known by its `(timestamp, message)`, and only when
+the timestamp is a string: a line without one is always reported. An entry
+whose message is not a non-empty string is skipped. The TypeScript twin
+(`ts/src/transport.ts` `newLogLines`) replays the `log_lines` parity
+fixture against this rule (falaw#149).
+
+```pycon
+>>> seen = set()
+>>> new_log_lines([{"timestamp": "t1", "message": "a"}], seen)
+['a']
+>>> new_log_lines([{"timestamp": "t1", "message": "a"}, {"message": "b"}], seen)
+['b']
+```
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)
 
 ### falaw.core.using_fal_credentials(key)
 
@@ -10853,6 +10876,8 @@ What lands in `<out_dir>`:
 - `fixtures/pick_model.json`, `fixtures/cost.json`, `fixtures/canonical.json`
   — model selection, cost estimation, and the canonical blob + SHA-256 for a set
   of payloads (the byte-form parity that makes `plan_hash` agree).
+- `fixtures/log_lines.json` — fal’s `logs` arrays, one per status poll, and
+  the lines each poll reports once ([`falaw.core.new_log_lines()`](_autosummary/falaw.core.html.md#falaw.core.new_log_lines)).
 
 `tests/test_schema_export.py` pins the committed directory to a fresh export,
 so a change here that forgets `python -m falaw export-schema` fails CI on this
@@ -11595,16 +11620,18 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-02 20:09 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c9d56e68950f4d54dc4105ad775341e8d4eeea63"><code>c9d56e6</code></a> on branch <code>main</code>, for **falaw 0.0.91** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 20:29 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/094c18fe5892873517e83d8ad89500d756fcd2cc"><code>094c18f</code></a> on branch <code>main</code>, for **falaw 0.0.92** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.92) is behind the latest release on PyPI (0.0.93): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c9d56e68950f4d54dc4105ad775341e8d4eeea63"><code>c9d56e68950f4d54dc4105ad775341e8d4eeea63</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/094c18fe5892873517e83d8ad89500d756fcd2cc"><code>094c18fe5892873517e83d8ad89500d756fcd2cc</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11615,9 +11642,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41516347559">41516347559</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41519369792">41519369792</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>c9d56e68950f4d54dc4105ad775341e8d4eeea63</code> (in the history of the built commit) |
+| Event commit | <code>094c18fe5892873517e83d8ad89500d756fcd2cc</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11642,13 +11669,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.91/">0.0.91</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.93/">0.0.93</a>, newer than the documented version (0.0.92).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout c9d56e68950f4d54dc4105ad775341e8d4eeea63
+git checkout 094c18fe5892873517e83d8ad89500d756fcd2cc
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

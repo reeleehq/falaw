@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=9cd8e891"></script>
+    <script src="../../_static/documentation_options.js?v=ab2062fb"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.91" />
+  <meta name="docsearch:version" content="0.0.92" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -910,32 +910,47 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">_emit_log_lines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_new_log_lines</span><span class="p">(</span><span class="n">update</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_new_log_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">update</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""The messages in ``update.logs`` not reported yet.</span>
-
-<span class="sd">        fal may re-send earlier lines with a later status (IN_PROGRESS polls, then</span>
-<span class="sd">        COMPLETED). A line is known by its ``(timestamp, message)``, and only when</span>
-<span class="sd">        the timestamp is a string: a line without one is always reported. An entry</span>
-<span class="sd">        whose message is not a string is skipped.</span>
-<span class="sd">        """</span>
-        <span class="n">logs</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="s2">"logs"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">logs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="p">():</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span>
-                <span class="k">continue</span>
-            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timestamp"</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">seen_logs</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">seen_logs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">lines</span>
+<span class="w">        </span><span class="sd">"""The messages in ``update.logs`` not reported yet (see :func:`new_log_lines`)."""</span>
+        <span class="k">return</span> <span class="n">new_log_lines</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">update</span><span class="p">,</span> <span class="s2">"logs"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">seen_logs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_emit_log_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">"log"</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="n">provider_phase</span><span class="o">=</span><span class="s2">"in_progress"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="new_log_lines">
+<a class="viewcode-back" href="../../_autosummary/falaw.core.html#falaw.new_log_lines">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">new_log_lines</span><span class="p">(</span><span class="n">logs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">seen</span><span class="p">:</span> <span class="nb">set</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The messages in fal's ``logs`` not reported yet, recording them in ``seen``.</span>
+
+<span class="sd">    fal may re-send earlier lines with a later status (IN_PROGRESS polls, then</span>
+<span class="sd">    COMPLETED). A line is known by its ``(timestamp, message)``, and only when</span>
+<span class="sd">    the timestamp is a string: a line without one is always reported. An entry</span>
+<span class="sd">    whose message is not a non-empty string is skipped. The TypeScript twin</span>
+<span class="sd">    (``ts/src/transport.ts`` ``newLogLines``) replays the ``log_lines`` parity</span>
+<span class="sd">    fixture against this rule (falaw#149).</span>
+
+<span class="sd">    &gt;&gt;&gt; seen = set()</span>
+<span class="sd">    &gt;&gt;&gt; new_log_lines([{"timestamp": "t1", "message": "a"}], seen)</span>
+<span class="sd">    ['a']</span>
+<span class="sd">    &gt;&gt;&gt; new_log_lines([{"timestamp": "t1", "message": "a"}, {"message": "b"}], seen)</span>
+<span class="sd">    ['b']</span>
+<span class="sd">    """</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">logs</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="k">else</span> <span class="p">():</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"message"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">message</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"timestamp"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lines</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_describe_provider_error</span><span class="p">(</span><span class="n">provider_error</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>

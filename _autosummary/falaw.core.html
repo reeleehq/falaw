@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=9cd8e891"></script>
+    <script src="../_static/documentation_options.js?v=ab2062fb"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.91" />
+  <meta name="docsearch:version" content="0.0.92" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -481,7 +481,10 @@ both <code class="docutils literal notranslate"><span class="pre">on_log</span><
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.core.fal_client_for" title="falaw.core.fal_client_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fal_client_for</span></code></a>([api_key])</p></td>
 <td><p>The object whose <code class="docutils literal notranslate"><span class="pre">subscribe</span></code> / <code class="docutils literal notranslate"><span class="pre">upload_file</span></code> falaw calls fal through.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.core.using_fal_credentials" title="falaw.core.using_fal_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">using_fal_credentials</span></code></a>(key)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.core.new_log_lines" title="falaw.core.new_log_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">new_log_lines</span></code></a>(logs, seen)</p></td>
+<td><p>The messages in fal's <code class="docutils literal notranslate"><span class="pre">logs</span></code> not reported yet, recording them in <code class="docutils literal notranslate"><span class="pre">seen</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.core.using_fal_credentials" title="falaw.core.using_fal_credentials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">using_fal_credentials</span></code></a>(key)</p></td>
 <td><p>Bind <code class="docutils literal notranslate"><span class="pre">key</span></code> as the fal credential for every <a class="reference internal" href="#falaw.core.call_fal" title="falaw.core.call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code></a> in this context.</p></td>
 </tr>
 </tbody>
@@ -580,6 +583,30 @@ the SDK’s own resolution is preserved exactly.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="falaw.core.new_log_lines">
+<span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">new_log_lines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seen</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/core.html#new_log_lines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.core.new_log_lines" title="Link to this definition">#</a></dt>
+<dd><p>The messages in fal’s <code class="docutils literal notranslate"><span class="pre">logs</span></code> not reported yet, recording them in <code class="docutils literal notranslate"><span class="pre">seen</span></code>.</p>
+<p>fal may re-send earlier lines with a later status (IN_PROGRESS polls, then
+COMPLETED). A line is known by its <code class="docutils literal notranslate"><span class="pre">(timestamp,</span> <span class="pre">message)</span></code>, and only when
+the timestamp is a string: a line without one is always reported. An entry
+whose message is not a non-empty string is skipped. The TypeScript twin
+(<code class="docutils literal notranslate"><span class="pre">ts/src/transport.ts</span></code> <code class="docutils literal notranslate"><span class="pre">newLogLines</span></code>) replays the <code class="docutils literal notranslate"><span class="pre">log_lines</span></code> parity
+fixture against this rule (falaw#149).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_log_lines</span><span class="p">([{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"t1"</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"a"</span><span class="p">}],</span> <span class="n">seen</span><span class="p">)</span>
+<span class="go">['a']</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_log_lines</span><span class="p">([{</span><span class="s2">"timestamp"</span><span class="p">:</span> <span class="s2">"t1"</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"a"</span><span class="p">},</span> <span class="p">{</span><span class="s2">"message"</span><span class="p">:</span> <span class="s2">"b"</span><span class="p">}],</span> <span class="n">seen</span><span class="p">)</span>
+<span class="go">['b']</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="falaw.core.using_fal_credentials">
 <span class="sig-prename descclassname"><span class="pre">falaw.core.</span></span><span class="sig-name descname"><span class="pre">using_fal_credentials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/core.html#using_fal_credentials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.core.using_fal_credentials" title="Link to this definition">#</a></dt>
 <dd><p>Bind <code class="docutils literal notranslate"><span class="pre">key</span></code> as the fal credential for every <a class="reference internal" href="#falaw.core.call_fal" title="falaw.core.call_fal"><code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code></a> in this context.</p>
@@ -656,6 +683,7 @@ requests.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.call_fal"><code class="docutils literal notranslate"><span class="pre">call_fal()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.current_fal_key"><code class="docutils literal notranslate"><span class="pre">current_fal_key()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.fal_client_for"><code class="docutils literal notranslate"><span class="pre">fal_client_for()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.new_log_lines"><code class="docutils literal notranslate"><span class="pre">new_log_lines()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.core.using_fal_credentials"><code class="docutils literal notranslate"><span class="pre">using_fal_credentials()</span></code></a></li>
 </ul>
   </nav></div>
