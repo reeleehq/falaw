@@ -360,6 +360,7 @@ COST_CASES: tuple[dict, ...] = (
         "megapixels": 1.5,
     },
     {"cost_estimate": {"kind": "per_token", "amount": 0.000002}, "count": 1},
+    {"cost_estimate": {"kind": "per_compute_second", "amount": 0.0005}, "count": 1},
     {
         "cost_estimate": {"kind": "per_token", "amount": 0.000002},
         "count": 1,

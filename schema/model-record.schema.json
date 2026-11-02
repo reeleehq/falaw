@@ -17,7 +17,8 @@
             "per_image",
             "per_second",
             "per_token",
-            "per_megapixel"
+            "per_megapixel",
+            "per_compute_second"
           ],
           "title": "Kind",
           "type": "string"

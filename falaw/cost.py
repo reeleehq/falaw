@@ -277,7 +277,36 @@ def estimate_call_cost(
         if tokens is None:
             return None  # unknown token count → unpriceable, NOT free
         return ce.amount * tokens * count
+    # per_compute_second: machine time is only known once the call has run, so
+    # a plan cannot price it; the run can (compute_time_cost_usd).
     return None
+
+
+def compute_time_cost_usd(
+    application: str, *, inference_time_s: Optional[float]
+) -> Optional[float]:
+    """What a run of ``application`` cost at its catalogued compute-second rate.
+
+    ``inference_time_s`` is the run time fal reported (``Completed.metrics``,
+    read by :attr:`falaw.CallOutcome.inference_time_s`). ``None`` unless the
+    catalogue prices ``application`` ``per_compute_second`` and a run time was
+    reported (falaw#144). fal does not say ``inference_time`` is the billed
+    quantity, so this is an estimate from an observed run time, not a receipt.
+
+    >>> compute_time_cost_usd("fal-ai/flux/dev", inference_time_s=3.0) is None  # per_megapixel
+    True
+    """
+    from .registry import get_model
+
+    if inference_time_s is None:
+        return None
+    try:
+        ce = get_model(application).cost_estimate
+    except KeyError:
+        return None
+    if ce is None or ce.kind != "per_compute_second":
+        return None
+    return ce.amount * inference_time_s
 
 
 def _shot_pricing_lines(

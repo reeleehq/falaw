@@ -81,6 +81,14 @@
   },
   {
     "cost_estimate": {
+      "amount": 0.0005,
+      "kind": "per_compute_second"
+    },
+    "count": 1,
+    "expected": null
+  },
+  {
+    "cost_estimate": {
       "amount": 2e-06,
       "kind": "per_token"
     },

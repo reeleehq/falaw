@@ -56,6 +56,34 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
 
 
 CallStatus = Literal["succeeded", "failed", "blocked"]
+
+
+def inference_time_s(metrics: Optional[dict]) -> Optional[float]:
+    """``metrics["inference_time"]`` as finite, non-negative seconds, or ``None``."""
+    from .cost import as_seconds
+
+    return as_seconds((metrics or {}).get("inference_time"))
+
+
+def billed_cost_usd(
+    call: "CallPlan", *, cache_hit: bool, inference_time_s: Optional[float]
+) -> Optional[float]:
+    """Estimated USD one executed call billed, or ``None`` when unknown.
+
+    ``0.0`` on a cache hit (nothing was billed); else the call's plan-time
+    estimate; else, for a model priced per compute second, its rate times the
+    run time fal reported (falaw#144). The one rule the executor stamps on the
+    artifact and :class:`ExecutionReport` sums, so the two cannot disagree.
+    """
+    from .cost import compute_time_cost_usd
+
+    if cache_hit:
+        return 0.0
+    if call.estimated_cost_usd is not None:
+        return call.estimated_cost_usd
+    return compute_time_cost_usd(call.application, inference_time_s=inference_time_s)
+
+
 """What became of one :class:`~falaw.CallPlan` in a run. See the module docstring."""
 
 
@@ -136,9 +164,20 @@ class CallOutcome:
         ...             metrics={"inference_time": "3.2"}).inference_time_s is None
         True
         """
-        from .cost import as_seconds
+        return inference_time_s(self.metrics)
 
-        return as_seconds((self.metrics or {}).get("inference_time"))
+    @property
+    def billed_cost_usd(self) -> Optional[float]:
+        """Estimated USD this call billed, or ``None`` when unknown.
+
+        See :func:`billed_cost_usd`; a call that did not run (blocked) or did
+        not succeed still answers, from its plan-time estimate.
+        """
+        return billed_cost_usd(
+            self.call,
+            cache_hit=self.cache_hit,
+            inference_time_s=self.inference_time_s,
+        )
 
     def __post_init__(self) -> None:
         """Reject an outcome whose payload contradicts its status.
@@ -233,8 +272,10 @@ class ExecutionReport:
     def estimated_spend_usd(self) -> float:
         """Estimated USD billed by this run: succeeded calls that were **not** cache hits.
 
-        Estimated, because it sums :attr:`falaw.CallPlan.estimated_cost_usd` —
-        falaw does not read fal's invoice. Two deliberate exclusions:
+        Estimated, because it sums :attr:`CallOutcome.billed_cost_usd` (the
+        plan-time estimate, or for a per-compute-second model its rate times
+        fal's reported run time) — falaw does not read fal's invoice. Two
+        deliberate exclusions:
 
         - **Cache hits cost nothing**, and this reads the *observed*
           :attr:`CallOutcome.cache_hit`, not the plan-time prediction.
@@ -245,7 +286,7 @@ class ExecutionReport:
         """
         return sum(
             (
-                o.call.estimated_cost_usd or 0.0
+                o.billed_cost_usd or 0.0
                 for o in self.outcomes
                 if o.status == "succeeded" and not o.cache_hit
             ),
@@ -277,9 +318,7 @@ class ExecutionReport:
             return o.status == "failed" or (o.status == "succeeded" and not o.cache_hit)
 
         return any(
-            o.call.estimated_cost_usd is None
-            for o in self.outcomes
-            if _may_have_billed(o)
+            o.billed_cost_usd is None for o in self.outcomes if _may_have_billed(o)
         )
 
     @property

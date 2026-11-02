@@ -564,7 +564,7 @@ Re-crawl every per-page .md endpoint listed in `fal_ai_docs_index.md` with condi
 
 ### `falaw.refresh_model_prices`
 
-Fetch fal's unit pricing for every model in `falaw/data/models.json` and write structured cost_estimates with source='api'. Hand-written prices the API disagrees with are overwritten and the delta reported. Units with no CostKind mapping (GPU/compute units) are recorded, not guessed. Reads the vendor's free pricing endpoint; makes no billed call. Pass `write=True` to persist; default is a dry-run summary.
+Fetch fal's unit pricing for every model in `falaw/data/models.json` and write structured cost_estimates with source='api'. Hand-written prices the API disagrees with are overwritten and the delta reported. Units with no CostKind mapping (e.g. 'units', characters) are recorded, not guessed. Reads the vendor's free pricing endpoint; makes no billed call. Pass `write=True` to persist; default is a dry-run summary.
 
 
 ### `falaw.refresh_llm_rates`
