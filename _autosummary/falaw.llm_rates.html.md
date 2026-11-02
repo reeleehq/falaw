@@ -85,9 +85,9 @@ True
 
 ### Classes
 
-| [`LlmCostBases`](#falaw.llm_rates.LlmCostBases)(\*, per_call_usd[, token_usd])   | What `count` calls routing one model cost, on each basis the table prices.   |
-|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| [`LlmRate`](#falaw.llm_rates.LlmRate)(\*, model, tier, per_call_usd[, ...]) | What one routed model costs, on every basis the table knows.                 |
+| [`LlmCostBases`](#falaw.llm_rates.LlmCostBases)(\*, per_call_usd[, token_usd, ...])   | What `count` calls routing one model cost, on each basis the table prices.   |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`LlmRate`](#falaw.llm_rates.LlmRate)(\*, model, tier, per_call_usd[, ...])      | What one routed model costs, on every basis the table knows.                 |
 
 ### Exceptions
 
@@ -119,7 +119,7 @@ row’s `date` against before returning a quote.
 
 Identity a [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis) records for an LLM-priced call.
 
-### *class* falaw.llm_rates.LlmCostBases(, per_call_usd, token_usd=None)
+### *class* falaw.llm_rates.LlmCostBases(, per_call_usd, token_usd=None, table_version='', rate_date='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -140,6 +140,27 @@ the row publishes no token rates.
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+#### table_version
+
+The version of the table priced from
+([`llm_rates_table_version()`](#falaw.llm_rates.llm_rates_table_version)), or `""` for a caller-supplied
+`rates=` table, which has no file to digest (as
+[`falaw.reprice.llm_cost_basis()`](falaw.reprice.html.md#falaw.reprice.llm_cost_basis) records it).
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+#### rate_date
+
+The priced row’s `date` ([`LlmRate.date`](#falaw.llm_rates.LlmRate.date)): the day
+these rates were read.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+The last two are the bases’ provenance, which a record of spend keeps
+beside them so it can be audited later (falaw#135).
 
 #### bound()
 

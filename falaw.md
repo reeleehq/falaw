@@ -1,4 +1,4 @@
-> built 2026-10-30 12:54 UTC from a102e02 (main) · falaw 0.0.86. Details: build_info.json
+> built 2026-11-02 19:24 UTC from b78adb6 (main) · falaw 0.0.87. Details: build_info.json
 
 # index.html.md
 
@@ -4157,7 +4157,7 @@ True when both token columns are populated, so a token quote is possible.
 The base token rates as the shared regime type, or `None` when the
 row has no published upstream token rate.
 
-### *class* falaw.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown')
+### *class* falaw.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown', rates_table_version='', rate_date='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -4198,14 +4198,28 @@ Field semantics, honest by construction:
   model and not the `fal-ai/any-llm` record because the record carries fal’s *standard* tier, and a premium
   routed model bills ten times that: pricing every turn from the record
   under-reported premium spend tenfold in the ledger a consumer sums
-  (falaw#55). `None` only when nothing can price it at all.
+  (falaw#55). A cost the response itself reports (`usage.cost`) is one
+  more basis in that max, never an override (falaw#135): fal bills
+  any-llm a flat per-request price, and a `usage.cost` passed through
+  from OpenRouter is the *upstream* cost, which can be far below fal’s
+  bill, so a receipt never records less than its estimate. `None` only
+  when nothing can price it at all.
 - `cost_source` says which of those cases produced the number, so a
   receipt consumer never has to guess: `"cache_hit"`,
   `"rate_table:per_call"`, `"rate_table:upstream_tokens"` (the
   reported tokens at upstream rates exceeded the request price: an
   upstream-rate estimate, not a fal-published price),
+  `"observed:usage_cost"` (the response reported a `usage.cost`
+  strictly above the estimate, or nothing else could price the call),
   `"registry:<kind>"` (the fallback for a model the table does not
   price), or `"unknown"`.
+- `rates_table_version` / `rate_date` say which rate table, and which
+  day’s row of it, a `"rate_table:*"` cost was read from
+  ([`falaw.llm_rates.LlmCostBases.table_version`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases.table_version) and
+  [`rate_date`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases.rate_date)), so a receipt can be
+  > audited or re-quoted later the way a plan’s [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis)
+  > is. Both are set exactly when `cost_source` starts with
+  > `"rate_table:"`, and `""` otherwise.
 
 ### *class* falaw.LlmTokenCounts(, fresh_input=0, cache_read=0, cache_write=0, cache_write_1h=0, output=0, reasoning=0)
 
@@ -7063,9 +7077,9 @@ True
 
 ### Classes
 
-| [`LlmCostBases`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases)(\*, per_call_usd[, token_usd])   | What `count` calls routing one model cost, on each basis the table prices.   |
-|------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| [`LlmRate`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)(\*, model, tier, per_call_usd[, ...]) | What one routed model costs, on every basis the table knows.                 |
+| [`LlmCostBases`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases)(\*, per_call_usd[, token_usd, ...])   | What `count` calls routing one model cost, on each basis the table prices.   |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`LlmRate`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)(\*, model, tier, per_call_usd[, ...])      | What one routed model costs, on every basis the table knows.                 |
 
 ### Exceptions
 
@@ -7097,7 +7111,7 @@ row’s `date` against before returning a quote.
 
 Identity a [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis) records for an LLM-priced call.
 
-### *class* falaw.llm_rates.LlmCostBases(, per_call_usd, token_usd=None)
+### *class* falaw.llm_rates.LlmCostBases(, per_call_usd, token_usd=None, table_version='', rate_date='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -7118,6 +7132,27 @@ the row publishes no token rates.
 
 * **Type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
+
+#### table_version
+
+The version of the table priced from
+([`llm_rates_table_version()`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.llm_rates_table_version)), or `""` for a caller-supplied
+`rates=` table, which has no file to digest (as
+[`falaw.reprice.llm_cost_basis()`](_autosummary/falaw.reprice.html.md#falaw.reprice.llm_cost_basis) records it).
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+#### rate_date
+
+The priced row’s `date` ([`LlmRate.date`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmRate.date)): the day
+these rates were read.
+
+* **Type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+The last two are the bases’ provenance, which a record of spend keeps
+beside them so it can be audited later (falaw#135).
 
 #### bound()
 
@@ -8040,7 +8075,7 @@ plain Python (str or parsed dict).
 | [`LlmReceipt`](_autosummary/falaw.operations.llm.html.md#falaw.operations.llm.LlmReceipt)(application, model, cache_hit, ...)   | What one eager LLM call cost — the record the eager path never kept.   |
 |---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 
-### *class* falaw.operations.llm.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown')
+### *class* falaw.operations.llm.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown', rates_table_version='', rate_date='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -8081,14 +8116,28 @@ Field semantics, honest by construction:
   model and not the `fal-ai/any-llm` record because the record carries fal’s *standard* tier, and a premium
   routed model bills ten times that: pricing every turn from the record
   under-reported premium spend tenfold in the ledger a consumer sums
-  (falaw#55). `None` only when nothing can price it at all.
+  (falaw#55). A cost the response itself reports (`usage.cost`) is one
+  more basis in that max, never an override (falaw#135): fal bills
+  any-llm a flat per-request price, and a `usage.cost` passed through
+  from OpenRouter is the *upstream* cost, which can be far below fal’s
+  bill, so a receipt never records less than its estimate. `None` only
+  when nothing can price it at all.
 - `cost_source` says which of those cases produced the number, so a
   receipt consumer never has to guess: `"cache_hit"`,
   `"rate_table:per_call"`, `"rate_table:upstream_tokens"` (the
   reported tokens at upstream rates exceeded the request price: an
   upstream-rate estimate, not a fal-published price),
+  `"observed:usage_cost"` (the response reported a `usage.cost`
+  strictly above the estimate, or nothing else could price the call),
   `"registry:<kind>"` (the fallback for a model the table does not
   price), or `"unknown"`.
+- `rates_table_version` / `rate_date` say which rate table, and which
+  day’s row of it, a `"rate_table:*"` cost was read from
+  ([`falaw.llm_rates.LlmCostBases.table_version`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases.table_version) and
+  [`rate_date`](_autosummary/falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases.rate_date)), so a receipt can be
+  > audited or re-quoted later the way a plan’s [`falaw.CostBasis`](_autosummary/falaw.html.md#falaw.CostBasis)
+  > is. Both are set exactly when `cost_source` starts with
+  > `"rate_table:"`, and `""` otherwise.
 
 ### falaw.operations.llm.apply_note_to_beat(beat, note, , model='anthropic/claude-sonnet-4.5')
 
@@ -11305,18 +11354,16 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-10-30 12:54 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/a102e022b82416a481871b6b12d484314204425b"><code>a102e02</code></a> on branch <code>main</code>, for **falaw 0.0.86** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:24 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/b78adb665c6a186edde2ff30c0dd93c0a3d4df7e"><code>b78adb6</code></a> on branch <code>main</code>, for **falaw 0.0.87** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.86) is behind the latest release on PyPI (0.0.87): `pip install falaw` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/a102e022b82416a481871b6b12d484314204425b"><code>a102e022b82416a481871b6b12d484314204425b</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/b78adb665c6a186edde2ff30c0dd93c0a3d4df7e"><code>b78adb665c6a186edde2ff30c0dd93c0a3d4df7e</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11327,9 +11374,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41058708167">41058708167</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41508752333">41508752333</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>a102e022b82416a481871b6b12d484314204425b</code> (in the history of the built commit) |
+| Event commit | <code>b78adb665c6a186edde2ff30c0dd93c0a3d4df7e</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11354,13 +11401,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.87/">0.0.87</a>, newer than the documented version (0.0.86).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.87/">0.0.87</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout a102e022b82416a481871b6b12d484314204425b
+git checkout b78adb665c6a186edde2ff30c0dd93c0a3d4df7e
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -30,8 +30,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../_static/styles/theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
-<link href="../_static/styles/pydata-sphinx-theme.css?digest=18bd87630a240e9c25be" rel="stylesheet" />
+  <link href="../_static/styles/theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=75c7c72ae941e8b558d8" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d75fae25" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx_autodoc_typehints.css?v=057ac668" />
@@ -39,12 +39,12 @@
     <link rel="stylesheet" type="text/css" href="../_static/epythet.css?v=f0eeacdc" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../_static/scripts/fontawesome.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/fontawesome.js?digest=75c7c72ae941e8b558d8"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be" />
-<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be" />
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=339ea818"></script>
+    <script src="../_static/documentation_options.js?v=97e62c01"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.86" />
+  <meta name="docsearch:version" content="0.0.87" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -106,7 +106,7 @@
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation" aria-expanded="false" aria-controls="pst-primary-sidebar-modal">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -176,14 +176,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -218,7 +218,7 @@
   
 
   
-    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+    <button type="button" class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page" aria-expanded="false" aria-controls="pst-secondary-sidebar-modal">
       <span class="fa-solid fa-outdent"></span>
     </button>
   
@@ -232,7 +232,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <dialog id="pst-primary-sidebar-modal" tabindex="-1"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
         
 
@@ -275,14 +275,14 @@
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
   <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
-    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
-    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
-    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -418,7 +418,7 @@
     
     <li class="breadcrumb-item breadcrumb-home">
       <a href="../index.html" class="nav-link" aria-label="Home">
-        <i class="fa-solid fa-home"></i>
+        <i class="fa-solid fa-house"></i>
       </a>
     </li>
     
@@ -2091,7 +2091,7 @@ row has no published upstream token rate.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="falaw.LlmReceipt">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">LlmReceipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_hit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_cost_usd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unknown'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/llm.html#LlmReceipt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.LlmReceipt" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">falaw.</span></span><span class="sig-name descname"><span class="pre">LlmReceipt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">application</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_hit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chars_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokens_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">estimated_cost_usd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cost_source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rates_table_version</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate_date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/operations/llm.html#LlmReceipt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.LlmReceipt" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>What one eager LLM call cost — the record the eager path never kept.</p>
 <p>The falaw half of falaw#50’s option B: the eager <a class="reference internal" href="#falaw.llm_complete" title="falaw.llm_complete"><code class="xref py py-func docutils literal notranslate"><span class="pre">llm_complete()</span></code></a>
@@ -2131,14 +2131,31 @@ for a cached prompt the figure is an upper estimate. It is the routed
 model and not the <code class="docutils literal notranslate"><span class="pre">fal-ai/any-llm</span></code> record because the record carries fal’s <em>standard</em> tier, and a premium
 routed model bills ten times that: pricing every turn from the record
 under-reported premium spend tenfold in the ledger a consumer sums
-(falaw#55). <code class="docutils literal notranslate"><span class="pre">None</span></code> only when nothing can price it at all.</p></li>
+(falaw#55). A cost the response itself reports (<code class="docutils literal notranslate"><span class="pre">usage.cost</span></code>) is one
+more basis in that max, never an override (falaw#135): fal bills
+any-llm a flat per-request price, and a <code class="docutils literal notranslate"><span class="pre">usage.cost</span></code> passed through
+from OpenRouter is the <em>upstream</em> cost, which can be far below fal’s
+bill, so a receipt never records less than its estimate. <code class="docutils literal notranslate"><span class="pre">None</span></code> only
+when nothing can price it at all.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">cost_source</span></code> says which of those cases produced the number, so a
 receipt consumer never has to guess: <code class="docutils literal notranslate"><span class="pre">&quot;cache_hit&quot;</span></code>,
 <code class="docutils literal notranslate"><span class="pre">&quot;rate_table:per_call&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;rate_table:upstream_tokens&quot;</span></code> (the
 reported tokens at upstream rates exceeded the request price: an
 upstream-rate estimate, not a fal-published price),
+<code class="docutils literal notranslate"><span class="pre">&quot;observed:usage_cost&quot;</span></code> (the response reported a <code class="docutils literal notranslate"><span class="pre">usage.cost</span></code>
+strictly above the estimate, or nothing else could price the call),
 <code class="docutils literal notranslate"><span class="pre">&quot;registry:&lt;kind&gt;&quot;</span></code> (the fallback for a model the table does not
 price), or <code class="docutils literal notranslate"><span class="pre">&quot;unknown&quot;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rates_table_version</span></code> / <code class="docutils literal notranslate"><span class="pre">rate_date</span></code> say which rate table, and which
+day’s row of it, a <code class="docutils literal notranslate"><span class="pre">&quot;rate_table:*&quot;</span></code> cost was read from
+(<a class="reference internal" href="falaw.llm_rates.html#falaw.llm_rates.LlmCostBases.table_version" title="falaw.llm_rates.LlmCostBases.table_version"><code class="xref py py-attr docutils literal notranslate"><span class="pre">falaw.llm_rates.LlmCostBases.table_version</span></code></a> and
+<a class="reference internal" href="falaw.llm_rates.html#falaw.llm_rates.LlmCostBases.rate_date" title="falaw.llm_rates.LlmCostBases.rate_date"><code class="xref py py-attr docutils literal notranslate"><span class="pre">rate_date</span></code></a>), so a receipt can be</p>
+<blockquote>
+<div><p>audited or re-quoted later the way a plan’s <a class="reference internal" href="#falaw.CostBasis" title="falaw.CostBasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.CostBasis</span></code></a>
+is. Both are set exactly when <code class="docutils literal notranslate"><span class="pre">cost_source</span></code> starts with
+<code class="docutils literal notranslate"><span class="pre">&quot;rate_table:&quot;</span></code>, and <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> otherwise.</p>
+</div></blockquote>
+</li>
 </ul>
 <dl class="field-list simple">
 </dl>
@@ -5173,7 +5190,7 @@ shot-list builder shows as its model-limits reference.</p>
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <dialog id="pst-secondary-sidebar-modal" tabindex="-1"></dialog>
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
@@ -5521,8 +5538,8 @@ shot-list builder shows as its model-limits reference.</p>
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../_static/scripts/bootstrap.js?digest=18bd87630a240e9c25be"></script>
-<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=18bd87630a240e9c25be"></script>
+  <script defer src="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -5534,7 +5551,7 @@ shot-list builder shows as its model-limits reference.</p>
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.23.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.24.0.
 </p></div>
       
     </div>

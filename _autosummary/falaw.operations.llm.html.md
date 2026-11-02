@@ -24,7 +24,7 @@ plain Python (str or parsed dict).
 | [`LlmReceipt`](#falaw.operations.llm.LlmReceipt)(application, model, cache_hit, ...)   | What one eager LLM call cost — the record the eager path never kept.   |
 |---------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
 
-### *class* falaw.operations.llm.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown')
+### *class* falaw.operations.llm.LlmReceipt(application, model, cache_hit, chars_in, chars_out, tokens_in=None, tokens_out=None, estimated_cost_usd=None, cost_source='unknown', rates_table_version='', rate_date='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -65,14 +65,28 @@ Field semantics, honest by construction:
   model and not the `fal-ai/any-llm` record because the record carries fal’s *standard* tier, and a premium
   routed model bills ten times that: pricing every turn from the record
   under-reported premium spend tenfold in the ledger a consumer sums
-  (falaw#55). `None` only when nothing can price it at all.
+  (falaw#55). A cost the response itself reports (`usage.cost`) is one
+  more basis in that max, never an override (falaw#135): fal bills
+  any-llm a flat per-request price, and a `usage.cost` passed through
+  from OpenRouter is the *upstream* cost, which can be far below fal’s
+  bill, so a receipt never records less than its estimate. `None` only
+  when nothing can price it at all.
 - `cost_source` says which of those cases produced the number, so a
   receipt consumer never has to guess: `"cache_hit"`,
   `"rate_table:per_call"`, `"rate_table:upstream_tokens"` (the
   reported tokens at upstream rates exceeded the request price: an
   upstream-rate estimate, not a fal-published price),
+  `"observed:usage_cost"` (the response reported a `usage.cost`
+  strictly above the estimate, or nothing else could price the call),
   `"registry:<kind>"` (the fallback for a model the table does not
   price), or `"unknown"`.
+- `rates_table_version` / `rate_date` say which rate table, and which
+  day’s row of it, a `"rate_table:*"` cost was read from
+  ([`falaw.llm_rates.LlmCostBases.table_version`](falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases.table_version) and
+  [`rate_date`](falaw.llm_rates.html.md#falaw.llm_rates.LlmCostBases.rate_date)), so a receipt can be
+  > audited or re-quoted later the way a plan’s [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis)
+  > is. Both are set exactly when `cost_source` starts with
+  > `"rate_table:"`, and `""` otherwise.
 
 ### falaw.operations.llm.apply_note_to_beat(beat, note, , model='anthropic/claude-sonnet-4.5')
 
