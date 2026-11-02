@@ -330,6 +330,7 @@ PICK_MODEL_CASES: tuple[tuple[str, str], ...] = tuple(
     for category in (
         "image",
         "image_edit",
+        "image_control",
         "image_to_video",
         "text_to_video",
         "reference_to_video",

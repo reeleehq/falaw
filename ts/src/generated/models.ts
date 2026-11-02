@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "f0b3aec5a3e8";
+export const MODELS_TABLE_VERSION = "2e3874728328";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -123,6 +123,24 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Flux dev: ~$0.025/MP. Default 1024x1024 ≈ $0.026/image.",
       "source": "api"
+    }
+  },
+  {
+    "id": "fal-ai/flux-general",
+    "category": "image_control",
+    "description": "FLUX.1 [dev] with structural conditioning: EasyControl (canny, depth, pose, HED sketch, segmentation), ControlNet unions, LoRAs and IP-adapters. The image lands on a guide image's edges, depth or pose.",
+    "aliases": [
+      "flux-general"
+    ],
+    "quality_tier": "balanced",
+    "cost_hint": "low",
+    "docs_url": "https://fal.ai/models/fal-ai/flux-general",
+    "cost_estimate": {
+      "kind": "per_megapixel",
+      "amount": 0.075,
+      "currency": "USD",
+      "notes": "fal model page (llms.txt), fetched 2026-11-02: '$0.075 per megapixels'.",
+      "source": "docs"
     }
   },
   {

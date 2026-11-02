@@ -43,6 +43,15 @@
     "observed_on": "2026-10-27"
   },
   {
+    "model_id": "fal-ai/flux-general",
+    "backend": "fal",
+    "license": "LicenseRef-flux-1-dev-non-commercial",
+    "license_binds_us": "no",
+    "notes": "Hosted FLUX.1 [dev] pipeline: fal holds the weights licence and fal's terms govern use. fal's model page carries a 'Commercial use' label; commercial use and tenancy not reviewed against fal's terms.",
+    "source_url": "https://fal.ai/models/fal-ai/flux-general",
+    "observed_on": "2026-11-02"
+  },
+  {
     "model_id": "fal-ai/mmaudio-v2/text-to-audio",
     "backend": "fal",
     "license": "CC-BY-NC-4.0",
