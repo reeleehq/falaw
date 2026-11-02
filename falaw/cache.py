@@ -122,7 +122,49 @@ def cache_get(
         return None
     with open(path) as f:
         manifest = json.load(f)
+    if _EMBEDDED_KEY.format("raw") in manifest:
+        return json.loads(manifest[_EMBEDDED_KEY.format("raw")])
     return manifest.get("raw")
+
+
+_EMBEDDED_KEY = "{}_json"
+"""Where a manifest field strict JSON cannot hold is kept, as JSON text (falaw#142)."""
+
+_EMBEDDABLE_FIELDS = ("raw", "wire_arguments")
+"""Manifest fields that carry a response or what was sent, as received."""
+
+
+def _manifest_text(manifest: dict) -> str:
+    """``manifest`` as strict JSON, keeping any value strict JSON cannot hold.
+
+    A response may carry a non-finite float (``NaN``, ``Infinity``):
+    ``fal_client`` parses them, and refusing one here would leave a call fal
+    has already billed uncached, to be billed again (falaw#142). Bare ``NaN``
+    in the file would be invalid JSON to every strict parser, so such a field
+    is stored instead as JSON text under ``<field>_json``: the manifest stays
+    strict, and :func:`cache_get` restores the value exactly with
+    :func:`json.loads`. A field that strict JSON can hold is written as-is.
+    """
+
+    def dump(obj, *, allow_nan: bool) -> str:
+        # `default=str` is display-only, never keyed (see cache_put).
+        return json.dumps(obj, indent=2, default=str, allow_nan=allow_nan)
+
+    try:
+        return dump(manifest, allow_nan=False)
+    except ValueError:
+        pass
+    embedded = dict(manifest)
+    for name in _EMBEDDABLE_FIELDS:
+        if name not in embedded:
+            continue
+        try:
+            dump(embedded[name], allow_nan=False)
+        except ValueError:
+            embedded[_EMBEDDED_KEY.format(name)] = json.dumps(
+                embedded.pop(name), default=str
+            )
+    return dump(embedded, allow_nan=False)
 
 
 def cache_put(
@@ -175,13 +217,14 @@ def cache_put(
     path = _manifest_path(key)
     tmp = f"{path}.{uuid.uuid4().hex[:8]}.part"
     try:
+        text = _manifest_text(manifest)
         with open(tmp, "w") as f:
-            # `default=str` here is display-only, never keyed: `raw` and
+            # `default=str` is display-only, never keyed: `raw` and
             # `wire_arguments` may hold values we render for debugging. But
-            # `allow_nan=False` is load-bearing — Python's json would happily
-            # write a bare `NaN`, valid to itself and invalid JSON to every
-            # strict parser, leaving an on-disk entry nothing else can read.
-            json.dump(manifest, f, indent=2, default=str, allow_nan=False)
+            # the manifest is strict JSON — Python's json would happily write a
+            # bare `NaN`, valid to itself and invalid to every strict parser —
+            # so a non-finite value is embedded as text (`_manifest_text`).
+            f.write(text)
         os.replace(tmp, path)
     except BaseException:
         _unlink_quietly(tmp)
@@ -318,8 +361,8 @@ def cached_call_fal(
     except Exception as e:
         # A paid result is never discarded (see falaw.plan.execute's failure
         # policy): fal has already run — and billed — this call, so a cache
-        # WRITE failure (a response carrying a non-finite float that the
-        # strict manifest refuses, a full disk, a permission error) must
+        # WRITE failure (a full disk, a permission error, a response json
+        # cannot encode at all) must
         # degrade to "uncached", not destroy the response. On refresh=True the
         # pre-refresh entry is dropped too — the caller explicitly asked for
         # fresh, so letting the old entry keep serving would quietly undo the
