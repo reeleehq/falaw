@@ -173,16 +173,31 @@ def video_duration_arg(record: ModelRecord, duration_s: float) -> str:
     return str(seconds)
 
 
-def _numeric_seconds(value) -> float | None:
-    """A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk
-    (unknown, so the call stays unpriced rather than free)."""
-    if isinstance(value, bool) or not isinstance(value, (int, float, str)):
+def as_seconds(value, *, allow_str: bool = False) -> Optional[float]:
+    """``value`` as a duration in seconds: a finite, non-negative float, or ``None``.
+
+    ``None`` means *unknown*, never zero: absent, a bool, a non-number, NaN, an
+    infinity, a negative, or an int too large for a float. ``allow_str`` also
+    reads a numeric string (fal spells some durations as a string enum, e.g.
+    Seedance's ``"5"``); ``"auto"`` and other text stay ``None``. The one place
+    falaw turns a value into seconds, whether a duration argument (priced) or a
+    run's reported ``inference_time`` (observed, falaw#127).
+
+    >>> as_seconds(3), as_seconds("5", allow_str=True), as_seconds("5")
+    (3.0, 5.0, None)
+    >>> [as_seconds(v) for v in (True, -1.0, float("nan"), 10**400)]
+    [None, None, None, None]
+    """
+    accepted = (int, float, str) if allow_str else (int, float)
+    if isinstance(value, bool) or not isinstance(value, accepted):
         return None
     try:
         seconds = float(value)
-    except ValueError:
+    except (ValueError, OverflowError):  # text that is not a number; a huge int
         return None
-    return seconds if math.isfinite(seconds) else None
+    if not (math.isfinite(seconds) and seconds >= 0):
+        return None
+    return seconds + 0.0  # -0.0 + 0.0 == 0.0: a zero duration carries no sign
 
 
 def video_call_arguments(
@@ -210,7 +225,7 @@ def video_call_arguments(
             arguments["duration"] = video_duration_arg(record, duration_s)
         spec = record.param_specs["duration"]
         dflt = spec.get("default") if isinstance(spec, dict) else None
-        seconds = _numeric_seconds(arguments.get("duration", dflt))
+        seconds = as_seconds(arguments.get("duration", dflt), allow_str=True)
     return arguments, seconds
 
 

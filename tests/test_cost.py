@@ -418,3 +418,44 @@ def test_the_rollup_notes_a_per_call_video_model_without_a_duration():
     assert [ln.note for ln in rollup.lines if ln.kind != "shot.image"] == [
         "image_to_video"
     ]
+
+
+@pytest.mark.parametrize(
+    "value, allow_str, seconds",
+    [
+        (3, False, 3.0),
+        (2.5, False, 2.5),
+        (-0.0, False, 0.0),
+        ("5", True, 5.0),
+        ("5", False, None),
+        ("auto", True, None),
+        (True, False, None),
+        (None, False, None),
+        (-1.0, False, None),
+        (float("nan"), False, None),
+        (float("inf"), False, None),
+        ("1e400", True, None),
+        (10**400, False, None),  # an int too large for a float: no OverflowError
+    ],
+)
+def test_as_seconds_is_a_finite_non_negative_float_or_unknown(
+    value, allow_str, seconds
+):
+    from falaw.cost import as_seconds
+
+    got = as_seconds(value, allow_str=allow_str)
+    assert got == seconds and (got is None) == (seconds is None)
+    if got == 0.0:
+        assert str(got) == "0.0"  # never "-0.0"
+
+
+def test_a_huge_duration_argument_is_unpriced_not_a_crash():
+    from falaw.cost import video_call_arguments
+
+    record = ModelRecord(
+        id="x", category="video", param_specs={"duration": {"default": "5"}}
+    )
+    _, seconds = video_call_arguments(
+        record, {}, duration_s=None, extra={"duration": 10**400}
+    )
+    assert seconds is None
