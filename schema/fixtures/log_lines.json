@@ -1,0 +1,141 @@
+[
+  {
+    "expected": [
+      [
+        "loading"
+      ],
+      [
+        "step 1"
+      ],
+      []
+    ],
+    "name": "a re-sent timed line is reported once",
+    "polls": [
+      [
+        {
+          "message": "loading",
+          "timestamp": "t1"
+        }
+      ],
+      [
+        {
+          "message": "loading",
+          "timestamp": "t1"
+        },
+        {
+          "message": "step 1",
+          "timestamp": "t2"
+        }
+      ],
+      [
+        {
+          "message": "step 1",
+          "timestamp": "t2"
+        }
+      ]
+    ]
+  },
+  {
+    "expected": [
+      [
+        "no ts",
+        "number ts"
+      ],
+      [
+        "no ts",
+        "number ts",
+        "list ts",
+        "object ts"
+      ]
+    ],
+    "name": "a line without a string timestamp is reported every time",
+    "polls": [
+      [
+        {
+          "message": "no ts"
+        },
+        {
+          "message": "number ts",
+          "timestamp": 5
+        }
+      ],
+      [
+        {
+          "message": "no ts"
+        },
+        {
+          "message": "number ts",
+          "timestamp": 5
+        },
+        {
+          "message": "list ts",
+          "timestamp": [
+            "t"
+          ]
+        },
+        {
+          "message": "object ts",
+          "timestamp": {
+            "at": "t"
+          }
+        }
+      ]
+    ]
+  },
+  {
+    "expected": [
+      [
+        "tick",
+        "tick"
+      ]
+    ],
+    "name": "the same message at two timestamps is two lines",
+    "polls": [
+      [
+        {
+          "message": "tick",
+          "timestamp": "t1"
+        },
+        {
+          "message": "tick",
+          "timestamp": "t2"
+        }
+      ]
+    ]
+  },
+  {
+    "expected": [
+      [
+        "kept"
+      ],
+      [],
+      []
+    ],
+    "name": "malformed entries and logs are skipped",
+    "polls": [
+      [
+        {
+          "message": "",
+          "timestamp": "t1"
+        },
+        {
+          "message": 42,
+          "timestamp": "t2"
+        },
+        {
+          "timestamp": "t3"
+        },
+        "a bare string",
+        null,
+        {
+          "message": "kept",
+          "timestamp": "t4"
+        }
+      ],
+      {
+        "not": "a list"
+      },
+      null
+    ]
+  }
+]
