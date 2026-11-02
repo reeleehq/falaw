@@ -26,7 +26,11 @@ from ..cost import estimate_call_cost, video_call_arguments, video_price_quantit
 from ..llm_rates import LlmRateTable, llm_ceiling_usd
 from ..plan import CallPlan, CostBasis, make_call_plan
 from ..registry import get_model, pick_model
-from ._image_args import image_arguments
+from ._image_args import (
+    CONTROL_CATEGORY,
+    controlled_image_arguments,
+    image_arguments,
+)
 from ..terms import TermsContext
 from ..reprice import catalogue_cost_basis, llm_cost_basis
 
@@ -142,8 +146,6 @@ def plan_generate_image_with_control(
     path is uploaded only when the call actually runs, and the cache is keyed
     on its bytes.
     """
-    from ._image_args import CONTROL_CATEGORY, controlled_image_arguments
-
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category=CONTROL_CATEGORY, quality_tier=quality
     )

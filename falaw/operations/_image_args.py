@@ -95,8 +95,9 @@ DFLT_CONTROL_SCALE = 1.0
 def easycontrols(control: Sequence[dict]) -> list[dict]:
     """fal's ``easycontrols`` list for ``control``: ``[{"mode", "image", "scale"?}]``.
 
-    ``image`` is a URL fal can fetch, or (in a plan) an :class:`os.PathLike`
-    that :func:`falaw.make_call_plan` turns into an upload marker.
+    ``image`` is a URL fal can fetch, or a local :class:`os.PathLike`: a plan
+    turns it into an upload marker (:func:`falaw.make_call_plan`), the eager op
+    uploads it (:func:`falaw.upload`).
 
     >>> easycontrols([{"mode": "canny", "image": "https://x/edges.png", "scale": 0.6}])
     [{'control_method_url': 'canny', 'image_url': 'https://x/edges.png', 'image_control_type': 'spatial', 'scale': 0.6}]
@@ -161,7 +162,17 @@ def controlled_image_arguments(
     :func:`image_arguments` plus ``easycontrols``; ``extra`` still wins over
     everything. Shared by the eager op and its ``plan_*`` sibling so the two
     hash alike.
+
+    Raises:
+        ValueError: ``record`` is a catalogued model of another category, which
+            would silently ignore the control (an unlisted model, ``None``,
+            passes through).
     """
+    if record is not None and record.category != CONTROL_CATEGORY:
+        raise ValueError(
+            f"{record.id} is a {record.category!r} model and ignores structural "
+            f"control; pick an {CONTROL_CATEGORY!r} model (or none, for the default)."
+        )
     return {
         **image_arguments(record, prompt, image_size, None),
         "easycontrols": easycontrols(control),

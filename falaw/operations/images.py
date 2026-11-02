@@ -7,6 +7,7 @@ from typing import Optional
 from ..core import call_fal
 from ..registry import pick_model, register_tool
 from ..results import Result, parse_response
+from ..upload import localize_paths, resolve_local_files
 from ._image_args import (
     CONTROL_CATEGORY,
     EASYCONTROL_SPATIAL_MODES,
@@ -262,14 +263,19 @@ def generate_image_with_control(
     ``control`` is ``[{"mode": "canny" | "depth" | "pose" | ..., "image": url,
     "scale": 0.6}]`` (``scale`` defaults to fal's 1.0). It is sent as fal's
     ``easycontrols``; ``controlnet_unions`` and the subject-style EasyControl
-    methods pass through ``extra``. For a local guide image, plan the call with
-    :func:`falaw.plan_generate_image_with_control` and a path: the plan uploads
-    it on execution, and keys the cache on its bytes.
+    methods pass through ``extra``. A local guide image (a ``pathlib.Path``) is
+    uploaded with :func:`falaw.upload` (swap the transfer with
+    :func:`falaw.using_uploader`) once the call is known to be well formed. Plan
+    the call with :func:`falaw.plan_generate_image_with_control` instead to
+    upload only on a cache miss and key the cache on the file's bytes.
     """
     model = model_id or pick_model(category=CONTROL_CATEGORY, quality_tier=quality).id
-    arguments = controlled_image_arguments(
-        known_record(model), prompt, image_size, control, extra
+    arguments, local_files = localize_paths(
+        controlled_image_arguments(
+            known_record(model), prompt, image_size, control, extra
+        )
     )
+    arguments = resolve_local_files(arguments, local_files, mode="wire")
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
 
