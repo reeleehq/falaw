@@ -225,6 +225,9 @@ throws away the result it just paid for and the next caller re-bills; reach for 
 when you truly want no cache interaction. Both together raises: nothing to key a write on.
 Quote a run that skips the read (either mode) from `uncached_plan(plan)`: every
 call a miss, so a predicted hit is billed and an unpriced one reads as unknown.
+Or pass the run's own keywords: `priced_as_run(plan, use_cache=..., refresh=...)`
+picks for you (quoting from `use_cache` alone prices a `refresh=True` run's hits
+as free). Both are for quoting only: execute and save the original `plan`.
 
 ### plan_llm_complete quotes a ceiling for the *routed* model
 
