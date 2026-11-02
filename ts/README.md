@@ -33,6 +33,8 @@ done[1].requestId;                          // fal's id — provenance
 - **through a relay** (`proxyUrl`): each request goes to the relay with the fal URL in `X-Fal-Target-Url` and the caller's key, if any, in `X-Fal-Key`. That is the protocol `reelee/fal_proxy.py` implements. With no key, the relay may supply a server-held one and meter the call (reelee#146).
 - **direct** (no `proxyUrl`): for Node or a server, `Authorization: Key …`.
 
+Progress arrives through `ctx.onEvent` in the Python event vocabulary (`queued`, `provider_queued`, `progress`, `log`, `done` with fal's `metrics`, `error` with the `requestId`). Status polls ask fal for the runner's log lines (`?logs=1`, which the relay forwards) and each line is reported once, as on the Python side; pass `logs: false` to poll without them. An `onEvent` that throws is logged with `console.warn` and ignored, so a UI bug cannot turn a paid-for result into a failure.
+
 A `Transport` is one function `(call, ctx) => Promise<{ raw, requestId? }>`, so a server endpoint that runs Python `execute_plan` on a posted plan is the same seam with a different value.
 
 ## What a plan carries
