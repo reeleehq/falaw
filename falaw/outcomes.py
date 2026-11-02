@@ -269,7 +269,8 @@ class ExecutionReport:
         that spent before raising), and for an unpriced one there is no
         estimate to put a bound on that. A failed *priced* call is not unknown,
         only excluded from :attr:`estimated_spend_usd` (see there). A blocked
-        call never ran and cannot have billed.
+        call never ran and cannot have billed. On a dry run nothing bills, but an
+        unpriced call there reads as unknown all the same: the report is a forecast.
         """
 
         def _may_have_billed(o: CallOutcome) -> bool:
