@@ -131,6 +131,7 @@ def test_a_model_the_table_does_not_price_falls_back_to_the_registry(monkeypatch
     record = get_model("fal-ai/any-llm")
     assert r.estimated_cost_usd == pytest.approx(record.cost_estimate.amount)
     assert r.cost_source == f"registry:{record.cost_estimate.kind}"
+    assert (r.rates_table_version, r.rate_date) == ("", "")  # not the table's
 
 
 def test_cache_hit_is_a_zero_dollar_receipt(monkeypatch):
@@ -275,3 +276,78 @@ def test_usage_counts_are_read_per_side_and_never_invented(usage, expected):
     from falaw.operations.llm import _extract_llm_usage
 
     assert _extract_llm_usage({"usage": usage}) == expected
+
+
+# --- falaw#135: rate-table provenance, and an observed cost ahead of the table
+
+
+def test_a_table_priced_receipt_records_the_table_version_and_row_date(monkeypatch):
+    from falaw import llm_complete_with_receipt
+    from falaw.llm_rates import get_llm_rate, llm_rates_table_version
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    _install_fake_fal(monkeypatch, response=OPENAI_SHAPED)
+    _, r = llm_complete_with_receipt("q")
+    assert r.cost_source == "rate_table:per_call"
+    assert r.rates_table_version == llm_rates_table_version() != ""
+    assert r.rate_date == get_llm_rate(_DEFAULT_MODEL).date != ""
+
+
+def test_a_token_priced_receipt_records_the_table_version_and_row_date(monkeypatch):
+    from falaw import llm_complete_with_receipt
+    from falaw.llm_rates import get_llm_rate, llm_rates_table_version
+
+    model = "anthropic/claude-haiku-5.5"
+    usage = {"prompt_tokens": 150_000, "completion_tokens": 2_000}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q", model=model)
+    assert r.cost_source == "rate_table:upstream_tokens"
+    assert r.rates_table_version == llm_rates_table_version()
+    assert r.rate_date == get_llm_rate(model).date
+
+
+def test_a_reported_usage_cost_is_recorded_as_observed_ahead_of_the_table(
+    monkeypatch,
+):
+    from falaw import llm_complete_with_receipt, llm_ceiling_usd
+    from falaw.operations.llm import _DEFAULT_MODEL
+
+    usage = {"prompt_tokens": 42, "completion_tokens": 7, "cost": 0.0123}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q")
+    assert r.estimated_cost_usd == 0.0123 != llm_ceiling_usd(_DEFAULT_MODEL)
+    assert r.cost_source == "observed:usage_cost"
+    assert (r.rates_table_version, r.rate_date) == ("", "")
+    assert (r.tokens_in, r.tokens_out) == (42, 7)
+
+
+def test_a_reported_zero_usage_cost_is_still_observed(monkeypatch):
+    from falaw import llm_complete_with_receipt
+
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": {"cost": 0}})
+    _, r = llm_complete_with_receipt("q")
+    assert (r.estimated_cost_usd, r.cost_source) == (0.0, "observed:usage_cost")
+
+
+def test_a_cache_hit_beats_a_reported_usage_cost(monkeypatch):
+    from falaw import llm_complete_with_receipt
+
+    usage = {"cost": 0.5}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    llm_complete_with_receipt("same prompt")
+    _, r = llm_complete_with_receipt("same prompt")
+    assert r.cache_hit
+    assert (r.estimated_cost_usd, r.cost_source) == (0.0, "cache_hit")
+    assert (r.rates_table_version, r.rate_date) == ("", "")
+
+
+@pytest.mark.parametrize(
+    "cost", [-0.01, "0.01", True, float("nan"), float("inf"), None, [0.01]]
+)
+def test_a_nonsense_usage_cost_falls_back_to_the_rate_table(monkeypatch, cost):
+    from falaw import llm_complete_with_receipt
+
+    usage = {"prompt_tokens": 42, "completion_tokens": 7, "cost": cost}
+    _install_fake_fal(monkeypatch, response={"output": "ok", "usage": usage})
+    _, r = llm_complete_with_receipt("q")
+    assert r.cost_source == "rate_table:per_call"

@@ -12,6 +12,7 @@ plain Python (str or parsed dict).
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass
 from typing import Any, Optional
@@ -19,7 +20,7 @@ from typing import Any, Optional
 from ..cache import cached_call_fal
 from ..cost import estimate_call_cost
 from ..llm_prices import llm_token_counts
-from ..llm_rates import llm_cost_bases
+from ..llm_rates import llm_cost_bases, llm_rates_table_version
 from ..routing import ANY_LLM, routed_model
 from ..registry import get_model, register_tool
 from ..scene import Beat, Scene, beat_id, make_beat, make_shot, shot_id
@@ -103,7 +104,8 @@ class LlmReceipt:
       its cache reads and writes too). ``None`` means *unrecorded by the
       provider response* (absent or nonsense, e.g. negative), never zero.
     - ``estimated_cost_usd`` is ``0.0`` on a cache hit (nothing was billed),
-      else fal's published per-request price **for the routed model**, read
+      else the cost the response itself reports (``usage.cost``) when it
+      reports one, else fal's published per-request price **for the routed model**, read
       off the rate table (:func:`falaw.llm_ceiling_usd`) — an estimate, not
       an observed bill. When the response reports both token counts and the
       routed model has upstream token rates, it is the greater of that price
@@ -126,8 +128,16 @@ class LlmReceipt:
       ``"rate_table:per_call"``, ``"rate_table:upstream_tokens"`` (the
       reported tokens at upstream rates exceeded the request price: an
       upstream-rate estimate, not a fal-published price),
-      ``"registry:<kind>"`` (the fallback for a model the table does not
-      price), or ``"unknown"``.
+      ``"observed:usage_cost"`` (the response itself reported what the call
+      cost, ``usage.cost``, which OpenRouter returns; preferred over any
+      table estimate, falaw#135), ``"registry:<kind>"`` (the fallback for a
+      model the table does not price), or ``"unknown"``.
+    - ``rates_table_version`` / ``rate_date`` say which rate table, and which
+      day's row of it, a ``"rate_table:*"`` cost was read from
+      (:func:`falaw.llm_rates_table_version` and the row's ``date``), so a
+      receipt can be audited or re-quoted later the way a plan's
+      :class:`falaw.CostBasis` is. Both are ``""`` when the cost did not come
+      from the table.
     """
 
     application: str
@@ -139,6 +149,8 @@ class LlmReceipt:
     tokens_out: Optional[int] = None
     estimated_cost_usd: Optional[float] = None
     cost_source: str = "unknown"
+    rates_table_version: str = ""
+    rate_date: str = ""
 
 
 _USAGE_SHAPES = (
@@ -221,11 +233,18 @@ def llm_complete_with_receipt(
 
     cache_hit = bool(hit_seen)
     served_by = routed_model(_DEFAULT_LLM, arguments)  # arguments always name a model
-    cost, source = (
-        (0.0, "cache_hit")
-        if cache_hit
-        else _billed_cost_of(served_by, tokens_in=tokens_in, tokens_out=tokens_out)
-    )
+    observed = _extract_usage_cost(raw)
+    if cache_hit:
+        cost_fields = {"estimated_cost_usd": 0.0, "cost_source": "cache_hit"}
+    elif observed is not None:
+        cost_fields = {
+            "estimated_cost_usd": observed,
+            "cost_source": "observed:usage_cost",
+        }
+    else:
+        cost_fields = _billed_cost_of(
+            served_by, tokens_in=tokens_in, tokens_out=tokens_out
+        )
 
     return text, LlmReceipt(
         application=_DEFAULT_LLM,
@@ -235,9 +254,23 @@ def llm_complete_with_receipt(
         chars_out=len(text),
         tokens_in=tokens_in,
         tokens_out=tokens_out,
-        estimated_cost_usd=cost,
-        cost_source=source,
+        **cost_fields,
     )
+
+
+def _extract_usage_cost(raw: Any) -> Optional[float]:
+    """The cost the response itself reports (``usage.cost``), or ``None``.
+
+    OpenRouter puts the USD a call cost in ``usage.cost``; fal's documented
+    any-llm output carries no ``usage`` block today, so this is ``None`` until
+    a response reports one (falaw#135). A value that is not a finite,
+    non-negative number is not a cost and reads as ``None``.
+    """
+    usage = raw.get("usage") if isinstance(raw, dict) else None
+    cost = usage.get("cost") if isinstance(usage, dict) else None
+    if isinstance(cost, bool) or not isinstance(cost, (int, float)):
+        return None
+    return float(cost) if math.isfinite(cost) and cost >= 0 else None
 
 
 def _billed_cost_of(
@@ -245,8 +278,11 @@ def _billed_cost_of(
     *,
     tokens_in: Optional[int] = None,
     tokens_out: Optional[int] = None,
-) -> tuple[Optional[float], str]:
-    """``(estimated_cost_usd, cost_source)`` for a call that was actually billed.
+) -> dict:
+    """The :class:`LlmReceipt` cost fields for a call that was actually billed.
+
+    ``estimated_cost_usd`` and ``cost_source`` always; ``rates_table_version``
+    and ``rate_date`` too when the rate table priced it (falaw#135).
 
     Prices the **routed model** against the rate table (falaw#50, option A),
     not the ``fal-ai/any-llm`` record. The router's single ``per_call`` figure
@@ -275,13 +311,18 @@ def _billed_cost_of(
     )
     if bases is not None:
         usd, basis = bases.bound()
-        return usd, f"rate_table:{basis}"
+        return {
+            "estimated_cost_usd": usd,
+            "cost_source": f"rate_table:{basis}",
+            "rates_table_version": llm_rates_table_version(),
+            "rate_date": bases.rate_date,
+        }
     record = get_model(_DEFAULT_LLM)
     ce = record.cost_estimate
-    return (
-        estimate_call_cost(record, count=1),
-        f"registry:{ce.kind}" if ce is not None else "unknown",
-    )
+    return {
+        "estimated_cost_usd": estimate_call_cost(record, count=1),
+        "cost_source": f"registry:{ce.kind}" if ce is not None else "unknown",
+    }
 
 
 def _extract_llm_text(raw: Any) -> str:

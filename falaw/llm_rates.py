@@ -429,10 +429,14 @@ class LlmCostBases:
         token_usd: The upstream-token basis (long-prompt tier included), or
             ``None`` when it cannot be computed: a token count is missing or
             the row publishes no token rates.
+        rate_date: The priced row's ``date`` (:attr:`LlmRate.date`): the day
+            these rates were read, which a record of spend keeps beside them
+            so it can be audited later (falaw#135).
     """
 
     per_call_usd: float
     token_usd: Optional[float] = None
+    rate_date: str = ""
 
     def bound(self) -> tuple[float, str]:
         """``(usd, basis)`` of the basis that binds: the greater of the two.
@@ -489,7 +493,7 @@ def llm_cost_bases(
 
     per_call_usd = rate.per_call_usd * count
     if input_tokens is None or output_tokens is None or not rate.has_token_rates:
-        return LlmCostBases(per_call_usd=per_call_usd)
+        return LlmCostBases(per_call_usd=per_call_usd, rate_date=rate.date)
 
     billed = rates_for_prompt(
         rate.token_rates,
@@ -501,7 +505,9 @@ def llm_cost_bases(
         input_tokens * billed.input_usd_per_mtok
         + output_tokens * billed.output_usd_per_mtok
     ) / TOKENS_PER_RATE_UNIT
-    return LlmCostBases(per_call_usd=per_call_usd, token_usd=token_usd * count)
+    return LlmCostBases(
+        per_call_usd=per_call_usd, token_usd=token_usd * count, rate_date=rate.date
+    )
 
 
 def _require_count(**quantities: Optional[int]) -> None:
