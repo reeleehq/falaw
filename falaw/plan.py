@@ -1158,17 +1158,19 @@ def _run_plan(
             resolve_wire = lambda: resolve_local_files(  # noqa: E731
                 template, pointers, mode="wire"
             )
-        return _execute_call(
-            call,
-            wire_args,
-            key_args,
-            converter=converter,
-            usable_from_cache=usable_from_cache,
-            use_cache=use_cache,
-            refresh=refresh,
-            on_event=on_event,
-            resolve_wire=resolve_wire,
-        )
+        with _run_metrics_of(call.application) as run_metrics:
+            artifact, cache_hit = _execute_call(
+                call,
+                wire_args,
+                key_args,
+                converter=converter,
+                usable_from_cache=usable_from_cache,
+                use_cache=use_cache,
+                refresh=refresh,
+                on_event=on_event,
+                resolve_wire=resolve_wire,
+            )
+        return artifact, cache_hit, (run_metrics[-1] if run_metrics else None) or None
 
     with _bounded_executor(concurrency) as pool:
         in_flight: dict = {}
@@ -1211,6 +1213,29 @@ def _run_plan(
                     halted = True
 
     return ExecutionReport(outcomes=tuple(outcomes))  # type: ignore[arg-type]
+
+
+@contextmanager
+def _run_metrics_of(application: str) -> Iterator[list]:
+    """Collect fal's run metrics for ``application``'s calls made in this context.
+
+    Yields a list that gains each ``done`` event's ``metrics`` (falaw#127),
+    in order; the last one is the run that produced the result (a cache entry
+    that had to be dropped and re-executed still runs once). Bound with
+    :func:`falaw.events.listening`, so it hears only this unit of work's
+    events (each plan worker runs in its own copied context) and never
+    disturbs the caller's ``on_event``.
+    """
+    from .events import listening
+
+    seen: list = []
+
+    def _capture(event) -> None:
+        if event.kind == "done" and event.application == application:
+            seen.append(event.metrics)
+
+    with listening(_capture):
+        yield seen
 
 
 def _outcome_with_lineage(outcome: CallOutcome, *, upstream: tuple) -> CallOutcome:
@@ -1261,13 +1286,14 @@ def _outcome_from_future(call: CallPlan, index: int, future) -> CallOutcome:
         if not isinstance(error, Exception):
             raise error
         return CallOutcome(index=index, call=call, status="failed", error=error)
-    artifact, cache_hit = future.result()
+    artifact, cache_hit, metrics = future.result()
     return CallOutcome(
         index=index,
         call=call,
         status="succeeded",
         artifact=artifact,
         cache_hit=cache_hit,
+        metrics=metrics,
     )
 
 

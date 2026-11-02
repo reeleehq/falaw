@@ -46,8 +46,9 @@ False
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 if TYPE_CHECKING:  # pragma: no cover - typing only
     from lacing import Artifact
@@ -104,6 +105,44 @@ class CallOutcome:
 
     reason: str = ""
     """Human-readable explanation. Required for ``blocked``; free otherwise."""
+
+    metrics: Optional[dict[str, Any]] = None
+    """fal's own account of the run that produced the artifact (falaw#127).
+
+    Its final ``Completed.metrics``, as the call's ``done``
+    :class:`~falaw.events.ProgressEvent` carried it (e.g.
+    ``{"inference_time": 3.2}``). ``None`` when nothing ran (a cache hit, a
+    dry run, a call that did not succeed) or fal reported none. An *observed*
+    fact about this run, not a price: see :attr:`inference_time_s`.
+    """
+
+    @property
+    def inference_time_s(self) -> Optional[float]:
+        """Seconds fal's runner reported spending on this call, or ``None``.
+
+        ``metrics["inference_time"]`` when it is a finite, non-negative number.
+        It is an observed run time: fal does not say it is the billed quantity
+        of a per-compute-second endpoint, so a cost derived from it is an
+        estimate labelled as such, not a vendor receipt.
+
+        >>> from falaw.plan import CallPlan
+        >>> call = CallPlan(tool="t", application="fal-ai/x", arguments={},
+        ...                 output_kind="audio")
+        >>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+        ...             metrics={"inference_time": 3.2}).inference_time_s
+        3.2
+        >>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+        ...             metrics={"inference_time": "3.2"}).inference_time_s is None
+        True
+        """
+        seconds = (self.metrics or {}).get("inference_time")
+        if isinstance(seconds, bool) or not isinstance(seconds, (int, float)):
+            return None
+        try:
+            seconds = float(seconds)
+        except OverflowError:  # an int too large for a float is not a duration
+            return None
+        return seconds + 0.0 if math.isfinite(seconds) and seconds >= 0 else None
 
     def __post_init__(self) -> None:
         """Reject an outcome whose payload contradicts its status.
