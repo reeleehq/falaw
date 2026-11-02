@@ -223,6 +223,8 @@ skips the read and **keeps the write** --- this is the one to use behind a "redo
 or "re-verify this" switch. `execute_plan(plan, use_cache=False)` does neither, so it
 throws away the result it just paid for and the next caller re-bills; reach for it only
 when you truly want no cache interaction. Both together raises: nothing to key a write on.
+Quote a run that skips the read (either mode) from `uncached_plan(plan)`: every
+call a miss, so a predicted hit is billed and an unpriced one reads as unknown.
 
 ### plan_llm_complete quotes a ceiling for the *routed* model
 

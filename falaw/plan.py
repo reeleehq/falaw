@@ -768,6 +768,27 @@ once. (:func:`falaw.render_scene` makes the same choice for the same reason.)
 """
 
 
+def uncached(plan: Plan) -> Plan:
+    """``plan`` as a run that will not read the cache bills it: every call a miss.
+
+    A run with ``use_cache=False``, or ``refresh=True``, skips the cache read and
+    pays for every call, so a quote for it must too: a predicted cache hit is
+    billed at its estimate, and an unpriced one is unknown rather than free
+    (falaw#139). Quote that run from ``uncached(plan)``'s
+    :attr:`Plan.total_cost_usd` and :attr:`Plan.has_unknown_costs`, and the
+    default run from ``plan`` itself.
+
+    >>> hit = CallPlan(tool="t", application="fal-ai/x", arguments={},
+    ...                output_kind="image", estimated_cost_usd=0.03,
+    ...                cache_status="hit")
+    >>> Plan(calls=(hit,)).total_cost_usd, uncached(Plan(calls=(hit,))).total_cost_usd
+    (0.0, 0.03)
+    """
+    return replace(
+        plan, calls=tuple(replace(c, cache_status="miss") for c in plan.calls)
+    )
+
+
 def _resolved_cache_mode(use_cache: bool, refresh: bool) -> tuple[bool, bool]:
     """Validate the ``(use_cache, refresh)`` pair, returning it unchanged.
 

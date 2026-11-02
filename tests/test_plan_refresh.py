@@ -356,3 +356,50 @@ def test_refresh_is_keyword_only():
     """A positional third argument must not silently land on ``refresh``."""
     with pytest.raises(TypeError):
         execute(_image_plan(), None, False, True, True)  # type: ignore[misc]
+
+
+# --- uncached(plan): the quote for a cache-skipping run (falaw#139) ---------
+
+
+def _quoted(status: str, cost):
+    return CallPlan(
+        tool="generate_image",
+        application=IMAGE_APPLICATION,
+        arguments={"prompt": status},
+        output_kind="image",
+        estimated_cost_usd=cost,
+        cache_status=status,
+    )
+
+
+def test_uncached_bills_every_call_a_predicted_hit_included():
+    from falaw import uncached_plan
+
+    plan = Plan(
+        calls=(_quoted("hit", 0.03), _quoted("miss", 0.05), _quoted("unknown", 0.07))
+    )
+    assert plan.total_cost_usd == pytest.approx(0.12)
+    billed = uncached_plan(plan)
+    assert [c.cache_status for c in billed.calls] == ["miss"] * 3
+    assert billed.total_cost_usd == pytest.approx(0.15)
+    assert billed.cache_hit_savings_usd == 0.0
+
+
+def test_uncached_makes_an_unpriced_hit_unknown_not_free():
+    from falaw import uncached_plan
+
+    plan = Plan(calls=(_quoted("hit", None),))
+    assert plan.has_unknown_costs is False  # a hit bills nothing
+    assert uncached_plan(plan).has_unknown_costs is True
+
+
+def test_uncached_changes_nothing_else_and_leaves_the_plan_alone():
+    from dataclasses import replace
+
+    from falaw import plan_hash, uncached_plan
+
+    plan = Plan(calls=(_quoted("hit", 0.03),))
+    billed = uncached_plan(plan)
+    assert plan.calls[0].cache_status == "hit"  # the input is not mutated
+    assert billed.calls[0] == replace(plan.calls[0], cache_status="miss")
+    assert plan_hash(billed) == plan_hash(plan)  # same work, different quote

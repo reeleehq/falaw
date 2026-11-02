@@ -167,6 +167,7 @@ from .plan import (
     plan_from_dict,
     plan_hash,
     plan_to_dict,
+    uncached as uncached_plan,
 )
 from .reprice import (
     CallRepricing,
@@ -321,6 +322,7 @@ __all__ = [
     "edit_image",
     "establish_environment",
     "execute_plan",
+    "uncached_plan",
     "execute_plan_isolated",
     "extract_models_from_corpus",
     "generate_image",
