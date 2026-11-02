@@ -1,4 +1,4 @@
-> built 2026-11-02 19:57 UTC from dac49d7 (main) · falaw 0.0.90. Details: build_info.json
+> built 2026-11-02 20:09 UTC from c9d56e6 (main) · falaw 0.0.91. Details: build_info.json
 
 # index.html.md
 
@@ -952,6 +952,7 @@ the network when the (model_id, arguments) tuple was seen before.
 | [`cached_call_fal`](_autosummary/falaw.cache.html.md#falaw.cache.cached_call_fal)(application, arguments, \*[, ...]) | Call a fal model, but reuse the cached response when present.           |
 | [`drop_cache_entry`](_autosummary/falaw.cache.html.md#falaw.cache.drop_cache_entry)(application, arguments, \*)       | Delete the cache entry for `(application, arguments)`.                  |
 | [`emit_cache_hit`](_autosummary/falaw.cache.html.md#falaw.cache.emit_cache_hit)(application[, on_event])            | Emit the synthetic `cache_hit` progress event for `application`.        |
+| [`load_manifest`](_autosummary/falaw.cache.html.md#falaw.cache.load_manifest)(path)                                | The cache manifest at `path`, embedded fields restored.                 |
 | [`materialize_asset`](_autosummary/falaw.cache.html.md#falaw.cache.materialize_asset)(url, \*[, key_hint, store, ...]) | Download a remote asset to the cache and return the local path.         |
 
 ### falaw.cache.ASSETS_DIRNAME *= 'assets'*
@@ -1086,6 +1087,17 @@ drives the cache directly, because it must decide whether a hit is
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.cache.load_manifest(path)
+
+The cache manifest at `path`, embedded fields restored.
+
+The one reader of a manifest file: anything that looks inside one (a cache
+hit, a prune counting what still points at a blob) goes through here, so a
+field `_manifest_text()` embedded is never mistaken for an absent one.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ### falaw.cache.materialize_asset(url, , key_hint='', store=None, fetcher=None, refresh=False)
 
@@ -11583,7 +11595,7 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-02 19:57 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/dac49d780084b8e2b2c5026800a9db4b99c50ecf"><code>dac49d7</code></a> on branch <code>main</code>, for **falaw 0.0.90** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 20:09 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c9d56e68950f4d54dc4105ad775341e8d4eeea63"><code>c9d56e6</code></a> on branch <code>main</code>, for **falaw 0.0.91** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -11592,7 +11604,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/dac49d780084b8e2b2c5026800a9db4b99c50ecf"><code>dac49d780084b8e2b2c5026800a9db4b99c50ecf</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c9d56e68950f4d54dc4105ad775341e8d4eeea63"><code>c9d56e68950f4d54dc4105ad775341e8d4eeea63</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11603,9 +11615,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41514418567">41514418567</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41516347559">41516347559</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>dac49d780084b8e2b2c5026800a9db4b99c50ecf</code> (in the history of the built commit) |
+| Event commit | <code>c9d56e68950f4d54dc4105ad775341e8d4eeea63</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11630,13 +11642,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.90/">0.0.90</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.91/">0.0.91</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout dac49d780084b8e2b2c5026800a9db4b99c50ecf
+git checkout c9d56e68950f4d54dc4105ad775341e8d4eeea63
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

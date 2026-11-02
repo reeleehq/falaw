@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=38a06c88"></script>
+    <script src="../../_static/documentation_options.js?v=9cd8e891"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.90" />
+  <meta name="docsearch:version" content="0.0.91" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -818,6 +818,71 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_entry_dir</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="s2">"manifest.json"</span><span class="p">)</span>
 
 
+<span class="c1"># --- manifest encoding ------------------------------------------------------</span>
+
+<span class="n">_EMBEDDABLE_FIELDS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"raw"</span><span class="p">,</span> <span class="s2">"wire_arguments"</span><span class="p">)</span>
+<span class="sd">"""Manifest fields that carry a response or what was sent, as received."""</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_embedded_key</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Where field ``name`` is kept when strict JSON cannot hold it (falaw#142)."""</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_json"</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_manifest_text</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""``manifest`` as strict JSON, keeping any value strict JSON cannot hold.</span>
+
+<span class="sd">    A response may carry a non-finite float (``NaN``, ``Infinity``):</span>
+<span class="sd">    ``fal_client`` parses them, and refusing one here would leave a call fal</span>
+<span class="sd">    has already billed uncached, to be billed again (falaw#142). Bare ``NaN``</span>
+<span class="sd">    in the file would be invalid JSON to every strict parser, so such a field</span>
+<span class="sd">    is stored instead as JSON text under :func:`_embedded_key`: the manifest</span>
+<span class="sd">    stays strict, and :func:`_decoded` restores the value exactly. A field</span>
+<span class="sd">    that strict JSON can hold is written as-is.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">allow_nan</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># `default=str` is display-only, never keyed (see cache_put).</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">allow_nan</span><span class="o">=</span><span class="n">allow_nan</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dump</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># a non-finite float, or a circular reference (re-raised below)</span>
+        <span class="k">pass</span>
+    <span class="n">embedded</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">manifest</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_EMBEDDABLE_FIELDS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">embedded</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dump</span><span class="p">(</span><span class="n">embedded</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">embedded</span><span class="p">[</span><span class="n">_embedded_key</span><span class="p">(</span><span class="n">name</span><span class="p">)]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">embedded</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dump</span><span class="p">(</span><span class="n">embedded</span><span class="p">,</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_decoded</span><span class="p">(</span><span class="n">manifest</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Inverse of :func:`_manifest_text`: each embedded field restored."""</span>
+    <span class="n">decoded</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">manifest</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">_EMBEDDABLE_FIELDS</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_embedded_key</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">in</span> <span class="n">decoded</span><span class="p">:</span>
+            <span class="n">decoded</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">decoded</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">_embedded_key</span><span class="p">(</span><span class="n">name</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">decoded</span>
+
+
+<div class="viewcode-block" id="load_manifest">
+<a class="viewcode-back" href="../../_autosummary/falaw.cache.html#falaw.load_manifest">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_manifest</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The cache manifest at ``path``, embedded fields restored.</span>
+
+<span class="sd">    The one reader of a manifest file: anything that looks inside one (a cache</span>
+<span class="sd">    hit, a prune counting what still points at a blob) goes through here, so a</span>
+<span class="sd">    field :func:`_manifest_text` embedded is never mistaken for an absent one.</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_decoded</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span></div>
+
+
+
 <span class="c1"># --- public API -----------------------------------------------------------</span>
 
 
@@ -836,9 +901,7 @@ window.runMermaid = runMermaid;</script>
     <span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">manifest</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">manifest</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"raw"</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">load_manifest</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"raw"</span><span class="p">)</span></div>
 
 
 
@@ -894,13 +957,14 @@ window.runMermaid = runMermaid;</script>
     <span class="n">path</span> <span class="o">=</span> <span class="n">_manifest_path</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="p">[:</span><span class="mi">8</span><span class="p">]</span><span class="si">}</span><span class="s2">.part"</span>
     <span class="k">try</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">_manifest_text</span><span class="p">(</span><span class="n">manifest</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="c1"># `default=str` here is display-only, never keyed: `raw` and</span>
+            <span class="c1"># `default=str` is display-only, never keyed: `raw` and</span>
             <span class="c1"># `wire_arguments` may hold values we render for debugging. But</span>
-            <span class="c1"># `allow_nan=False` is load-bearing — Python's json would happily</span>
-            <span class="c1"># write a bare `NaN`, valid to itself and invalid JSON to every</span>
-            <span class="c1"># strict parser, leaving an on-disk entry nothing else can read.</span>
-            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">manifest</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="c1"># the manifest is strict JSON — Python's json would happily write a</span>
+            <span class="c1"># bare `NaN`, valid to itself and invalid to every strict parser —</span>
+            <span class="c1"># so a non-finite value is embedded as text (`_manifest_text`).</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
         <span class="n">_unlink_quietly</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
@@ -1046,9 +1110,8 @@ window.runMermaid = runMermaid;</script>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="c1"># A paid result is never discarded (see falaw.plan.execute's failure</span>
         <span class="c1"># policy): fal has already run — and billed — this call, so a cache</span>
-        <span class="c1"># WRITE failure (a response carrying a non-finite float that the</span>
-        <span class="c1"># strict manifest refuses, a full disk, a permission error) must</span>
-        <span class="c1"># degrade to "uncached", not destroy the response. On refresh=True the</span>
+        <span class="c1"># WRITE failure (a full disk, a permission error, a response json</span>
+        <span class="c1"># cannot encode at all) must degrade to "uncached", not destroy the response. On refresh=True the</span>
         <span class="c1"># pre-refresh entry is dropped too — the caller explicitly asked for</span>
         <span class="c1"># fresh, so letting the old entry keep serving would quietly undo the</span>
         <span class="c1"># refresh on every later call.</span>

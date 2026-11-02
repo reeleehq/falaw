@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=38a06c88"></script>
+    <script src="../_static/documentation_options.js?v=9cd8e891"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.90" />
+  <meta name="docsearch:version" content="0.0.91" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -507,7 +507,10 @@ the network when the (model_id, arguments) tuple was seen before.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.cache.emit_cache_hit" title="falaw.cache.emit_cache_hit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">emit_cache_hit</span></code></a>(application[, on_event])</p></td>
 <td><p>Emit the synthetic <code class="docutils literal notranslate"><span class="pre">cache_hit</span></code> progress event for <code class="docutils literal notranslate"><span class="pre">application</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cache.materialize_asset" title="falaw.cache.materialize_asset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">materialize_asset</span></code></a>(url, *[, key_hint, store, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cache.load_manifest" title="falaw.cache.load_manifest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_manifest</span></code></a>(path)</p></td>
+<td><p>The cache manifest at <code class="docutils literal notranslate"><span class="pre">path</span></code>, embedded fields restored.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cache.materialize_asset" title="falaw.cache.materialize_asset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">materialize_asset</span></code></a>(url, *[, key_hint, store, ...])</p></td>
 <td><p>Download a remote asset to the cache and return the local path.</p></td>
 </tr>
 </tbody>
@@ -670,6 +673,20 @@ drives the cache directly, because it must decide whether a hit is
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="falaw.cache.load_manifest">
+<span class="sig-prename descclassname"><span class="pre">falaw.cache.</span></span><span class="sig-name descname"><span class="pre">load_manifest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/cache.html#load_manifest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.cache.load_manifest" title="Link to this definition">#</a></dt>
+<dd><p>The cache manifest at <code class="docutils literal notranslate"><span class="pre">path</span></code>, embedded fields restored.</p>
+<p>The one reader of a manifest file: anything that looks inside one (a cache
+hit, a prune counting what still points at a blob) goes through here, so a
+field <code class="xref py py-func docutils literal notranslate"><span class="pre">_manifest_text()</span></code> embedded is never mistaken for an absent one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="falaw.cache.materialize_asset">
 <span class="sig-prename descclassname"><span class="pre">falaw.cache.</span></span><span class="sig-name descname"><span class="pre">materialize_asset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetcher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/cache.html#materialize_asset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.cache.materialize_asset" title="Link to this definition">#</a></dt>
 <dd><p>Download a remote asset to the cache and return the local path.</p>
@@ -779,6 +796,7 @@ an origin that lies about its validators.</p></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cache.cached_call_fal"><code class="docutils literal notranslate"><span class="pre">cached_call_fal()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cache.drop_cache_entry"><code class="docutils literal notranslate"><span class="pre">drop_cache_entry()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cache.emit_cache_hit"><code class="docutils literal notranslate"><span class="pre">emit_cache_hit()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cache.load_manifest"><code class="docutils literal notranslate"><span class="pre">load_manifest()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cache.materialize_asset"><code class="docutils literal notranslate"><span class="pre">materialize_asset()</span></code></a></li>
 </ul>
   </nav></div>

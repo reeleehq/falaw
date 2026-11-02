@@ -49,6 +49,7 @@ the network when the (model_id, arguments) tuple was seen before.
 | [`cached_call_fal`](#falaw.cache.cached_call_fal)(application, arguments, \*[, ...]) | Call a fal model, but reuse the cached response when present.           |
 | [`drop_cache_entry`](#falaw.cache.drop_cache_entry)(application, arguments, \*)       | Delete the cache entry for `(application, arguments)`.                  |
 | [`emit_cache_hit`](#falaw.cache.emit_cache_hit)(application[, on_event])            | Emit the synthetic `cache_hit` progress event for `application`.        |
+| [`load_manifest`](#falaw.cache.load_manifest)(path)                                | The cache manifest at `path`, embedded fields restored.                 |
 | [`materialize_asset`](#falaw.cache.materialize_asset)(url, \*[, key_hint, store, ...]) | Download a remote asset to the cache and return the local path.         |
 
 ### falaw.cache.ASSETS_DIRNAME *= 'assets'*
@@ -183,6 +184,17 @@ drives the cache directly, because it must decide whether a hit is
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.cache.load_manifest(path)
+
+The cache manifest at `path`, embedded fields restored.
+
+The one reader of a manifest file: anything that looks inside one (a cache
+hit, a prune counting what still points at a blob) goes through here, so a
+field `_manifest_text()` embedded is never mistaken for an absent one.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
 
 ### falaw.cache.materialize_asset(url, , key_hint='', store=None, fetcher=None, refresh=False)
 

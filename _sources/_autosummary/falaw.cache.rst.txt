@@ -20,5 +20,6 @@ falaw.cache
       cached_call_fal
       drop_cache_entry
       emit_cache_hit
+      load_manifest
       materialize_asset
    
