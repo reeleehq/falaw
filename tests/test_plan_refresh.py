@@ -488,18 +488,21 @@ def test_priced_as_run_quotes_what_each_cache_mode_bills(monkeypatch):
     # Order matters: the default run writes "cold", which the later runs skip
     # reading anyway.
     assert _total_billed(execute(plan)) == pytest.approx(plan.total_cost_usd)
+    assert len(called) == 1 + 1  # independent of the cost stamp: one vendor call
 
     refreshed = priced_as_run(plan, use_cache=True, refresh=True)
     assert refreshed.total_cost_usd == pytest.approx(0.065)
     assert _total_billed(execute(plan, refresh=True)) == pytest.approx(
         refreshed.total_cost_usd
     )
+    assert len(called) == 2 + 2
 
     bypassed = priced_as_run(plan, use_cache=False)
     assert bypassed.total_cost_usd == uncached_plan(plan).total_cost_usd
     assert _total_billed(execute(plan, use_cache=False)) == pytest.approx(
         bypassed.total_cost_usd
     )
+    assert len(called) == 4 + 2
 
 
 def test_priced_as_run_refuses_the_fourth_corner_like_execute():
