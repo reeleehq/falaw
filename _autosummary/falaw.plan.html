@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -1017,6 +1017,8 @@ that names no table writes no key rather than a pair of <code class="docutils li
 <dt class="sig sig-object py" id="falaw.plan.execute">
 <span class="sig-prename descclassname"><span class="pre">falaw.plan.</span></span><span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">artifact_converter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_store</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asset_fetcher</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">concurrency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">terms_context</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.plan.execute" title="Link to this definition">#</a></dt>
 <dd><p>Execute a Plan, returning a list of materialized :class:<a href="#id3"><span class="problematic" id="id4">`</span></a>lacing.Artifact`s.</p>
+<p>Artifacts only: each call’s run metrics (falaw#127) are on the
+<a class="reference internal" href="falaw.html#falaw.CallOutcome" title="falaw.CallOutcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallOutcome</span></code></a> objects that <a class="reference internal" href="#falaw.plan.execute_isolated" title="falaw.plan.execute_isolated"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute_isolated()</span></code></a> returns.</p>
 <p>This is the <strong>halt</strong> policy: the first call that raises ends the run, and its
 exception propagates unchanged (falaw’s typed hierarchy — see
 <a class="reference internal" href="falaw.errors.html#module-falaw.errors" title="falaw.errors"><code class="xref py py-mod docutils literal notranslate"><span class="pre">falaw.errors</span></code></a> — is what a caller classifies on, so it is never

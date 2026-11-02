@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -485,7 +485,10 @@ rides the <code class="docutils literal notranslate"><span class="pre">done</spa
 stays out of the model’s response so a cached response
 is still exactly what the model returned. It is <code class="docutils literal notranslate"><span class="pre">None</span></code> when fal reported none, and on a
 <code class="docutils literal notranslate"><span class="pre">cache_hit</span></code> (nothing ran, nothing was billed). fal does not say whether
-<code class="docutils literal notranslate"><span class="pre">inference_time</span></code> is the billed quantity: a cost derived from it is an observed run time.</p>
+<code class="docutils literal notranslate"><span class="pre">inference_time</span></code> is the billed quantity: a cost derived from it is an observed run time.
+A plan run records each call’s <code class="docutils literal notranslate"><span class="pre">metrics</span></code> on its <a class="reference internal" href="falaw.html#falaw.CallOutcome" title="falaw.CallOutcome"><code class="xref py py-class docutils literal notranslate"><span class="pre">falaw.CallOutcome</span></code></a>
+(<code class="docutils literal notranslate"><span class="pre">outcome.metrics</span></code>, <code class="docutils literal notranslate"><span class="pre">outcome.inference_time_s</span></code>), so a plan consumer need not
+listen for it (falaw#127).</p>
 <p>Subscribers can be registered globally via <a class="reference internal" href="#falaw.events.subscribe" title="falaw.events.subscribe"><code class="xref py py-func docutils literal notranslate"><span class="pre">subscribe()</span></code></a> or
 per-call via the <code class="docutils literal notranslate"><span class="pre">on_event=</span></code> argument on <code class="xref py py-func docutils literal notranslate"><span class="pre">call_fal()</span></code> /
 <code class="xref py py-func docutils literal notranslate"><span class="pre">cached_call_fal()</span></code>. The <code class="docutils literal notranslate"><span class="pre">on_log</span></code> parameter still works

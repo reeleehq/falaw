@@ -44,6 +44,9 @@ stays out of the model’s response so a cached response
 is still exactly what the model returned. It is `None` when fal reported none, and on a
 `cache_hit` (nothing ran, nothing was billed). fal does not say whether
 `inference_time` is the billed quantity: a cost derived from it is an observed run time.
+A plan run records each call’s `metrics` on its [`falaw.CallOutcome`](falaw.html.md#falaw.CallOutcome)
+(`outcome.metrics`, `outcome.inference_time_s`), so a plan consumer need not
+listen for it (falaw#127).
 
 Subscribers can be registered globally via [`subscribe()`](#falaw.events.subscribe) or
 per-call via the `on_event=` argument on `call_fal()` /

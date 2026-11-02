@@ -459,6 +459,9 @@ Execute a Plan, returning a list of materialized :class:
 
 lacing.Artifact\`s.
 
+Artifacts only: each call’s run metrics (falaw#127) are on the
+[`CallOutcome`](falaw.html.md#falaw.CallOutcome) objects that [`execute_isolated()`](#falaw.plan.execute_isolated) returns.
+
 This is the **halt** policy: the first call that raises ends the run, and its
 exception propagates unchanged (falaw’s typed hierarchy — see
 [`falaw.errors`](falaw.errors.html.md#module-falaw.errors) — is what a caller classifies on, so it is never

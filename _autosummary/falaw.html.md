@@ -332,7 +332,7 @@ whose total is “the sum of the areas I thought to enumerate” silently
 under-reports the moment falaw grows a directory nobody added here, and
 under-reporting is the one direction a capacity tool cannot afford.
 
-### *class* falaw.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='')
+### *class* falaw.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='', metrics=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -376,6 +376,39 @@ switching models, and giving up.
 #### index *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Position in `plan.calls`. Stable, and unique within a report.
+
+#### *property* inference_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+Seconds fal’s runner reported spending on this call, or `None`.
+
+`metrics["inference_time"]` read by [`falaw.cost.as_seconds()`](falaw.cost.html.md#falaw.cost.as_seconds) (a
+finite, non-negative number; a numeric string is not one).
+It is an observed run time: fal does not say it is the billed quantity
+of a per-compute-second endpoint, so a cost derived from it is an
+estimate labelled as such, not a vendor receipt.
+
+```pycon
+>>> from falaw.plan import CallPlan
+>>> call = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                 output_kind="audio")
+>>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+...             metrics={"inference_time": 3.2}).inference_time_s
+3.2
+>>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+...             metrics={"inference_time": "3.2"}).inference_time_s is None
+True
+```
+
+#### metrics *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)]]*
+
+fal’s own account of the run that produced the artifact (falaw#127).
+
+A copy of its final `Completed.metrics`, as the call’s `done`
+[`ProgressEvent`](falaw.events.html.md#falaw.events.ProgressEvent) carried it (e.g.
+`{"inference_time": 3.2}`), so editing it never touches the event. `None`
+when nothing ran (a cache hit, a dry run, a call that did not succeed) or fal
+reported none. An *observed* fact about this run, not a price: see
+[`inference_time_s`](#falaw.CallOutcome.inference_time_s).
 
 #### *property* ok *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -2048,6 +2081,9 @@ Execute a Plan, returning a list of materialized :class:
 ```
 
 lacing.Artifact\`s.
+
+Artifacts only: each call’s run metrics (falaw#127) are on the
+[`CallOutcome`](#falaw.CallOutcome) objects that `execute_isolated()` returns.
 
 This is the **halt** policy: the first call that raises ends the run, and its
 exception propagates unchanged (falaw’s typed hierarchy — see

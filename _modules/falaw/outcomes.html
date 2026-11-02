@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -760,8 +760,8 @@ window.runMermaid = runMermaid;</script>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>  <span class="c1"># pragma: no cover - typing only</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">lacing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Artifact</span>
@@ -820,6 +820,41 @@ window.runMermaid = runMermaid;</script>
 
     <span class="n">reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
 <span class="w">    </span><span class="sd">"""Human-readable explanation. Required for ``blocked``; free otherwise."""</span>
+
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""fal's own account of the run that produced the artifact (falaw#127).</span>
+
+<span class="sd">    A copy of its final ``Completed.metrics``, as the call's ``done``</span>
+<span class="sd">    :class:`~falaw.events.ProgressEvent` carried it (e.g.</span>
+<span class="sd">    ``{"inference_time": 3.2}``), so editing it never touches the event. ``None``</span>
+<span class="sd">    when nothing ran (a cache hit, a dry run, a call that did not succeed) or fal</span>
+<span class="sd">    reported none. An *observed* fact about this run, not a price: see</span>
+<span class="sd">    :attr:`inference_time_s`.</span>
+<span class="sd">    """</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inference_time_s</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Seconds fal's runner reported spending on this call, or ``None``.</span>
+
+<span class="sd">        ``metrics["inference_time"]`` read by :func:`falaw.cost.as_seconds` (a</span>
+<span class="sd">        finite, non-negative number; a numeric string is not one).</span>
+<span class="sd">        It is an observed run time: fal does not say it is the billed quantity</span>
+<span class="sd">        of a per-compute-second endpoint, so a cost derived from it is an</span>
+<span class="sd">        estimate labelled as such, not a vendor receipt.</span>
+
+<span class="sd">        &gt;&gt;&gt; from falaw.plan import CallPlan</span>
+<span class="sd">        &gt;&gt;&gt; call = CallPlan(tool="t", application="fal-ai/x", arguments={},</span>
+<span class="sd">        ...                 output_kind="audio")</span>
+<span class="sd">        &gt;&gt;&gt; CallOutcome(index=0, call=call, status="blocked", reason="r",</span>
+<span class="sd">        ...             metrics={"inference_time": 3.2}).inference_time_s</span>
+<span class="sd">        3.2</span>
+<span class="sd">        &gt;&gt;&gt; CallOutcome(index=0, call=call, status="blocked", reason="r",</span>
+<span class="sd">        ...             metrics={"inference_time": "3.2"}).inference_time_s is None</span>
+<span class="sd">        True</span>
+<span class="sd">        """</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.cost</span><span class="w"> </span><span class="kn">import</span> <span class="n">as_seconds</span>
+
+        <span class="k">return</span> <span class="n">as_seconds</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="ow">or</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"inference_time"</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Reject an outcome whose payload contradicts its status.</span>

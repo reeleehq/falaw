@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -780,6 +780,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextvars</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContextVar</span><span class="p">,</span> <span class="n">copy_context</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.canonical</span><span class="w"> </span><span class="kn">import</span> <span class="n">DFLT_BACKEND</span>
@@ -1565,6 +1566,9 @@ window.runMermaid = runMermaid;</script>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute a Plan, returning a list of materialized :class:`lacing.Artifact`s.</span>
 
+<span class="sd">    Artifacts only: each call's run metrics (falaw#127) are on the</span>
+<span class="sd">    :class:`~falaw.CallOutcome` objects that :func:`execute_isolated` returns.</span>
+
 <span class="sd">    This is the **halt** policy: the first call that raises ends the run, and its</span>
 <span class="sd">    exception propagates unchanged (falaw's typed hierarchy — see</span>
 <span class="sd">    :mod:`falaw.errors` — is what a caller classifies on, so it is never</span>
@@ -2017,13 +2021,14 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">error</span>
         <span class="k">return</span> <span class="n">CallOutcome</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">call</span><span class="o">=</span><span class="n">call</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s2">"failed"</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
-    <span class="n">artifact</span><span class="p">,</span> <span class="n">cache_hit</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+    <span class="n">artifact</span><span class="p">,</span> <span class="n">cache_hit</span><span class="p">,</span> <span class="n">metrics</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">CallOutcome</span><span class="p">(</span>
         <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
         <span class="n">call</span><span class="o">=</span><span class="n">call</span><span class="p">,</span>
         <span class="n">status</span><span class="o">=</span><span class="s2">"succeeded"</span><span class="p">,</span>
         <span class="n">artifact</span><span class="o">=</span><span class="n">artifact</span><span class="p">,</span>
         <span class="n">cache_hit</span><span class="o">=</span><span class="n">cache_hit</span><span class="p">,</span>
+        <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -2117,7 +2122,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">on_event</span><span class="p">,</span>
     <span class="n">resolve_wire</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="nb">dict</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Run one :class:`CallPlan`, returning ``(artifact, cache_hit)``.</span>
+<span class="w">    </span><span class="sd">"""Run one :class:`CallPlan`, returning ``(artifact, cache_hit, metrics)``.</span>
 
 <span class="sd">    ``resolve_wire``, when given, produces the wire arguments lazily (a local</span>
 <span class="sd">    file is uploaded only when the call actually goes out, never on a cache</span>
@@ -2127,7 +2132,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    from a cache entry that proved usable, which is what run-level cost</span>
 <span class="sd">    accounting must be based on (a plan-time ``cache_status`` can be wrong in</span>
 <span class="sd">    both directions). The returned artifact's ``cost_usd`` is stamped from</span>
-<span class="sd">    this observed outcome too — see :func:`_stamp_observed_cost`.</span>
+<span class="sd">    this observed outcome too — see :func:`_stamp_observed_cost`. ``metrics``</span>
+<span class="sd">    is fal's account of the run that went out (``None`` on a cache hit, where</span>
+<span class="sd">    nothing ran) — see :func:`_run_with_metrics`.</span>
 
 <span class="sd">    ``use_cache`` and ``refresh`` are read/write halves, not one switch</span>
 <span class="sd">    (falaw#49). ``refresh=True`` suppresses the ``cache_get`` and falls</span>
@@ -2171,7 +2178,7 @@ window.runMermaid = runMermaid;</script>
                 <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">deferred</span><span class="p">:</span>
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
                 <span class="n">emit_cache_hit</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">on_event</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">_stamp_observed_cost</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="n">cache_hit</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="kc">True</span>
+                <span class="k">return</span> <span class="n">_stamp_observed_cost</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="n">cache_hit</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">"Dropping the falaw cache entry for </span><span class="si">{</span><span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="si">!r}</span><span class="s2">: its "</span>
                 <span class="s2">"recorded result names an asset that can no longer be read "</span>
@@ -2187,9 +2194,8 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">backend</span><span class="o">=</span><span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">,</span>
                 <span class="n">key_extra</span><span class="o">=</span><span class="n">call</span><span class="o">.</span><span class="n">key_extra</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="n">raw</span> <span class="o">=</span> <span class="n">cached_call_fal</span><span class="p">(</span>
-            <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span>
-            <span class="n">wire</span><span class="p">(),</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="n">cached_call_fal</span><span class="p">,</span>
             <span class="n">key_arguments</span><span class="o">=</span><span class="n">key_arguments</span><span class="p">,</span>
             <span class="n">refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span><span class="p">,</span>
@@ -2197,10 +2203,33 @@ window.runMermaid = runMermaid;</script>
             <span class="n">key_extra</span><span class="o">=</span><span class="n">call</span><span class="o">.</span><span class="n">key_extra</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">raw</span> <span class="o">=</span> <span class="n">get_backend_executor</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">)(</span>
-            <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">wire</span><span class="p">(),</span> <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span>
-        <span class="p">)</span>
-    <span class="k">return</span> <span class="n">_stamp_observed_cost</span><span class="p">(</span><span class="n">converter</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">call</span><span class="p">),</span> <span class="n">call</span><span class="p">,</span> <span class="n">cache_hit</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="kc">False</span>
+        <span class="n">run</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">get_backend_executor</span><span class="p">(</span><span class="n">call</span><span class="o">.</span><span class="n">backend</span><span class="p">),</span> <span class="n">on_event</span><span class="o">=</span><span class="n">on_event</span><span class="p">)</span>
+    <span class="n">raw</span><span class="p">,</span> <span class="n">metrics</span> <span class="o">=</span> <span class="n">_run_with_metrics</span><span class="p">(</span><span class="n">run</span><span class="p">,</span> <span class="n">call</span><span class="o">.</span><span class="n">application</span><span class="p">,</span> <span class="n">wire</span><span class="p">())</span>
+    <span class="n">artifact</span> <span class="o">=</span> <span class="n">converter</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">call</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_stamp_observed_cost</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="n">call</span><span class="p">,</span> <span class="n">cache_hit</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="kc">False</span><span class="p">,</span> <span class="n">metrics</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_with_metrics</span><span class="p">(</span><span class="n">run</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">application</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""``(run(application, arguments), metrics)``: the response and fal's run metrics.</span>
+
+<span class="sd">    ``metrics`` is a copy of the ``metrics`` on the last ``done`` event heard</span>
+<span class="sd">    while ``run`` executes (falaw#127), or ``None`` when none was reported.</span>
+<span class="sd">    Heard through :func:`falaw.events.listening`, so it scopes to this call</span>
+<span class="sd">    (each plan worker runs in its own copied context), wraps nothing but the</span>
+<span class="sd">    execution itself, and never disturbs the caller's ``on_event``.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">listening</span>
+
+    <span class="n">metrics</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_capture</span><span class="p">(</span><span class="n">event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">nonlocal</span> <span class="n">metrics</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"done"</span><span class="p">:</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">metrics</span><span class="p">)</span> <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">metrics</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">with</span> <span class="n">listening</span><span class="p">(</span><span class="n">_capture</span><span class="p">):</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">run</span><span class="p">(</span><span class="n">application</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">raw</span><span class="p">,</span> <span class="n">metrics</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_stamp_observed_cost</span><span class="p">(</span><span class="n">artifact</span><span class="p">,</span> <span class="n">call</span><span class="p">:</span> <span class="n">CallPlan</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">cache_hit</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>

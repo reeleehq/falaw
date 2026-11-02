@@ -17,6 +17,7 @@ falaw.cost
 
    .. autosummary::
    
+      as_seconds
       estimate_call_cost
       estimate_scene_cost
       frame_pixels

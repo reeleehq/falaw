@@ -54,6 +54,10 @@ shape [`falaw.core.call_fal()`](falaw.core.html.md#falaw.core.call_fal) returns:
 for the existing artifact converter. An executor’s only job is \*making the
 call\*; it must not attempt caching (the registry sits below the cache) or
 artifact conversion (`execute` owns that, uniformly across backends).
+A run’s metrics reach a plan’s [`CallOutcome`](falaw.html.md#falaw.CallOutcome) only when the
+executor emits its `done` event through [`falaw.events.emit()`](falaw.events.html.md#falaw.events.emit) on the
+calling thread (as `call_fal` does); calling only the passed `on_event`
+is not heard by [`falaw.events.listening()`](falaw.events.html.md#falaw.events.listening) (falaw#127).
 
 alias of `Callable`[[…], [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]
 

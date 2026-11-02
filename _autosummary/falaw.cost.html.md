@@ -28,14 +28,15 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 
 ### Functions
 
-| [`estimate_call_cost`](#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                 |
-|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| [`estimate_scene_cost`](#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
-| [`frame_pixels`](#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).        |
-| [`quote_aspect`](#falaw.cost.quote_aspect)(record[, aspect_ratio])               | The aspect ratio a quote assumes, so that it stays a ceiling.          |
-| [`video_call_arguments`](#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.           |
-| [`video_duration_arg`](#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
-| [`video_price_quantities`](#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
+| [`as_seconds`](#falaw.cost.as_seconds)(value, \*[, allow_str])                 | `value` as a duration in seconds: a finite, non-negative float, or `None`.   |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`estimate_call_cost`](#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                       |
+| [`estimate_scene_cost`](#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.                 |
+| [`frame_pixels`](#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).              |
+| [`quote_aspect`](#falaw.cost.quote_aspect)(record[, aspect_ratio])               | The aspect ratio a quote assumes, so that it stays a ceiling.                |
+| [`video_call_arguments`](#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.                 |
+| [`video_duration_arg`](#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`.       |
+| [`video_price_quantities`](#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.               |
 
 ### Classes
 
@@ -81,6 +82,27 @@ Resolution assumed for a token-billed video model that records no default.
 
 The short side, in pixels, of fal’s named video resolutions. The frame is
 that squared times the aspect ratio’s long/short ratio ([`frame_pixels()`](#falaw.cost.frame_pixels)).
+
+### falaw.cost.as_seconds(value, , allow_str=False)
+
+`value` as a duration in seconds: a finite, non-negative float, or `None`.
+
+`None` means *unknown*, never zero: absent, a bool, a non-number, NaN, an
+infinity, a negative, or an int too large for a float. `allow_str` also
+reads a numeric string (fal spells some durations as a string enum, e.g.
+Seedance’s `"5"`); `"auto"` and other text stay `None`. The one place
+falaw turns a value into seconds, whether a duration argument (priced) or a
+run’s reported `inference_time` (observed, falaw#127).
+
+```pycon
+>>> as_seconds(3), as_seconds("5", allow_str=True), as_seconds("5")
+(3.0, 5.0, None)
+>>> [as_seconds(v) for v in (True, -1.0, float("nan"), 10**400)]
+[None, None, None, None]
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
 
 ### falaw.cost.estimate_call_cost(record, , count=1, seconds=None, megapixels=None, tokens=None)
 

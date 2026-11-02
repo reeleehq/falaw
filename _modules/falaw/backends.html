@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -762,7 +762,11 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">shape :func:`falaw.core.call_fal` returns: the vendor's raw response, ready</span>
 <span class="sd">for the existing artifact converter. An executor's only job is *making the</span>
 <span class="sd">call*; it must not attempt caching (the registry sits below the cache) or</span>
-<span class="sd">artifact conversion (``execute`` owns that, uniformly across backends)."""</span>
+<span class="sd">artifact conversion (``execute`` owns that, uniformly across backends).</span>
+<span class="sd">A run's metrics reach a plan's :class:`~falaw.CallOutcome` only when the</span>
+<span class="sd">executor emits its ``done`` event through :func:`falaw.events.emit` on the</span>
+<span class="sd">calling thread (as ``call_fal`` does); calling only the passed ``on_event``</span>
+<span class="sd">is not heard by :func:`falaw.events.listening` (falaw#127)."""</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_fal_executor</span><span class="p">(</span>

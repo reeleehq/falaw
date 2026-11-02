@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -908,16 +908,34 @@ window.runMermaid = runMermaid;</script>
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_numeric_seconds</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""A duration argument as seconds; ``None`` for absent, ``"auto"`` or junk</span>
-<span class="sd">    (unknown, so the call stays unpriced rather than free)."""</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+<div class="viewcode-block" id="as_seconds">
+<a class="viewcode-back" href="../../_autosummary/falaw.cost.html#falaw.as_seconds">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">as_seconds</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">allow_str</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""``value`` as a duration in seconds: a finite, non-negative float, or ``None``.</span>
+
+<span class="sd">    ``None`` means *unknown*, never zero: absent, a bool, a non-number, NaN, an</span>
+<span class="sd">    infinity, a negative, or an int too large for a float. ``allow_str`` also</span>
+<span class="sd">    reads a numeric string (fal spells some durations as a string enum, e.g.</span>
+<span class="sd">    Seedance's ``"5"``); ``"auto"`` and other text stay ``None``. The one place</span>
+<span class="sd">    falaw turns a value into seconds, whether a duration argument (priced) or a</span>
+<span class="sd">    run's reported ``inference_time`` (observed, falaw#127).</span>
+
+<span class="sd">    &gt;&gt;&gt; as_seconds(3), as_seconds("5", allow_str=True), as_seconds("5")</span>
+<span class="sd">    (3.0, 5.0, None)</span>
+<span class="sd">    &gt;&gt;&gt; [as_seconds(v) for v in (True, -1.0, float("nan"), 10**400)]</span>
+<span class="sd">    [None, None, None, None]</span>
+<span class="sd">    """</span>
+    <span class="n">accepted</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">if</span> <span class="n">allow_str</span> <span class="k">else</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">accepted</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">seconds</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">OverflowError</span><span class="p">):</span>  <span class="c1"># text that is not a number; a huge int</span>
         <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">return</span> <span class="n">seconds</span> <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span> <span class="ow">and</span> <span class="n">seconds</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">seconds</span> <span class="o">+</span> <span class="mf">0.0</span>  <span class="c1"># -0.0 + 0.0 == 0.0: a zero duration carries no sign</span></div>
+
 
 
 <div class="viewcode-block" id="video_call_arguments">
@@ -947,7 +965,7 @@ window.runMermaid = runMermaid;</script>
             <span class="n">arguments</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span> <span class="o">=</span> <span class="n">video_duration_arg</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">duration_s</span><span class="p">)</span>
         <span class="n">spec</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span>
         <span class="n">dflt</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="n">seconds</span> <span class="o">=</span> <span class="n">_numeric_seconds</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"duration"</span><span class="p">,</span> <span class="n">dflt</span><span class="p">))</span>
+        <span class="n">seconds</span> <span class="o">=</span> <span class="n">as_seconds</span><span class="p">(</span><span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"duration"</span><span class="p">,</span> <span class="n">dflt</span><span class="p">),</span> <span class="n">allow_str</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">seconds</span></div>
 
 

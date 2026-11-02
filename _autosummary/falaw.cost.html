@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=97e62c01"></script>
+    <script src="../_static/documentation_options.js?v=7ffc8fc3"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.87" />
+  <meta name="docsearch:version" content="0.0.88" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -486,25 +486,28 @@ enough to gate on (e.g. <code class="docutils literal notranslate"><span class="
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.estimate_call_cost" title="falaw.cost.estimate_call_cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_call_cost</span></code></a>(record, *[, count, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.as_seconds" title="falaw.cost.as_seconds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_seconds</span></code></a>(value, *[, allow_str])</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">value</span></code> as a duration in seconds: a finite, non-negative float, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.estimate_call_cost" title="falaw.cost.estimate_call_cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_call_cost</span></code></a>(record, *[, count, ...])</p></td>
 <td><p>Cost of one fal call against <code class="docutils literal notranslate"><span class="pre">record</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.estimate_scene_cost" title="falaw.cost.estimate_scene_cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_scene_cost</span></code></a>(scene, *[, tts_quality, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.estimate_scene_cost" title="falaw.cost.estimate_scene_cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_scene_cost</span></code></a>(scene, *[, tts_quality, ...])</p></td>
 <td><p>Estimate the USD cost of a full <code class="xref py py-func docutils literal notranslate"><span class="pre">render_scene()</span></code> invocation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.frame_pixels" title="falaw.cost.frame_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frame_pixels</span></code></a>(resolution[, aspect_ratio])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.frame_pixels" title="falaw.cost.frame_pixels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">frame_pixels</span></code></a>(resolution[, aspect_ratio])</p></td>
 <td><p>Pixels per frame of a <code class="docutils literal notranslate"><span class="pre">resolution</span></code> at <code class="docutils literal notranslate"><span class="pre">aspect_ratio</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;W:H&quot;</span></code>).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.quote_aspect" title="falaw.cost.quote_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quote_aspect</span></code></a>(record[, aspect_ratio])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.quote_aspect" title="falaw.cost.quote_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">quote_aspect</span></code></a>(record[, aspect_ratio])</p></td>
 <td><p>The aspect ratio a quote assumes, so that it stays a ceiling.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.video_call_arguments" title="falaw.cost.video_call_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_call_arguments</span></code></a>(record, arguments, *, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.video_call_arguments" title="falaw.cost.video_call_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_call_arguments</span></code></a>(record, arguments, *, ...)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">(wire</span> <span class="pre">arguments,</span> <span class="pre">seconds</span> <span class="pre">the</span> <span class="pre">call</span> <span class="pre">bills)</span></code> for a video call.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.video_duration_arg" title="falaw.cost.video_duration_arg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_duration_arg</span></code></a>(record, duration_s)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.video_duration_arg" title="falaw.cost.video_duration_arg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_duration_arg</span></code></a>(record, duration_s)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">duration_s</span></code> as the string fal's duration enum wants, or <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.cost.video_price_quantities" title="falaw.cost.video_price_quantities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_price_quantities</span></code></a>(record, *[, seconds, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.cost.video_price_quantities" title="falaw.cost.video_price_quantities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">video_price_quantities</span></code></a>(record, *[, seconds, ...])</p></td>
 <td><p>The quantity hints that price one video call against <code class="docutils literal notranslate"><span class="pre">record</span></code>.</p></td>
 </tr>
 </tbody>
@@ -577,6 +580,29 @@ the input image): the common case, and 1:1 or 4:3 then over-quote.</p>
 <span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">RESOLUTION_SHORT_SIDE</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'1080p':</span> <span class="pre">1080,</span> <span class="pre">'480p':</span> <span class="pre">480,</span> <span class="pre">'4k':</span> <span class="pre">2160,</span> <span class="pre">'720p':</span> <span class="pre">720}</span></span><a class="headerlink" href="#falaw.cost.RESOLUTION_SHORT_SIDE" title="Link to this definition">#</a></dt>
 <dd><p>The short side, in pixels, of fal’s named video resolutions. The frame is
 that squared times the aspect ratio’s long/short ratio (<a class="reference internal" href="#falaw.cost.frame_pixels" title="falaw.cost.frame_pixels"><code class="xref py py-func docutils literal notranslate"><span class="pre">frame_pixels()</span></code></a>).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.cost.as_seconds">
+<span class="sig-prename descclassname"><span class="pre">falaw.cost.</span></span><span class="sig-name descname"><span class="pre">as_seconds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/cost.html#as_seconds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.cost.as_seconds" title="Link to this definition">#</a></dt>
+<dd><p><code class="docutils literal notranslate"><span class="pre">value</span></code> as a duration in seconds: a finite, non-negative float, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">None</span></code> means <em>unknown</em>, never zero: absent, a bool, a non-number, NaN, an
+infinity, a negative, or an int too large for a float. <code class="docutils literal notranslate"><span class="pre">allow_str</span></code> also
+reads a numeric string (fal spells some durations as a string enum, e.g.
+Seedance’s <code class="docutils literal notranslate"><span class="pre">&quot;5&quot;</span></code>); <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> and other text stay <code class="docutils literal notranslate"><span class="pre">None</span></code>. The one place
+falaw turns a value into seconds, whether a duration argument (priced) or a
+run’s reported <code class="docutils literal notranslate"><span class="pre">inference_time</span></code> (observed, falaw#127).</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">as_seconds</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">as_seconds</span><span class="p">(</span><span class="s2">"5"</span><span class="p">,</span> <span class="n">allow_str</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">as_seconds</span><span class="p">(</span><span class="s2">"5"</span><span class="p">)</span>
+<span class="go">(3.0, 5.0, None)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">as_seconds</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">),</span> <span class="mi">10</span><span class="o">**</span><span class="mi">400</span><span class="p">)]</span>
+<span class="go">[None, None, None, None]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -768,6 +794,7 @@ they are rate-equivalent tokens at the recorded rate: the quote stays
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.DFLT_VIDEO_ASPECT"><code class="docutils literal notranslate"><span class="pre">DFLT_VIDEO_ASPECT</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.DFLT_VIDEO_RESOLUTION"><code class="docutils literal notranslate"><span class="pre">DFLT_VIDEO_RESOLUTION</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.RESOLUTION_SHORT_SIDE"><code class="docutils literal notranslate"><span class="pre">RESOLUTION_SHORT_SIDE</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.as_seconds"><code class="docutils literal notranslate"><span class="pre">as_seconds()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.estimate_call_cost"><code class="docutils literal notranslate"><span class="pre">estimate_call_cost()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.estimate_scene_cost"><code class="docutils literal notranslate"><span class="pre">estimate_scene_cost()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.cost.frame_pixels"><code class="docutils literal notranslate"><span class="pre">frame_pixels()</span></code></a></li>

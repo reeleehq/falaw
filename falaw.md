@@ -1,4 +1,4 @@
-> built 2026-11-02 19:24 UTC from b78adb6 (main) · falaw 0.0.87. Details: build_info.json
+> built 2026-11-02 19:27 UTC from cf2f606 (main) · falaw 0.0.88. Details: build_info.json
 
 # index.html.md
 
@@ -487,6 +487,10 @@ shape [`falaw.core.call_fal()`](_autosummary/falaw.core.html.md#falaw.core.call_
 for the existing artifact converter. An executor’s only job is \*making the
 call\*; it must not attempt caching (the registry sits below the cache) or
 artifact conversion (`execute` owns that, uniformly across backends).
+A run’s metrics reach a plan’s [`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome) only when the
+executor emits its `done` event through [`falaw.events.emit()`](_autosummary/falaw.events.html.md#falaw.events.emit) on the
+calling thread (as `call_fal` does); calling only the passed `on_event`
+is not heard by [`falaw.events.listening()`](_autosummary/falaw.events.html.md#falaw.events.listening) (falaw#127).
 
 alias of `Callable`[[…], [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]
 
@@ -2447,14 +2451,15 @@ enough to gate on (e.g. `--budget=1.00`) and to surface in
 
 ### Functions
 
-| [`estimate_call_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                 |
-|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------|
-| [`estimate_scene_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.           |
-| [`frame_pixels`](_autosummary/falaw.cost.html.md#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).        |
-| [`quote_aspect`](_autosummary/falaw.cost.html.md#falaw.cost.quote_aspect)(record[, aspect_ratio])               | The aspect ratio a quote assumes, so that it stays a ceiling.          |
-| [`video_call_arguments`](_autosummary/falaw.cost.html.md#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.           |
-| [`video_duration_arg`](_autosummary/falaw.cost.html.md#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`. |
-| [`video_price_quantities`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.         |
+| [`as_seconds`](_autosummary/falaw.cost.html.md#falaw.cost.as_seconds)(value, \*[, allow_str])                 | `value` as a duration in seconds: a finite, non-negative float, or `None`.   |
+|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| [`estimate_call_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_call_cost)(record, \*[, count, ...])       | Cost of one fal call against `record`.                                       |
+| [`estimate_scene_cost`](_autosummary/falaw.cost.html.md#falaw.cost.estimate_scene_cost)(scene, \*[, tts_quality, ...]) | Estimate the USD cost of a full `render_scene()` invocation.                 |
+| [`frame_pixels`](_autosummary/falaw.cost.html.md#falaw.cost.frame_pixels)(resolution[, aspect_ratio])           | Pixels per frame of a `resolution` at `aspect_ratio` (`"W:H"`).              |
+| [`quote_aspect`](_autosummary/falaw.cost.html.md#falaw.cost.quote_aspect)(record[, aspect_ratio])               | The aspect ratio a quote assumes, so that it stays a ceiling.                |
+| [`video_call_arguments`](_autosummary/falaw.cost.html.md#falaw.cost.video_call_arguments)(record, arguments, \*, ...)   | `(wire arguments, seconds the call bills)` for a video call.                 |
+| [`video_duration_arg`](_autosummary/falaw.cost.html.md#falaw.cost.video_duration_arg)(record, duration_s)             | `duration_s` as the string fal's duration enum wants, or `ValueError`.       |
+| [`video_price_quantities`](_autosummary/falaw.cost.html.md#falaw.cost.video_price_quantities)(record, \*[, seconds, ...]) | The quantity hints that price one video call against `record`.               |
 
 ### Classes
 
@@ -2500,6 +2505,27 @@ Resolution assumed for a token-billed video model that records no default.
 
 The short side, in pixels, of fal’s named video resolutions. The frame is
 that squared times the aspect ratio’s long/short ratio ([`frame_pixels()`](_autosummary/falaw.cost.html.md#falaw.cost.frame_pixels)).
+
+### falaw.cost.as_seconds(value, , allow_str=False)
+
+`value` as a duration in seconds: a finite, non-negative float, or `None`.
+
+`None` means *unknown*, never zero: absent, a bool, a non-number, NaN, an
+infinity, a negative, or an int too large for a float. `allow_str` also
+reads a numeric string (fal spells some durations as a string enum, e.g.
+Seedance’s `"5"`); `"auto"` and other text stay `None`. The one place
+falaw turns a value into seconds, whether a duration argument (priced) or a
+run’s reported `inference_time` (observed, falaw#127).
+
+```pycon
+>>> as_seconds(3), as_seconds("5", allow_str=True), as_seconds("5")
+(3.0, 5.0, None)
+>>> [as_seconds(v) for v in (True, -1.0, float("nan"), 10**400)]
+[None, None, None, None]
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]
 
 ### falaw.cost.estimate_call_cost(record, , count=1, seconds=None, megapixels=None, tokens=None)
 
@@ -2959,6 +2985,9 @@ stays out of the model’s response so a cached response
 is still exactly what the model returned. It is `None` when fal reported none, and on a
 `cache_hit` (nothing ran, nothing was billed). fal does not say whether
 `inference_time` is the billed quantity: a cost derived from it is an observed run time.
+A plan run records each call’s `metrics` on its [`falaw.CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome)
+(`outcome.metrics`, `outcome.inference_time_s`), so a plan consumer need not
+listen for it (falaw#127).
 
 Subscribers can be registered globally via [`subscribe()`](_autosummary/falaw.events.html.md#falaw.events.subscribe) or
 per-call via the `on_event=` argument on `call_fal()` /
@@ -3449,7 +3478,7 @@ whose total is “the sum of the areas I thought to enumerate” silently
 under-reports the moment falaw grows a directory nobody added here, and
 under-reporting is the one direction a capacity tool cannot afford.
 
-### *class* falaw.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='')
+### *class* falaw.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='', metrics=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -3493,6 +3522,39 @@ switching models, and giving up.
 #### index *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Position in `plan.calls`. Stable, and unique within a report.
+
+#### *property* inference_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+Seconds fal’s runner reported spending on this call, or `None`.
+
+`metrics["inference_time"]` read by [`falaw.cost.as_seconds()`](_autosummary/falaw.cost.html.md#falaw.cost.as_seconds) (a
+finite, non-negative number; a numeric string is not one).
+It is an observed run time: fal does not say it is the billed quantity
+of a per-compute-second endpoint, so a cost derived from it is an
+estimate labelled as such, not a vendor receipt.
+
+```pycon
+>>> from falaw.plan import CallPlan
+>>> call = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                 output_kind="audio")
+>>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+...             metrics={"inference_time": 3.2}).inference_time_s
+3.2
+>>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+...             metrics={"inference_time": "3.2"}).inference_time_s is None
+True
+```
+
+#### metrics *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)]]*
+
+fal’s own account of the run that produced the artifact (falaw#127).
+
+A copy of its final `Completed.metrics`, as the call’s `done`
+[`ProgressEvent`](_autosummary/falaw.events.html.md#falaw.events.ProgressEvent) carried it (e.g.
+`{"inference_time": 3.2}`), so editing it never touches the event. `None`
+when nothing ran (a cache hit, a dry run, a call that did not succeed) or fal
+reported none. An *observed* fact about this run, not a price: see
+[`inference_time_s`](_autosummary/falaw.html.md#falaw.CallOutcome.inference_time_s).
 
 #### *property* ok *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -5165,6 +5227,9 @@ Execute a Plan, returning a list of materialized :class:
 ```
 
 lacing.Artifact\`s.
+
+Artifacts only: each call’s run metrics (falaw#127) are on the
+[`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome) objects that `execute_isolated()` returns.
 
 This is the **halt** policy: the first call that raises ends the run, and its
 exception propagates unchanged (falaw’s typed hierarchy — see
@@ -8424,7 +8489,7 @@ False
 |------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
 | [`ExecutionReport`](_autosummary/falaw.outcomes.html.md#falaw.outcomes.ExecutionReport)([outcomes])                   | The result of running a Plan: one [`CallOutcome`](_autosummary/falaw.outcomes.html.md#falaw.outcomes.CallOutcome) per call, in order.            |
 
-### *class* falaw.outcomes.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='')
+### *class* falaw.outcomes.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='', metrics=None)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
@@ -8468,6 +8533,39 @@ switching models, and giving up.
 #### index *: [int](https://docs.python.org/3/builtins/functions.html#int)*
 
 Position in `plan.calls`. Stable, and unique within a report.
+
+#### *property* inference_time_s *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[float](https://docs.python.org/3/builtins/functions.html#float)]*
+
+Seconds fal’s runner reported spending on this call, or `None`.
+
+`metrics["inference_time"]` read by [`falaw.cost.as_seconds()`](_autosummary/falaw.cost.html.md#falaw.cost.as_seconds) (a
+finite, non-negative number; a numeric string is not one).
+It is an observed run time: fal does not say it is the billed quantity
+of a per-compute-second endpoint, so a cost derived from it is an
+estimate labelled as such, not a vendor receipt.
+
+```pycon
+>>> from falaw.plan import CallPlan
+>>> call = CallPlan(tool="t", application="fal-ai/x", arguments={},
+...                 output_kind="audio")
+>>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+...             metrics={"inference_time": 3.2}).inference_time_s
+3.2
+>>> CallOutcome(index=0, call=call, status="blocked", reason="r",
+...             metrics={"inference_time": "3.2"}).inference_time_s is None
+True
+```
+
+#### metrics *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[dict](https://docs.python.org/3/builtins/stdtypes.html#dict)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), [Any](https://docs.python.org/3/library/typing.html#typing.Any)]]*
+
+fal’s own account of the run that produced the artifact (falaw#127).
+
+A copy of its final `Completed.metrics`, as the call’s `done`
+[`ProgressEvent`](_autosummary/falaw.events.html.md#falaw.events.ProgressEvent) carried it (e.g.
+`{"inference_time": 3.2}`), so editing it never touches the event. `None`
+when nothing ran (a cache hit, a dry run, a call that did not succeed) or fal
+reported none. An *observed* fact about this run, not a price: see
+[`inference_time_s`](_autosummary/falaw.outcomes.html.md#falaw.outcomes.CallOutcome.inference_time_s).
 
 #### *property* ok *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
@@ -9049,6 +9147,9 @@ Execute a Plan, returning a list of materialized :class:
 ```
 
 lacing.Artifact\`s.
+
+Artifacts only: each call’s run metrics (falaw#127) are on the
+[`CallOutcome`](_autosummary/falaw.html.md#falaw.CallOutcome) objects that [`execute_isolated()`](_autosummary/falaw.plan.html.md#falaw.plan.execute_isolated) returns.
 
 This is the **halt** policy: the first call that raises ends the run, and its
 exception propagates unchanged (falaw’s typed hierarchy — see
@@ -11354,16 +11455,18 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-02 19:24 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/b78adb665c6a186edde2ff30c0dd93c0a3d4df7e"><code>b78adb6</code></a> on branch <code>main</code>, for **falaw 0.0.87** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-02 19:27 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/cf2f606b7f14b04ee842fb7574c45709fd7f97b5"><code>cf2f606</code></a> on branch <code>main</code>, for **falaw 0.0.88** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.88) is ahead of the latest release on PyPI (0.0.87): these docs describe unreleased code.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/b78adb665c6a186edde2ff30c0dd93c0a3d4df7e"><code>b78adb665c6a186edde2ff30c0dd93c0a3d4df7e</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/cf2f606b7f14b04ee842fb7574c45709fd7f97b5"><code>cf2f606b7f14b04ee842fb7574c45709fd7f97b5</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11374,9 +11477,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41508752333">41508752333</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/41509884221">41509884221</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>b78adb665c6a186edde2ff30c0dd93c0a3d4df7e</code> (in the history of the built commit) |
+| Event commit | <code>cf2f606b7f14b04ee842fb7574c45709fd7f97b5</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11401,13 +11504,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.87/">0.0.87</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.87/">0.0.87</a>, older than the documented version (0.0.88).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout b78adb665c6a186edde2ff30c0dd93c0a3d4df7e
+git checkout cf2f606b7f14b04ee842fb7574c45709fd7f97b5
 pip install "epythet==0.2.22"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
