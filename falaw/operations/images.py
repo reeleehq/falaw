@@ -13,7 +13,7 @@ from ._image_args import (
     EASYCONTROL_SPATIAL_MODES,
     controlled_image_arguments,
     image_arguments,
-    negative_prompt_arguments,
+    refs_arguments,
     known_record,
 )
 
@@ -59,7 +59,7 @@ def generate_image(
     image_size: str = "landscape_4_3",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
-    negative_prompt: str = "",
+    negative_prompt: Optional[str] = None,
 ) -> Result:
     """Generate an image from a text prompt.
 
@@ -76,9 +76,9 @@ def generate_image(
     want (Recraft ``style`` defaults to photoreal).
     """
     model = model_id or pick_model(category="image", quality_tier=quality).id
-    record = known_record(model)
-    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
-    arguments = image_arguments(record, prompt, image_size, extra)
+    arguments = image_arguments(
+        known_record(model), prompt, image_size, extra, negative_prompt=negative_prompt
+    )
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
 
@@ -187,7 +187,7 @@ def generate_image_with_refs(
     quality: str = "balanced",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
-    negative_prompt: str = "",
+    negative_prompt: Optional[str] = None,
 ) -> Result:
     """Generate a new image conditioned on one or more reference images.
 
@@ -208,8 +208,9 @@ def generate_image_with_refs(
             "use generate_image for pure text-to-image."
         )
     model = model_id or pick_model(category="image_edit", quality_tier=quality).id
-    extra = {**negative_prompt_arguments(known_record(model), negative_prompt), **(extra or {})}
-    arguments = _refs_arguments(prompt, refs, extra)
+    arguments = refs_arguments(
+        prompt, refs, extra, record=known_record(model), negative_prompt=negative_prompt
+    )
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
 
@@ -257,6 +258,10 @@ def generate_image_with_refs(
             "image_size": {"type": "string", "default": "landscape_4_3"},
             "model_id": {"type": "string"},
             "extra": {"type": "object"},
+            "negative_prompt": {
+                "type": "string",
+                "description": "What the image must not contain, named as the thing (sent only to a model that accepts one).",
+            },
         },
     },
     output_schema={"type": "object", "description": "falaw.Result"},
@@ -277,6 +282,7 @@ def generate_image_with_control(
     image_size: str = "landscape_4_3",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
+    negative_prompt: Optional[str] = None,
 ) -> Result:
     """Generate an image conditioned on a guide image's structure (falaw#140).
 
@@ -292,30 +298,13 @@ def generate_image_with_control(
     model = model_id or pick_model(category=CONTROL_CATEGORY, quality_tier=quality).id
     arguments, local_files = localize_paths(
         controlled_image_arguments(
-            known_record(model), prompt, image_size, control, extra
+            known_record(model), prompt, image_size, control, extra,
+            negative_prompt=negative_prompt,
         )
     )
     arguments = resolve_local_files(arguments, local_files, mode="wire")
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
-
-
-def _refs_arguments(prompt: str, refs: list[str], extra: Optional[dict]) -> dict:
-    """Build the argument dict for a reference-conditioned image call.
-
-    Image-edit models disagree on the parameter name — some read ``image_url``
-    (singular), others ``image_urls`` (plural). Passing both lets the receiving
-    model use whichever it understands; ``image_url`` carries the primary
-    (first) reference. Shared by the eager op and its ``plan_*`` sibling so an
-    eager call and a planned call with identical inputs collapse to one cache
-    entry.
-    """
-    return {
-        "image_url": refs[0],
-        "image_urls": list(refs),
-        "prompt": prompt,
-        **(extra or {}),
-    }
 
 
 @register_tool(

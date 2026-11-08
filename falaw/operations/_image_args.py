@@ -49,14 +49,25 @@ def check_prompt_length(prompt: str, record: Optional[ModelRecord]) -> None:
         )
 
 
-def negative_prompt_arguments(record: Optional[ModelRecord], negative_prompt: str) -> dict:
+def negative_prompt_arguments(
+    record: Optional[ModelRecord], negative_prompt: Optional[str]
+) -> dict:
     """``{"negative_prompt": text}`` for a model that declares one
     (:attr:`ModelRecord.accepts_negative_prompt`), else ``{}``: the text is dropped,
-    never joined into the positive prompt, where it would ask for what it names."""
+    never joined into the positive prompt, where it would ask for what it names.
+    Model-generic (a video planner can use it too, falaw#155)."""
     text = (negative_prompt or "").strip()
     if text and record is not None and record.accepts_negative_prompt:
         return {"negative_prompt": text}
     return {}
+
+
+def dropped_inputs(record: Optional[ModelRecord], *, negative_prompt: Optional[str]) -> list:
+    """The inputs a caller gave that ``record``'s model has no slot for, so a plan
+    can say so (``CallPlan.metadata["dropped_inputs"]``, outside the plan hash):
+    a constraint that never reached the picture is something to tell the person."""
+    given = bool((negative_prompt or "").strip())
+    return ["negative_prompt"] if given and not negative_prompt_arguments(record, negative_prompt) else []
 
 
 def image_arguments(
@@ -64,6 +75,8 @@ def image_arguments(
     prompt: str,
     image_size: str,
     extra: Optional[dict],
+    *,
+    negative_prompt: Optional[str] = None,
 ) -> dict:
     """The wire arguments for one text-to-image call.
 
@@ -71,10 +84,13 @@ def image_arguments(
     model that takes ``aspect_ratio``); models whose ``size_param`` is
     ``aspect_ratio`` get the equivalent ratio instead. ``extra`` wins over
     everything, so ``extra={"resolution": "2K"}`` and the like pass through.
+    ``negative_prompt`` goes in only for a model that accepts one
+    (:func:`negative_prompt_arguments`).
     """
     check_prompt_length(prompt, record)
+    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
     if record is None or record.size_param == "image_size":
-        return {"prompt": prompt, "image_size": image_size, **(extra or {})}
+        return {"prompt": prompt, "image_size": image_size, **extra}
     ratio = IMAGE_SIZE_ASPECT_RATIOS.get(image_size)
     if ratio is None and ":" in image_size:
         ratio = image_size
@@ -84,7 +100,7 @@ def image_arguments(
             f"is neither a named preset ({sorted(IMAGE_SIZE_ASPECT_RATIOS)}) nor "
             "a 'W:H' ratio."
         )
-    return {"prompt": prompt, record.size_param: ratio, **(extra or {})}
+    return {"prompt": prompt, record.size_param: ratio, **extra}
 
 
 CONTROL_CATEGORY = "image_control"
@@ -166,6 +182,8 @@ def controlled_image_arguments(
     image_size: str,
     control: Sequence[dict],
     extra: Optional[dict],
+    *,
+    negative_prompt: Optional[str] = None,
 ) -> dict:
     """The wire arguments for a structurally conditioned image call.
 
@@ -184,7 +202,34 @@ def controlled_image_arguments(
             f"control; pick an {CONTROL_CATEGORY!r} model (or none, for the default)."
         )
     return {
-        **image_arguments(record, prompt, image_size, None),
+        **image_arguments(record, prompt, image_size, None, negative_prompt=negative_prompt),
         "easycontrols": easycontrols(control),
+        **(extra or {}),
+    }
+
+
+def refs_arguments(
+    prompt: str,
+    refs: list,
+    extra: Optional[dict],
+    *,
+    record: Optional[ModelRecord] = None,
+    negative_prompt: Optional[str] = None,
+) -> dict:
+    """The argument dict for a reference-conditioned image call.
+
+    Image-edit models disagree on the parameter name — some read ``image_url``
+    (singular), others ``image_urls`` (plural). Passing both lets the receiving
+    model use whichever it understands; ``image_url`` carries the primary
+    (first) reference. ``negative_prompt`` as in :func:`image_arguments`;
+    ``extra`` wins. Shared by the eager op and its ``plan_*`` sibling so an
+    eager call and a planned call with identical inputs collapse to one cache
+    entry.
+    """
+    return {
+        "image_url": refs[0],
+        "image_urls": list(refs),
+        "prompt": prompt,
+        **negative_prompt_arguments(record, negative_prompt),
         **(extra or {}),
     }

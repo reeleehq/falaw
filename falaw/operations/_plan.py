@@ -29,8 +29,9 @@ from ..registry import get_model, pick_model
 from ._image_args import (
     CONTROL_CATEGORY,
     controlled_image_arguments,
+    dropped_inputs,
     image_arguments,
-    negative_prompt_arguments,
+    refs_arguments,
 )
 from ..terms import TermsContext
 from ..reprice import catalogue_cost_basis, llm_cost_basis
@@ -56,6 +57,13 @@ def _resolve_model_id_and_record(
         return record.id, record
     record = pick_model(category=category, quality_tier=quality_tier)
     return record.id, record
+
+
+def _noting_dropped(metadata: Optional[dict], record, *, negative_prompt) -> Optional[dict]:
+    """``metadata`` plus ``dropped_inputs`` when the model had no slot for an input
+    the caller gave (outside the plan hash, so it changes no cache key)."""
+    dropped = dropped_inputs(record, negative_prompt=negative_prompt)
+    return {**(metadata or {}), "dropped_inputs": dropped} if dropped else metadata
 
 
 def _catalogue_price(
@@ -101,17 +109,21 @@ def plan_generate_image(
     image_size: str = "landscape_4_3",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
+    negative_prompt: Optional[str] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     terms_context: Optional[TermsContext] = None,
-    negative_prompt: str = "",
 ) -> CallPlan:
-    """Plan a :func:`falaw.generate_image` call without executing it."""
+    """Plan a :func:`falaw.generate_image` call without executing it.
+
+    A ``negative_prompt`` the picked model cannot take is dropped and named in
+    ``metadata["dropped_inputs"]``."""
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category="image", quality_tier=quality
     )
-    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
-    arguments = image_arguments(record, prompt, image_size, extra)
+    arguments = image_arguments(
+        record, prompt, image_size, extra, negative_prompt=negative_prompt
+    )
     cost, basis = _catalogue_price(record)
     return make_call_plan(
         tool="generate_image",
@@ -119,7 +131,7 @@ def plan_generate_image(
         arguments=arguments,
         output_kind="image",
         estimated_cost_usd=cost,
-        metadata=metadata,
+        metadata=_noting_dropped(metadata, record, negative_prompt=negative_prompt),
         consult_cache=consult_cache,
         terms_context=terms_context,
         cost_basis=basis,
@@ -139,6 +151,7 @@ def plan_generate_image_with_control(
     image_size: str = "landscape_4_3",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
+    negative_prompt: Optional[str] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     terms_context: Optional[TermsContext] = None,
@@ -152,7 +165,9 @@ def plan_generate_image_with_control(
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category=CONTROL_CATEGORY, quality_tier=quality
     )
-    arguments = controlled_image_arguments(record, prompt, image_size, control, extra)
+    arguments = controlled_image_arguments(
+        record, prompt, image_size, control, extra, negative_prompt=negative_prompt
+    )
     cost, basis = _catalogue_price(record)
     return make_call_plan(
         tool="generate_image_with_control",
@@ -160,7 +175,7 @@ def plan_generate_image_with_control(
         arguments=arguments,
         output_kind="image",
         estimated_cost_usd=cost,
-        metadata=metadata,
+        metadata=_noting_dropped(metadata, record, negative_prompt=negative_prompt),
         consult_cache=consult_cache,
         terms_context=terms_context,
         cost_basis=basis,
@@ -214,10 +229,10 @@ def plan_generate_image_with_refs(
     quality: str = "balanced",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
+    negative_prompt: Optional[str] = None,
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     terms_context: Optional[TermsContext] = None,
-    negative_prompt: str = "",
 ) -> CallPlan:
     """Plan a :func:`falaw.generate_image_with_refs` call.
 
@@ -229,8 +244,6 @@ def plan_generate_image_with_refs(
     eager op uses — so a planned and an eager call with identical inputs
     collapse to one cache entry.
     """
-    from .images import _refs_arguments
-
     refs = [u for u in (reference_image_urls or []) if u]
     if not refs:
         raise ValueError(
@@ -240,8 +253,9 @@ def plan_generate_image_with_refs(
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category="image_edit", quality_tier=quality
     )
-    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
-    arguments = _refs_arguments(prompt, refs, extra)
+    arguments = refs_arguments(
+        prompt, refs, extra, record=record, negative_prompt=negative_prompt
+    )
     cost, basis = _catalogue_price(record)
     return make_call_plan(
         tool="generate_image_with_refs",
@@ -249,7 +263,7 @@ def plan_generate_image_with_refs(
         arguments=arguments,
         output_kind="image",
         estimated_cost_usd=cost,
-        metadata=metadata,
+        metadata=_noting_dropped(metadata, record, negative_prompt=negative_prompt),
         consult_cache=consult_cache,
         terms_context=terms_context,
         cost_basis=basis,

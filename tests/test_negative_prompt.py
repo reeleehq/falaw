@@ -70,3 +70,23 @@ def test_an_eager_call_sends_what_the_plan_would(monkeypatch):
     generate_image("a lighthouse", model_id=ACCEPTS, negative_prompt="glasses")
     planned = plan_generate_image("a lighthouse", model_id=ACCEPTS, negative_prompt="glasses")
     assert captured == [dict(planned.arguments)]
+
+
+def test_the_control_plan_sends_it_to_flux_general():
+    from falaw import plan_generate_image_with_control
+
+    control = [{"mode": "canny", "image": "http://x/guide.png"}]
+    args = plan_generate_image_with_control(
+        "a lighthouse", control, model_id="fal-ai/flux-general", negative_prompt="glasses"
+    ).arguments
+    assert args["negative_prompt"] == "glasses"
+
+
+def test_a_dropped_negative_is_named_in_the_plan_metadata_not_its_hash():
+    dropped = plan_generate_image("a lighthouse", model_id=REFUSES, negative_prompt="glasses")
+    plain = plan_generate_image("a lighthouse", model_id=REFUSES)
+    assert dropped.metadata.get("dropped_inputs") == ["negative_prompt"]
+    assert "dropped_inputs" not in (plain.metadata or {})
+    assert dropped.arguments == plain.arguments
+    sent = plan_generate_image("a lighthouse", model_id=ACCEPTS, negative_prompt="glasses")
+    assert "dropped_inputs" not in (sent.metadata or {})
