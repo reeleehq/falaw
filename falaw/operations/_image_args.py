@@ -49,6 +49,16 @@ def check_prompt_length(prompt: str, record: Optional[ModelRecord]) -> None:
         )
 
 
+def negative_prompt_arguments(record: Optional[ModelRecord], negative_prompt: str) -> dict:
+    """``{"negative_prompt": text}`` for a model that declares one
+    (:attr:`ModelRecord.accepts_negative_prompt`), else ``{}``: the text is dropped,
+    never joined into the positive prompt, where it would ask for what it names."""
+    text = (negative_prompt or "").strip()
+    if text and record is not None and record.accepts_negative_prompt:
+        return {"negative_prompt": text}
+    return {}
+
+
 def image_arguments(
     record: Optional[ModelRecord],
     prompt: str,

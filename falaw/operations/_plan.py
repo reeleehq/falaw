@@ -30,6 +30,7 @@ from ._image_args import (
     CONTROL_CATEGORY,
     controlled_image_arguments,
     image_arguments,
+    negative_prompt_arguments,
 )
 from ..terms import TermsContext
 from ..reprice import catalogue_cost_basis, llm_cost_basis
@@ -103,11 +104,13 @@ def plan_generate_image(
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     terms_context: Optional[TermsContext] = None,
+    negative_prompt: str = "",
 ) -> CallPlan:
     """Plan a :func:`falaw.generate_image` call without executing it."""
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category="image", quality_tier=quality
     )
+    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
     arguments = image_arguments(record, prompt, image_size, extra)
     cost, basis = _catalogue_price(record)
     return make_call_plan(
@@ -214,6 +217,7 @@ def plan_generate_image_with_refs(
     metadata: Optional[dict] = None,
     consult_cache: bool = True,
     terms_context: Optional[TermsContext] = None,
+    negative_prompt: str = "",
 ) -> CallPlan:
     """Plan a :func:`falaw.generate_image_with_refs` call.
 
@@ -236,6 +240,7 @@ def plan_generate_image_with_refs(
     application, record = _resolve_model_id_and_record(
         model_id=model_id, category="image_edit", quality_tier=quality
     )
+    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
     arguments = _refs_arguments(prompt, refs, extra)
     cost, basis = _catalogue_price(record)
     return make_call_plan(

@@ -13,6 +13,7 @@ from ._image_args import (
     EASYCONTROL_SPATIAL_MODES,
     controlled_image_arguments,
     image_arguments,
+    negative_prompt_arguments,
     known_record,
 )
 
@@ -39,6 +40,10 @@ from ._image_args import (
             "image_size": {"type": "string", "default": "landscape_4_3"},
             "model_id": {"type": "string"},
             "extra": {"type": "object"},
+            "negative_prompt": {
+                "type": "string",
+                "description": "What the image must not contain, named as the thing (sent only to a model that accepts one).",
+            },
         },
     },
     output_schema={"type": "object", "description": "falaw.Result"},
@@ -54,8 +59,14 @@ def generate_image(
     image_size: str = "landscape_4_3",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
+    negative_prompt: str = "",
 ) -> Result:
     """Generate an image from a text prompt.
+
+    ``negative_prompt`` (what the picture must not contain, named as the thing:
+    "glasses", not "no glasses") reaches a model that accepts one
+    (:attr:`falaw.ModelRecord.accepts_negative_prompt`) and is dropped for any
+    other, never joined into ``prompt``.
 
     ``image_size`` is a fal preset (``landscape_16_9`` …); models that size by
     ``aspect_ratio`` (``nano-banana-pro``) get the equivalent ratio, with
@@ -65,7 +76,9 @@ def generate_image(
     want (Recraft ``style`` defaults to photoreal).
     """
     model = model_id or pick_model(category="image", quality_tier=quality).id
-    arguments = image_arguments(known_record(model), prompt, image_size, extra)
+    record = known_record(model)
+    extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
+    arguments = image_arguments(record, prompt, image_size, extra)
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
 
@@ -152,6 +165,10 @@ def edit_image(
             },
             "model_id": {"type": "string"},
             "extra": {"type": "object"},
+            "negative_prompt": {
+                "type": "string",
+                "description": "What the image must not contain, named as the thing (sent only to a model that accepts one).",
+            },
         },
     },
     output_schema={"type": "object", "description": "falaw.Result"},
@@ -170,6 +187,7 @@ def generate_image_with_refs(
     quality: str = "balanced",
     model_id: Optional[str] = None,
     extra: Optional[dict] = None,
+    negative_prompt: str = "",
 ) -> Result:
     """Generate a new image conditioned on one or more reference images.
 
@@ -180,7 +198,8 @@ def generate_image_with_refs(
     (Flux Kontext et al.) and threads the references as ``image_url`` (first)
     + ``image_urls`` (all) — the same wire shape image-edit models understand.
 
-    Pass ``model_id`` to override the picked model.
+    Pass ``model_id`` to override the picked model. ``negative_prompt`` as for
+    :func:`generate_image`.
     """
     refs = [u for u in (reference_image_urls or []) if u]
     if not refs:
@@ -189,6 +208,7 @@ def generate_image_with_refs(
             "use generate_image for pure text-to-image."
         )
     model = model_id or pick_model(category="image_edit", quality_tier=quality).id
+    extra = {**negative_prompt_arguments(known_record(model), negative_prompt), **(extra or {})}
     arguments = _refs_arguments(prompt, refs, extra)
     raw = call_fal(model, arguments)
     return parse_response(raw, application=model, arguments=arguments)
