@@ -59,7 +59,9 @@ def _resolve_model_id_and_record(
     return record.id, record
 
 
-def _noting_dropped(metadata: Optional[dict], arguments: dict, **given) -> Optional[dict]:
+def _noting_dropped(
+    metadata: Optional[dict], arguments: dict, **given
+) -> Optional[dict]:
     """``metadata`` plus ``dropped_inputs`` when an input the caller gave did not
     reach ``arguments`` (outside the plan hash, so it changes no cache key)."""
     dropped = dropped_inputs(given, arguments)

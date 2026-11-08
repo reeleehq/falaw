@@ -298,7 +298,11 @@ def generate_image_with_control(
     model = model_id or pick_model(category=CONTROL_CATEGORY, quality_tier=quality).id
     arguments, local_files = localize_paths(
         controlled_image_arguments(
-            known_record(model), prompt, image_size, control, extra,
+            known_record(model),
+            prompt,
+            image_size,
+            control,
+            extra,
             negative_prompt=negative_prompt,
         )
     )

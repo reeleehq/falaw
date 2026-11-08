@@ -202,7 +202,9 @@ def controlled_image_arguments(
             f"control; pick an {CONTROL_CATEGORY!r} model (or none, for the default)."
         )
     return {
-        **image_arguments(record, prompt, image_size, None, negative_prompt=negative_prompt),
+        **image_arguments(
+            record, prompt, image_size, None, negative_prompt=negative_prompt
+        ),
         "easycontrols": easycontrols(control),
         **(extra or {}),
     }
