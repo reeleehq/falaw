@@ -59,10 +59,10 @@ def _resolve_model_id_and_record(
     return record.id, record
 
 
-def _noting_dropped(metadata: Optional[dict], record, *, negative_prompt) -> Optional[dict]:
-    """``metadata`` plus ``dropped_inputs`` when the model had no slot for an input
-    the caller gave (outside the plan hash, so it changes no cache key)."""
-    dropped = dropped_inputs(record, negative_prompt=negative_prompt)
+def _noting_dropped(metadata: Optional[dict], arguments: dict, **given) -> Optional[dict]:
+    """``metadata`` plus ``dropped_inputs`` when an input the caller gave did not
+    reach ``arguments`` (outside the plan hash, so it changes no cache key)."""
+    dropped = dropped_inputs(given, arguments)
     return {**(metadata or {}), "dropped_inputs": dropped} if dropped else metadata
 
 
@@ -131,7 +131,7 @@ def plan_generate_image(
         arguments=arguments,
         output_kind="image",
         estimated_cost_usd=cost,
-        metadata=_noting_dropped(metadata, record, negative_prompt=negative_prompt),
+        metadata=_noting_dropped(metadata, arguments, negative_prompt=negative_prompt),
         consult_cache=consult_cache,
         terms_context=terms_context,
         cost_basis=basis,
@@ -175,7 +175,7 @@ def plan_generate_image_with_control(
         arguments=arguments,
         output_kind="image",
         estimated_cost_usd=cost,
-        metadata=_noting_dropped(metadata, record, negative_prompt=negative_prompt),
+        metadata=_noting_dropped(metadata, arguments, negative_prompt=negative_prompt),
         consult_cache=consult_cache,
         terms_context=terms_context,
         cost_basis=basis,
@@ -263,7 +263,7 @@ def plan_generate_image_with_refs(
         arguments=arguments,
         output_kind="image",
         estimated_cost_usd=cost,
-        metadata=_noting_dropped(metadata, record, negative_prompt=negative_prompt),
+        metadata=_noting_dropped(metadata, arguments, negative_prompt=negative_prompt),
         consult_cache=consult_cache,
         terms_context=terms_context,
         cost_basis=basis,

@@ -55,7 +55,8 @@ def test_no_negative_prompt_adds_nothing_and_extra_still_wins():
     assert args["negative_prompt"] == "b"
 
 
-def test_an_eager_call_sends_what_the_plan_would(monkeypatch):
+@pytest.fixture
+def fal_calls(monkeypatch):
     captured = []
 
     def subscribe(application, *, arguments, with_logs, on_queue_update):
@@ -65,11 +66,25 @@ def test_an_eager_call_sends_what_the_plan_would(monkeypatch):
     monkeypatch.setitem(
         sys.modules, "fal_client", types.SimpleNamespace(InProgress=type("IP", (), {}), subscribe=subscribe)
     )
-    from falaw import generate_image
+    return captured
 
-    generate_image("a lighthouse", model_id=ACCEPTS, negative_prompt="glasses")
-    planned = plan_generate_image("a lighthouse", model_id=ACCEPTS, negative_prompt="glasses")
-    assert captured == [dict(planned.arguments)]
+
+def test_each_eager_call_sends_what_its_plan_would(fal_calls):
+    import falaw
+
+    control = [{"mode": "canny", "image": "http://x/guide.png"}]
+    pairs = [
+        (falaw.generate_image, falaw.plan_generate_image, ("a lighthouse",), ACCEPTS),
+        (falaw.generate_image_with_refs, falaw.plan_generate_image_with_refs,
+         ("Alex", ["http://x/alex.png"]), EDIT_ACCEPTS),
+        (falaw.generate_image_with_control, falaw.plan_generate_image_with_control,
+         ("a lighthouse", control), "fal-ai/flux-general"),
+    ]
+    for eager, plan, args, model in pairs:
+        eager(*args, model_id=model, negative_prompt="glasses")
+        planned = plan(*args, model_id=model, negative_prompt="glasses")
+        assert fal_calls[-1] == dict(planned.arguments), eager.__name__
+        assert fal_calls[-1]["negative_prompt"] == "glasses"
 
 
 def test_the_control_plan_sends_it_to_flux_general():
@@ -90,3 +105,11 @@ def test_a_dropped_negative_is_named_in_the_plan_metadata_not_its_hash():
     assert dropped.arguments == plain.arguments
     sent = plan_generate_image("a lighthouse", model_id=ACCEPTS, negative_prompt="glasses")
     assert "dropped_inputs" not in (sent.metadata or {})
+
+
+def test_a_negative_sent_through_extra_is_not_reported_dropped():
+    plan = plan_generate_image(
+        "x", model_id=REFUSES, negative_prompt="glasses", extra={"negative_prompt": "glasses"}
+    )
+    assert plan.arguments["negative_prompt"] == "glasses"
+    assert "dropped_inputs" not in (plan.metadata or {})

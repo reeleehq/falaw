@@ -62,12 +62,12 @@ def negative_prompt_arguments(
     return {}
 
 
-def dropped_inputs(record: Optional[ModelRecord], *, negative_prompt: Optional[str]) -> list:
-    """The inputs a caller gave that ``record``'s model has no slot for, so a plan
-    can say so (``CallPlan.metadata["dropped_inputs"]``, outside the plan hash):
-    a constraint that never reached the picture is something to tell the person."""
-    given = bool((negative_prompt or "").strip())
-    return ["negative_prompt"] if given and not negative_prompt_arguments(record, negative_prompt) else []
+def dropped_inputs(given: dict, arguments: dict) -> list:
+    """The inputs a caller ``given`` (``{name: value}``) that did not reach the built
+    ``arguments`` (the model has no slot for them), so a plan can say so
+    (``CallPlan.metadata["dropped_inputs"]``, outside the plan hash): a constraint
+    that never reached the picture is something to tell the person."""
+    return [k for k, v in given.items() if (v or "").strip() and k not in arguments]
 
 
 def image_arguments(
