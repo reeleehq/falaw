@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "2e3874728328";
+export const MODELS_TABLE_VERSION = "e066ff1f24a6";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -141,7 +141,8 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal model page (llms.txt), fetched 2026-11-02: '$0.075 per megapixels'.",
       "source": "docs"
-    }
+    },
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/ideogram/v3",
@@ -157,7 +158,8 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Ideogram v3: per-image pricing in the ~$0.06 range.",
       "source": "api"
-    }
+    },
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/recraft/v3/text-to-image",
@@ -300,7 +302,8 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
-    }
+    },
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/sana/sprint",
@@ -316,7 +319,8 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
-    }
+    },
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/flux-pro/v1.1",
@@ -416,7 +420,8 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
-    }
+    },
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/bytedance/seededit/v3/edit-image",

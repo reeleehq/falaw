@@ -143,6 +143,11 @@ class ModelRecord:
     size_param: str = "image_size"
     """Which argument carries the output size: ``"image_size"`` (fal's named
     presets, the default) or ``"aspect_ratio"`` (+ ``resolution``)."""
+    accepts_negative_prompt: bool = False
+    """Whether the model's input schema has a ``negative_prompt`` (from fal's
+    published OpenAPI schema). A planner sends a caller's negative prompt only to
+    such a model and drops it otherwise, never folding it into ``prompt``, where
+    "glasses" would REQUEST glasses (reeleehq/reelee#859). ``False`` when unknown."""
     param_specs: Mapping[str, Mapping[str, Any]] = field(
         default_factory=dict, hash=False
     )
