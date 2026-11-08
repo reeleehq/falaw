@@ -37,9 +37,14 @@ Edit an image with a natural-language instruction.
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.operations.images.generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+### falaw.operations.images.generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, negative_prompt=None)
 
 Generate an image from a text prompt.
+
+`negative_prompt` (what the picture must not contain, named as the thing:
+“glasses”, not “no glasses”) reaches a model that accepts one
+([`falaw.ModelRecord.accepts_negative_prompt`](falaw.html.md#falaw.ModelRecord.accepts_negative_prompt)) and is dropped for any
+other, never joined into `prompt`.
 
 `image_size` is a fal preset (`landscape_16_9` …); models that size by
 `aspect_ratio` (`nano-banana-pro`) get the equivalent ratio, with
@@ -51,7 +56,7 @@ want (Recraft `style` defaults to photoreal).
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.operations.images.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+### falaw.operations.images.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, negative_prompt=None)
 
 Generate an image conditioned on a guide image’s structure (falaw#140).
 
@@ -67,7 +72,7 @@ upload only on a cache miss and key the cache on the file’s bytes.
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.operations.images.generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None)
+### falaw.operations.images.generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None, negative_prompt=None)
 
 Generate a new image conditioned on one or more reference images.
 
@@ -79,7 +84,8 @@ actually ingests references. This routes to the `image_edit` category
 
 + `image_urls` (all) — the same wire shape image-edit models understand.
 
-Pass `model_id` to override the picked model.
+Pass `model_id` to override the picked model. `negative_prompt` as for
+[`generate_image()`](#falaw.operations.images.generate_image).
 
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)

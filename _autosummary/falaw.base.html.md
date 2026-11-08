@@ -72,11 +72,18 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One entry in the fal model catalog.
+
+#### accepts_negative_prompt *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether the model’s input schema has a `negative_prompt` (from fal’s
+published OpenAPI schema). A planner sends a caller’s negative prompt only to
+such a model and drops it otherwise, never folding it into `prompt`, where
+“glasses” would REQUEST glasses (reeleehq/reelee#859). `False` when unknown.
 
 #### default_negative_prompt *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 

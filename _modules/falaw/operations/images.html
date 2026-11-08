@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=0f58e6e2"></script>
+    <script src="../../../_static/documentation_options.js?v=c4d1762f"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.93" />
+  <meta name="docsearch:version" content="0.0.94" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -727,6 +727,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">EASYCONTROL_SPATIAL_MODES</span><span class="p">,</span>
     <span class="n">controlled_image_arguments</span><span class="p">,</span>
     <span class="n">image_arguments</span><span class="p">,</span>
+    <span class="n">refs_arguments</span><span class="p">,</span>
     <span class="n">known_record</span><span class="p">,</span>
 <span class="p">)</span>
 
@@ -755,6 +756,10 @@ window.runMermaid = runMermaid;</script>
             <span class="s2">"image_size"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"landscape_4_3"</span><span class="p">},</span>
             <span class="s2">"model_id"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
             <span class="s2">"extra"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">},</span>
+            <span class="s2">"negative_prompt"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"What the image must not contain, named as the thing (sent only to a model that accepts one)."</span><span class="p">,</span>
+            <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">},</span>
     <span class="n">output_schema</span><span class="o">=</span><span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"falaw.Result"</span><span class="p">},</span>
@@ -770,8 +775,14 @@ window.runMermaid = runMermaid;</script>
     <span class="n">image_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"landscape_4_3"</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">negative_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Generate an image from a text prompt.</span>
+
+<span class="sd">    ``negative_prompt`` (what the picture must not contain, named as the thing:</span>
+<span class="sd">    "glasses", not "no glasses") reaches a model that accepts one</span>
+<span class="sd">    (:attr:`falaw.ModelRecord.accepts_negative_prompt`) and is dropped for any</span>
+<span class="sd">    other, never joined into ``prompt``.</span>
 
 <span class="sd">    ``image_size`` is a fal preset (``landscape_16_9`` …); models that size by</span>
 <span class="sd">    ``aspect_ratio`` (``nano-banana-pro``) get the equivalent ratio, with</span>
@@ -781,7 +792,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    want (Recraft ``style`` defaults to photoreal).</span>
 <span class="sd">    """</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="n">image_arguments</span><span class="p">(</span><span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">image_arguments</span><span class="p">(</span>
+        <span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span>
+    <span class="p">)</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">call_fal</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span></div>
 
@@ -874,6 +887,10 @@ window.runMermaid = runMermaid;</script>
             <span class="p">},</span>
             <span class="s2">"model_id"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
             <span class="s2">"extra"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">},</span>
+            <span class="s2">"negative_prompt"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"What the image must not contain, named as the thing (sent only to a model that accepts one)."</span><span class="p">,</span>
+            <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">},</span>
     <span class="n">output_schema</span><span class="o">=</span><span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"falaw.Result"</span><span class="p">},</span>
@@ -892,6 +909,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"balanced"</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">negative_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Generate a new image conditioned on one or more reference images.</span>
 
@@ -902,7 +920,8 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    (Flux Kontext et al.) and threads the references as ``image_url`` (first)</span>
 <span class="sd">    + ``image_urls`` (all) — the same wire shape image-edit models understand.</span>
 
-<span class="sd">    Pass ``model_id`` to override the picked model.</span>
+<span class="sd">    Pass ``model_id`` to override the picked model. ``negative_prompt`` as for</span>
+<span class="sd">    :func:`generate_image`.</span>
 <span class="sd">    """</span>
     <span class="n">refs</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="p">(</span><span class="n">reference_image_urls</span> <span class="ow">or</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">u</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">refs</span><span class="p">:</span>
@@ -911,7 +930,9 @@ window.runMermaid = runMermaid;</script>
             <span class="s2">"use generate_image for pure text-to-image."</span>
         <span class="p">)</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="s2">"image_edit"</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="n">_refs_arguments</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">refs_arguments</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span>
+    <span class="p">)</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">call_fal</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span></div>
 
@@ -962,6 +983,10 @@ window.runMermaid = runMermaid;</script>
             <span class="s2">"image_size"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span> <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"landscape_4_3"</span><span class="p">},</span>
             <span class="s2">"model_id"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">},</span>
             <span class="s2">"extra"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">},</span>
+            <span class="s2">"negative_prompt"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+                <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"What the image must not contain, named as the thing (sent only to a model that accepts one)."</span><span class="p">,</span>
+            <span class="p">},</span>
         <span class="p">},</span>
     <span class="p">},</span>
     <span class="n">output_schema</span><span class="o">=</span><span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"object"</span><span class="p">,</span> <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"falaw.Result"</span><span class="p">},</span>
@@ -982,6 +1007,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">image_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"landscape_4_3"</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">negative_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Generate an image conditioned on a guide image's structure (falaw#140).</span>
 
@@ -997,31 +1023,14 @@ window.runMermaid = runMermaid;</script>
     <span class="n">model</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">CONTROL_CATEGORY</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
     <span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span> <span class="o">=</span> <span class="n">localize_paths</span><span class="p">(</span>
         <span class="n">controlled_image_arguments</span><span class="p">(</span>
-            <span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">extra</span>
+            <span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span>
+            <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="p">)</span>
     <span class="n">arguments</span> <span class="o">=</span> <span class="n">resolve_local_files</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"wire"</span><span class="p">)</span>
     <span class="n">raw</span> <span class="o">=</span> <span class="n">call_fal</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">application</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">)</span></div>
 
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_refs_arguments</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">refs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build the argument dict for a reference-conditioned image call.</span>
-
-<span class="sd">    Image-edit models disagree on the parameter name — some read ``image_url``</span>
-<span class="sd">    (singular), others ``image_urls`` (plural). Passing both lets the receiving</span>
-<span class="sd">    model use whichever it understands; ``image_url`` carries the primary</span>
-<span class="sd">    (first) reference. Shared by the eager op and its ``plan_*`` sibling so an</span>
-<span class="sd">    eager call and a planned call with identical inputs collapse to one cache</span>
-<span class="sd">    entry.</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">"image_url"</span><span class="p">:</span> <span class="n">refs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="s2">"image_urls"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">refs</span><span class="p">),</span>
-        <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
-        <span class="o">**</span><span class="p">(</span><span class="n">extra</span> <span class="ow">or</span> <span class="p">{}),</span>
-    <span class="p">}</span>
 
 
 <div class="viewcode-block" id="composite_character_in_environment">

@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=0f58e6e2"></script>
+    <script src="../../../_static/documentation_options.js?v=c4d1762f"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.93" />
+  <meta name="docsearch:version" content="0.0.94" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -743,7 +743,9 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">._image_args</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">CONTROL_CATEGORY</span><span class="p">,</span>
     <span class="n">controlled_image_arguments</span><span class="p">,</span>
+    <span class="n">dropped_inputs</span><span class="p">,</span>
     <span class="n">image_arguments</span><span class="p">,</span>
+    <span class="n">refs_arguments</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..terms</span><span class="w"> </span><span class="kn">import</span> <span class="n">TermsContext</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">..reprice</span><span class="w"> </span><span class="kn">import</span> <span class="n">catalogue_cost_basis</span><span class="p">,</span> <span class="n">llm_cost_basis</span>
@@ -769,6 +771,13 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">record</span>
     <span class="n">record</span> <span class="o">=</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality_tier</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">record</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_noting_dropped</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">],</span> <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">**</span><span class="n">given</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""``metadata`` plus ``dropped_inputs`` when an input the caller gave did not</span>
+<span class="sd">    reach ``arguments`` (outside the plan hash, so it changes no cache key)."""</span>
+    <span class="n">dropped</span> <span class="o">=</span> <span class="n">dropped_inputs</span><span class="p">(</span><span class="n">given</span><span class="p">,</span> <span class="n">arguments</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="p">(</span><span class="n">metadata</span> <span class="ow">or</span> <span class="p">{}),</span> <span class="s2">"dropped_inputs"</span><span class="p">:</span> <span class="n">dropped</span><span class="p">}</span> <span class="k">if</span> <span class="n">dropped</span> <span class="k">else</span> <span class="n">metadata</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_catalogue_price</span><span class="p">(</span>
@@ -816,15 +825,21 @@ window.runMermaid = runMermaid;</script>
     <span class="n">image_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"landscape_4_3"</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">negative_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">consult_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">terms_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TermsContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CallPlan</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Plan a :func:`falaw.generate_image` call without executing it."""</span>
+<span class="w">    </span><span class="sd">"""Plan a :func:`falaw.generate_image` call without executing it.</span>
+
+<span class="sd">    A ``negative_prompt`` the picked model cannot take is dropped and named in</span>
+<span class="sd">    ``metadata["dropped_inputs"]``."""</span>
     <span class="n">application</span><span class="p">,</span> <span class="n">record</span> <span class="o">=</span> <span class="n">_resolve_model_id_and_record</span><span class="p">(</span>
         <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span>
     <span class="p">)</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="n">image_arguments</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">image_arguments</span><span class="p">(</span>
+        <span class="n">record</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span>
+    <span class="p">)</span>
     <span class="n">cost</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">_catalogue_price</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">make_call_plan</span><span class="p">(</span>
         <span class="n">tool</span><span class="o">=</span><span class="s2">"generate_image"</span><span class="p">,</span>
@@ -832,7 +847,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
         <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span>
         <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="n">cost</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">_noting_dropped</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span><span class="p">),</span>
         <span class="n">consult_cache</span><span class="o">=</span><span class="n">consult_cache</span><span class="p">,</span>
         <span class="n">terms_context</span><span class="o">=</span><span class="n">terms_context</span><span class="p">,</span>
         <span class="n">cost_basis</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>
@@ -855,6 +870,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">image_size</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"landscape_4_3"</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">negative_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">consult_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">terms_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TermsContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -868,7 +884,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">application</span><span class="p">,</span> <span class="n">record</span> <span class="o">=</span> <span class="n">_resolve_model_id_and_record</span><span class="p">(</span>
         <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">CONTROL_CATEGORY</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span>
     <span class="p">)</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="n">controlled_image_arguments</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">controlled_image_arguments</span><span class="p">(</span>
+        <span class="n">record</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span>
+    <span class="p">)</span>
     <span class="n">cost</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">_catalogue_price</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">make_call_plan</span><span class="p">(</span>
         <span class="n">tool</span><span class="o">=</span><span class="s2">"generate_image_with_control"</span><span class="p">,</span>
@@ -876,7 +894,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
         <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span>
         <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="n">cost</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">_noting_dropped</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span><span class="p">),</span>
         <span class="n">consult_cache</span><span class="o">=</span><span class="n">consult_cache</span><span class="p">,</span>
         <span class="n">terms_context</span><span class="o">=</span><span class="n">terms_context</span><span class="p">,</span>
         <span class="n">cost_basis</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>
@@ -936,6 +954,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">quality</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"balanced"</span><span class="p">,</span>
     <span class="n">model_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">extra</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">negative_prompt</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">consult_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">terms_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TermsContext</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -950,8 +969,6 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    eager op uses — so a planned and an eager call with identical inputs</span>
 <span class="sd">    collapse to one cache entry.</span>
 <span class="sd">    """</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">.images</span><span class="w"> </span><span class="kn">import</span> <span class="n">_refs_arguments</span>
-
     <span class="n">refs</span> <span class="o">=</span> <span class="p">[</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="p">(</span><span class="n">reference_image_urls</span> <span class="ow">or</span> <span class="p">[])</span> <span class="k">if</span> <span class="n">u</span><span class="p">]</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">refs</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -961,7 +978,9 @@ window.runMermaid = runMermaid;</script>
     <span class="n">application</span><span class="p">,</span> <span class="n">record</span> <span class="o">=</span> <span class="n">_resolve_model_id_and_record</span><span class="p">(</span>
         <span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="s2">"image_edit"</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span>
     <span class="p">)</span>
-    <span class="n">arguments</span> <span class="o">=</span> <span class="n">_refs_arguments</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="n">refs_arguments</span><span class="p">(</span>
+        <span class="n">prompt</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="n">record</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span>
+    <span class="p">)</span>
     <span class="n">cost</span><span class="p">,</span> <span class="n">basis</span> <span class="o">=</span> <span class="n">_catalogue_price</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">make_call_plan</span><span class="p">(</span>
         <span class="n">tool</span><span class="o">=</span><span class="s2">"generate_image_with_refs"</span><span class="p">,</span>
@@ -969,7 +988,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">arguments</span><span class="o">=</span><span class="n">arguments</span><span class="p">,</span>
         <span class="n">output_kind</span><span class="o">=</span><span class="s2">"image"</span><span class="p">,</span>
         <span class="n">estimated_cost_usd</span><span class="o">=</span><span class="n">cost</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="o">=</span><span class="n">_noting_dropped</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">arguments</span><span class="p">,</span> <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span><span class="p">),</span>
         <span class="n">consult_cache</span><span class="o">=</span><span class="n">consult_cache</span><span class="p">,</span>
         <span class="n">terms_context</span><span class="o">=</span><span class="n">terms_context</span><span class="p">,</span>
         <span class="n">cost_basis</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>

@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=0f58e6e2"></script>
+    <script src="../../_static/documentation_options.js?v=c4d1762f"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.93" />
+  <meta name="docsearch:version" content="0.0.94" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -868,6 +868,11 @@ window.runMermaid = runMermaid;</script>
     <span class="n">size_param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"image_size"</span>
 <span class="w">    </span><span class="sd">"""Which argument carries the output size: ``"image_size"`` (fal's named</span>
 <span class="sd">    presets, the default) or ``"aspect_ratio"`` (+ ``resolution``)."""</span>
+    <span class="n">accepts_negative_prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="w">    </span><span class="sd">"""Whether the model's input schema has a ``negative_prompt`` (from fal's</span>
+<span class="sd">    published OpenAPI schema). A planner sends a caller's negative prompt only to</span>
+<span class="sd">    such a model and drops it otherwise, never folding it into ``prompt``, where</span>
+<span class="sd">    "glasses" would REQUEST glasses (reeleehq/reelee#859). ``False`` when unknown."""</span>
     <span class="n">param_specs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">)</span>

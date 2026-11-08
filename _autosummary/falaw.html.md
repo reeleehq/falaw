@@ -1167,11 +1167,18 @@ already inside `output`.
 
 Every prompt token, cached or not.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', param_specs=dict())
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One entry in the fal model catalog.
+
+#### accepts_negative_prompt *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether the model’s input schema has a `negative_prompt` (from fal’s
+published OpenAPI schema). A planner sends a caller’s negative prompt only to
+such a model and drops it otherwise, never folding it into `prompt`, where
+“glasses” would REQUEST glasses (reeleehq/reelee#859). `False` when unknown.
 
 #### default_negative_prompt *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
@@ -2312,9 +2319,14 @@ with identical inputs collapse to the same cache entry.
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+### falaw.generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, negative_prompt=None)
 
 Generate an image from a text prompt.
+
+`negative_prompt` (what the picture must not contain, named as the thing:
+“glasses”, not “no glasses”) reaches a model that accepts one
+([`falaw.ModelRecord.accepts_negative_prompt`](#falaw.ModelRecord.accepts_negative_prompt)) and is dropped for any
+other, never joined into `prompt`.
 
 `image_size` is a fal preset (`landscape_16_9` …); models that size by
 `aspect_ratio` (`nano-banana-pro`) get the equivalent ratio, with
@@ -2326,7 +2338,7 @@ want (Recraft `style` defaults to photoreal).
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None)
+### falaw.generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, negative_prompt=None)
 
 Generate an image conditioned on a guide image’s structure (falaw#140).
 
@@ -2342,7 +2354,7 @@ upload only on a cache miss and key the cache on the file’s bytes.
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
 
-### falaw.generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None)
+### falaw.generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None, negative_prompt=None)
 
 Generate a new image conditioned on one or more reference images.
 
@@ -2354,7 +2366,8 @@ actually ingests references. This routes to the `image_edit` category
 
 + `image_urls` (all) — the same wire shape image-edit models understand.
 
-Pass `model_id` to override the picked model.
+Pass `model_id` to override the picked model. `negative_prompt` as for
+[`generate_image()`](#falaw.generate_image).
 
 * **Return type:**
   [`Result`](falaw.results.html.md#falaw.results.Result)
@@ -2861,14 +2874,17 @@ with no duration argument it is estimator-only.
 * **Return type:**
   [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
 
-### falaw.plan_generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
+### falaw.plan_generate_image(prompt, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, negative_prompt=None, metadata=None, consult_cache=True, terms_context=None)
 
 Plan a [`falaw.generate_image()`](#falaw.generate_image) call without executing it.
+
+A `negative_prompt` the picked model cannot take is dropped and named in
+`metadata["dropped_inputs"]`.
 
 * **Return type:**
   [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
 
-### falaw.plan_generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
+### falaw.plan_generate_image_with_control(prompt, control, , quality='balanced', image_size='landscape_4_3', model_id=None, extra=None, negative_prompt=None, metadata=None, consult_cache=True, terms_context=None)
 
 Plan a [`falaw.generate_image_with_control()`](#falaw.generate_image_with_control) call.
 
@@ -2879,7 +2895,7 @@ on its bytes.
 * **Return type:**
   [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
 
-### falaw.plan_generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None, metadata=None, consult_cache=True, terms_context=None)
+### falaw.plan_generate_image_with_refs(prompt, reference_image_urls, , quality='balanced', model_id=None, extra=None, negative_prompt=None, metadata=None, consult_cache=True, terms_context=None)
 
 Plan a [`falaw.generate_image_with_refs()`](#falaw.generate_image_with_refs) call.
 
