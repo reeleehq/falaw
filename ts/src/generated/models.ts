@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "e066ff1f24a6";
+export const MODELS_TABLE_VERSION = "5f06dc72cb90";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -1813,5 +1813,44 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       }
     },
     "default_pick": false
+  },
+  {
+    "id": "fal-ai/bytedance/seed-speech/tts/v2",
+    "category": "tts",
+    "description": "ByteDance Seed Speech TTS 2.0 (Doubao TTS 2.0): ~50 preset voices, 10 languages (zh, en, ja, es-mx, id, pt-br, ko, it, de, fr), `voice_instruction` steers emotion/pace. Takes `text`. No voice cloning on this endpoint. Usable by id/alias; opted out of default picks.",
+    "aliases": [
+      "seed-tts",
+      "seed-speech"
+    ],
+    "quality_tier": "high",
+    "cost_hint": "low",
+    "default_pick": false,
+    "docs_url": "https://fal.ai/models/fal-ai/bytedance/seed-speech/tts/v2",
+    "cost_estimate": {
+      "kind": "per_token",
+      "amount": 0.00003,
+      "currency": "USD",
+      "notes": "fal model page, read 2026-11-10: $0.03 per 1000 characters. Treat 'tokens' as character count.",
+      "source": "manual"
+    }
+  },
+  {
+    "id": "bytedance/seed-audio-1.0",
+    "category": "music",
+    "description": "ByteDance Seed Audio 1.0: one-pass dialogue + sound effects + music from a `prompt` (not `text`); preset voices, up to 3 reference clips (@Audio1..3) or a cloned voice id via `voice`; 20 languages. Not a drop-in for text_to_speech. Usable by id/alias; opted out of default picks.",
+    "aliases": [
+      "seed-audio"
+    ],
+    "quality_tier": "high",
+    "cost_hint": "medium",
+    "default_pick": false,
+    "docs_url": "https://fal.ai/models/bytedance/seed-audio-1.0",
+    "cost_estimate": {
+      "kind": "per_second",
+      "amount": 0.003125,
+      "currency": "USD",
+      "notes": "fal llms.txt, read 2026-11-10: $0.1875/min of audio. A news article and the fal page text of 2026-06 quote $0.075/min; verify before relying on it.",
+      "source": "manual"
+    }
   }
 ]);

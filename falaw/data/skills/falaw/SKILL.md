@@ -624,6 +624,7 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   music                balanced   fal-ai/elevenlabs/sound-effects/v2
   music                balanced   sonilo/v1.1/text-to-sound-effects
   music                high       fal-ai/lyria2
+  music                high       bytedance/seed-audio-1.0
   reference_to_video   balanced   bytedance/seedance-2.0/fast/reference-to-video
   reference_to_video   high       bytedance/seedance-2.0/reference-to-video
   text_to_video        balanced   bytedance/seedance-2.0/fast/text-to-video
@@ -639,6 +640,7 @@ The model registry lives at `falaw/data/models.json`. Refresh it from
   training             high       fal-ai/flux-pro-trainer
   tts                  high       fal-ai/elevenlabs/tts/multilingual-v2
   tts                  high       fal-ai/minimax/speech-02-hd
+  tts                  high       fal-ai/bytedance/seed-speech/tts/v2
   upscale              high       fal-ai/clarity-upscaler
   voice_clone          high       fal-ai/minimax/voice-clone
 ```
