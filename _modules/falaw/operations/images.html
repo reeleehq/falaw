@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../../_static/documentation_options.js?v=c4d1762f"></script>
+    <script src="../../../_static/documentation_options.js?v=60a9f236"></script>
     <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.94" />
+  <meta name="docsearch:version" content="0.0.95" />
   
     
     <script src="../../../_static/searchtools.js"></script>
@@ -1023,7 +1023,11 @@ window.runMermaid = runMermaid;</script>
     <span class="n">model</span> <span class="o">=</span> <span class="n">model_id</span> <span class="ow">or</span> <span class="n">pick_model</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">CONTROL_CATEGORY</span><span class="p">,</span> <span class="n">quality_tier</span><span class="o">=</span><span class="n">quality</span><span class="p">)</span><span class="o">.</span><span class="n">id</span>
     <span class="n">arguments</span><span class="p">,</span> <span class="n">local_files</span> <span class="o">=</span> <span class="n">localize_paths</span><span class="p">(</span>
         <span class="n">controlled_image_arguments</span><span class="p">(</span>
-            <span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">image_size</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span>
+            <span class="n">known_record</span><span class="p">(</span><span class="n">model</span><span class="p">),</span>
+            <span class="n">prompt</span><span class="p">,</span>
+            <span class="n">image_size</span><span class="p">,</span>
+            <span class="n">control</span><span class="p">,</span>
+            <span class="n">extra</span><span class="p">,</span>
             <span class="n">negative_prompt</span><span class="o">=</span><span class="n">negative_prompt</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="p">)</span>
