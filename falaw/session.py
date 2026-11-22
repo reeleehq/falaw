@@ -33,10 +33,12 @@ class Session:
         os.makedirs(self.output_dir, exist_ok=True)
 
     def record(self, result: Result) -> Result:
+        """Append ``result`` to the history and return it."""
         self.history.append(result)
         return result
 
     def latest(self, *, kind: Optional[str] = None) -> Optional[Result]:
+        """The most recent result (of the given asset ``kind``, if given), or ``None``."""
         for r in reversed(self.history):
             if kind is None or any(a.kind == kind for a in r.assets):
                 return r

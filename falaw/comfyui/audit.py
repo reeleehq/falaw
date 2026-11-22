@@ -32,7 +32,9 @@ class GraphAuditSink(Protocol):
     """Where audit records go. ``write`` must not return until the record is
     durable (or must raise): the caller sends the graph only after it returns."""
 
-    def write(self, record: Mapping) -> None: ...
+    def write(self, record: Mapping) -> None:
+        """Append ``record`` as one JSON line and ``fsync`` it before returning."""
+        ...
 
 
 class FileAuditSink:
@@ -43,6 +45,7 @@ class FileAuditSink:
         self.path.parent.mkdir(parents=True, exist_ok=True)
 
     def write(self, record: Mapping) -> None:
+        """Append ``record`` as one JSON line and ``fsync`` it before returning."""
         line = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
         fd = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
         try:

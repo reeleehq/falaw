@@ -27,6 +27,7 @@ def _print_json(obj) -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the ``falaw`` command line; return the process exit code."""
     argv = argv if argv is not None else sys.argv[1:]
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__)

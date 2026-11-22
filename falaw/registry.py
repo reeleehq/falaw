@@ -39,12 +39,14 @@ def register_tool(**spec_kwargs) -> Callable:
 
 
 def get_tool(name: str) -> ToolSpec:
+    """The registered tool called ``name``; ``KeyError`` listing the known names if absent."""
     if name not in _TOOLS:
         raise KeyError(f"No falaw tool registered as {name!r}; known: {sorted(_TOOLS)}")
     return _TOOLS[name]
 
 
 def list_tools(*, tag: Optional[str] = None) -> list[ToolSpec]:
+    """The registered tools, optionally only those carrying ``tag``."""
     return [t for t in _TOOLS.values() if tag is None or tag in t.tags]
 
 
@@ -145,6 +147,7 @@ def list_models(
     category: Optional[str] = None,
     quality_tier: Optional[str] = None,
 ) -> list[ModelRecord]:
+    """The known models, optionally filtered by ``category`` and ``quality_tier``."""
     return [
         m
         for m in _load_models().values()
@@ -154,6 +157,7 @@ def list_models(
 
 
 def get_model(id: str) -> ModelRecord:
+    """The model record for ``id`` (an id or one of its aliases)."""
     models = _load_models()
     if id in models:
         return models[id]

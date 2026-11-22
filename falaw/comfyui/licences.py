@@ -91,6 +91,7 @@ class LicenceScreen:
 
     @property
     def passed(self) -> bool:
+        """Whether the screen found no AGPL-family and no undeterminable licences."""
         return not (self.agpl_packs or self.undeterminable)
 
     def to_dict(self) -> dict:
@@ -103,6 +104,7 @@ class LicenceScreen:
         }
 
     def problems(self) -> list[Problem]:
+        """The screen's findings as a list of :class:`Problem`."""
         return [
             *(Problem("L", f"{p!r} is AGPL-family") for p in self.agpl_packs),
             *(

@@ -41,6 +41,8 @@ def _default_journal_dir() -> str:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class JournalEntry:
+    """One journal record: a timestamped note, issue or improvement."""
+
     id: str
     timestamp: float
     kind: EntryKind
@@ -78,6 +80,7 @@ class Journal:
         suggestion: str = "",
         context: Optional[dict] = None,
     ) -> JournalEntry:
+        """Add an entry of ``kind`` with ``text`` to the journal and return it."""
         # `time.time_ns()` looks tie-proof but is not: on Windows the clock
         # advances in coarse ticks, so back-to-back appends can share a
         # timestamp and the name would fall back to UUID order — random
@@ -110,6 +113,7 @@ class Journal:
             yield JournalEntry(**data)
 
     def recent(self, n: int = 20) -> list[JournalEntry]:
+        """The last ``n`` entries, oldest first."""
         return list(self)[-n:]
 
     def filter(
@@ -118,6 +122,7 @@ class Journal:
         kind: Optional[EntryKind] = None,
         tag: Optional[str] = None,
     ) -> list[JournalEntry]:
+        """The entries matching the given ``kind``, ``tag`` and other criteria."""
         return [
             e
             for e in self
@@ -131,16 +136,20 @@ def _default_journal() -> Journal:
 
 
 def note(text: str, **kw) -> JournalEntry:
+    """Record a ``note`` entry in the default journal."""
     return _default_journal().append(kind="note", text=text, **kw)
 
 
 def issue(text: str, **kw) -> JournalEntry:
+    """Record an ``issue`` entry in the default journal."""
     return _default_journal().append(kind="issue", text=text, **kw)
 
 
 def improvement(text: str, **kw) -> JournalEntry:
+    """Record an ``improvement`` entry in the default journal."""
     return _default_journal().append(kind="improvement", text=text, **kw)
 
 
 def recent(n: int = 20) -> list[JournalEntry]:
+    """The last ``n`` entries, oldest first."""
     return _default_journal().recent(n)

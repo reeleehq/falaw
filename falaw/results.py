@@ -119,9 +119,11 @@ class Result:
 
     @property
     def first(self) -> Optional[Asset]:
+        """The first asset, or ``None`` if the result has none."""
         return self.assets[0] if self.assets else None
 
     def download_all(self, *, to_dir: Optional[str] = None) -> list[str]:
+        """Download every asset into ``to_dir`` (default: the current directory); return the paths."""
         to_dir = to_dir or os.getcwd()
         os.makedirs(to_dir, exist_ok=True)
         paths: list[str] = []
