@@ -85,21 +85,28 @@ export interface GenerateImageInput {
   readonly modelId?: string;
   /** Model-specific arguments merged over the standard ones (seed, guidance_scale, …). */
   readonly extra?: Readonly<Record<string, unknown>>;
+  /** Sent only to a model whose record has `accepts_negative_prompt`; otherwise dropped and
+   *  named in `metadata.dropped_inputs`, never folded into `prompt` (`falaw#158`). */
+  readonly negativePrompt?: string | null;
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
 /** Plan a text-to-image call (`falaw.plan_generate_image`). */
 export function planGenerateImage(input: GenerateImageInput): CallPlan {
   const record = resolveModel(input.modelId, 'image', input.quality ?? 'balanced');
-  const args = { prompt: input.prompt, image_size: input.imageSize ?? 'landscape_4_3', ...(input.extra ?? {}) };
+  const negative = (input.negativePrompt ?? '').trim();
+  const accepted = negative && record.accepts_negative_prompt ? { negative_prompt: negative } : {};
+  const args = { prompt: input.prompt, image_size: input.imageSize ?? 'landscape_4_3', ...accepted, ...(input.extra ?? {}) };
   checkCallArguments(record, args);
+  // A constraint that never reached the picture is named, outside the plan hash.
+  const dropped = negative && !('negative_prompt' in args) ? ['negative_prompt'] : [];
   return makeCallPlan({
     tool: 'generate_image',
     application: record.id,
     arguments: args,
     outputKind: 'image',
     estimatedCostUsd: estimateCallCost(record),
-    metadata: input.metadata,
+    metadata: dropped.length ? { ...(input.metadata ?? {}), dropped_inputs: dropped } : input.metadata,
     costBasis: catalogueCostBasis(record.id),
   });
 }

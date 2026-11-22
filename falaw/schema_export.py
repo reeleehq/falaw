@@ -221,6 +221,25 @@ PLAN_CASES: tuple[dict, ...] = (
             "extra": {"resolution": "4k"},
         },
     },
+    # falaw#160: a negative prompt reaches a model that accepts one, and is
+    # dropped (and named in metadata) for one that does not.
+    {
+        "tool": "generate_image",
+        "input": {
+            "prompt": "a tiger eye",
+            "model_id": "fal-ai/sana/sprint",
+            "negative_prompt": "  glasses ",
+        },
+    },
+    {
+        "tool": "generate_image",
+        "input": {
+            "prompt": "a tiger eye",
+            "model_id": "fal-ai/flux/dev",
+            "negative_prompt": "glasses",
+            "metadata": {"panel": "p3"},
+        },
+    },
 )
 
 #: Planner inputs that must raise (the fixtures cannot express a raise in
