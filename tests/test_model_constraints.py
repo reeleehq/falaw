@@ -21,7 +21,8 @@ def test_seedance_constraints_populated():
     assert c["max_clip_seconds"] == 12.0
     assert c["single_character_recommended"] is True
     assert "720p" in c["supported_resolutions"]
-    assert "plastic skin" in c["default_negative_prompt"]
+    # fal's schema for Seedance has no negative_prompt input (falaw#155)
+    assert c["default_negative_prompt"] == ""
 
 
 def test_supported_resolutions_is_tuple_on_record():
@@ -42,3 +43,12 @@ def test_model_constraints_resolves_alias():
     c = model_constraints("hailuo-pro")
     assert c["id"] == "fal-ai/minimax/hailuo-02/pro/image-to-video"
     assert c["max_clip_seconds"] == 6.0
+
+
+def test_no_record_offers_a_negative_prompt_it_cannot_take():
+    """A default_negative_prompt only misleads a consumer unless the model can take one."""
+    from falaw import list_models
+
+    for m in list_models():
+        if m.default_negative_prompt:
+            assert m.accepts_negative_prompt or "negative_prompt" in m.param_specs, m.id

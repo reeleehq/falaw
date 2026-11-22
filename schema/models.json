@@ -512,7 +512,6 @@
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -814,7 +813,6 @@
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1121,7 +1119,6 @@
       "1080p",
       "4k"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1205,7 +1202,6 @@
       "1080p",
       "4k"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1289,7 +1285,6 @@
       "1080p",
       "4k"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1379,7 +1374,6 @@
       "480p",
       "720p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1452,7 +1446,6 @@
       "480p",
       "720p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1525,7 +1518,6 @@
       "480p",
       "720p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1607,7 +1599,6 @@
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1678,7 +1669,6 @@
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
