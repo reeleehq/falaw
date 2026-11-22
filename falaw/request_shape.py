@@ -97,7 +97,9 @@ def _max_length(doc: Mapping, spec: Any) -> Optional[int]:
     spec = _resolve(doc, spec) or {}
     found = [spec["maxLength"]] if "maxLength" in spec else []
     for key in ("anyOf", "oneOf"):
-        found += [m for b in spec.get(key) or () if (m := _max_length(doc, b)) is not None]
+        found += [
+            m for b in spec.get(key) or () if (m := _max_length(doc, b)) is not None
+        ]
     return max(found) if found else None
 
 

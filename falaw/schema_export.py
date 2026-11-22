@@ -271,13 +271,20 @@ PLAN_ERROR_CASES: tuple[dict, ...] = (
     },
     {  # falaw#159: a model that sizes by aspect_ratio
         "tool": "generate_image",
-        "input": {"prompt": "x", "model_id": "fal-ai/flux-pro/v1.1-ultra", "image_size": "bogus"},
+        "input": {
+            "prompt": "x",
+            "model_id": "fal-ai/flux-pro/v1.1-ultra",
+            "image_size": "bogus",
+        },
         "message": "is neither a named preset (['landscape_16_9', 'landscape_4_3', 'portrait_16_9', 'portrait_4_3', 'square', 'square_hd']) nor a 'W:H' ratio",
     },
     {
         "tool": "generate_image",
-        "input": {"prompt": "x", "model_id": "fal-ai/flux-pro/v1.1-ultra",
-                  "extra": {"image_size": "square_hd"}},
+        "input": {
+            "prompt": "x",
+            "model_id": "fal-ai/flux-pro/v1.1-ultra",
+            "extra": {"image_size": "square_hd"},
+        },
         "message": "sizes images by aspect_ratio, not image_size",
     },
 )
