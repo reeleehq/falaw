@@ -655,6 +655,77 @@
       },
       "plan_hash": "2395e41e0b713d32f19a004f9965955d327e40585740ec803525af7ba04f206d",
       "tool": "text_to_video"
+    },
+    {
+      "expected": {
+        "application": "fal-ai/sana/sprint",
+        "arguments": {
+          "image_size": "landscape_4_3",
+          "negative_prompt": "glasses",
+          "prompt": "a tiger eye"
+        },
+        "backend": "fal",
+        "cache_status": "unknown",
+        "cost_basis": {
+          "priced": "fal-ai/sana/sprint",
+          "pricer": "model_catalogue",
+          "quantities": {},
+          "table": "falaw/data/models.json",
+          "table_version": "271ef664264d"
+        },
+        "estimated_cost_usd": 0.0015,
+        "expected_duration_s": null,
+        "key_extra": {},
+        "metadata": {},
+        "output_kind": "image",
+        "tool": "generate_image"
+      },
+      "input": {
+        "model_id": "fal-ai/sana/sprint",
+        "negative_prompt": "  glasses ",
+        "prompt": "a tiger eye"
+      },
+      "plan_hash": "9f37d7f008dbe0288b85211983fbaf8fa1070b5f9abffc2a7f3c827b08b1d47c",
+      "tool": "generate_image"
+    },
+    {
+      "expected": {
+        "application": "fal-ai/flux/dev",
+        "arguments": {
+          "image_size": "landscape_4_3",
+          "prompt": "a tiger eye"
+        },
+        "backend": "fal",
+        "cache_status": "unknown",
+        "cost_basis": {
+          "priced": "fal-ai/flux/dev",
+          "pricer": "model_catalogue",
+          "quantities": {},
+          "table": "falaw/data/models.json",
+          "table_version": "271ef664264d"
+        },
+        "estimated_cost_usd": 0.015,
+        "expected_duration_s": null,
+        "key_extra": {},
+        "metadata": {
+          "dropped_inputs": [
+            "negative_prompt"
+          ],
+          "panel": "p3"
+        },
+        "output_kind": "image",
+        "tool": "generate_image"
+      },
+      "input": {
+        "metadata": {
+          "panel": "p3"
+        },
+        "model_id": "fal-ai/flux/dev",
+        "negative_prompt": "glasses",
+        "prompt": "a tiger eye"
+      },
+      "plan_hash": "345b0cf66a70ce9f57012aac3d297171c781fdabf32fd2c27a2588625b3a0860",
+      "tool": "generate_image"
     }
   ],
   "errors": [
