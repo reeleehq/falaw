@@ -3,21 +3,21 @@
 Quick start (single-shot generation):
 
     >>> from falaw import generate_image  # doctest: +SKIP
-    >>> r = generate_image("a tiger eye, macro, 35mm", quality="fast")
-    >>> r.first.download(to="./tiger.png")
+    >>> r = generate_image("a tiger eye, macro, 35mm", quality="fast")  # doctest: +SKIP
+    >>> r.first.download(to="./tiger.png")  # doctest: +SKIP
 
 Directorial workflow (Scene IR + caching):
 
     >>> from falaw import Scene, cast_character, render_scene  # doctest: +SKIP
-    >>> sarah = cast_character("Sarah", "mid-30s, dark curly hair")
+    >>> sarah = cast_character("Sarah", "mid-30s, dark curly hair")  # doctest: +SKIP
     >>> # ... build a Scene with characters/beats/shots ...
-    >>> manifest = render_scene(scene)            # caches per-beat
+    >>> manifest = render_scene(scene)            # caches per-beat  # doctest: +SKIP
     >>> # edit one beat, re-render: only that beat re-fires.
 
 Leave notes for future sessions:
 
     >>> from falaw import journal  # doctest: +SKIP
-    >>> journal.note("Sarah's voice clone needs ~10s reference for stability")
+    >>> journal.note("Sarah's voice clone needs ~10s reference for stability")  # doctest: +SKIP
 """
 
 from . import account, corpus as _corpus  # noqa: F401  (registers refresh_models_from_corpus)

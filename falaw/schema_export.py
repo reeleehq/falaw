@@ -264,6 +264,22 @@ PLAN_ERROR_CASES: tuple[dict, ...] = (
         },
         "message": "total pixels",
     },
+    {  # falaw#159: the prompt cap, read from the model's schema
+        "tool": "generate_image",
+        "input": {"prompt": "x" * 1001, "model_id": "fal-ai/recraft/v3/text-to-image"},
+        "message": "accepts prompts of at most 1000 characters; this one is 1001 (1 over)",
+    },
+    {  # falaw#159: a model that sizes by aspect_ratio
+        "tool": "generate_image",
+        "input": {"prompt": "x", "model_id": "fal-ai/flux-pro/v1.1-ultra", "image_size": "bogus"},
+        "message": "is neither a named preset (['landscape_16_9', 'landscape_4_3', 'portrait_16_9', 'portrait_4_3', 'square', 'square_hd']) nor a 'W:H' ratio",
+    },
+    {
+        "tool": "generate_image",
+        "input": {"prompt": "x", "model_id": "fal-ai/flux-pro/v1.1-ultra",
+                  "extra": {"image_size": "square_hd"}},
+        "message": "sizes images by aspect_ratio, not image_size",
+    },
 )
 
 #: Multi-call plans (by ``PLAN_CASES`` index) whose ``plan_hash`` and totals the
@@ -614,6 +630,8 @@ _NESTED_DATACLASSES = _nested_dataclasses()
 
 # --- constants ------------------------------------------------------------------
 
+from .operations._image_args import IMAGE_SIZE_ASPECT_RATIOS  # noqa: E402 (the size table the TS planner mirrors)
+
 
 def _constants() -> dict:
     return {
@@ -631,6 +649,7 @@ def _constants() -> dict:
         "default_video_resolution": DFLT_VIDEO_RESOLUTION,
         "video_resolution_short_side": dict(RESOLUTION_SHORT_SIDE),
         "default_video_aspect": DFLT_VIDEO_ASPECT,
+        "image_size_aspect_ratios": dict(IMAGE_SIZE_ASPECT_RATIOS),
         "output_kinds": list(get_args(OutputKind)),
         "cache_statuses": list(get_args(CacheStatus)),
         "event_kinds": list(get_args(EventKind)),

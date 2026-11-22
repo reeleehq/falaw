@@ -91,6 +91,11 @@ def image_arguments(
     extra = {**negative_prompt_arguments(record, negative_prompt), **(extra or {})}
     if record is None or record.size_param == "image_size":
         return {"prompt": prompt, "image_size": image_size, **extra}
+    if "image_size" in extra:
+        raise ValueError(
+            f"{record.id} sizes images by {record.size_param}, not image_size: pass the "
+            f"size as image_size='W:H' or a named preset, or {record.size_param} in extra."
+        )
     ratio = IMAGE_SIZE_ASPECT_RATIOS.get(image_size)
     if ratio is None and ":" in image_size:
         ratio = image_size

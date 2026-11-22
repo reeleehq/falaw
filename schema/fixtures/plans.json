@@ -14,7 +14,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -43,7 +43,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.0018,
         "expected_duration_s": null,
@@ -63,7 +63,7 @@
       "expected": {
         "application": "fal-ai/flux-pro/v1.1-ultra",
         "arguments": {
-          "image_size": "square_hd",
+          "aspect_ratio": "1:1",
           "prompt": "a tiger eye"
         },
         "backend": "fal",
@@ -73,7 +73,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.06,
         "expected_duration_s": null,
@@ -87,7 +87,7 @@
         "prompt": "a tiger eye",
         "quality": "ultra"
       },
-      "plan_hash": "228992262c669e4c3f3bed152f6bc31d35c325e4dba35961c0bf8f2a076924ae",
+      "plan_hash": "38c130648db8684bb1f6cdbe0746dbb4d726d875a1b7da4367c43bf27c66e85b",
       "tool": "generate_image"
     },
     {
@@ -116,7 +116,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -160,7 +160,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -197,7 +197,7 @@
             "tokens": 318938
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.7973450000000001,
         "expected_duration_s": null,
@@ -229,7 +229,7 @@
             "tokens": 382725
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.9568125000000001,
         "expected_duration_s": null,
@@ -261,7 +261,7 @@
             "seconds": 5.5
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 1.54,
         "expected_duration_s": null,
@@ -293,7 +293,7 @@
             "seconds": 6
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.48,
         "expected_duration_s": null,
@@ -326,7 +326,7 @@
             "tokens": 141750
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 1.9845,
         "expected_duration_s": null,
@@ -364,7 +364,7 @@
             "tokens": 50400
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.56448,
         "expected_duration_s": null,
@@ -400,7 +400,7 @@
             "tokens": 318938
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.7973450000000001,
         "expected_duration_s": null,
@@ -429,7 +429,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": null,
         "expected_duration_s": null,
@@ -467,7 +467,7 @@
             "tokens": 382725
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 5.35815,
         "expected_duration_s": null,
@@ -506,7 +506,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": null,
         "expected_duration_s": null,
@@ -548,7 +548,7 @@
             "tokens": 141750
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 1.9845,
         "expected_duration_s": null,
@@ -591,7 +591,7 @@
             "tokens": 141750
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 1.9845,
         "expected_duration_s": null,
@@ -632,7 +632,7 @@
             "tokens": 729729
           },
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 10.216206,
         "expected_duration_s": null,
@@ -671,7 +671,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.0015,
         "expected_duration_s": null,
@@ -702,7 +702,7 @@
           "pricer": "model_catalogue",
           "quantities": {},
           "table": "falaw/data/models.json",
-          "table_version": "271ef664264d"
+          "table_version": "af702f290a88"
         },
         "estimated_cost_usd": 0.015,
         "expected_duration_s": null,
@@ -763,6 +763,34 @@
       },
       "message": "total pixels",
       "tool": "generate_image"
+    },
+    {
+      "input": {
+        "model_id": "fal-ai/recraft/v3/text-to-image",
+        "prompt": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      "message": "accepts prompts of at most 1000 characters; this one is 1001 (1 over)",
+      "tool": "generate_image"
+    },
+    {
+      "input": {
+        "image_size": "bogus",
+        "model_id": "fal-ai/flux-pro/v1.1-ultra",
+        "prompt": "x"
+      },
+      "message": "is neither a named preset (['landscape_16_9', 'landscape_4_3', 'portrait_16_9', 'portrait_4_3', 'square', 'square_hd']) nor a 'W:H' ratio",
+      "tool": "generate_image"
+    },
+    {
+      "input": {
+        "extra": {
+          "image_size": "square_hd"
+        },
+        "model_id": "fal-ai/flux-pro/v1.1-ultra",
+        "prompt": "x"
+      },
+      "message": "sizes images by aspect_ratio, not image_size",
+      "tool": "generate_image"
     }
   ],
   "plans": [
@@ -786,7 +814,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": 0.015,
             "expected_duration_s": null,
@@ -809,7 +837,7 @@
                 "tokens": 318938
               },
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": 0.7973450000000001,
             "expected_duration_s": null,
@@ -857,7 +885,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": 0.015,
             "expected_duration_s": null,
@@ -880,7 +908,7 @@
                 "seconds": 6
               },
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": 0.48,
             "expected_duration_s": null,
@@ -916,7 +944,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": 0.0018,
             "expected_duration_s": null,
@@ -938,7 +966,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": 0.0018,
             "expected_duration_s": null,
@@ -972,7 +1000,7 @@
               "pricer": "model_catalogue",
               "quantities": {},
               "table": "falaw/data/models.json",
-              "table_version": "271ef664264d"
+              "table_version": "af702f290a88"
             },
             "estimated_cost_usd": null,
             "expected_duration_s": null,

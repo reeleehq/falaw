@@ -24,6 +24,14 @@ export const CONSTANTS = {
     "provider_queued"
   ],
   "file_prefix": "<file ",
+  "image_size_aspect_ratios": {
+    "landscape_16_9": "16:9",
+    "landscape_4_3": "4:3",
+    "portrait_16_9": "9:16",
+    "portrait_4_3": "3:4",
+    "square": "1:1",
+    "square_hd": "1:1"
+  },
   "kind_keys": [
     [
       "images",
@@ -55,7 +63,7 @@ export const CONSTANTS = {
     ]
   ],
   "model_catalogue_table": "falaw/data/models.json",
-  "models_table_version": "271ef664264d",
+  "models_table_version": "af702f290a88",
   "output_kinds": [
     "image",
     "video",
