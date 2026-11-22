@@ -136,13 +136,16 @@ class ModelRecord:
     ``cost_basis.quantities["tokens"]`` is then rate-equivalent tokens, not the
     tokens fal counts. See :func:`falaw.cost.video_price_quantities`."""
 
-    # --- request-shape metadata (image models; falaw#76) ---
+    # --- request-shape metadata (falaw#76; derived from fal's schema, falaw#159).
+    #     Read by the image planners; recorded for every fetched model, so a
+    #     video or audio planner can read them too. ---
     max_prompt_chars: Optional[int] = None
     """Hard cap on ``prompt`` length, from the model's OpenAPI schema. Calls
     over it fail at fal with an HTTP 422 after queueing; falaw raises first."""
     size_param: str = "image_size"
     """Which argument carries the output size: ``"image_size"`` (fal's named
-    presets, the default) or ``"aspect_ratio"`` (+ ``resolution``)."""
+    presets, the default) or ``"aspect_ratio"`` (+ ``resolution``). The image
+    planners map a preset to its ratio for an ``aspect_ratio`` model."""
     accepts_negative_prompt: bool = False
     """Whether the model's input schema has a ``negative_prompt`` (from fal's
     published OpenAPI schema). A planner sends a caller's negative prompt only to
@@ -164,11 +167,24 @@ class ModelRecord:
     :func:`falaw.model_params`."""
 
     def __post_init__(self) -> None:
-        if self.accepted_inputs is not None:
-            inputs = frozenset(self.accepted_inputs)
-            object.__setattr__(self, "accepted_inputs", inputs)
-            # one fact, not two: the flag follows the fetched schema
-            object.__setattr__(self, "accepts_negative_prompt", "negative_prompt" in inputs)
+        if self.accepted_inputs is None:
+            return
+        if isinstance(self.accepted_inputs, str):
+            raise TypeError(
+                f"{self.id}: accepted_inputs is a collection of input names, got the "
+                f"string {self.accepted_inputs!r}"
+            )
+        inputs = frozenset(self.accepted_inputs)
+        object.__setattr__(self, "accepted_inputs", inputs)
+        has_negative = "negative_prompt" in inputs
+        if self.accepts_negative_prompt and not has_negative:
+            raise ValueError(
+                f"{self.id}: accepts_negative_prompt=True, but its inputs "
+                f"({sorted(inputs)}) have no negative_prompt"
+            )
+        # one fact, not two: the flag follows the fetched schema (the catalogue
+        # leaves a False flag out, so a record read from it derives True here)
+        object.__setattr__(self, "accepts_negative_prompt", has_negative)
 
     def accepts_input(self, name: str) -> Optional[bool]:
         """Whether the model's input schema has ``name``; ``None`` when its

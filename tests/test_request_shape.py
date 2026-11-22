@@ -70,28 +70,83 @@ def test_a_refresh_writes_the_derived_fields_and_leaves_retired_and_default_ones
 
 
 def test_the_catalogue_flags_agree_with_the_inputs_they_come_from():
-    """The committed snapshot: every record whose inputs were fetched carries
-    flags those inputs imply, and ``accepts_input`` tells unknown from no."""
-    fetched = [m for m in falaw.list_models() if m.accepted_inputs is not None]
+    """The committed snapshot, read RAW (the TS mirror reads the rows, not the
+    records): every row whose inputs were fetched carries the flags those
+    inputs imply, and ``accepts_input`` tells unknown from no."""
+    with open(CATALOGUE, encoding="utf-8") as f:
+        rows = json.load(f)
+    fetched = [r for r in rows if r.get("accepted_inputs") is not None]
     assert fetched, "the catalogue has been refreshed from fal"
-    for m in fetched:
-        assert m.accepts_negative_prompt == ("negative_prompt" in m.accepted_inputs), m.id
-        if m.size_param == "aspect_ratio":
-            assert "aspect_ratio" in m.accepted_inputs and "image_size" not in m.accepted_inputs, m.id
-        assert m.accepts_input("prompt") in (True, False)
+    for row in fetched:
+        inputs = set(row["accepted_inputs"])
+        assert row.get("accepts_negative_prompt", False) == ("negative_prompt" in inputs), row["id"]
+        if row.get("size_param") == "aspect_ratio":
+            assert "aspect_ratio" in inputs and "image_size" not in inputs, row["id"]
     never = [m for m in falaw.list_models() if m.accepted_inputs is None]
     assert all(m.accepts_input("negative_prompt") is None for m in never)
 
 
-@pytest.mark.skipif(
-    not os.environ.get("FALAW_LIVE_SCHEMA"),
-    reason="set FALAW_LIVE_SCHEMA=1 to re-check the catalogue against fal's live schemas",
-)
+def test_a_record_refuses_what_contradicts_its_inputs():
+    from dataclasses import replace
+
+    from falaw.base import ModelRecord
+
+    with pytest.raises(ValueError, match="no negative_prompt"):
+        ModelRecord(id="m", category="image", accepted_inputs=["prompt"], accepts_negative_prompt=True)
+    rec = ModelRecord(id="m", category="image", accepted_inputs=["prompt"])
+    with pytest.raises(ValueError, match="no negative_prompt"):
+        replace(rec, accepts_negative_prompt=True)
+    with pytest.raises(TypeError, match="collection of input names"):
+        ModelRecord(id="m", category="image", accepted_inputs="prompt")
+
+
+def test_all_of_bodies_and_any_of_caps_are_read_and_an_empty_body_refused():
+    doc = _doc({})
+    doc["components"]["schemas"]["XInput"] = {"allOf": [
+        {"properties": {"prompt": {"anyOf": [{"type": "string", "maxLength": 900}, {"type": "null"}]}}},
+        {"properties": {"negative_prompt": {"type": "string"}}},
+    ]}  # fmt: skip
+    shape = request_shape(input_properties(doc))
+    assert shape["accepted_inputs"] == ["negative_prompt", "prompt"]
+    assert shape["max_prompt_chars"] == 900
+    with pytest.raises(ValueError, match="declares no properties"):
+        input_properties(_doc({}))
+
+
+def test_a_refresh_reads_the_rest_and_then_names_what_failed(tmp_path):
+    path = tmp_path / "models.json"
+    shutil.copy(CATALOGUE, path)
+    first, second = (r["id"] for r in json.loads(path.read_text())[:2])
+
+    def get(url):
+        if url.endswith(second):
+            raise RuntimeError("HTTP 429")
+        return _doc({"prompt": {}})
+
+    with pytest.raises(RuntimeError, match=f"1 of 2 .*{second}: RuntimeError: HTTP 429"):
+        refresh_request_shapes([first, second], get_json=get, write=True, path=str(path))
+    assert {r["id"]: r for r in json.loads(path.read_text())}[first]["accepted_inputs"] == ["prompt"]
+
+
+def test_an_aspect_ratio_model_refuses_an_image_size_in_extra():
+    from falaw.operations._image_args import image_arguments
+
+    ultra = falaw.get_model("fal-ai/flux-pro/v1.1-ultra")
+    with pytest.raises(ValueError, match="not image_size"):
+        image_arguments(ultra, "x", "landscape_4_3", {"image_size": "square_hd"})
+    assert image_arguments(ultra, "x", "landscape_16_9", None)["aspect_ratio"] == "16:9"
+
+
+@pytest.mark.live_api
 def test_the_catalogue_still_matches_fals_live_schemas():
-    """Opt-in, free (fal's OpenAPI endpoint needs no key): what fal serves now
-    against the committed snapshot. A failure means: run the refresh."""
+    """What fal serves now against the committed snapshot; a failure means:
+    run the refresh. It reads fal's OpenAPI endpoint, which needs no key and
+    bills nothing, but it is network, so it runs behind the suite's one live
+    gate (``FALAW_LIVE_API=1``)."""
     fetched = [m for m in falaw.list_models() if m.accepted_inputs is not None]
     for m in fetched:
         live = fetch_request_shape(m.id)
         assert live is not None, f"{m.id} is retired"
         assert frozenset(live["accepted_inputs"]) == m.accepted_inputs, m.id
+        for field in ("accepts_negative_prompt", "max_prompt_chars", "size_param"):
+            assert live[field] == getattr(m, field), (m.id, field)

@@ -8,7 +8,7 @@
  */
 
 import { canonicalBlob, ensureCanonical, planIdentityPayload, sha256Hex } from './canonical';
-import { FalError } from './errors';
+import { FalError, FalPromptTooLong } from './errors';
 import { catalogueCostBasis, estimateCallCost, numericSeconds, videoDurationArg, videoPriceQuantities, type CostBasis } from './cost';
 import { CONSTANTS } from './generated/constants';
 import type { CallPlan } from './generated/call-plan';
@@ -97,19 +97,36 @@ export interface GenerateImageInput {
  * `aspect_ratio` gets the ratio a named preset denotes (or a `W:H` given as is);
  * a prompt over the model's `max_prompt_chars` is refused before any call.
  */
-function imageSizeArgs(record: ModelRecord, prompt: string, imageSize: string): Record<string, unknown> {
+function imageSizeArgs(
+  record: ModelRecord,
+  prompt: string,
+  imageSize: string,
+  extra: Readonly<Record<string, unknown>> | undefined,
+): Record<string, unknown> {
   const limit = record.max_prompt_chars;
   const length = [...prompt].length; // code points, as Python's len()
   if (limit != null && length > limit) {
-    throw new FalError(`${record.id} accepts prompts of at most ${limit} characters; this one is ${length}.`);
+    throw new FalPromptTooLong(
+      `${record.id} accepts prompts of at most ${limit} characters; this one is ${length} (${length - limit} over). ` +
+        'Shorten it (a long reusable style suffix is the usual culprit) or pick a model with a larger limit.',
+      record.id,
+      limit,
+      length,
+    );
   }
   const sizeParam = record.size_param ?? 'image_size';
   if (sizeParam === 'image_size') return { prompt, image_size: imageSize };
+  if (extra && 'image_size' in extra) {
+    throw new FalError(
+      `${record.id} sizes images by ${sizeParam}, not image_size: pass the size as image_size='W:H' or a named preset, or ${sizeParam} in extra.`,
+    );
+  }
   const ratios = CONSTANTS.image_size_aspect_ratios as Record<string, string>;
   const ratio = ratios[imageSize] ?? (imageSize.includes(':') ? imageSize : undefined);
   if (ratio === undefined) {
+    const presets = Object.keys(ratios).sort().map((k) => `'${k}'`).join(', ');
     throw new FalError(
-      `${record.id} sizes images by ${sizeParam}, and '${imageSize}' is neither a named preset (${Object.keys(ratios).sort().join(', ')}) nor a 'W:H' ratio.`,
+      `${record.id} sizes images by ${sizeParam}, and '${imageSize}' is neither a named preset ([${presets}]) nor a 'W:H' ratio.`,
     );
   }
   return { prompt, [sizeParam]: ratio };
@@ -120,7 +137,7 @@ export function planGenerateImage(input: GenerateImageInput): CallPlan {
   const record = resolveModel(input.modelId, 'image', input.quality ?? 'balanced');
   const negative = (input.negativePrompt ?? '').trim();
   const accepted = negative && record.accepts_negative_prompt ? { negative_prompt: negative } : {};
-  const args = { ...imageSizeArgs(record, input.prompt, input.imageSize ?? 'landscape_4_3'), ...accepted, ...(input.extra ?? {}) };
+  const args = { ...imageSizeArgs(record, input.prompt, input.imageSize ?? 'landscape_4_3', input.extra), ...accepted, ...(input.extra ?? {}) };
   checkCallArguments(record, args);
   // A constraint that never reached the picture is named, outside the plan hash.
   const dropped = negative && !('negative_prompt' in args) ? ['negative_prompt'] : [];

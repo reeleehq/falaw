@@ -82,18 +82,46 @@ def _resolve(doc: Mapping, node: Any) -> Any:
     return node
 
 
+def _object_properties(doc: Mapping, schema: Any) -> dict[str, Any]:
+    """The properties of an object schema, ``allOf`` parts merged."""
+    schema = _resolve(doc, schema) or {}
+    props = dict(schema.get("properties") or {})
+    for part in schema.get("allOf") or ():
+        props.update(_object_properties(doc, part))
+    return props
+
+
+def _max_length(doc: Mapping, spec: Any) -> Optional[int]:
+    """A string property's ``maxLength``, also inside ``anyOf``/``oneOf`` branches
+    (``[string with maxLength, null]``); the largest when several state one."""
+    spec = _resolve(doc, spec) or {}
+    found = [spec["maxLength"]] if "maxLength" in spec else []
+    for key in ("anyOf", "oneOf"):
+        found += [m for b in spec.get(key) or () if (m := _max_length(doc, b)) is not None]
+    return max(found) if found else None
+
+
 def input_properties(doc: Mapping) -> dict[str, dict]:
     """The input properties (``{name: schema}``) of the ``POST`` request body in
-    an endpoint's OpenAPI document, ``$ref``s resolved one level (enough to
-    read a ``maxLength``). ``ValueError`` when the document has no such body:
-    an empty answer would read as "accepts nothing"."""
+    an endpoint's OpenAPI document, ``$ref``s resolved and ``allOf`` merged, each
+    with its ``maxLength`` lifted out of an ``anyOf``. ``ValueError`` when the
+    document has no such body or it has no properties: an empty answer would
+    read as "accepts nothing"."""
     for ops in (doc.get("paths") or {}).values():
         body = (ops.get("post") or {}).get("requestBody")
         if not body:
             continue
-        schema = _resolve(doc, body["content"]["application/json"]["schema"])
-        props = schema.get("properties") or {}
-        return {name: dict(_resolve(doc, spec) or {}) for name, spec in props.items()}
+        props = _object_properties(doc, body["content"]["application/json"]["schema"])
+        if not props:
+            raise ValueError("the POST request body declares no properties")
+        out = {}
+        for name, spec in props.items():
+            resolved = dict(_resolve(doc, spec) or {})
+            length = _max_length(doc, spec)
+            if length is not None:
+                resolved["maxLength"] = length
+            out[name] = resolved
+        return out
     raise ValueError("no POST request body in this OpenAPI document")
 
 
@@ -146,13 +174,20 @@ def refresh_request_shapes(
     (``path``, default ``falaw/data/models.json``) gets those fields; a field
     left at its default (``None``, ``False``, ``image_size``) is dropped from
     the record rather than written, as the catalogue writes defaults. A
-    retired endpoint (``None``) is left as it is; any other unreadable schema
-    raises: a refresh never guesses."""
+    retired endpoint (``None``) is left as it is. A schema that cannot be read
+    (a 429, a 5xx, a shape this module does not know) is never guessed: the
+    others are fetched (and written), then ``RuntimeError`` names each failure."""
     path = path or _catalogue_path()
     with open(path, encoding="utf-8") as f:
         records = json.load(f)
     wanted = list(ids) if ids is not None else [r["id"] for r in records]
-    shapes = {i: fetch_request_shape(i, get_json=get_json) for i in wanted}
+    shapes: dict[str, Optional[dict]] = {}
+    failures: dict[str, str] = {}
+    for endpoint_id in wanted:
+        try:
+            shapes[endpoint_id] = fetch_request_shape(endpoint_id, get_json=get_json)
+        except Exception as e:  # noqa: BLE001 - one bad answer must not lose the rest
+            failures[endpoint_id] = f"{type(e).__name__}: {e}"
     if write:
         defaults = {"accepts_negative_prompt": False, "max_prompt_chars": None,
                     "size_param": IMAGE_SIZE_PARAM}  # fmt: skip
@@ -168,4 +203,14 @@ def refresh_request_shapes(
         with open(path, "w", encoding="utf-8") as f:
             json.dump(records, f, indent=2, ensure_ascii=False)
             f.write("\n")
+        from .registry import _load_models
+
+        _load_models.cache_clear()  # this process reads the new records too
+    if failures:
+        raise RuntimeError(
+            f"{len(failures)} of {len(wanted)} schemas could not be read"
+            + (" (the others were written)" if write else "")
+            + ": "
+            + "; ".join(f"{i}: {why}" for i, why in failures.items())
+        )
     return shapes

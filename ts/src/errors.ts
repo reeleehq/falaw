@@ -24,5 +24,18 @@ export class FalNonCanonicalArgument extends FalError {
   }
 }
 
+/** The prompt exceeds the model's hard length cap (`falaw.errors.FalPromptTooLong`):
+ *  refused before any call is queued. `limit` and `length` are in characters. */
+export class FalPromptTooLong extends FalError {
+  constructor(
+    message: string,
+    readonly model: string,
+    readonly limit: number,
+    readonly length: number,
+  ) {
+    super(message);
+  }
+}
+
 /** A model id (or alias) the catalogue does not know. */
 export class UnknownModelError extends FalError {}
