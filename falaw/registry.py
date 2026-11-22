@@ -175,7 +175,9 @@ def pick_model(
     entry wins. Curated entries are written first in `data/models.json`,
     so they take precedence over corpus-merged additions. If no model
     has the exact tier, neighboring tiers are tried. KeyError only when
-    the category is empty.
+    the category is empty; ValueError when ``quality_tier`` is neither one of
+    the known tiers nor a tier some model in the category carries (a misspelt
+    tier must not silently bill whichever model the catalogue lists first).
     """
     everything = list_models(category=category)
     # A record opted out of default picks never wins; a category made only of
@@ -188,14 +190,17 @@ def pick_model(
     exact = _first_with_tier(quality_tier)
     if exact is not None:
         return exact
-    if quality_tier in _TIER_ORDER:
-        i = _TIER_ORDER.index(quality_tier)
-        for offset in range(1, len(_TIER_ORDER)):
-            for j in (i - offset, i + offset):
-                if 0 <= j < len(_TIER_ORDER):
-                    near = _first_with_tier(_TIER_ORDER[j])
-                    if near is not None:
-                        return near
     if not candidates:
         raise KeyError(f"No models known for category={category!r}. Try list_models().")
+    if quality_tier not in _TIER_ORDER:
+        raise ValueError(
+            f"Unknown quality_tier={quality_tier!r}; known tiers: {', '.join(_TIER_ORDER)}."
+        )
+    i = _TIER_ORDER.index(quality_tier)
+    for offset in range(1, len(_TIER_ORDER)):
+        for j in (i - offset, i + offset):
+            if 0 <= j < len(_TIER_ORDER):
+                near = _first_with_tier(_TIER_ORDER[j])
+                if near is not None:
+                    return near
     return candidates[0]

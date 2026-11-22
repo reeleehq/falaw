@@ -37,7 +37,8 @@ export function getModel(id: string): ModelRecord {
 
 /** A sensible model for a (category, quality) request: exact tier first, then the
  *  nearest tiers outward, then the category's first entry. Throws only when the
- *  category is empty. */
+ *  category is empty or the tier is neither a known tier nor one a model in the
+ *  category carries (a misspelt tier must not silently pick the first entry). */
 export function pickModel(opts: { readonly category: string; readonly qualityTier?: string }): ModelRecord {
   const tier = opts.qualityTier ?? 'balanced';
   const everything = listModels({ category: opts.category });
@@ -47,19 +48,20 @@ export function pickModel(opts: { readonly category: string; readonly qualityTie
   const firstWithTier = (t: string) => candidates.find((m) => m.quality_tier === t) ?? null;
   const exact = firstWithTier(tier);
   if (exact) return exact;
-  const i = TIER_ORDER.indexOf(tier);
-  if (i >= 0) {
-    for (let offset = 1; offset < TIER_ORDER.length; offset++) {
-      for (const j of [i - offset, i + offset]) {
-        if (j >= 0 && j < TIER_ORDER.length) {
-          const near = firstWithTier(TIER_ORDER[j]!);
-          if (near) return near;
-        }
-      }
-    }
-  }
   if (!candidates.length) {
     throw new UnknownModelError(`No models known for category=${JSON.stringify(opts.category)}. Try listModels().`);
+  }
+  const i = TIER_ORDER.indexOf(tier);
+  if (i < 0) {
+    throw new UnknownModelError(`Unknown quality_tier=${JSON.stringify(tier)}; known tiers: ${TIER_ORDER.join(', ')}.`);
+  }
+  for (let offset = 1; offset < TIER_ORDER.length; offset++) {
+    for (const j of [i - offset, i + offset]) {
+      if (j >= 0 && j < TIER_ORDER.length) {
+        const near = firstWithTier(TIER_ORDER[j]!);
+        if (near) return near;
+      }
+    }
   }
   return candidates[0]!;
 }

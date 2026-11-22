@@ -689,7 +689,7 @@ def _pick_model_fixtures() -> list[dict]:
         try:
             expected: "str | None" = pick_model(category=category, quality_tier=tier).id
             error = None
-        except KeyError as e:
+        except (KeyError, ValueError) as e:
             expected, error = None, str(e)
         out.append(
             {
