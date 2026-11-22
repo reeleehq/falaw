@@ -1,0 +1,23 @@
+falaw.request\_shape
+====================
+
+.. automodule:: falaw.request_shape
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      JsonGetter
+      IMAGE_SIZE_PARAM
+      SHAPE_FIELDS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      fetch_request_shape
+      input_properties
+      refresh_request_shapes
+      request_shape
+   

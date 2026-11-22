@@ -72,18 +72,42 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, accepted_inputs=None, param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One entry in the fal model catalog.
+
+#### accepted_inputs *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]]*
+
+The model’s input property names, read from fal’s published OpenAPI
+schema by [`falaw.request_shape.refresh_request_shapes()`](falaw.request_shape.html.md#falaw.request_shape.refresh_request_shapes) (falaw#159).
+`None`: never fetched, which is not “accepts nothing”. The request-shape
+flags above are derived from the same schema.
+
+#### accepts_input(name)
+
+Whether the model’s input schema has `name`; `None` when its
+inputs were never fetched ([`accepted_inputs`](#falaw.base.ModelRecord.accepted_inputs)).
+
+```pycon
+>>> ModelRecord(id="m", category="image", accepted_inputs=["prompt"]).accepts_input("seed")
+False
+>>> ModelRecord(id="m", category="image").accepts_input("seed") is None
+True
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
 
 #### accepts_negative_prompt *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the model’s input schema has a `negative_prompt` (from fal’s
 published OpenAPI schema). A planner sends a caller’s negative prompt only to
 such a model and drops it otherwise, never folding it into `prompt`, where
-“glasses” would REQUEST glasses (reeleehq/reelee#859). `False` when unknown.
+“glasses” would REQUEST glasses (reeleehq/reelee#859). Derived from
+[`accepted_inputs`](#falaw.base.ModelRecord.accepted_inputs) when that is known; `False` when unknown (see
+[`accepts_input()`](#falaw.base.ModelRecord.accepts_input) to tell the two apart).
 
 #### default_negative_prompt *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
@@ -134,7 +158,8 @@ shot/reverse-shot” warning.
 #### size_param *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 `"image_size"` (fal’s named
-presets, the default) or `"aspect_ratio"` (+ `resolution`).
+presets, the default) or `"aspect_ratio"` (+ `resolution`). The image
+planners map a preset to its ratio for an `aspect_ratio` model.
 
 * **Type:**
   Which argument carries the output size

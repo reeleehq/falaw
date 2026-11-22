@@ -1,4 +1,4 @@
-> built 2026-11-22 11:24 UTC from f622cc5 (main) · falaw 0.0.99. Details: build_info.json
+> built 2026-11-22 22:03 UTC from ff7dc9f (main) · falaw 0.0.100. Details: build_info.json
 
 # index.html.md
 
@@ -584,18 +584,42 @@ unverified entries in audits.
 * **Type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
-### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, param_specs=dict())
+### *class* falaw.base.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, accepted_inputs=None, param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One entry in the fal model catalog.
+
+#### accepted_inputs *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]]*
+
+The model’s input property names, read from fal’s published OpenAPI
+schema by [`falaw.request_shape.refresh_request_shapes()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.refresh_request_shapes) (falaw#159).
+`None`: never fetched, which is not “accepts nothing”. The request-shape
+flags above are derived from the same schema.
+
+#### accepts_input(name)
+
+Whether the model’s input schema has `name`; `None` when its
+inputs were never fetched ([`accepted_inputs`](_autosummary/falaw.base.html.md#falaw.base.ModelRecord.accepted_inputs)).
+
+```pycon
+>>> ModelRecord(id="m", category="image", accepted_inputs=["prompt"]).accepts_input("seed")
+False
+>>> ModelRecord(id="m", category="image").accepts_input("seed") is None
+True
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
 
 #### accepts_negative_prompt *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the model’s input schema has a `negative_prompt` (from fal’s
 published OpenAPI schema). A planner sends a caller’s negative prompt only to
 such a model and drops it otherwise, never folding it into `prompt`, where
-“glasses” would REQUEST glasses (reeleehq/reelee#859). `False` when unknown.
+“glasses” would REQUEST glasses (reeleehq/reelee#859). Derived from
+[`accepted_inputs`](_autosummary/falaw.base.html.md#falaw.base.ModelRecord.accepted_inputs) when that is known; `False` when unknown (see
+[`accepts_input()`](_autosummary/falaw.base.html.md#falaw.base.ModelRecord.accepts_input) to tell the two apart).
 
 #### default_negative_prompt *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
@@ -646,7 +670,8 @@ shot/reverse-shot” warning.
 #### size_param *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 `"image_size"` (fal’s named
-presets, the default) or `"aspect_ratio"` (+ `resolution`).
+presets, the default) or `"aspect_ratio"` (+ `resolution`). The image
+planners map a preset to its ratio for an `aspect_ratio` model.
 
 * **Type:**
   Which argument carries the output size
@@ -4355,18 +4380,42 @@ already inside `output`.
 
 Every prompt token, cached or not.
 
-### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, param_specs=dict())
+### *class* falaw.ModelRecord(, id, category, description='', aliases=(), quality_tier='', cost_hint='', cost_estimate=None, docs_url='', max_clip_seconds=None, single_character_recommended=False, supported_resolutions=(), default_negative_prompt='', default_pick=True, tokens_per_pixel_second=None, typical_wall_time_s=None, resolution_rate_factors=dict(), max_prompt_chars=None, size_param='image_size', accepts_negative_prompt=False, accepted_inputs=None, param_specs=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 One entry in the fal model catalog.
+
+#### accepted_inputs *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[frozenset](https://docs.python.org/3/builtins/stdtypes.html#frozenset)[[str](https://docs.python.org/3/builtins/stdtypes.html#str)]]*
+
+The model’s input property names, read from fal’s published OpenAPI
+schema by [`falaw.request_shape.refresh_request_shapes()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.refresh_request_shapes) (falaw#159).
+`None`: never fetched, which is not “accepts nothing”. The request-shape
+flags above are derived from the same schema.
+
+#### accepts_input(name)
+
+Whether the model’s input schema has `name`; `None` when its
+inputs were never fetched ([`accepted_inputs`](_autosummary/falaw.html.md#falaw.ModelRecord.accepted_inputs)).
+
+```pycon
+>>> ModelRecord(id="m", category="image", accepted_inputs=["prompt"]).accepts_input("seed")
+False
+>>> ModelRecord(id="m", category="image").accepts_input("seed") is None
+True
+```
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`bool`](https://docs.python.org/3/builtins/functions.html#bool)]
 
 #### accepts_negative_prompt *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 Whether the model’s input schema has a `negative_prompt` (from fal’s
 published OpenAPI schema). A planner sends a caller’s negative prompt only to
 such a model and drops it otherwise, never folding it into `prompt`, where
-“glasses” would REQUEST glasses (reeleehq/reelee#859). `False` when unknown.
+“glasses” would REQUEST glasses (reeleehq/reelee#859). Derived from
+[`accepted_inputs`](_autosummary/falaw.html.md#falaw.ModelRecord.accepted_inputs) when that is known; `False` when unknown (see
+[`accepts_input()`](_autosummary/falaw.html.md#falaw.ModelRecord.accepts_input) to tell the two apart).
 
 #### default_negative_prompt *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
@@ -4417,7 +4466,8 @@ shot/reverse-shot” warning.
 #### size_param *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)*
 
 `"image_size"` (fal’s named
-presets, the default) or `"aspect_ratio"` (+ `resolution`).
+presets, the default) or `"aspect_ratio"` (+ `resolution`). The image
+planners map a preset to its ratio for an `aspect_ratio` model.
 
 * **Type:**
   Which argument carries the output size
@@ -6849,6 +6899,7 @@ Generate speech in a cloned voice.
 | [`refresh`](_autosummary/falaw.refresh.html.md#module-falaw.refresh)                     | Refresh fal.ai docs locally with conditional GETs.                                                                    |
 | [`registry`](_autosummary/falaw.registry.html.md#module-falaw.registry)                   | Tool and model registries.                                                                                            |
 | [`reprice`](_autosummary/falaw.reprice.html.md#module-falaw.reprice)                     | Re-quote a persisted [`falaw.Plan`](_autosummary/falaw.html.md#falaw.Plan) at today's rates (falaw#60).         |
+| [`request_shape`](_autosummary/falaw.request_shape.html.md#module-falaw.request_shape)         | What a model's request accepts, read from fal's published OpenAPI schema (falaw#159).                                 |
 | [`results`](_autosummary/falaw.results.html.md#module-falaw.results)                     | Result wrapper: parse fal responses into typed assets, lazy download.                                                 |
 | [`routing`](_autosummary/falaw.routing.html.md#module-falaw.routing)                     | Which model a router call really goes to (falaw#115).                                                                 |
 | [`scene`](_autosummary/falaw.scene.html.md#module-falaw.scene)                         | Scene IR: the editable structure that survives all the way to the pixels.                                             |
@@ -10702,6 +10753,119 @@ True
 ```
 
 
+# _autosummary/falaw.request_shape.html.md
+
+# falaw.request_shape
+
+What a model’s request accepts, read from fal’s published OpenAPI schema (falaw#159).
+
+A [`ModelRecord`](_autosummary/falaw.base.html.md#falaw.base.ModelRecord) carries request-shape facts a planner acts
+on: `accepts_negative_prompt` (send a negative prompt, or drop it),
+`max_prompt_chars` (refuse a prompt fal would 422 after queueing) and
+`size_param` (`image_size` presets, or `aspect_ratio`). Set by hand they
+rot, and a `False` read both “checked: no such input” and “never checked”.
+Here they are derived from one fetched fact, the model’s input property names
+(`accepted_inputs`; `None` on a record means never fetched):
+
+- [`input_properties()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.input_properties): the `POST` request body’s properties, from the
+  OpenAPI document fal serves per endpoint (the one [`falaw.liveness`](_autosummary/falaw.liveness.html.md#module-falaw.liveness)
+  probes: free, no key);
+- [`request_shape()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.request_shape): those properties as the record’s fields;
+- [`refresh_request_shapes()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.refresh_request_shapes): fetch every catalogued model (or `ids`),
+  and with `write=True` put the fields into `falaw/data/models.json`. Then
+  run `python -m falaw export-schema` and the TS codegen, as for any
+  catalogue change.
+
+```pycon
+>>> doc = {"paths": {"/fal-ai/x": {"post": {"requestBody": {"content": {"application/json":
+...     {"schema": {"$ref": "#/components/schemas/XInput"}}}}}}},
+...     "components": {"schemas": {"XInput": {"properties": {
+...         "prompt": {"type": "string", "maxLength": 1000}, "negative_prompt": {"type": "string"},
+...         "image_size": {"$ref": "#/components/schemas/ImageSize"}}}}}}
+>>> shape = request_shape(input_properties(doc))
+>>> shape["accepted_inputs"], shape["accepts_negative_prompt"], shape["max_prompt_chars"]
+(['image_size', 'negative_prompt', 'prompt'], True, 1000)
+```
+
+### Module Attributes
+
+| [`JsonGetter`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.JsonGetter)       | `url -> parsed JSON`; injectable so tests never touch the network.                                           |
+|-------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| [`IMAGE_SIZE_PARAM`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.IMAGE_SIZE_PARAM) | The input that sizes an image by fal's named presets; the alternative is `aspect_ratio` (with `resolution`). |
+| [`SHAPE_FIELDS`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.SHAPE_FIELDS)     | The record fields a refresh writes.                                                                          |
+
+### Functions
+
+| [`fetch_request_shape`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.fetch_request_shape)(endpoint_id, \*[, get_json])   | [`request_shape()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.request_shape) of one endpoint, from fal's OpenAPI document; `None` for an endpoint fal no longer serves (a 404, [`falaw.liveness`](_autosummary/falaw.liveness.html.md#module-falaw.liveness)).                                                                     |
+|-----------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`input_properties`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.input_properties)(doc)                              | The input properties (`{name: schema}`) of the `POST` request body in an endpoint's OpenAPI document, `$ref``s resolved and ``allOf` merged, each with its `maxLength` lifted out of an `anyOf`.                                                                                                                               |
+| [`refresh_request_shapes`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.refresh_request_shapes)([ids, get_json, ...])       | `{endpoint_id: shape}` for `ids` (default: every catalogued model), each fetched from fal.                                                                                                                                                                                                                                     |
+| [`request_shape`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.request_shape)(properties)                          | The record fields ([`SHAPE_FIELDS`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.SHAPE_FIELDS)) an endpoint's input properties imply: their names (sorted), whether `negative_prompt` is one, the `prompt`'s `maxLength` (`None` when it states none), and the size input (`aspect_ratio` only when the model takes it and no `image_size`). |
+
+### falaw.request_shape.IMAGE_SIZE_PARAM *: [str](https://docs.python.org/3/builtins/stdtypes.html#str)* *= 'image_size'*
+
+The input that sizes an image by fal’s named presets; the alternative is
+`aspect_ratio` (with `resolution`).
+
+### falaw.request_shape.JsonGetter
+
+`url -> parsed JSON`; injectable so tests never touch the network.
+
+alias of `Callable`[[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)], [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
+
+### falaw.request_shape.SHAPE_FIELDS *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]* *= ('accepted_inputs', 'accepts_negative_prompt', 'max_prompt_chars', 'size_param')*
+
+The record fields a refresh writes.
+
+### falaw.request_shape.fetch_request_shape(endpoint_id, , get_json=None)
+
+[`request_shape()`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.request_shape) of one endpoint, from fal’s OpenAPI document;
+`None` for an endpoint fal no longer serves (a 404, [`falaw.liveness`](_autosummary/falaw.liveness.html.md#module-falaw.liveness)).
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]
+
+### falaw.request_shape.input_properties(doc)
+
+The input properties (`{name: schema}`) of the `POST` request body in
+an endpoint’s OpenAPI document, `$ref``s resolved and ``allOf` merged, each
+with its `maxLength` lifted out of an `anyOf`. `ValueError` when the
+document has no such body or it has no properties: an empty answer would
+read as “accepts nothing”.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]
+
+### falaw.request_shape.refresh_request_shapes(ids=None, , get_json=None, write=False, path=None)
+
+`{endpoint_id: shape}` for `ids` (default: every catalogued model),
+each fetched from fal. With `write`, each record of the catalogue
+(`path`, default `falaw/data/models.json`) gets those fields; a field
+left at its default (`None`, `False`, `image_size`) is dropped from
+the record rather than written, as the catalogue writes defaults. A
+retired endpoint (`None`) is left as it is. A schema that cannot be read
+(a 429, a 5xx, a shape this module does not know) is never guessed: the
+others are fetched (and written), then `RuntimeError` names each failure.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)]]
+
+### falaw.request_shape.request_shape(properties)
+
+The record fields ([`SHAPE_FIELDS`](_autosummary/falaw.request_shape.html.md#falaw.request_shape.SHAPE_FIELDS)) an endpoint’s input properties
+imply: their names (sorted), whether `negative_prompt` is one, the
+`prompt`’s `maxLength` (`None` when it states none), and the size
+input (`aspect_ratio` only when the model takes it and no `image_size`).
+
+```pycon
+>>> request_shape({"prompt": {}, "aspect_ratio": {}})["size_param"]
+'aspect_ratio'
+```
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]
+
+
 # _autosummary/falaw.results.html.md
 
 # falaw.results
@@ -11725,7 +11889,7 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-22 11:24 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/f622cc596e7b0a84fcc067a7d8ff24bf43ee7316"><code>f622cc5</code></a> on branch <code>main</code>, for **falaw 0.0.99** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 22:03 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/ff7dc9fbea514fc3422b0a3817fb75f2abd79e24"><code>ff7dc9f</code></a> on branch <code>main</code>, for **falaw 0.0.100** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -11734,7 +11898,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/f622cc596e7b0a84fcc067a7d8ff24bf43ee7316"><code>f622cc596e7b0a84fcc067a7d8ff24bf43ee7316</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/ff7dc9fbea514fc3422b0a3817fb75f2abd79e24"><code>ff7dc9fbea514fc3422b0a3817fb75f2abd79e24</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11745,9 +11909,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/45017042220">45017042220</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/45075388361">45075388361</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>f622cc596e7b0a84fcc067a7d8ff24bf43ee7316</code> (in the history of the built commit) |
+| Event commit | <code>ff7dc9fbea514fc3422b0a3817fb75f2abd79e24</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -11772,13 +11936,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.99/">0.0.99</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.100/">0.0.100</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout f622cc596e7b0a84fcc067a7d8ff24bf43ee7316
+git checkout ff7dc9fbea514fc3422b0a3817fb75f2abd79e24
 pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=bf4bdb9e"></script>
+    <script src="../../_static/documentation_options.js?v=a02dbd69"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.99" />
+  <meta name="docsearch:version" content="0.0.100" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -861,25 +861,69 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    ``cost_basis.quantities["tokens"]`` is then rate-equivalent tokens, not the</span>
 <span class="sd">    tokens fal counts. See :func:`falaw.cost.video_price_quantities`."""</span>
 
-    <span class="c1"># --- request-shape metadata (image models; falaw#76) ---</span>
+    <span class="c1"># --- request-shape metadata (falaw#76; derived from fal's schema, falaw#159).</span>
+    <span class="c1">#     Read by the image planners; recorded for every fetched model, so a</span>
+    <span class="c1">#     video or audio planner can read them too. ---</span>
     <span class="n">max_prompt_chars</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">"""Hard cap on ``prompt`` length, from the model's OpenAPI schema. Calls</span>
 <span class="sd">    over it fail at fal with an HTTP 422 after queueing; falaw raises first."""</span>
     <span class="n">size_param</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"image_size"</span>
 <span class="w">    </span><span class="sd">"""Which argument carries the output size: ``"image_size"`` (fal's named</span>
-<span class="sd">    presets, the default) or ``"aspect_ratio"`` (+ ``resolution``)."""</span>
+<span class="sd">    presets, the default) or ``"aspect_ratio"`` (+ ``resolution``). The image</span>
+<span class="sd">    planners map a preset to its ratio for an ``aspect_ratio`` model."""</span>
     <span class="n">accepts_negative_prompt</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="w">    </span><span class="sd">"""Whether the model's input schema has a ``negative_prompt`` (from fal's</span>
 <span class="sd">    published OpenAPI schema). A planner sends a caller's negative prompt only to</span>
 <span class="sd">    such a model and drops it otherwise, never folding it into ``prompt``, where</span>
-<span class="sd">    "glasses" would REQUEST glasses (reeleehq/reelee#859). ``False`` when unknown."""</span>
+<span class="sd">    "glasses" would REQUEST glasses (reeleehq/reelee#859). Derived from</span>
+<span class="sd">    :attr:`accepted_inputs` when that is known; ``False`` when unknown (see</span>
+<span class="sd">    :meth:`accepts_input` to tell the two apart)."""</span>
+    <span class="n">accepted_inputs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="w">    </span><span class="sd">"""The model's input property names, read from fal's published OpenAPI</span>
+<span class="sd">    schema by :func:`falaw.request_shape.refresh_request_shapes` (falaw#159).</span>
+<span class="sd">    ``None``: never fetched, which is not "accepts nothing". The request-shape</span>
+<span class="sd">    flags above are derived from the same schema."""</span>
     <span class="n">param_specs</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span>
         <span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">hash</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">)</span>
 <span class="w">    </span><span class="sd">"""Discoverable per-model parameters that matter for choosing well, as</span>
 <span class="sd">    ``{name: {"enum": [...], "default": ...}}`` — e.g. Recraft's ``style``,</span>
 <span class="sd">    whose photoreal default silently overrides a woodcut prompt. See</span>
-<span class="sd">    :func:`falaw.model_params`."""</span></div>
+<span class="sd">    :func:`falaw.model_params`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_inputs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accepted_inputs</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">: accepted_inputs is a collection of input names, got the "</span>
+                <span class="sa">f</span><span class="s2">"string </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">accepted_inputs</span><span class="si">!r}</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accepted_inputs</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"accepted_inputs"</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+        <span class="n">has_negative</span> <span class="o">=</span> <span class="s2">"negative_prompt"</span> <span class="ow">in</span> <span class="n">inputs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepts_negative_prompt</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">has_negative</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">: accepts_negative_prompt=True, but its inputs "</span>
+                <span class="sa">f</span><span class="s2">"(</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="si">}</span><span class="s2">) have no negative_prompt"</span>
+            <span class="p">)</span>
+        <span class="c1"># one fact, not two: the flag follows the fetched schema (the catalogue</span>
+        <span class="c1"># leaves a False flag out, so a record read from it derives True here)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"accepts_negative_prompt"</span><span class="p">,</span> <span class="n">has_negative</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ModelRecord.accepts_input">
+<a class="viewcode-back" href="../../_autosummary/falaw.base.html#falaw.ModelRecord.accepts_input">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">accepts_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Whether the model's input schema has ``name``; ``None`` when its</span>
+<span class="sd">        inputs were never fetched (:attr:`accepted_inputs`).</span>
+
+<span class="sd">        &gt;&gt;&gt; ModelRecord(id="m", category="image", accepted_inputs=["prompt"]).accepts_input("seed")</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; ModelRecord(id="m", category="image").accepts_input("seed") is None</span>
+<span class="sd">        True</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_inputs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">accepted_inputs</span></div>
+</div>
 
 </pre></div>
 
