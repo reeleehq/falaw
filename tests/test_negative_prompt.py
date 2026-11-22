@@ -113,3 +113,15 @@ def test_a_negative_sent_through_extra_is_not_reported_dropped():
     )
     assert plan.arguments["negative_prompt"] == "glasses"
     assert "dropped_inputs" not in (plan.metadata or {})
+
+
+def test_plan_dropped_inputs_unions_each_name_once_in_call_order():
+    from falaw.plan import Plan, dropped_inputs
+
+    a = plan_generate_image("a", model_id=REFUSES, negative_prompt="x")
+    b = plan_generate_image("b", model_id=REFUSES, negative_prompt="y")
+    plain = plan_generate_image("c", model_id=ACCEPTS, negative_prompt="z")
+    plan = Plan(calls=(a, plain, b))
+    assert plan.dropped_inputs == ("negative_prompt",)
+    assert dropped_inputs(a, plan) == ("negative_prompt",)
+    assert dropped_inputs(plain) == () and Plan().dropped_inputs == ()

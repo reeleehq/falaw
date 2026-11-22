@@ -357,6 +357,15 @@ class Plan:
             if c.cache_status != "hit" and c.estimated_cost_usd is None
         )
 
+    @property
+    def dropped_inputs(self) -> tuple[str, ...]:
+        """Inputs the caller gave that some model had no slot for, each name once.
+
+        Reads ``CallPlan.metadata["dropped_inputs"]`` (written at plan time, outside
+        the plan hash) in call order; see :func:`dropped_inputs`.
+        """
+        return dropped_inputs(self)
+
     def with_call_replaced(self, index: int, new_call: CallPlan) -> "Plan":
         """Return a new Plan with ``calls[index]`` replaced."""
         new_calls = list(self.calls)
@@ -369,6 +378,22 @@ class Plan:
 PLAN_DICT_SCHEMA = "falaw.plan/v1"
 """The ``schema`` tag :func:`plan_to_dict` writes and :func:`plan_from_dict`
 expects. Bumped only on a breaking change to the dict shape."""
+
+
+def dropped_inputs(*plans_or_calls: "Plan | CallPlan") -> tuple[str, ...]:
+    """The one union rule for ``CallPlan.metadata["dropped_inputs"]``.
+
+    Accepts any mix of :class:`Plan` and :class:`CallPlan`; returns each dropped
+    input name once, in first-seen call order. A bare string in the metadata counts
+    as one name (not as its characters).
+    """
+    seen: dict[str, None] = {}
+    for item in plans_or_calls:
+        for call in item.calls if isinstance(item, Plan) else (item,):
+            names = (call.metadata or {}).get("dropped_inputs") or ()
+            for name in (names,) if isinstance(names, str) else names:
+                seen.setdefault(name)
+    return tuple(seen)
 
 
 def call_plan_to_dict(call: CallPlan) -> dict:
