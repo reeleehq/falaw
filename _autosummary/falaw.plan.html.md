@@ -82,6 +82,7 @@ append it to a scene-level Plan:
 | [`call_plan_to_dict`](#falaw.plan.call_plan_to_dict)(call)                           | Convert a [`CallPlan`](#falaw.plan.CallPlan) to a plain JSON-serializable dict.                                                  |
 | [`cost_basis_from_dict`](#falaw.plan.cost_basis_from_dict)(d)                           | Rebuild a [`CostBasis`](#falaw.plan.CostBasis) from a [`cost_basis_to_dict()`](#falaw.plan.cost_basis_to_dict) dict. |
 | [`cost_basis_to_dict`](#falaw.plan.cost_basis_to_dict)(basis)                         | Convert a [`CostBasis`](#falaw.plan.CostBasis) to a plain JSON-serializable dict.                                                 |
+| [`dropped_inputs`](#falaw.plan.dropped_inputs)(\*plans_or_calls)                  | The one union rule for `CallPlan.metadata["dropped_inputs"]`.                                                                                           |
 | [`execute`](#falaw.plan.execute)(plan, \*[, on_event, dry_run, ...])       | Execute a Plan, returning a list of materialized :class:<br/><br/>```<br/>`<br/>```<br/><br/>lacing.Artifact\`s.                                        |
 | [`execute_isolated`](#falaw.plan.execute_isolated)(plan, \*[, on_event, ...])       | Execute a Plan with **per-call failure isolation**, returning a report.                                                                                 |
 | [`extract_first_url`](#falaw.plan.extract_first_url)(raw)                            | Find the first asset URL in a fal response, regardless of shape.                                                                                        |
@@ -356,6 +357,13 @@ USD that would have been spent without the cache.
 Equal to `sum(c.estimated_cost_usd for c in calls if c.cache_status == "hit"
 and c.estimated_cost_usd is not None)`.
 
+#### *property* dropped_inputs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
+
+Inputs the caller gave that some model had no slot for, each name once.
+
+Reads `CallPlan.metadata["dropped_inputs"]` (written at plan time, outside
+the plan hash) in call order; see [`dropped_inputs()`](#falaw.plan.dropped_inputs).
+
 #### *property* has_unknown_costs *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any non-cache-hit call has no cost estimate.
@@ -450,6 +458,17 @@ that names no table writes no key rather than a pair of `""`.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.plan.dropped_inputs(\*plans_or_calls)
+
+The one union rule for `CallPlan.metadata["dropped_inputs"]`.
+
+Accepts any mix of [`Plan`](#falaw.plan.Plan) and [`CallPlan`](#falaw.plan.CallPlan); returns each dropped
+input name once, in first-seen call order. A bare string in the metadata counts
+as one name (not as its characters).
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.plan.execute(plan, , on_event=None, dry_run=False, use_cache=True, refresh=False, artifact_converter=None, content_store=None, fetch_bytes=None, asset_fetcher=None, concurrency=1, terms_context=None)
 

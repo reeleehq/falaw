@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=60a9f236"></script>
+    <script src="../_static/documentation_options.js?v=5751785c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.95" />
+  <meta name="docsearch:version" content="0.0.96" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -556,7 +556,9 @@ catalogue records none (fal’s OpenAPI schema is the full source).</p>
 entry wins. Curated entries are written first in <code class="code docutils literal notranslate"><span class="pre">data/models.json</span></code>,
 so they take precedence over corpus-merged additions. If no model
 has the exact tier, neighboring tiers are tried. KeyError only when
-the category is empty.</p>
+the category is empty; ValueError when <code class="docutils literal notranslate"><span class="pre">quality_tier</span></code> is neither one of
+the known tiers nor a tier some model in the category carries (a misspelt
+tier must not silently bill whichever model the catalogue lists first).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.base.html#falaw.base.ModelRecord" title="falaw.base.ModelRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelRecord</span></code></a></span></p>

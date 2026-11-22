@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=60a9f236"></script>
+    <script src="../_static/documentation_options.js?v=5751785c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.95" />
+  <meta name="docsearch:version" content="0.0.96" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -546,34 +546,37 @@ append it to a scene-level Plan:</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.cost_basis_to_dict" title="falaw.plan.cost_basis_to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cost_basis_to_dict</span></code></a>(basis)</p></td>
 <td><p>Convert a <a class="reference internal" href="#falaw.plan.CostBasis" title="falaw.plan.CostBasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">CostBasis</span></code></a> to a plain JSON-serializable dict.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute</span></code></a>(plan, *[, on_event, dry_run, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.dropped_inputs" title="falaw.plan.dropped_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dropped_inputs</span></code></a>(*plans_or_calls)</p></td>
+<td><p>The one union rule for <code class="docutils literal notranslate"><span class="pre">CallPlan.metadata[&quot;dropped_inputs&quot;]</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute</span></code></a>(plan, *[, on_event, dry_run, ...])</p></td>
 <td><p>Execute a Plan, returning a list of materialized :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>lacing.Artifact`s.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.execute_isolated" title="falaw.plan.execute_isolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_isolated</span></code></a>(plan, *[, on_event, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.execute_isolated" title="falaw.plan.execute_isolated"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_isolated</span></code></a>(plan, *[, on_event, ...])</p></td>
 <td><p>Execute a Plan with <strong>per-call failure isolation</strong>, returning a report.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.extract_first_url" title="falaw.plan.extract_first_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_first_url</span></code></a>(raw)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.extract_first_url" title="falaw.plan.extract_first_url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_first_url</span></code></a>(raw)</p></td>
 <td><p>Find the first asset URL in a fal response, regardless of shape.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.make_call_plan" title="falaw.plan.make_call_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_call_plan</span></code></a>(*, tool, application, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.make_call_plan" title="falaw.plan.make_call_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_call_plan</span></code></a>(*, tool, application, ...[, ...])</p></td>
 <td><p>Build a <a class="reference internal" href="#falaw.plan.CallPlan" title="falaw.plan.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a> and (optionally) check the cache.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.plan_dependencies" title="falaw.plan.plan_dependencies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_dependencies</span></code></a>(plan)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.plan_dependencies" title="falaw.plan.plan_dependencies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_dependencies</span></code></a>(plan)</p></td>
 <td><p>Per-call set of the call indices it references via <code class="docutils literal notranslate"><span class="pre">&quot;&lt;from</span> <span class="pre">N&gt;&quot;</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.plan_from_dict" title="falaw.plan.plan_from_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_from_dict</span></code></a>(d)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.plan_from_dict" title="falaw.plan.plan_from_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_from_dict</span></code></a>(d)</p></td>
 <td><p>Rebuild a <a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a> from a <a class="reference internal" href="#falaw.plan.plan_to_dict" title="falaw.plan.plan_to_dict"><code class="xref py py-func docutils literal notranslate"><span class="pre">plan_to_dict()</span></code></a> dict.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.plan_hash" title="falaw.plan.plan_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_hash</span></code></a>(plan)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.plan_hash" title="falaw.plan.plan_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_hash</span></code></a>(plan)</p></td>
 <td><p>Stable, plan-scoped <strong>structural idempotency key</strong> for a whole <a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.plan_to_dict" title="falaw.plan.plan_to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_to_dict</span></code></a>(plan)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.plan_to_dict" title="falaw.plan.plan_to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plan_to_dict</span></code></a>(plan)</p></td>
 <td><p>Convert a <a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a> to a plain JSON-serializable dict.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.priced_as_run" title="falaw.plan.priced_as_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">priced_as_run</span></code></a>(plan, *[, use_cache, refresh])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.priced_as_run" title="falaw.plan.priced_as_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">priced_as_run</span></code></a>(plan, *[, use_cache, refresh])</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> as <a class="reference internal" href="#falaw.plan.execute" title="falaw.plan.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a> with these cache keywords would bill it.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#falaw.plan.uncached" title="falaw.plan.uncached"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uncached</span></code></a>(plan)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.plan.uncached" title="falaw.plan.uncached"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uncached</span></code></a>(plan)</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">plan</span></code> as a run that will not read the cache bills it: every call a miss.</p></td>
 </tr>
 </tbody>
@@ -904,6 +907,14 @@ edits return new Plans (use <a class="reference internal" href="#falaw.plan.Plan
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="falaw.plan.Plan.dropped_inputs">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dropped_inputs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.plan.Plan.dropped_inputs" title="Link to this definition">#</a></dt>
+<dd><p>Inputs the caller gave that some model had no slot for, each name once.</p>
+<p>Reads <code class="docutils literal notranslate"><span class="pre">CallPlan.metadata[&quot;dropped_inputs&quot;]</span></code> (written at plan time, outside
+the plan hash) in call order; see <a class="reference internal" href="#falaw.plan.dropped_inputs" title="falaw.plan.dropped_inputs"><code class="xref py py-func docutils literal notranslate"><span class="pre">dropped_inputs()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="falaw.plan.Plan.has_unknown_costs">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">has_unknown_costs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.plan.Plan.has_unknown_costs" title="Link to this definition">#</a></dt>
 <dd><p>True if any non-cache-hit call has no cost estimate.</p>
@@ -1015,6 +1026,20 @@ that names no table writes no key rather than a pair of <code class="docutils li
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#dict" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.plan.dropped_inputs">
+<span class="sig-prename descclassname"><span class="pre">falaw.plan.</span></span><span class="sig-name descname"><span class="pre">dropped_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">plans_or_calls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/plan.html#dropped_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.plan.dropped_inputs" title="Link to this definition">#</a></dt>
+<dd><p>The one union rule for <code class="docutils literal notranslate"><span class="pre">CallPlan.metadata[&quot;dropped_inputs&quot;]</span></code>.</p>
+<p>Accepts any mix of <a class="reference internal" href="#falaw.plan.Plan" title="falaw.plan.Plan"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plan</span></code></a> and <a class="reference internal" href="#falaw.plan.CallPlan" title="falaw.plan.CallPlan"><code class="xref py py-class docutils literal notranslate"><span class="pre">CallPlan</span></code></a>; returns each dropped
+input name once, in first-seen call order. A bare string in the metadata counts
+as one name (not as its characters).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.15)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>]</span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1539,6 +1564,7 @@ call’s <code class="docutils literal notranslate"><span class="pre">arguments<
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.PLAN_DICT_SCHEMA"><code class="docutils literal notranslate"><span class="pre">PLAN_DICT_SCHEMA</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.Plan"><code class="docutils literal notranslate"><span class="pre">Plan</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.Plan.cache_hit_savings_usd"><code class="docutils literal notranslate"><span class="pre">Plan.cache_hit_savings_usd</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.Plan.dropped_inputs"><code class="docutils literal notranslate"><span class="pre">Plan.dropped_inputs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.Plan.has_unknown_costs"><code class="docutils literal notranslate"><span class="pre">Plan.has_unknown_costs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.Plan.known_cost_usd"><code class="docutils literal notranslate"><span class="pre">Plan.known_cost_usd</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.Plan.total_cost_usd"><code class="docutils literal notranslate"><span class="pre">Plan.total_cost_usd</span></code></a></li>
@@ -1550,6 +1576,7 @@ call’s <code class="docutils literal notranslate"><span class="pre">arguments<
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.call_plan_to_dict"><code class="docutils literal notranslate"><span class="pre">call_plan_to_dict()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.cost_basis_from_dict"><code class="docutils literal notranslate"><span class="pre">cost_basis_from_dict()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.cost_basis_to_dict"><code class="docutils literal notranslate"><span class="pre">cost_basis_to_dict()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.dropped_inputs"><code class="docutils literal notranslate"><span class="pre">dropped_inputs()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.execute"><code class="docutils literal notranslate"><span class="pre">execute()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.execute_isolated"><code class="docutils literal notranslate"><span class="pre">execute_isolated()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.plan.extract_first_url"><code class="docutils literal notranslate"><span class="pre">extract_first_url()</span></code></a></li>

@@ -1279,6 +1279,13 @@ USD that would have been spent without the cache.
 Equal to `sum(c.estimated_cost_usd for c in calls if c.cache_status == "hit"
 and c.estimated_cost_usd is not None)`.
 
+#### *property* dropped_inputs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
+
+Inputs the caller gave that some model had no slot for, each name once.
+
+Reads `CallPlan.metadata["dropped_inputs"]` (written at plan time, outside
+the plan hash) in call order; see [`dropped_inputs()`](#falaw.Plan.dropped_inputs).
+
 #### *property* has_unknown_costs *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any non-cache-hit call has no cost estimate.
@@ -2774,7 +2781,9 @@ First-match semantics: when several models share a tier, the earlier
 entry wins. Curated entries are written first in `data/models.json`,
 so they take precedence over corpus-merged additions. If no model
 has the exact tier, neighboring tiers are tried. KeyError only when
-the category is empty.
+the category is empty; ValueError when `quality_tier` is neither one of
+the known tiers nor a tier some model in the category carries (a misspelt
+tier must not silently bill whichever model the catalogue lists first).
 
 * **Return type:**
   [`ModelRecord`](falaw.base.html.md#falaw.base.ModelRecord)

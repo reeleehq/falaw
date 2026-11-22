@@ -1,4 +1,4 @@
-> built 2026-11-10 13:14 UTC from 5000eac (main) · falaw 0.0.95. Details: build_info.json
+> built 2026-11-22 11:18 UTC from 44c239c (main) · falaw 0.0.96. Details: build_info.json
 
 # index.html.md
 
@@ -4467,6 +4467,13 @@ USD that would have been spent without the cache.
 Equal to `sum(c.estimated_cost_usd for c in calls if c.cache_status == "hit"
 and c.estimated_cost_usd is not None)`.
 
+#### *property* dropped_inputs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
+
+Inputs the caller gave that some model had no slot for, each name once.
+
+Reads `CallPlan.metadata["dropped_inputs"]` (written at plan time, outside
+the plan hash) in call order; see [`dropped_inputs()`](_autosummary/falaw.html.md#falaw.Plan.dropped_inputs).
+
 #### *property* has_unknown_costs *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any non-cache-hit call has no cost estimate.
@@ -5962,7 +5969,9 @@ First-match semantics: when several models share a tier, the earlier
 entry wins. Curated entries are written first in `data/models.json`,
 so they take precedence over corpus-merged additions. If no model
 has the exact tier, neighboring tiers are tried. KeyError only when
-the category is empty.
+the category is empty; ValueError when `quality_tier` is neither one of
+the known tiers nor a tier some model in the category carries (a misspelt
+tier must not silently bill whichever model the catalogue lists first).
 
 * **Return type:**
   [`ModelRecord`](_autosummary/falaw.base.html.md#falaw.base.ModelRecord)
@@ -8954,6 +8963,7 @@ append it to a scene-level Plan:
 | [`call_plan_to_dict`](_autosummary/falaw.plan.html.md#falaw.plan.call_plan_to_dict)(call)                           | Convert a [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan) to a plain JSON-serializable dict.                                                  |
 | [`cost_basis_from_dict`](_autosummary/falaw.plan.html.md#falaw.plan.cost_basis_from_dict)(d)                           | Rebuild a [`CostBasis`](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis) from a [`cost_basis_to_dict()`](_autosummary/falaw.plan.html.md#falaw.plan.cost_basis_to_dict) dict. |
 | [`cost_basis_to_dict`](_autosummary/falaw.plan.html.md#falaw.plan.cost_basis_to_dict)(basis)                         | Convert a [`CostBasis`](_autosummary/falaw.plan.html.md#falaw.plan.CostBasis) to a plain JSON-serializable dict.                                                 |
+| [`dropped_inputs`](_autosummary/falaw.plan.html.md#falaw.plan.dropped_inputs)(\*plans_or_calls)                  | The one union rule for `CallPlan.metadata["dropped_inputs"]`.                                                                                           |
 | [`execute`](_autosummary/falaw.plan.html.md#falaw.plan.execute)(plan, \*[, on_event, dry_run, ...])       | Execute a Plan, returning a list of materialized :class:<br/><br/>```<br/>`<br/>```<br/><br/>lacing.Artifact\`s.                                        |
 | [`execute_isolated`](_autosummary/falaw.plan.html.md#falaw.plan.execute_isolated)(plan, \*[, on_event, ...])       | Execute a Plan with **per-call failure isolation**, returning a report.                                                                                 |
 | [`extract_first_url`](_autosummary/falaw.plan.html.md#falaw.plan.extract_first_url)(raw)                            | Find the first asset URL in a fal response, regardless of shape.                                                                                        |
@@ -9228,6 +9238,13 @@ USD that would have been spent without the cache.
 Equal to `sum(c.estimated_cost_usd for c in calls if c.cache_status == "hit"
 and c.estimated_cost_usd is not None)`.
 
+#### *property* dropped_inputs *: [tuple](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[str](https://docs.python.org/3/builtins/stdtypes.html#str), ...]*
+
+Inputs the caller gave that some model had no slot for, each name once.
+
+Reads `CallPlan.metadata["dropped_inputs"]` (written at plan time, outside
+the plan hash) in call order; see [`dropped_inputs()`](_autosummary/falaw.plan.html.md#falaw.plan.dropped_inputs).
+
 #### *property* has_unknown_costs *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
 
 True if any non-cache-hit call has no cost estimate.
@@ -9322,6 +9339,17 @@ that names no table writes no key rather than a pair of `""`.
 
 * **Return type:**
   [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.plan.dropped_inputs(\*plans_or_calls)
+
+The one union rule for `CallPlan.metadata["dropped_inputs"]`.
+
+Accepts any mix of [`Plan`](_autosummary/falaw.plan.html.md#falaw.plan.Plan) and [`CallPlan`](_autosummary/falaw.plan.html.md#falaw.plan.CallPlan); returns each dropped
+input name once, in first-seen call order. A bare string in the metadata counts
+as one name (not as its characters).
+
+* **Return type:**
+  [`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]
 
 ### falaw.plan.execute(plan, , on_event=None, dry_run=False, use_cache=True, refresh=False, artifact_converter=None, content_store=None, fetch_bytes=None, asset_fetcher=None, concurrency=1, terms_context=None)
 
@@ -10336,7 +10364,9 @@ First-match semantics: when several models share a tier, the earlier
 entry wins. Curated entries are written first in `data/models.json`,
 so they take precedence over corpus-merged additions. If no model
 has the exact tier, neighboring tiers are tried. KeyError only when
-the category is empty.
+the category is empty; ValueError when `quality_tier` is neither one of
+the known tiers nor a tier some model in the category carries (a misspelt
+tier must not silently bill whichever model the catalogue lists first).
 
 * **Return type:**
   [`ModelRecord`](_autosummary/falaw.base.html.md#falaw.base.ModelRecord)
@@ -11695,16 +11725,18 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-10 13:14 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/5000eacc98e766f80b3b24d31e0af45b2b3bab44"><code>5000eac</code></a> on branch <code>main</code>, for **falaw 0.0.95** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-22 11:18 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/44c239c4c8e0e0a4f7b9f582c2cec016ecb598bf"><code>44c239c</code></a> on branch <code>main</code>, for **falaw 0.0.96** (from <code>pyproject.toml</code>).
 
-#### NOTE
-Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
+#### WARNING
+The documentation and the package may be misaligned:
+
+- The documented version (0.0.96) is behind the latest release on PyPI (0.0.97): `pip install falaw` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/5000eacc98e766f80b3b24d31e0af45b2b3bab44"><code>5000eacc98e766f80b3b24d31e0af45b2b3bab44</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/44c239c4c8e0e0a4f7b9f582c2cec016ecb598bf"><code>44c239c4c8e0e0a4f7b9f582c2cec016ecb598bf</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -11715,15 +11747,15 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/42822373273">42822373273</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/45016282376">45016282376</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>5000eacc98e766f80b3b24d31e0af45b2b3bab44</code> (in the history of the built commit) |
+| Event commit | <code>efb78c710321de67c89bdf38c2c9f027971b98ae</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.22  |
+| epythet  | 0.2.23  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -11742,14 +11774,14 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.95/">0.0.95</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/falaw/0.0.97/">0.0.97</a>, newer than the documented version (0.0.96).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout 5000eacc98e766f80b3b24d31e0af45b2b3bab44
-pip install "epythet==0.2.22"
+git checkout 44c239c4c8e0e0a4f7b9f582c2cec016ecb598bf
+pip install "epythet==0.2.23"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 

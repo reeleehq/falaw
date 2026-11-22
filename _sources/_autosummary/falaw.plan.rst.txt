@@ -24,6 +24,7 @@ falaw.plan
       call_plan_to_dict
       cost_basis_from_dict
       cost_basis_to_dict
+      dropped_inputs
       execute
       execute_isolated
       extract_first_url

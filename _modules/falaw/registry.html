@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=60a9f236"></script>
+    <script src="../../_static/documentation_options.js?v=5751785c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.95" />
+  <meta name="docsearch:version" content="0.0.96" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -906,7 +906,9 @@ window.runMermaid = runMermaid;</script>
 <span class="sd">    entry wins. Curated entries are written first in `data/models.json`,</span>
 <span class="sd">    so they take precedence over corpus-merged additions. If no model</span>
 <span class="sd">    has the exact tier, neighboring tiers are tried. KeyError only when</span>
-<span class="sd">    the category is empty.</span>
+<span class="sd">    the category is empty; ValueError when ``quality_tier`` is neither one of</span>
+<span class="sd">    the known tiers nor a tier some model in the category carries (a misspelt</span>
+<span class="sd">    tier must not silently bill whichever model the catalogue lists first).</span>
 <span class="sd">    """</span>
     <span class="n">everything</span> <span class="o">=</span> <span class="n">list_models</span><span class="p">(</span><span class="n">category</span><span class="o">=</span><span class="n">category</span><span class="p">)</span>
     <span class="c1"># A record opted out of default picks never wins; a category made only of</span>
@@ -919,16 +921,19 @@ window.runMermaid = runMermaid;</script>
     <span class="n">exact</span> <span class="o">=</span> <span class="n">_first_with_tier</span><span class="p">(</span><span class="n">quality_tier</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">exact</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">exact</span>
-    <span class="k">if</span> <span class="n">quality_tier</span> <span class="ow">in</span> <span class="n">_TIER_ORDER</span><span class="p">:</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">_TIER_ORDER</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">quality_tier</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">):</span>
-                <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">):</span>
-                    <span class="n">near</span> <span class="o">=</span> <span class="n">_first_with_tier</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">near</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">return</span> <span class="n">near</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">candidates</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No models known for category=</span><span class="si">{</span><span class="n">category</span><span class="si">!r}</span><span class="s2">. Try list_models()."</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">quality_tier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_TIER_ORDER</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Unknown quality_tier=</span><span class="si">{</span><span class="n">quality_tier</span><span class="si">!r}</span><span class="s2">; known tiers: </span><span class="si">{</span><span class="s1">', '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">_TIER_ORDER</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">quality_tier</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">offset</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">offset</span><span class="p">):</span>
+            <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">):</span>
+                <span class="n">near</span> <span class="o">=</span> <span class="n">_first_with_tier</span><span class="p">(</span><span class="n">_TIER_ORDER</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">near</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">near</span>
     <span class="k">return</span> <span class="n">candidates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
 </pre></div>

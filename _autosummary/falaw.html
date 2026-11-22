@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=60a9f236"></script>
+    <script src="../_static/documentation_options.js?v=5751785c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.95" />
+  <meta name="docsearch:version" content="0.0.96" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -2384,6 +2384,14 @@ edits return new Plans (use <a class="reference internal" href="#falaw.Plan.with
 </dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="falaw.Plan.dropped_inputs">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dropped_inputs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.Plan.dropped_inputs" title="Link to this definition">#</a></dt>
+<dd><p>Inputs the caller gave that some model had no slot for, each name once.</p>
+<p>Reads <code class="docutils literal notranslate"><span class="pre">CallPlan.metadata[&quot;dropped_inputs&quot;]</span></code> (written at plan time, outside
+the plan hash) in call order; see <a class="reference internal" href="#falaw.Plan.dropped_inputs" title="falaw.Plan.dropped_inputs"><code class="xref py py-func docutils literal notranslate"><span class="pre">dropped_inputs()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="falaw.Plan.has_unknown_costs">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">has_unknown_costs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.Plan.has_unknown_costs" title="Link to this definition">#</a></dt>
 <dd><p>True if any non-cache-hit call has no cost estimate.</p>
@@ -4170,7 +4178,9 @@ as <code class="code docutils literal notranslate"><span class="pre">raw</span><
 entry wins. Curated entries are written first in <code class="code docutils literal notranslate"><span class="pre">data/models.json</span></code>,
 so they take precedence over corpus-merged additions. If no model
 has the exact tier, neighboring tiers are tried. KeyError only when
-the category is empty.</p>
+the category is empty; ValueError when <code class="docutils literal notranslate"><span class="pre">quality_tier</span></code> is neither one of
+the known tiers nor a tier some model in the category carries (a misspelt
+tier must not silently bill whichever model the catalogue lists first).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="falaw.base.html#falaw.base.ModelRecord" title="falaw.base.ModelRecord"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelRecord</span></code></a></span></p>
@@ -5520,6 +5530,7 @@ shot-list builder shows as its model-limits reference.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.ModelTerms"><code class="docutils literal notranslate"><span class="pre">ModelTerms</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.Plan"><code class="docutils literal notranslate"><span class="pre">Plan</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.Plan.cache_hit_savings_usd"><code class="docutils literal notranslate"><span class="pre">Plan.cache_hit_savings_usd</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.Plan.dropped_inputs"><code class="docutils literal notranslate"><span class="pre">Plan.dropped_inputs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.Plan.has_unknown_costs"><code class="docutils literal notranslate"><span class="pre">Plan.has_unknown_costs</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.Plan.known_cost_usd"><code class="docutils literal notranslate"><span class="pre">Plan.known_cost_usd</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.Plan.total_cost_usd"><code class="docutils literal notranslate"><span class="pre">Plan.total_cost_usd</span></code></a></li>
