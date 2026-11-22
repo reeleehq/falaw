@@ -31,12 +31,26 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A durable JSON-lines sink: one record per line, `fsync` before return.
 
+#### write(record)
+
+Append `record` as one JSON line and `fsync` it before returning.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### *class* falaw.comfyui.audit.GraphAuditSink(\*args, \*\*kwargs)
 
 Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protocol)
 
 Where audit records go. `write` must not return until the record is
 durable (or must raise): the caller sends the graph only after it returns.
+
+#### write(record)
+
+Append `record` as one JSON line and `fsync` it before returning.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
 ### falaw.comfyui.audit.REPR_LIMIT *= 4000*
 

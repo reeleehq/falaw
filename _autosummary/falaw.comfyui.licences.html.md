@@ -69,6 +69,17 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 The outcome of [`screen_licences()`](#falaw.comfyui.licences.screen_licences), in manifest shape.
 
+#### *property* passed *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether the screen found no AGPL-family and no undeterminable licences.
+
+#### problems()
+
+The screen’s findings as a list of `Problem`.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Problem`](falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)]
+
 #### to_dict()
 
 The `licence_screen` block of the deployment manifest.

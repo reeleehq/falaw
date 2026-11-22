@@ -108,6 +108,10 @@ the cache root) and for `other`. It is deliberately not the cache root:
 a caller reaching for `rmtree(usage.area(...).path)` would then destroy
 the content store along with it.
 
+#### *property* megabytes *: [float](https://docs.python.org/3/builtins/functions.html#float)*
+
+The size in megabytes (10\*\*6 bytes), rounded to two decimals.
+
 ### *class* falaw.prune.CacheUsage(root, areas)
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
@@ -143,6 +147,10 @@ named areas do not claim. That identity is the point: a capacity report
 whose total is “the sum of the areas I thought to enumerate” silently
 under-reports the moment falaw grows a directory nobody added here, and
 under-reporting is the one direction a capacity tool cannot afford.
+
+#### *property* total_megabytes *: [float](https://docs.python.org/3/builtins/functions.html#float)*
+
+The total size in megabytes (10\*\*6 bytes), rounded to two decimals.
 
 ### *class* falaw.prune.PruneCandidate(key, path, bytes, last_modified=None)
 
@@ -197,6 +205,10 @@ Sums `deleted`, **not** `candidates`. A deletion that failed (a
 read-only volume, a permission error) leaves its bytes on disk, and a
 capacity tool that reports them as reclaimed tells an operator staring
 at a full disk that the problem is solved when it is not.
+
+#### *property* freed_megabytes *: [float](https://docs.python.org/3/builtins/functions.html#float)*
+
+The space freed, in megabytes (10\*\*6 bytes), rounded to two decimals.
 
 #### summary()
 

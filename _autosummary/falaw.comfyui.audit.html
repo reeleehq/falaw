@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../_static/documentation_options.js?v=04553970"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -494,6 +494,17 @@ A graph that fails the path screen (<a class="reference internal" href="falaw.co
 <p>A durable JSON-lines sink: one record per line, <code class="docutils literal notranslate"><span class="pre">fsync</span></code> before return.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="falaw.comfyui.audit.FileAuditSink.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/comfyui/audit.html#FileAuditSink.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.comfyui.audit.FileAuditSink.write" title="Link to this definition">#</a></dt>
+<dd><p>Append <code class="docutils literal notranslate"><span class="pre">record</span></code> as one JSON line and <code class="docutils literal notranslate"><span class="pre">fsync</span></code> it before returning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -502,6 +513,17 @@ A graph that fails the path screen (<a class="reference internal" href="falaw.co
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
 <p>Where audit records go. <code class="docutils literal notranslate"><span class="pre">write</span></code> must not return until the record is
 durable (or must raise): the caller sends the graph only after it returns.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="falaw.comfyui.audit.GraphAuditSink.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/comfyui/audit.html#GraphAuditSink.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.comfyui.audit.GraphAuditSink.write" title="Link to this definition">#</a></dt>
+<dd><p>Append <code class="docutils literal notranslate"><span class="pre">record</span></code> as one JSON line and <code class="docutils literal notranslate"><span class="pre">fsync</span></code> it before returning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py data">
@@ -576,8 +598,14 @@ the screen, or is not even canonical JSON, is recorded and raises
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.FileAuditSink"><code class="docutils literal notranslate"><span class="pre">FileAuditSink</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.GraphAuditSink"><code class="docutils literal notranslate"><span class="pre">GraphAuditSink</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.FileAuditSink"><code class="docutils literal notranslate"><span class="pre">FileAuditSink</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.FileAuditSink.write"><code class="docutils literal notranslate"><span class="pre">FileAuditSink.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.GraphAuditSink"><code class="docutils literal notranslate"><span class="pre">GraphAuditSink</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.GraphAuditSink.write"><code class="docutils literal notranslate"><span class="pre">GraphAuditSink.write()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.REPR_LIMIT"><code class="docutils literal notranslate"><span class="pre">REPR_LIMIT</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.audit.submit_graph"><code class="docutils literal notranslate"><span class="pre">submit_graph()</span></code></a></li>
 </ul>

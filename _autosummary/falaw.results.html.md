@@ -44,6 +44,17 @@ A fal call result with parsed assets and the original raw response.
 The raw response is kept so callers can inspect provider-specific fields
 (timings, seed, has_nsfw_concepts, …) that we do not normalize.
 
+#### download_all(, to_dir=None)
+
+Download every asset into `to_dir` (default: the current directory); return the paths.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+#### *property* first *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[Asset](#falaw.results.Asset)]*
+
+The first asset, or `None` if the result has none.
+
 ### falaw.results.parse_response(raw, , application, arguments)
 
 Best-effort parser over the common fal response shapes.

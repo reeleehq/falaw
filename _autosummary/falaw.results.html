@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../_static/documentation_options.js?v=04553970"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -507,6 +507,23 @@ corrected instead (so the returned path may differ from <code class="docutils li
 (timings, seed, has_nsfw_concepts, …) that we do not normalize.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="falaw.results.Result.download_all">
+<span class="sig-name descname"><span class="pre">download_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/results.html#Result.download_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.results.Result.download_all" title="Link to this definition">#</a></dt>
+<dd><p>Download every asset into <code class="docutils literal notranslate"><span class="pre">to_dir</span></code> (default: the current directory); return the paths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.results.Result.first">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">first</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.15)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#falaw.results.Asset" title="falaw.results.Asset"><span class="pre">Asset</span></a><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#falaw.results.Result.first" title="Link to this definition">#</a></dt>
+<dd><p>The first asset, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if the result has none.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py function">
@@ -587,7 +604,11 @@ as <code class="code docutils literal notranslate"><span class="pre">raw</span><
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.Asset.download"><code class="docutils literal notranslate"><span class="pre">Asset.download()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.Result"><code class="docutils literal notranslate"><span class="pre">Result</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.Result"><code class="docutils literal notranslate"><span class="pre">Result</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.Result.download_all"><code class="docutils literal notranslate"><span class="pre">Result.download_all()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.Result.first"><code class="docutils literal notranslate"><span class="pre">Result.first</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.parse_response"><code class="docutils literal notranslate"><span class="pre">parse_response()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.results.sniff_extension"><code class="docutils literal notranslate"><span class="pre">sniff_extension()</span></code></a></li>
 </ul>

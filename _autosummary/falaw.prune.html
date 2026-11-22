@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../_static/documentation_options.js?v=04553970"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -563,6 +563,12 @@ a caller reaching for <code class="docutils literal notranslate"><span class="pr
 the content store along with it.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.prune.AreaUsage.megabytes">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">megabytes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.prune.AreaUsage.megabytes" title="Link to this definition">#</a></dt>
+<dd><p>The size in megabytes (10**6 bytes), rounded to two decimals.</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -609,6 +615,12 @@ named areas do not claim. That identity is the point: a capacity report
 whose total is “the sum of the areas I thought to enumerate” silently
 under-reports the moment falaw grows a directory nobody added here, and
 under-reporting is the one direction a capacity tool cannot afford.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.prune.CacheUsage.total_megabytes">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">total_megabytes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.prune.CacheUsage.total_megabytes" title="Link to this definition">#</a></dt>
+<dd><p>The total size in megabytes (10**6 bytes), rounded to two decimals.</p>
 </dd></dl>
 
 </dd></dl>
@@ -668,6 +680,12 @@ prune is free when it may be destroying the only copy of a reference image.</p>
 read-only volume, a permission error) leaves its bytes on disk, and a
 capacity tool that reports them as reclaimed tells an operator staring
 at a full disk that the problem is solved when it is not.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.prune.PruneReport.freed_megabytes">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">freed_megabytes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.15)"><span class="pre">float</span></a></span><a class="headerlink" href="#falaw.prune.PruneReport.freed_megabytes" title="Link to this definition">#</a></dt>
+<dd><p>The space freed, in megabytes (10**6 bytes), rounded to two decimals.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -894,16 +912,21 @@ free, so <code class="docutils literal notranslate"><span class="pre">rebillable
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.AreaUsage"><code class="docutils literal notranslate"><span class="pre">AreaUsage</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.AreaUsage"><code class="docutils literal notranslate"><span class="pre">AreaUsage</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.AreaUsage.megabytes"><code class="docutils literal notranslate"><span class="pre">AreaUsage.megabytes</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.CacheUsage"><code class="docutils literal notranslate"><span class="pre">CacheUsage</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.CacheUsage.area"><code class="docutils literal notranslate"><span class="pre">CacheUsage.area()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.CacheUsage.summary"><code class="docutils literal notranslate"><span class="pre">CacheUsage.summary()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.CacheUsage.total_bytes"><code class="docutils literal notranslate"><span class="pre">CacheUsage.total_bytes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.CacheUsage.total_megabytes"><code class="docutils literal notranslate"><span class="pre">CacheUsage.total_megabytes</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.PruneCandidate"><code class="docutils literal notranslate"><span class="pre">PruneCandidate</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.PruneReport"><code class="docutils literal notranslate"><span class="pre">PruneReport</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.PruneReport.freed_bytes"><code class="docutils literal notranslate"><span class="pre">PruneReport.freed_bytes</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.PruneReport.freed_megabytes"><code class="docutils literal notranslate"><span class="pre">PruneReport.freed_megabytes</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.prune.PruneReport.summary"><code class="docutils literal notranslate"><span class="pre">PruneReport.summary()</span></code></a></li>
 </ul>
 </li>

@@ -93,19 +93,19 @@ Leave notes for future sessions:
 | [`generate_image`](#falaw.generate_image)(prompt, \*[, quality, ...])         | Generate an image from a text prompt.                                                                                                                                                                              |
 | [`generate_image_with_control`](#falaw.generate_image_with_control)(prompt, control, \*)   | Generate an image conditioned on a guide image's structure (falaw#140).                                                                                                                                            |
 | [`generate_image_with_refs`](#falaw.generate_image_with_refs)(prompt, ...[, ...])       | Generate a new image conditioned on one or more reference images.                                                                                                                                                  |
-| `get_model`(id)                                                                                     |                                                                                                                                                                                                                    |
-| `get_tool`(name)                                                                                    |                                                                                                                                                                                                                    |
+| [`get_model`](#falaw.get_model)(id)                                      | The model record for `id` (an id or one of its aliases).                                                                                                                                                           |
+| [`get_tool`](#falaw.get_tool)(name)                                     | The registered tool called `name`; `KeyError` listing the known names if absent.                                                                                                                                   |
 | [`image_to_video`](#falaw.image_to_video)(image_url[, prompt, quality, ...])  | Animate a still image into a video.                                                                                                                                                                                |
 | [`iter_render_scene`](#falaw.iter_render_scene)(scene, \*[, tts_quality, ...])   | Yield `(kind, result)` pairs as each shot/beat finishes.                                                                                                                                                           |
 | [`lipsync`](#falaw.lipsync)(video_url, audio_url, \*[, quality, ...])  | Re-sync mouth motion in an existing video to a new audio track.                                                                                                                                                    |
-| `list_models`(\*[, category, quality_tier])                                                         |                                                                                                                                                                                                                    |
-| `list_tools`(\*[, tag])                                                                             |                                                                                                                                                                                                                    |
+| [`list_models`](#falaw.list_models)(\*[, category, quality_tier])          | The known models, optionally filtered by `category` and `quality_tier`.                                                                                                                                            |
+| [`list_tools`](#falaw.list_tools)(\*[, tag])                              | The registered tools, optionally only those carrying `tag`.                                                                                                                                                        |
 | [`llm_complete`](#falaw.llm_complete)(prompt, \*[, system, model, ...])     | Single-shot LLM completion.                                                                                                                                                                                        |
 | [`llm_complete_with_receipt`](#falaw.llm_complete_with_receipt)(prompt, \*[, ...])       | Single-shot LLM completion that also reports what it cost.                                                                                                                                                         |
-| `load_scene`(path)                                                                                  |                                                                                                                                                                                                                    |
-| `make_beat`(speaker[, line, action, emotion, ...])                                                  |                                                                                                                                                                                                                    |
+| [`load_scene`](#falaw.load_scene)(path)                                   | Read a scene from the JSON file at `path`.                                                                                                                                                                         |
+| [`make_beat`](#falaw.make_beat)(speaker[, line, action, emotion, ...])   | Build a [`Beat`](#falaw.Beat) for `speaker` saying `line`.                                                                                                                         |
 | [`make_call_plan`](#falaw.make_call_plan)(\*, tool, application, ...[, ...])  | Build a [`CallPlan`](#falaw.CallPlan) and (optionally) check the cache.                                                                                                                |
-| `make_shot`(description, \*[, framing, ...])                                                        |                                                                                                                                                                                                                    |
+| [`make_shot`](#falaw.make_shot)(description, \*[, framing, ...])         | Build a [`Shot`](#falaw.Shot) from a description and framing.                                                                                                                      |
 | [`materialize_asset`](#falaw.materialize_asset)(url, \*[, key_hint, store, ...]) | Download a remote asset to the cache and return the local path.                                                                                                                                                    |
 | [`parse_response`](#falaw.parse_response)(raw, \*, application, arguments)    | Best-effort parser over the common fal response shapes.                                                                                                                                                            |
 | [`parse_screenplay`](#falaw.parse_screenplay)(text, \*[, title, style, model])  | Convert prose screenplay text into a Scene IR via an LLM call.                                                                                                                                                     |
@@ -140,10 +140,10 @@ Leave notes for future sessions:
 | [`render_beat`](#falaw.render_beat)(beat, character, \*[, ...])            | Render one Beat to a lipsynced video.                                                                                                                                                                              |
 | [`render_scene`](#falaw.render_scene)(scene, \*[, tts_quality, ...])        | Render every shot and beat.                                                                                                                                                                                        |
 | [`render_shot`](#falaw.render_shot)(shot, \*[, environment, ...])          | Render a Shot as a still (default) or a short clip.                                                                                                                                                                |
-| `save_scene`(scene, path)                                                                           |                                                                                                                                                                                                                    |
+| [`save_scene`](#falaw.save_scene)(scene, path)                            | Write the scene to `path` as JSON and return the path.                                                                                                                                                             |
 | [`scene_from_dict`](#falaw.scene_from_dict)(d)                                 | Inverse of asdict: reconstruct a Scene from a plain dict.                                                                                                                                                          |
-| `scene_to_dict`(scene)                                                                              |                                                                                                                                                                                                                    |
-| `shot_content_hash`(shot, \*[, environment])                                                        |                                                                                                                                                                                                                    |
+| [`scene_to_dict`](#falaw.scene_to_dict)(scene)                               | The scene as a plain dict.                                                                                                                                                                                         |
+| [`shot_content_hash`](#falaw.shot_content_hash)(shot, \*[, environment])         | A content hash of everything that determines a shot's render.                                                                                                                                                      |
 | [`storyboard_shot`](#falaw.storyboard_shot)(shot, \*[, environment, ...])      | Render a storyboard still for a Shot.                                                                                                                                                                              |
 | [`talking_avatar_from_text`](#falaw.talking_avatar_from_text)(text, image_url, \*)      | text + face image → talking video.                                                                                                                                                                                 |
 | [`generate_audio`](#falaw.generate_audio)(prompt, \*[, kind, ...])            | Generate ambient/SFX/music from a prompt.                                                                                                                                                                          |
@@ -271,6 +271,10 @@ the cache root) and for `other`. It is deliberately not the cache root:
 a caller reaching for `rmtree(usage.area(...).path)` would then destroy
 the content store along with it.
 
+#### *property* megabytes *: [float](https://docs.python.org/3/builtins/functions.html#float)*
+
+The size in megabytes (10\*\*6 bytes), rounded to two decimals.
+
 ### *class* falaw.Asset(url, kind, content_type='', width=0, height=0, duration_s=0.0, metadata=dict())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
@@ -335,6 +339,10 @@ named areas do not claim. That identity is the point: a capacity report
 whose total is “the sum of the areas I thought to enumerate” silently
 under-reports the moment falaw grows a directory nobody added here, and
 under-reporting is the one direction a capacity tool cannot afford.
+
+#### *property* total_megabytes *: [float](https://docs.python.org/3/builtins/functions.html#float)*
+
+The total size in megabytes (10\*\*6 bytes), rounded to two decimals.
 
 ### *class* falaw.CallOutcome(, index, call, status, artifact=None, error=None, cache_hit=False, blocked_by=(), reason='', metrics=None)
 
@@ -1513,6 +1521,10 @@ read-only volume, a permission error) leaves its bytes on disk, and a
 capacity tool that reports them as reclaimed tells an operator staring
 at a full disk that the problem is solved when it is not.
 
+#### *property* freed_megabytes *: [float](https://docs.python.org/3/builtins/functions.html#float)*
+
+The space freed, in megabytes (10\*\*6 bytes), rounded to two decimals.
+
 #### summary()
 
 A human-readable line, phrased in the tense the run actually was.
@@ -1572,15 +1584,75 @@ A fal call result with parsed assets and the original raw response.
 The raw response is kept so callers can inspect provider-specific fields
 (timings, seed, has_nsfw_concepts, …) that we do not normalize.
 
+#### download_all(, to_dir=None)
+
+Download every asset into `to_dir` (default: the current directory); return the paths.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str)]
+
+#### *property* first *: [Optional](https://docs.python.org/3/library/typing.html#typing.Optional)[[Asset](falaw.results.html.md#falaw.results.Asset)]*
+
+The first asset, or `None` if the result has none.
+
 ### *class* falaw.Scene(, title, style='', characters=(), environments=(), shots=(), beats=(), notes='')
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 The whole editable structure: cast, locations, shots, beats.
 
+#### beat(beat_id)
+
+The beat with id `beat_id`; `KeyError` if there is none.
+
+* **Return type:**
+  [`Beat`](falaw.scene.html.md#falaw.scene.Beat)
+
+#### character(name)
+
+The character named `name`; `KeyError` if there is none.
+
+* **Return type:**
+  [`Character`](falaw.scene.html.md#falaw.scene.Character)
+
+#### environment(name)
+
+The environment named `name`; `KeyError` if there is none.
+
+* **Return type:**
+  [`Environment`](falaw.scene.html.md#falaw.scene.Environment)
+
+#### shot(shot_id)
+
+The shot with id `shot_id`; `KeyError` if there is none.
+
+* **Return type:**
+  [`Shot`](falaw.scene.html.md#falaw.scene.Shot)
+
 #### with_beat(beat)
 
 Return a new Scene with `beat` replacing any existing beat with the same id.
+
+* **Return type:**
+  [`Scene`](falaw.scene.html.md#falaw.scene.Scene)
+
+#### with_character(character)
+
+A copy of the scene with `character` added, or replacing the one of that name.
+
+* **Return type:**
+  [`Scene`](falaw.scene.html.md#falaw.scene.Scene)
+
+#### with_environment(environment)
+
+A copy of the scene with `environment` added, or replacing the one of that name.
+
+* **Return type:**
+  [`Scene`](falaw.scene.html.md#falaw.scene.Scene)
+
+#### with_shot(shot)
+
+A copy of the scene with `shot` added, or replacing the one with that id.
 
 * **Return type:**
   [`Scene`](falaw.scene.html.md#falaw.scene.Scene)
@@ -1597,6 +1669,20 @@ A working session for a sequence of falaw operations.
 >>> s.history
 []
 ```
+
+#### latest(, kind=None)
+
+The most recent result (of the given asset `kind`, if given), or `None`.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Result`](falaw.results.html.md#falaw.results.Result)]
+
+#### record(result)
+
+Append `result` to the history and return it.
+
+* **Return type:**
+  [`Result`](falaw.results.html.md#falaw.results.Result)
 
 ### *class* falaw.Shot(, id, description='', framing='medium', environment='', characters=(), camera='', notes='')
 
@@ -2422,6 +2508,20 @@ price for a model nobody has priced.
 * **Return type:**
   [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`LlmRate`](falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)]
 
+### falaw.get_model(id)
+
+The model record for `id` (an id or one of its aliases).
+
+* **Return type:**
+  [`ModelRecord`](falaw.base.html.md#falaw.base.ModelRecord)
+
+### falaw.get_tool(name)
+
+The registered tool called `name`; `KeyError` listing the known names if absent.
+
+* **Return type:**
+  [`ToolSpec`](falaw.base.html.md#falaw.base.ToolSpec)
+
 ### falaw.image_to_video(image_url, prompt='', , quality='high', duration_s=None, model_id=None, extra=None)
 
 Animate a still image into a video.
@@ -2461,6 +2561,20 @@ Every row in the table, in file order — the catalogue view.
 
 * **Return type:**
   [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`LlmRate`](falaw.llm_rates.html.md#falaw.llm_rates.LlmRate)]
+
+### falaw.list_models(, category=None, quality_tier=None)
+
+The known models, optionally filtered by `category` and `quality_tier`.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`ModelRecord`](falaw.base.html.md#falaw.base.ModelRecord)]
+
+### falaw.list_tools(, tag=None)
+
+The registered tools, optionally only those carrying `tag`.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`ToolSpec`](falaw.base.html.md#falaw.base.ToolSpec)]
 
 ### falaw.listening(callback)
 
@@ -2663,6 +2777,20 @@ A key that is present but `None` falls through to the next shape’s key
 * **Return type:**
   [`LlmTokenCounts`](falaw.llm_prices.html.md#falaw.llm_prices.LlmTokenCounts)
 
+### falaw.load_scene(path)
+
+Read a scene from the JSON file at `path`.
+
+* **Return type:**
+  [`Scene`](falaw.scene.html.md#falaw.scene.Scene)
+
+### falaw.make_beat(speaker, line='', , action='', emotion='', shot_id='', index=None, notes='', duration_s=None)
+
+Build a [`Beat`](#falaw.Beat) for `speaker` saying `line`.
+
+* **Return type:**
+  [`Beat`](falaw.scene.html.md#falaw.scene.Beat)
+
 ### falaw.make_call_plan(, tool, application, arguments, output_kind, backend='fal', estimated_cost_usd=None, expected_duration_s=None, expected_wall_time_s=None, metadata=None, consult_cache=True, cost_basis=None, terms_context=None)
 
 Build a [`CallPlan`](#falaw.CallPlan) and (optionally) check the cache.
@@ -2705,6 +2833,13 @@ called. `None` (the default) checks nothing.
         ledger does not clear this `(application, backend)`.
 * **Return type:**
   [`CallPlan`](falaw.plan.html.md#falaw.plan.CallPlan)
+
+### falaw.make_shot(description, , framing='medium', environment='', characters=(), camera='', notes='', index=None)
+
+Build a [`Shot`](#falaw.Shot) from a description and framing.
+
+* **Return type:**
+  [`Shot`](falaw.scene.html.md#falaw.scene.Shot)
 
 ### falaw.materialize_asset(url, , key_hint='', store=None, fetcher=None, refresh=False)
 
@@ -3440,12 +3575,33 @@ True
 True
 ```
 
+### falaw.save_scene(scene, path)
+
+Write the scene to `path` as JSON and return the path.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
 ### falaw.scene_from_dict(d)
 
 Inverse of asdict: reconstruct a Scene from a plain dict.
 
 * **Return type:**
   [`Scene`](falaw.scene.html.md#falaw.scene.Scene)
+
+### falaw.scene_to_dict(scene)
+
+The scene as a plain dict.
+
+* **Return type:**
+  [`dict`](https://docs.python.org/3/builtins/stdtypes.html#dict)
+
+### falaw.shot_content_hash(shot, , environment=None)
+
+A content hash of everything that determines a shot’s render.
+
+* **Return type:**
+  [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
 
 ### falaw.storyboard_shot(shot, , environment=None, characters=(), style='', quality='balanced')
 

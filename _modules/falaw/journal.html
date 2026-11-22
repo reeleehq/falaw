@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../../_static/documentation_options.js?v=04553970"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -757,6 +757,8 @@ window.runMermaid = runMermaid;</script>
 <a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.JournalEntry">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">JournalEntry</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""One journal record: a timestamped note, issue or improvement."""</span>
+
     <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">timestamp</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">kind</span><span class="p">:</span> <span class="n">EntryKind</span>
@@ -788,6 +790,8 @@ window.runMermaid = runMermaid;</script>
         <span class="bp">self</span><span class="o">.</span><span class="n">directory</span> <span class="o">=</span> <span class="n">directory</span> <span class="ow">or</span> <span class="n">_default_journal_dir</span><span class="p">()</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Journal.append">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.Journal.append">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -797,6 +801,7 @@ window.runMermaid = runMermaid;</script>
         <span class="n">suggestion</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
         <span class="n">context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JournalEntry</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Add an entry of ``kind`` with ``text`` to the journal and return it."""</span>
         <span class="c1"># `time.time_ns()` looks tie-proof but is not: on Windows the clock</span>
         <span class="c1"># advances in coarse ticks, so back-to-back appends can share a</span>
         <span class="c1"># timestamp and the name would fall back to UUID order — random</span>
@@ -817,7 +822,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">asdict</span><span class="p">(</span><span class="n">entry</span><span class="p">),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">entry</span>
+        <span class="k">return</span> <span class="n">entry</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">JournalEntry</span><span class="p">]:</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)):</span>
@@ -828,20 +834,28 @@ window.runMermaid = runMermaid;</script>
             <span class="n">data</span><span class="p">[</span><span class="s2">"tags"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tags"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">())</span>
             <span class="k">yield</span> <span class="n">JournalEntry</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Journal.recent">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.Journal.recent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">recent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">JournalEntry</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="o">-</span><span class="n">n</span><span class="p">:]</span>
+<span class="w">        </span><span class="sd">"""The last ``n`` entries, oldest first."""</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)[</span><span class="o">-</span><span class="n">n</span><span class="p">:]</span></div>
 
+
+<div class="viewcode-block" id="Journal.filter">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.Journal.filter">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">kind</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EntryKind</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">tag</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">JournalEntry</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The entries matching the given ``kind``, ``tag`` and other criteria."""</span>
         <span class="k">return</span> <span class="p">[</span>
             <span class="n">e</span>
             <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">kind</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">e</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="n">kind</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
         <span class="p">]</span></div>
+</div>
 
 
 
@@ -850,20 +864,36 @@ window.runMermaid = runMermaid;</script>
     <span class="k">return</span> <span class="n">Journal</span><span class="p">()</span>
 
 
+<div class="viewcode-block" id="note">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.note">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">note</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JournalEntry</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"note"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Record a ``note`` entry in the default journal."""</span>
+    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"note"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="issue">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.issue">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">issue</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JournalEntry</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"issue"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Record an ``issue`` entry in the default journal."""</span>
+    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"issue"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="improvement">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.improvement">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">improvement</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JournalEntry</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"improvement"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""Record an ``improvement`` entry in the default journal."""</span>
+    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">"improvement"</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="recent">
+<a class="viewcode-back" href="../../_autosummary/falaw.journal.html#falaw.journal.recent">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">recent</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">JournalEntry</span><span class="p">]:</span>
-    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">recent</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""The last ``n`` entries, oldest first."""</span>
+    <span class="k">return</span> <span class="n">_default_journal</span><span class="p">()</span><span class="o">.</span><span class="n">recent</span><span class="p">(</span><span class="n">n</span><span class="p">)</span></div>
+
 </pre></div>
 
                 </article>

@@ -15,7 +15,7 @@ error if it’s missing.
 | [`concatenate_clips`](#falaw.local.concatenate_clips)(clip_urls, \*, output_path)   | Materialize each clip and concatenate into one mp4.   |
 |--------------------------------------------------------------------------------------------------|-------------------------------------------------------|
 | [`extract_thumbnail`](#falaw.local.extract_thumbnail)(clip_url, \*, output_path)    | Save a single frame from a clip as a PNG.             |
-| `has_ffmpeg`()                                                                                   |                                                       |
+| [`has_ffmpeg`](#falaw.local.has_ffmpeg)()                                    | Whether both `ffmpeg` and `ffprobe` are on `PATH`.    |
 | [`overlay_audio`](#falaw.local.overlay_audio)(video_url, audio_url, \*, ...)    | Mix an audio track onto a video clip.                 |
 
 ### falaw.local.concatenate_clips(clip_urls, , output_path, transition_s=0.0, audio=True)
@@ -38,6 +38,13 @@ Save a single frame from a clip as a PNG.
 
 * **Return type:**
   [`str`](https://docs.python.org/3/builtins/stdtypes.html#str)
+
+### falaw.local.has_ffmpeg()
+
+Whether both `ffmpeg` and `ffprobe` are on `PATH`.
+
+* **Return type:**
+  [`bool`](https://docs.python.org/3/builtins/functions.html#bool)
 
 ### falaw.local.overlay_audio(video_url, audio_url, , output_path, replace_audio=True)
 

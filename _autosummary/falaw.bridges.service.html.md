@@ -8,5 +8,9 @@ of the operations themselves.
 
 ### Functions
 
-| `build_qh_app`(\*args, \*\*kwargs)   |    |
-|--------------------------------------|----|
+| [`build_qh_app`](#falaw.bridges.service.build_qh_app)(\*args, \*\*kwargs)   | Build an HTTP service from the registered tools (not implemented yet).   |
+|-------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+
+### falaw.bridges.service.build_qh_app(\*args, \*\*kwargs)
+
+Build an HTTP service from the registered tools (not implemented yet).

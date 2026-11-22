@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../_static/documentation_options.js?v=04553970"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -465,8 +465,8 @@ committed back to the repo on each run.</p>
 <p class="rubric">Functions</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_sources</span></code>(*[, docs_dir])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.refresh.default_sources" title="falaw.refresh.default_sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_sources</span></code></a>(*[, docs_dir])</p></td>
+<td><p>The default documentation sources to refresh, rooted at <code class="docutils literal notranslate"><span class="pre">docs_dir</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.refresh.diff_against_previous" title="falaw.refresh.diff_against_previous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diff_against_previous</span></code></a>(source, *[, n_context])</p></td>
 <td><p>Unified diff: previous snapshot vs current local file.</p></td>
@@ -504,6 +504,17 @@ committed back to the repo on each run.</p>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#object" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A single document mirrored locally.</p>
 <dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.refresh.default_sources">
+<span class="sig-prename descclassname"><span class="pre">falaw.refresh.</span></span><span class="sig-name descname"><span class="pre">default_sources</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">docs_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/refresh.html#default_sources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.refresh.default_sources" title="Link to this definition">#</a></dt>
+<dd><p>The default documentation sources to refresh, rooted at <code class="docutils literal notranslate"><span class="pre">docs_dir</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="#falaw.refresh.DocSource" title="falaw.refresh.DocSource"><code class="xref py py-class docutils literal notranslate"><span class="pre">DocSource</span></code></a>]</span></p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -625,6 +636,7 @@ committed back to the repo on each run.</p>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.refresh.DocSource"><code class="docutils literal notranslate"><span class="pre">DocSource</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.refresh.default_sources"><code class="docutils literal notranslate"><span class="pre">default_sources()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.refresh.diff_against_previous"><code class="docutils literal notranslate"><span class="pre">diff_against_previous()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.refresh.fetch_if_changed"><code class="docutils literal notranslate"><span class="pre">fetch_if_changed()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.refresh.is_stale"><code class="docutils literal notranslate"><span class="pre">is_stale()</span></code></a></li>

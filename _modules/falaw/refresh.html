@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../../_static/documentation_options.js?v=04553970"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -800,7 +800,10 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="default_sources">
+<a class="viewcode-back" href="../../_autosummary/falaw.refresh.html#falaw.default_sources">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">default_sources</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">docs_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">DocSource</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""The default documentation sources to refresh, rooted at ``docs_dir``."""</span>
     <span class="n">docs_dir</span> <span class="o">=</span> <span class="n">docs_dir</span> <span class="ow">or</span> <span class="n">_docs_dir</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">[</span>
         <span class="n">DocSource</span><span class="p">(</span>
@@ -813,7 +816,8 @@ window.runMermaid = runMermaid;</script>
             <span class="n">url</span><span class="o">=</span><span class="s2">"https://fal.ai/llms-full.txt"</span><span class="p">,</span>
             <span class="n">local_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">docs_dir</span><span class="p">,</span> <span class="s2">"llms-full.txt"</span><span class="p">),</span>
         <span class="p">),</span>
-    <span class="p">]</span>
+    <span class="p">]</span></div>
+
 
 
 <span class="c1"># ---- HTTP helpers --------------------------------------------------------</span>

@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../../_static/documentation_options.js?v=04553970"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -866,29 +866,45 @@ window.runMermaid = runMermaid;</script>
 
     <span class="c1"># --- lookup helpers ---</span>
 
+<div class="viewcode-block" id="Scene.character">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.character">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">character</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Character</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The character named ``name``; ``KeyError`` if there is none."""</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">characters</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">c</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No character named </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No character named </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="Scene.environment">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.environment">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">environment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Environment</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The environment named ``name``; ``KeyError`` if there is none."""</span>
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">environments</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">e</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No environment named </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No environment named </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="Scene.shot">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.shot">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">shot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shot_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Shot</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The shot with id ``shot_id``; ``KeyError`` if there is none."""</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shots</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">shot_id</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">s</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No shot id </span><span class="si">{</span><span class="n">shot_id</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No shot id </span><span class="si">{</span><span class="n">shot_id</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span></div>
 
+
+<div class="viewcode-block" id="Scene.beat">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.beat">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">beat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beat_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Beat</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The beat with id ``beat_id``; ``KeyError`` if there is none."""</span>
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">beats</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">b</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">beat_id</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">b</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No beat id </span><span class="si">{</span><span class="n">beat_id</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No beat id </span><span class="si">{</span><span class="n">beat_id</span><span class="si">!r}</span><span class="s2"> in scene </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span></div>
+
 
     <span class="c1"># --- mutation: replace returns a new Scene ---</span>
 
@@ -909,7 +925,10 @@ window.runMermaid = runMermaid;</script>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beats</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_beats</span><span class="p">))</span></div>
 
 
+<div class="viewcode-block" id="Scene.with_character">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.with_character">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">with_character</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">character</span><span class="p">:</span> <span class="n">Character</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Scene"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A copy of the scene with ``character`` added, or replacing the one of that name."""</span>
         <span class="n">replaced</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">new_chars</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Character</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">characters</span><span class="p">:</span>
@@ -920,9 +939,13 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">new_chars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">replaced</span><span class="p">:</span>
             <span class="n">new_chars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">character</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">characters</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_chars</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">characters</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_chars</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="Scene.with_environment">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.with_environment">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">with_environment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environment</span><span class="p">:</span> <span class="n">Environment</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Scene"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A copy of the scene with ``environment`` added, or replacing the one of that name."""</span>
         <span class="n">replaced</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">new_envs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Environment</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">environments</span><span class="p">:</span>
@@ -933,9 +956,13 @@ window.runMermaid = runMermaid;</script>
                 <span class="n">new_envs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">replaced</span><span class="p">:</span>
             <span class="n">new_envs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">environment</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environments</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_envs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environments</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_envs</span><span class="p">))</span></div>
 
+
+<div class="viewcode-block" id="Scene.with_shot">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.Scene.with_shot">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">with_shot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shot</span><span class="p">:</span> <span class="n">Shot</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Scene"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A copy of the scene with ``shot`` added, or replacing the one with that id."""</span>
         <span class="n">replaced</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">new_shots</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Shot</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shots</span><span class="p">:</span>
@@ -947,6 +974,7 @@ window.runMermaid = runMermaid;</script>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">replaced</span><span class="p">:</span>
             <span class="n">new_shots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shot</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shots</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_shots</span><span class="p">))</span></div>
+</div>
 
 
 
@@ -974,14 +1002,18 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="shot_id">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.shot_id">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">shot_id</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">framing</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A stable shot id derived from the description and framing (and ``index`` when given)."""</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">_content_hash</span><span class="p">({</span><span class="s2">"desc"</span><span class="p">:</span> <span class="n">description</span><span class="p">,</span> <span class="s2">"framing"</span><span class="p">:</span> <span class="n">framing</span><span class="p">})</span>
     <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">index</span><span class="si">:</span><span class="s2">03d</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_slug</span><span class="p">(</span><span class="n">framing</span> <span class="ow">or</span> <span class="s2">"shot"</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
     <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
-    <span class="k">return</span> <span class="s2">"-"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">"-"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="beat_content_hash">
@@ -1012,7 +1044,10 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="shot_content_hash">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.shot_content_hash">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">shot_content_hash</span><span class="p">(</span><span class="n">shot</span><span class="p">:</span> <span class="n">Shot</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">environment</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Environment</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A content hash of everything that determines a shot's render."""</span>
     <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"desc"</span><span class="p">:</span> <span class="n">shot</span><span class="o">.</span><span class="n">description</span><span class="p">,</span>
         <span class="s2">"framing"</span><span class="p">:</span> <span class="n">shot</span><span class="o">.</span><span class="n">framing</span><span class="p">,</span>
@@ -1021,14 +1056,19 @@ window.runMermaid = runMermaid;</script>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">environment</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">payload</span><span class="p">[</span><span class="s2">"env"</span><span class="p">]</span> <span class="o">=</span> <span class="n">environment</span><span class="o">.</span><span class="n">reference_image_url</span>
-    <span class="k">return</span> <span class="n">_content_hash</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_content_hash</span><span class="p">(</span><span class="n">payload</span><span class="p">)</span></div>
+
 
 
 <span class="c1"># --- serialization --------------------------------------------------------</span>
 
 
+<div class="viewcode-block" id="scene_to_dict">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.scene_to_dict">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">scene_to_dict</span><span class="p">(</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">"""The scene as a plain dict."""</span>
+    <span class="k">return</span> <span class="n">asdict</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="scene_from_dict">
@@ -1072,21 +1112,31 @@ window.runMermaid = runMermaid;</script>
 
 
 
+<div class="viewcode-block" id="save_scene">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.save_scene">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">save_scene</span><span class="p">(</span><span class="n">scene</span><span class="p">:</span> <span class="n">Scene</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Write the scene to ``path`` as JSON and return the path."""</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="ow">or</span> <span class="s2">"."</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">scene_to_dict</span><span class="p">(</span><span class="n">scene</span><span class="p">),</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">path</span>
+    <span class="k">return</span> <span class="n">path</span></div>
 
 
+
+<div class="viewcode-block" id="load_scene">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.load_scene">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_scene</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Scene</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Read a scene from the JSON file at ``path``."""</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">scene_from_dict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">scene_from_dict</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">))</span></div>
+
 
 
 <span class="c1"># --- convenience constructors --------------------------------------------</span>
 
 
+<div class="viewcode-block" id="make_beat">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.make_beat">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_beat</span><span class="p">(</span>
     <span class="n">speaker</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">line</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
@@ -1098,6 +1148,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">duration_s</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Beat</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a :class:`Beat` for ``speaker`` saying ``line``."""</span>
     <span class="k">return</span> <span class="n">Beat</span><span class="p">(</span>
         <span class="nb">id</span><span class="o">=</span><span class="n">beat_id</span><span class="p">(</span><span class="n">speaker</span><span class="o">=</span><span class="n">speaker</span><span class="p">,</span> <span class="n">line</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="n">action</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">),</span>
         <span class="n">speaker</span><span class="o">=</span><span class="n">speaker</span><span class="p">,</span>
@@ -1107,9 +1158,12 @@ window.runMermaid = runMermaid;</script>
         <span class="n">shot_id</span><span class="o">=</span><span class="n">shot_id</span><span class="p">,</span>
         <span class="n">duration_s</span><span class="o">=</span><span class="n">duration_s</span><span class="p">,</span>
         <span class="n">notes</span><span class="o">=</span><span class="n">notes</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
 
 
+
+<div class="viewcode-block" id="make_shot">
+<a class="viewcode-back" href="../../_autosummary/falaw.scene.html#falaw.make_shot">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_shot</span><span class="p">(</span>
     <span class="n">description</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -1120,6 +1174,7 @@ window.runMermaid = runMermaid;</script>
     <span class="n">notes</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="n">index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Shot</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Build a :class:`Shot` from a description and framing."""</span>
     <span class="k">return</span> <span class="n">Shot</span><span class="p">(</span>
         <span class="nb">id</span><span class="o">=</span><span class="n">shot_id</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span> <span class="n">framing</span><span class="o">=</span><span class="n">framing</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">),</span>
         <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
@@ -1128,7 +1183,8 @@ window.runMermaid = runMermaid;</script>
         <span class="n">characters</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">characters</span><span class="p">),</span>
         <span class="n">camera</span><span class="o">=</span><span class="n">camera</span><span class="p">,</span>
         <span class="n">notes</span><span class="o">=</span><span class="n">notes</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="p">)</span></div>
+
 </pre></div>
 
                 </article>

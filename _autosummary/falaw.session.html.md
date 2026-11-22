@@ -23,3 +23,17 @@ A working session for a sequence of falaw operations.
 >>> s.history
 []
 ```
+
+#### latest(, kind=None)
+
+The most recent result (of the given asset `kind`, if given), or `None`.
+
+* **Return type:**
+  [`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`Result`](falaw.results.html.md#falaw.results.Result)]
+
+#### record(result)
+
+Append `result` to the history and return it.
+
+* **Return type:**
+  [`Result`](falaw.results.html.md#falaw.results.Result)

@@ -17,21 +17,49 @@ Bridges (skill / MCP / HTTP) read the tool registry. Operations call
 
 ### Functions
 
-| `get_model`(id)                                                                           |                                                                                                                                               |
-|-------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| `get_tool`(name)                                                                          |                                                                                                                                               |
-| `list_models`(\*[, category, quality_tier])                                               |                                                                                                                                               |
-| `list_tools`(\*[, tag])                                                                   |                                                                                                                                               |
-| [`model_constraints`](#falaw.registry.model_constraints)(id)                    | The capability/limit fields for a model — the "static reminder of limitations" a shot-list builder surfaces.                                  |
-| [`model_params`](#falaw.registry.model_params)(id)                         | Per-model parameters worth knowing before a call, `{name: spec}`.                                                                             |
-| [`models_table_version`](#falaw.registry.models_table_version)()                   | The catalogue's version — see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version). |
-| [`pick_model`](#falaw.registry.pick_model)(\*, category[, quality_tier]) | Pick a sensible fal model for a (category, quality) request.                                                                                  |
-| [`register_tool`](#falaw.registry.register_tool)(\*\*spec_kwargs)           | Decorator: register the wrapped function as a falaw tool.                                                                                     |
-| [`video_model_constraints`](#falaw.registry.video_model_constraints)()                | `model_constraints` for every video model in the catalog — the data a shot-list builder shows as its model-limits reference.                  |
+| [`get_model`](#falaw.registry.get_model)(id)                             | The model record for `id` (an id or one of its aliases).                                                                                      |
+|--------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| [`get_tool`](#falaw.registry.get_tool)(name)                            | The registered tool called `name`; `KeyError` listing the known names if absent.                                                              |
+| [`list_models`](#falaw.registry.list_models)(\*[, category, quality_tier]) | The known models, optionally filtered by `category` and `quality_tier`.                                                                       |
+| [`list_tools`](#falaw.registry.list_tools)(\*[, tag])                     | The registered tools, optionally only those carrying `tag`.                                                                                   |
+| [`model_constraints`](#falaw.registry.model_constraints)(id)                     | The capability/limit fields for a model — the "static reminder of limitations" a shot-list builder surfaces.                                  |
+| [`model_params`](#falaw.registry.model_params)(id)                          | Per-model parameters worth knowing before a call, `{name: spec}`.                                                                             |
+| [`models_table_version`](#falaw.registry.models_table_version)()                    | The catalogue's version — see [`falaw.base.data_table_version()`](falaw.base.html.md#falaw.base.data_table_version). |
+| [`pick_model`](#falaw.registry.pick_model)(\*, category[, quality_tier])  | Pick a sensible fal model for a (category, quality) request.                                                                                  |
+| [`register_tool`](#falaw.registry.register_tool)(\*\*spec_kwargs)            | Decorator: register the wrapped function as a falaw tool.                                                                                     |
+| [`video_model_constraints`](#falaw.registry.video_model_constraints)()                 | `model_constraints` for every video model in the catalog — the data a shot-list builder shows as its model-limits reference.                  |
 
 ### falaw.registry.MODEL_CATALOGUE_TABLE *= 'falaw/data/models.json'*
 
 Identity a [`falaw.CostBasis`](falaw.html.md#falaw.CostBasis) records for a catalogue-priced call.
+
+### falaw.registry.get_model(id)
+
+The model record for `id` (an id or one of its aliases).
+
+* **Return type:**
+  [`ModelRecord`](falaw.base.html.md#falaw.base.ModelRecord)
+
+### falaw.registry.get_tool(name)
+
+The registered tool called `name`; `KeyError` listing the known names if absent.
+
+* **Return type:**
+  [`ToolSpec`](falaw.base.html.md#falaw.base.ToolSpec)
+
+### falaw.registry.list_models(, category=None, quality_tier=None)
+
+The known models, optionally filtered by `category` and `quality_tier`.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`ModelRecord`](falaw.base.html.md#falaw.base.ModelRecord)]
+
+### falaw.registry.list_tools(, tag=None)
+
+The registered tools, optionally only those carrying `tag`.
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`ToolSpec`](falaw.base.html.md#falaw.base.ToolSpec)]
 
 ### falaw.registry.model_constraints(id)
 

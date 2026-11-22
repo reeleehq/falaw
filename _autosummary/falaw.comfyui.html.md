@@ -52,6 +52,13 @@ Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 A durable JSON-lines sink: one record per line, `fsync` before return.
 
+#### write(record)
+
+Append `record` as one JSON line and `fsync` it before returning.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### *class* falaw.comfyui.GraphAuditSink(\*args, \*\*kwargs)
 
 Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protocol)
@@ -59,11 +66,29 @@ Bases: [`Protocol`](https://docs.python.org/3/library/typing.html#typing.Protoco
 Where audit records go. `write` must not return until the record is
 durable (or must raise): the caller sends the graph only after it returns.
 
+#### write(record)
+
+Append `record` as one JSON line and `fsync` it before returning.
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
 ### *class* falaw.comfyui.LicenceScreen(checked_at, nodes_digest, agpl_packs=(), undeterminable=())
 
 Bases: [`object`](https://docs.python.org/3/builtins/functions.html#object)
 
 The outcome of [`screen_licences()`](#falaw.comfyui.screen_licences), in manifest shape.
+
+#### *property* passed *: [bool](https://docs.python.org/3/builtins/functions.html#bool)*
+
+Whether the screen found no AGPL-family and no undeterminable licences.
+
+#### problems()
+
+The screen’s findings as a list of [`Problem`](#falaw.comfyui.Problem).
+
+* **Return type:**
+  [`list`](https://docs.python.org/3/builtins/stdtypes.html#list)[[`Problem`](falaw.comfyui.problems.html.md#falaw.comfyui.problems.Problem)]
 
 #### to_dict()
 

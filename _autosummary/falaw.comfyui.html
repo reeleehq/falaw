@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../_static/documentation_options.js?v=04553970"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -528,6 +528,17 @@ the transport) is a keyword argument, so none of this touches a network.</p>
 <p>A durable JSON-lines sink: one record per line, <code class="docutils literal notranslate"><span class="pre">fsync</span></code> before return.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="falaw.comfyui.FileAuditSink.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/comfyui/audit.html#FileAuditSink.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.comfyui.FileAuditSink.write" title="Link to this definition">#</a></dt>
+<dd><p>Append <code class="docutils literal notranslate"><span class="pre">record</span></code> as one JSON line and <code class="docutils literal notranslate"><span class="pre">fsync</span></code> it before returning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -536,6 +547,17 @@ the transport) is a keyword argument, so none of this touches a network.</p>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
 <p>Where audit records go. <code class="docutils literal notranslate"><span class="pre">write</span></code> must not return until the record is
 durable (or must raise): the caller sends the graph only after it returns.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="falaw.comfyui.GraphAuditSink.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/comfyui/audit.html#GraphAuditSink.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.comfyui.GraphAuditSink.write" title="Link to this definition">#</a></dt>
+<dd><p>Append <code class="docutils literal notranslate"><span class="pre">record</span></code> as one JSON line and <code class="docutils literal notranslate"><span class="pre">fsync</span></code> it before returning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -545,6 +567,23 @@ durable (or must raise): the caller sends the graph only after it returns.</p>
 <p>The outcome of <a class="reference internal" href="#falaw.comfyui.screen_licences" title="falaw.comfyui.screen_licences"><code class="xref py py-func docutils literal notranslate"><span class="pre">screen_licences()</span></code></a>, in manifest shape.</p>
 <dl class="field-list simple">
 </dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="falaw.comfyui.LicenceScreen.passed">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">passed</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><span class="pre">bool</span></a></span><a class="headerlink" href="#falaw.comfyui.LicenceScreen.passed" title="Link to this definition">#</a></dt>
+<dd><p>Whether the screen found no AGPL-family and no undeterminable licences.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="falaw.comfyui.LicenceScreen.problems">
+<span class="sig-name descname"><span class="pre">problems</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/comfyui/licences.html#LicenceScreen.problems"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.comfyui.LicenceScreen.problems" title="Link to this definition">#</a></dt>
+<dd><p>The screen’s findings as a list of <a class="reference internal" href="#falaw.comfyui.Problem" title="falaw.comfyui.Problem"><code class="xref py py-class docutils literal notranslate"><span class="pre">Problem</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#list" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></a>[<a class="reference internal" href="falaw.comfyui.problems.html#falaw.comfyui.problems.Problem" title="falaw.comfyui.problems.Problem"><code class="xref py py-class docutils literal notranslate"><span class="pre">Problem</span></code></a>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="falaw.comfyui.LicenceScreen.to_dict">
 <span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/comfyui/licences.html#LicenceScreen.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.comfyui.LicenceScreen.to_dict" title="Link to this definition">#</a></dt>
@@ -747,9 +786,17 @@ the screen, or is not even canonical JSON, is recorded and raises
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.FileAuditSink"><code class="docutils literal notranslate"><span class="pre">FileAuditSink</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.GraphAuditSink"><code class="docutils literal notranslate"><span class="pre">GraphAuditSink</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.FileAuditSink"><code class="docutils literal notranslate"><span class="pre">FileAuditSink</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.FileAuditSink.write"><code class="docutils literal notranslate"><span class="pre">FileAuditSink.write()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.GraphAuditSink"><code class="docutils literal notranslate"><span class="pre">GraphAuditSink</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.GraphAuditSink.write"><code class="docutils literal notranslate"><span class="pre">GraphAuditSink.write()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.LicenceScreen"><code class="docutils literal notranslate"><span class="pre">LicenceScreen</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.LicenceScreen.passed"><code class="docutils literal notranslate"><span class="pre">LicenceScreen.passed</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.LicenceScreen.problems"><code class="docutils literal notranslate"><span class="pre">LicenceScreen.problems()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.comfyui.LicenceScreen.to_dict"><code class="docutils literal notranslate"><span class="pre">LicenceScreen.to_dict()</span></code></a></li>
 </ul>
 </li>

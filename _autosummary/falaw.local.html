@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=a02dbd69"></script>
+    <script src="../_static/documentation_options.js?v=04553970"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.100" />
+  <meta name="docsearch:version" content="0.0.101" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -463,8 +463,8 @@ error if it’s missing.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.local.extract_thumbnail" title="falaw.local.extract_thumbnail"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_thumbnail</span></code></a>(clip_url, *, output_path)</p></td>
 <td><p>Save a single frame from a clip as a PNG.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_ffmpeg</span></code>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#falaw.local.has_ffmpeg" title="falaw.local.has_ffmpeg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_ffmpeg</span></code></a>()</p></td>
+<td><p>Whether both <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> and <code class="docutils literal notranslate"><span class="pre">ffprobe</span></code> are on <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#falaw.local.overlay_audio" title="falaw.local.overlay_audio"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overlay_audio</span></code></a>(video_url, audio_url, *, ...)</p></td>
 <td><p>Mix an audio track onto a video clip.</p></td>
@@ -501,6 +501,17 @@ error if it’s missing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.local.has_ffmpeg">
+<span class="sig-prename descclassname"><span class="pre">falaw.local.</span></span><span class="sig-name descname"><span class="pre">has_ffmpeg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/local.html#has_ffmpeg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.local.has_ffmpeg" title="Link to this definition">#</a></dt>
+<dd><p>Whether both <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> and <code class="docutils literal notranslate"><span class="pre">ffprobe</span></code> are on <code class="docutils literal notranslate"><span class="pre">PATH</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#bool" title="(in Python v3.15)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
 </dd>
 </dl>
 </dd></dl>
@@ -568,6 +579,7 @@ error if it’s missing.</p>
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.local.concatenate_clips"><code class="docutils literal notranslate"><span class="pre">concatenate_clips()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.local.extract_thumbnail"><code class="docutils literal notranslate"><span class="pre">extract_thumbnail()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.local.has_ffmpeg"><code class="docutils literal notranslate"><span class="pre">has_ffmpeg()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.local.overlay_audio"><code class="docutils literal notranslate"><span class="pre">overlay_audio()</span></code></a></li>
 </ul>
   </nav></div>
