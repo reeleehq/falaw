@@ -84,6 +84,7 @@ class DocSource:
 
 
 def default_sources(*, docs_dir: Optional[str] = None) -> list[DocSource]:
+    """The default documentation sources to refresh, rooted at ``docs_dir``."""
     docs_dir = docs_dir or _docs_dir()
     return [
         DocSource(

@@ -136,24 +136,28 @@ class Scene:
     # --- lookup helpers ---
 
     def character(self, name: str) -> Character:
+        """The character named ``name``; ``KeyError`` if there is none."""
         for c in self.characters:
             if c.name == name:
                 return c
         raise KeyError(f"No character named {name!r} in scene {self.title!r}")
 
     def environment(self, name: str) -> Environment:
+        """The environment named ``name``; ``KeyError`` if there is none."""
         for e in self.environments:
             if e.name == name:
                 return e
         raise KeyError(f"No environment named {name!r} in scene {self.title!r}")
 
     def shot(self, shot_id: str) -> Shot:
+        """The shot with id ``shot_id``; ``KeyError`` if there is none."""
         for s in self.shots:
             if s.id == shot_id:
                 return s
         raise KeyError(f"No shot id {shot_id!r} in scene {self.title!r}")
 
     def beat(self, beat_id: str) -> Beat:
+        """The beat with id ``beat_id``; ``KeyError`` if there is none."""
         for b in self.beats:
             if b.id == beat_id:
                 return b
@@ -176,6 +180,7 @@ class Scene:
         return replace(self, beats=tuple(new_beats))
 
     def with_character(self, character: Character) -> "Scene":
+        """A copy of the scene with ``character`` added, or replacing the one of that name."""
         replaced = False
         new_chars: list[Character] = []
         for c in self.characters:
@@ -189,6 +194,7 @@ class Scene:
         return replace(self, characters=tuple(new_chars))
 
     def with_environment(self, environment: Environment) -> "Scene":
+        """A copy of the scene with ``environment`` added, or replacing the one of that name."""
         replaced = False
         new_envs: list[Environment] = []
         for e in self.environments:
@@ -202,6 +208,7 @@ class Scene:
         return replace(self, environments=tuple(new_envs))
 
     def with_shot(self, shot: Shot) -> "Scene":
+        """A copy of the scene with ``shot`` added, or replacing the one with that id."""
         replaced = False
         new_shots: list[Shot] = []
         for s in self.shots:
@@ -237,6 +244,7 @@ def beat_id(
 
 
 def shot_id(*, description: str, framing: str = "", index: Optional[int] = None) -> str:
+    """A stable shot id derived from the description and framing (and ``index`` when given)."""
     h = _content_hash({"desc": description, "framing": framing})
     parts = []
     if index is not None:
@@ -272,6 +280,7 @@ def beat_content_hash(beat: Beat, *, character: Optional[Character] = None) -> s
 
 
 def shot_content_hash(shot: Shot, *, environment: Optional[Environment] = None) -> str:
+    """A content hash of everything that determines a shot's render."""
     payload: dict = {
         "desc": shot.description,
         "framing": shot.framing,
@@ -287,6 +296,7 @@ def shot_content_hash(shot: Shot, *, environment: Optional[Environment] = None) 
 
 
 def scene_to_dict(scene: Scene) -> dict:
+    """The scene as a plain dict."""
     return asdict(scene)
 
 
@@ -329,6 +339,7 @@ def scene_from_dict(d: Mapping[str, Any]) -> Scene:
 
 
 def save_scene(scene: Scene, path: str) -> str:
+    """Write the scene to ``path`` as JSON and return the path."""
     os.makedirs(os.path.dirname(os.path.abspath(path)) or ".", exist_ok=True)
     with open(path, "w") as f:
         json.dump(scene_to_dict(scene), f, indent=2, default=str)
@@ -336,6 +347,7 @@ def save_scene(scene: Scene, path: str) -> str:
 
 
 def load_scene(path: str) -> Scene:
+    """Read a scene from the JSON file at ``path``."""
     with open(path) as f:
         return scene_from_dict(json.load(f))
 
@@ -354,6 +366,7 @@ def make_beat(
     notes: str = "",
     duration_s: Optional[float] = None,
 ) -> Beat:
+    """Build a :class:`Beat` for ``speaker`` saying ``line``."""
     return Beat(
         id=beat_id(speaker=speaker, line=line, action=action, index=index),
         speaker=speaker,
@@ -376,6 +389,7 @@ def make_shot(
     notes: str = "",
     index: Optional[int] = None,
 ) -> Shot:
+    """Build a :class:`Shot` from a description and framing."""
     return Shot(
         id=shot_id(description=description, framing=framing, index=index),
         description=description,

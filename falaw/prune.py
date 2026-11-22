@@ -170,6 +170,7 @@ class AreaUsage:
 
     @property
     def megabytes(self) -> float:
+        """The size in megabytes (10**6 bytes), rounded to two decimals."""
         return round(self.bytes / 1_000_000, 2)
 
 
@@ -199,6 +200,7 @@ class CacheUsage:
 
     @property
     def total_megabytes(self) -> float:
+        """The total size in megabytes (10**6 bytes), rounded to two decimals."""
         return round(self.total_bytes / 1_000_000, 2)
 
     def area(self, name: str) -> AreaUsage:
@@ -456,6 +458,7 @@ class PruneReport:
 
     @property
     def freed_megabytes(self) -> float:
+        """The space freed, in megabytes (10**6 bytes), rounded to two decimals."""
         return round(self.freed_bytes / 1_000_000, 2)
 
     def summary(self) -> str:

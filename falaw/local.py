@@ -225,4 +225,5 @@ def _to_local(url_or_path: str) -> str:
 
 
 def has_ffmpeg() -> bool:
+    """Whether both ``ffmpeg`` and ``ffprobe`` are on ``PATH``."""
     return shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is not None
