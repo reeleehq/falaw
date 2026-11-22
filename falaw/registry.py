@@ -105,6 +105,9 @@ def model_constraints(id: str) -> dict:
         "supported_resolutions": list(m.supported_resolutions),
         "default_negative_prompt": m.default_negative_prompt,
         "accepts_negative_prompt": m.accepts_negative_prompt,
+        "accepted_inputs": (
+            sorted(m.accepted_inputs) if m.accepted_inputs is not None else None
+        ),
         "max_references": {
             name: spec["max_items"]
             for name, spec in m.param_specs.items()

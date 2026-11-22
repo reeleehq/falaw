@@ -13,7 +13,11 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15, converted from unit 'minutes'",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "audio_url",
+      "video_url"
+    ]
   },
   {
     "id": "fal-ai/ai-avatar",
@@ -49,7 +53,15 @@
       "currency": "USD",
       "notes": "OmniHuman v1.5: high-quality avatar. Empirical: ~$0.50-1.50 for 5-15s clips → ~$0.10/s. Source: muvid_project costs.jsonl 2026-05-07.",
       "source": "empirical"
-    }
+    },
+    "accepted_inputs": [
+      "audio_url",
+      "image_url",
+      "mask_url",
+      "prompt",
+      "resolution",
+      "turbo_mode"
+    ]
   },
   {
     "id": "fal-ai/bria/background/remove",
@@ -60,7 +72,12 @@
     ],
     "quality_tier": "balanced",
     "cost_hint": "low",
-    "docs_url": "https://fal.ai/models/fal-ai/bria/background/remove"
+    "docs_url": "https://fal.ai/models/fal-ai/bria/background/remove",
+    "accepted_inputs": [
+      "image_url",
+      "prompt",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/ideogram/v3/reframe",
@@ -76,7 +93,21 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "color_palette",
+      "enable_safety_checker",
+      "image_size",
+      "image_url",
+      "image_urls",
+      "num_images",
+      "rendering_speed",
+      "seed",
+      "style",
+      "style_codes",
+      "style_preset",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/birefnet/v2",
@@ -94,7 +125,17 @@
       "currency": "USD",
       "notes": "BiRefNet v2: tiny per-image cost.",
       "source": "approximate"
-    }
+    },
+    "accepted_inputs": [
+      "image_url",
+      "mask_only",
+      "model",
+      "operating_resolution",
+      "output_format",
+      "output_mask",
+      "refine_foreground",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/flux/dev",
@@ -112,7 +153,19 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Flux dev: ~$0.025/MP. Default 1024x1024 ≈ $0.026/image.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "acceleration",
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_size",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/flux-general",
@@ -131,7 +184,42 @@
       "notes": "fal model page (llms.txt), fetched 2026-11-02: '$0.075 per megapixels'.",
       "source": "docs"
     },
-    "accepts_negative_prompt": true
+    "accepts_negative_prompt": true,
+    "accepted_inputs": [
+      "base_shift",
+      "control_loras",
+      "controlnet_unions",
+      "controlnets",
+      "easycontrols",
+      "enable_safety_checker",
+      "fill_image",
+      "guidance_scale",
+      "image_size",
+      "ip_adapters",
+      "loras",
+      "max_shift",
+      "nag_alpha",
+      "nag_end",
+      "nag_scale",
+      "nag_tau",
+      "negative_prompt",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "real_cfg_scale",
+      "reference_end",
+      "reference_image_url",
+      "reference_start",
+      "reference_strength",
+      "scheduler",
+      "seed",
+      "sigma_schedule",
+      "sync_mode",
+      "use_beta_schedule",
+      "use_cfg_zero",
+      "use_real_cfg"
+    ]
   },
   {
     "id": "fal-ai/ideogram/v3",
@@ -148,7 +236,23 @@
       "notes": "fal pricing API, fetched 2026-08-15; was: Ideogram v3: per-image pricing in the ~$0.06 range.",
       "source": "api"
     },
-    "accepts_negative_prompt": true
+    "accepts_negative_prompt": true,
+    "accepted_inputs": [
+      "color_palette",
+      "enable_prompt_expansion",
+      "enable_safety_checker",
+      "image_size",
+      "image_urls",
+      "negative_prompt",
+      "num_images",
+      "prompt",
+      "rendering_speed",
+      "seed",
+      "style",
+      "style_codes",
+      "style_preset",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/recraft/v3/text-to-image",
@@ -257,7 +361,15 @@
         ],
         "default": "realistic_image"
       }
-    }
+    },
+    "accepted_inputs": [
+      "colors",
+      "enable_safety_checker",
+      "image_size",
+      "prompt",
+      "style",
+      "style_id"
+    ]
   },
   {
     "id": "fal-ai/flux/schnell",
@@ -275,7 +387,19 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Flux schnell: cheapest tier; ~$0.003/MP.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "acceleration",
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_size",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/hidream-i1-fast",
@@ -292,7 +416,18 @@
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
     },
-    "accepts_negative_prompt": true
+    "accepts_negative_prompt": true,
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "image_size",
+      "negative_prompt",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/sana/sprint",
@@ -309,7 +444,20 @@
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
     },
-    "accepts_negative_prompt": true
+    "accepts_negative_prompt": true,
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_size",
+      "negative_prompt",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "seed",
+      "style_name",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/flux-pro/v1.1",
@@ -327,7 +475,17 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Flux Pro v1.1: ~$0.04/MP. Used by muvid environment-render quality=high.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "enhance_prompt",
+      "image_size",
+      "num_images",
+      "output_format",
+      "prompt",
+      "safety_tolerance",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/flux-pro/v1.1-ultra",
@@ -345,7 +503,21 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Flux Pro Ultra: ~$0.06/MP (estimate; verify on next billing audit).",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "aspect_ratio",
+      "enhance_prompt",
+      "image_prompt_strength",
+      "image_url",
+      "num_images",
+      "output_format",
+      "prompt",
+      "raw",
+      "safety_tolerance",
+      "seed",
+      "sync_mode"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/nano-banana-pro",
@@ -375,7 +547,28 @@
         ],
         "default": "1K"
       }
-    }
+    },
+    "accepted_inputs": [
+      "aspect_ratio",
+      "context",
+      "enable_web_search",
+      "history",
+      "include_thoughts",
+      "limit_generations",
+      "max_output_tokens",
+      "num_images",
+      "output_format",
+      "prompt",
+      "resolution",
+      "return_history",
+      "safety_tolerance",
+      "seed",
+      "sync_mode",
+      "system_prompt",
+      "temperature",
+      "thinking_level",
+      "top_p"
+    ]
   },
   {
     "id": "fal-ai/flux-kontext/dev",
@@ -393,7 +586,20 @@
       "currency": "USD",
       "notes": "Flux Kontext dev: image edit/composite. Per-image pricing.",
       "source": "approximate"
-    }
+    },
+    "accepted_inputs": [
+      "acceleration",
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_url",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "resolution_mode",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/omnigen-v2",
@@ -428,7 +634,15 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: ByteDance SeedEdit v3: ~$0.05/edit.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_url",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/flux-pro/kontext/max",
@@ -446,7 +660,20 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Flux Pro Kontext Max: highest-tier edit; ~$0.10/edit.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "aspect_ratio",
+      "enhance_prompt",
+      "guidance_scale",
+      "image_url",
+      "num_images",
+      "output_format",
+      "prompt",
+      "safety_tolerance",
+      "seed",
+      "sync_mode"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/minimax/hailuo-02/pro/image-to-video",
@@ -470,7 +697,15 @@
     "supported_resolutions": [
       "768p",
       "1080p"
-    ]
+    ],
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "end_image_url",
+      "image_url",
+      "prompt",
+      "prompt_optimizer"
+    ],
+    "max_prompt_chars": 2000
   },
   {
     "id": "fal-ai/pixverse/v4.5/image-to-video",
@@ -486,7 +721,19 @@
       "540p",
       "720p",
       "1080p"
-    ]
+    ],
+    "accepted_inputs": [
+      "camera_movement",
+      "duration",
+      "enable_safety_checker",
+      "image_url",
+      "negative_prompt",
+      "prompt",
+      "resolution",
+      "seed",
+      "style"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/bytedance/seedance/v1/pro/image-to-video",
@@ -550,7 +797,20 @@
         ],
         "default": "auto"
       }
-    }
+    },
+    "accepted_inputs": [
+      "aspect_ratio",
+      "camera_fixed",
+      "duration",
+      "enable_safety_checker",
+      "end_image_url",
+      "image_url",
+      "num_frames",
+      "prompt",
+      "resolution",
+      "seed"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/kling-video/v2.1/master/image-to-video",
@@ -574,7 +834,17 @@
     "supported_resolutions": [
       "720p",
       "1080p"
-    ]
+    ],
+    "accepted_inputs": [
+      "cfg_scale",
+      "duration",
+      "enable_safety_checker",
+      "image_url",
+      "negative_prompt",
+      "prompt"
+    ],
+    "accepts_negative_prompt": true,
+    "max_prompt_chars": 2500
   },
   {
     "id": "fal-ai/ai-avatar/multi",
@@ -601,7 +871,12 @@
     ],
     "quality_tier": "balanced",
     "cost_hint": "medium",
-    "docs_url": "https://fal.ai/models/fal-ai/kling-video/lipsync/audio-to-video"
+    "docs_url": "https://fal.ai/models/fal-ai/kling-video/lipsync/audio-to-video",
+    "accepted_inputs": [
+      "audio_url",
+      "enable_safety_checker",
+      "video_url"
+    ]
   },
   {
     "id": "fal-ai/sync-lipsync/v2",
@@ -619,7 +894,14 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15, converted from unit 'minutes'; was: Sync Lipsync v2: ~$0.10/s for clip re-sync.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "audio_url",
+      "enable_safety_checker",
+      "model",
+      "sync_mode",
+      "video_url"
+    ]
   },
   {
     "id": "fal-ai/any-llm",
@@ -637,7 +919,17 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Approximate per-completion cost; true price is per-token and varies with the chosen model and prompt/response length. Reconcile against billing.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "max_tokens",
+      "model",
+      "priority",
+      "prompt",
+      "reasoning",
+      "system_prompt",
+      "temperature"
+    ]
   },
   {
     "id": "fal-ai/any-llm/vision",
@@ -653,7 +945,18 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "image_urls",
+      "max_tokens",
+      "model",
+      "priority",
+      "prompt",
+      "reasoning",
+      "system_prompt",
+      "temperature"
+    ]
   },
   {
     "id": "fal-ai/diffrhythm",
@@ -687,7 +990,17 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "cfg_strength",
+      "duration",
+      "mask_away_clip",
+      "negative_prompt",
+      "num_steps",
+      "prompt",
+      "seed"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/stable-audio-3/small/sfx/text-to-audio",
@@ -705,7 +1018,21 @@
       "currency": "USD",
       "notes": "falaw#88; per clip, measured live 2026-10-25 (issue table)",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "bitrate",
+      "duration",
+      "enable_prompt_expansion",
+      "enable_safety_checker",
+      "guidance_scale",
+      "negative_prompt",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/stable-audio-3/medium/text-to-audio",
@@ -721,7 +1048,21 @@
       "currency": "USD",
       "notes": "falaw#88; per clip, measured live 2026-10-25",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "bitrate",
+      "duration",
+      "enable_prompt_expansion",
+      "enable_safety_checker",
+      "guidance_scale",
+      "negative_prompt",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "mirelo-ai/sfx2.0/text-to-audio",
@@ -737,7 +1078,18 @@
       "currency": "USD",
       "notes": "falaw#88; per second per sample (num_samples pinned to 1 by plan_generate_audio); $0.015 after 2026-12-13",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "duration",
+      "negative_prompt",
+      "num_samples",
+      "prompt",
+      "seed",
+      "upload_audio_bitrate_kbps",
+      "upload_audio_format"
+    ],
+    "accepts_negative_prompt": true,
+    "max_prompt_chars": 2000
   },
   {
     "id": "fal-ai/elevenlabs/sound-effects/v2",
@@ -753,7 +1105,15 @@
       "currency": "USD",
       "notes": "falaw#88; per second",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "duration_seconds",
+      "enable_safety_checker",
+      "loop",
+      "output_format",
+      "prompt_influence",
+      "text"
+    ]
   },
   {
     "id": "sonilo/v1.1/text-to-sound-effects",
@@ -769,7 +1129,12 @@
       "currency": "USD",
       "notes": "falaw#88; per second per sample",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "audio_format",
+      "duration",
+      "prompt"
+    ]
   },
   {
     "id": "fal-ai/lyria2",
@@ -787,7 +1152,15 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15, converted from unit '30 seconds'",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "negative_prompt",
+      "prompt",
+      "seed"
+    ],
+    "accepts_negative_prompt": true,
+    "max_prompt_chars": 2000
   },
   {
     "id": "fal-ai/bytedance/seedance/v1/pro/text-to-video",
@@ -851,7 +1224,18 @@
         ],
         "default": "auto"
       }
-    }
+    },
+    "accepted_inputs": [
+      "aspect_ratio",
+      "camera_fixed",
+      "duration",
+      "enable_safety_checker",
+      "num_frames",
+      "prompt",
+      "resolution",
+      "seed"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/veo3",
@@ -875,7 +1259,21 @@
     "supported_resolutions": [
       "720p",
       "1080p"
-    ]
+    ],
+    "accepted_inputs": [
+      "aspect_ratio",
+      "auto_fix",
+      "duration",
+      "generate_audio",
+      "negative_prompt",
+      "prompt",
+      "resolution",
+      "safety_tolerance",
+      "seed"
+    ],
+    "accepts_negative_prompt": true,
+    "max_prompt_chars": 20000,
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/flux-lora-portrait-trainer",
@@ -884,7 +1282,18 @@
     "aliases": [],
     "quality_tier": "balanced",
     "cost_hint": "",
-    "docs_url": "https://fal.ai/models/fal-ai/flux-lora-portrait-trainer"
+    "docs_url": "https://fal.ai/models/fal-ai/flux-lora-portrait-trainer",
+    "accepted_inputs": [
+      "create_masks",
+      "data_archive_format",
+      "images_data_url",
+      "learning_rate",
+      "multiresolution_training",
+      "resume_from_checkpoint",
+      "steps",
+      "subject_crop",
+      "trigger_phrase"
+    ]
   },
   {
     "id": "fal-ai/flux-lora-fast-training",
@@ -893,7 +1302,17 @@
     "aliases": [],
     "quality_tier": "fast",
     "cost_hint": "",
-    "docs_url": "https://fal.ai/models/fal-ai/flux-lora-fast-training"
+    "docs_url": "https://fal.ai/models/fal-ai/flux-lora-fast-training",
+    "accepted_inputs": [
+      "create_masks",
+      "data_archive_format",
+      "enable_safety_checker",
+      "images_data_url",
+      "is_input_format_already_preprocessed",
+      "is_style",
+      "steps",
+      "trigger_word"
+    ]
   },
   {
     "id": "fal-ai/flux-pro-trainer",
@@ -920,7 +1339,21 @@
       "currency": "USD",
       "notes": "ElevenLabs Multilingual v2: ~$0.18/1k chars ≈ $0.00018/char. Treat 'tokens' as character count when billing on text length.",
       "source": "approximate"
-    }
+    },
+    "accepted_inputs": [
+      "apply_text_normalization",
+      "enable_safety_checker",
+      "language_code",
+      "next_text",
+      "previous_text",
+      "similarity_boost",
+      "speed",
+      "stability",
+      "style",
+      "text",
+      "timestamps",
+      "voice"
+    ]
   },
   {
     "id": "fal-ai/minimax/speech-02-hd",
@@ -931,7 +1364,16 @@
     ],
     "quality_tier": "high",
     "cost_hint": "low",
-    "docs_url": "https://fal.ai/models/fal-ai/minimax/speech-02-hd"
+    "docs_url": "https://fal.ai/models/fal-ai/minimax/speech-02-hd",
+    "accepted_inputs": [
+      "audio_setting",
+      "enable_safety_checker",
+      "language_boost",
+      "output_format",
+      "pronunciation_dict",
+      "text",
+      "voice_setting"
+    ]
   },
   {
     "id": "fal-ai/clarity-upscaler",
@@ -949,7 +1391,21 @@
       "currency": "USD",
       "notes": "fal pricing API, fetched 2026-08-15; was: Clarity upscaler: priced by output megapixels.",
       "source": "api"
-    }
+    },
+    "accepted_inputs": [
+      "creativity",
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_url",
+      "negative_prompt",
+      "num_inference_steps",
+      "prompt",
+      "resemblance",
+      "seed",
+      "sync_mode",
+      "upscale_factor"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/minimax/voice-clone",
@@ -960,7 +1416,16 @@
     ],
     "quality_tier": "high",
     "cost_hint": "medium",
-    "docs_url": "https://fal.ai/models/fal-ai/minimax/voice-clone"
+    "docs_url": "https://fal.ai/models/fal-ai/minimax/voice-clone",
+    "accepted_inputs": [
+      "accuracy",
+      "audio_url",
+      "enable_safety_checker",
+      "model",
+      "need_volume_normalization",
+      "noise_reduction",
+      "text"
+    ]
   },
   {
     "id": "fal-ai/ltx-video",
@@ -980,7 +1445,16 @@
       "source": "docs"
     },
     "max_clip_seconds": 5.0,
-    "single_character_recommended": false
+    "single_character_recommended": false,
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "guidance_scale",
+      "negative_prompt",
+      "num_inference_steps",
+      "prompt",
+      "seed"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/ltx-video/image-to-video",
@@ -1000,7 +1474,17 @@
       "source": "docs"
     },
     "max_clip_seconds": 5.0,
-    "single_character_recommended": false
+    "single_character_recommended": false,
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "guidance_scale",
+      "image_url",
+      "negative_prompt",
+      "num_inference_steps",
+      "prompt",
+      "seed"
+    ],
+    "accepts_negative_prompt": true
   },
   {
     "id": "fal-ai/mochi-v1",
@@ -1040,7 +1524,22 @@
       "notes": "fal model page: '$0.1 per second', read 2026-10-13; endpoint marked deprecated.",
       "source": "docs"
     },
-    "max_clip_seconds": 10.0
+    "max_clip_seconds": 10.0,
+    "accepted_inputs": [
+      "aspect_ratio",
+      "cfg_scale",
+      "duration",
+      "dynamic_masks",
+      "enable_safety_checker",
+      "image_url",
+      "negative_prompt",
+      "prompt",
+      "static_mask_url",
+      "tail_image_url"
+    ],
+    "accepts_negative_prompt": true,
+    "max_prompt_chars": 2500,
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/kling-video/v1.5/pro/text-to-video",
@@ -1057,7 +1556,18 @@
       "notes": "fal model page: '$0.1 per second', read 2026-10-13; endpoint marked deprecated.",
       "source": "docs"
     },
-    "max_clip_seconds": 10.0
+    "max_clip_seconds": 10.0,
+    "accepted_inputs": [
+      "aspect_ratio",
+      "cfg_scale",
+      "duration",
+      "enable_safety_checker",
+      "negative_prompt",
+      "prompt"
+    ],
+    "accepts_negative_prompt": true,
+    "max_prompt_chars": 2500,
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/kling-video/v1.5/standard",
@@ -1092,7 +1602,19 @@
       "currency": "USD",
       "notes": "fal model page: '$0.05 per megapixel', rounded up to the next megapixel, read 2026-10-13; endpoint marked deprecated.",
       "source": "docs"
-    }
+    },
+    "accepted_inputs": [
+      "enhance_prompt",
+      "guidance_scale",
+      "image_size",
+      "num_images",
+      "num_inference_steps",
+      "output_format",
+      "prompt",
+      "safety_tolerance",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "bytedance/seedance-2.0/text-to-video",
@@ -1175,7 +1697,19 @@
     "typical_wall_time_s": [
       240,
       420
-    ]
+    ],
+    "accepted_inputs": [
+      "aspect_ratio",
+      "bitrate_mode",
+      "codec",
+      "duration",
+      "end_user_id",
+      "generate_audio",
+      "prompt",
+      "resolution",
+      "return_last_frame"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "bytedance/seedance-2.0/image-to-video",
@@ -1258,7 +1792,21 @@
     "typical_wall_time_s": [
       240,
       420
-    ]
+    ],
+    "accepted_inputs": [
+      "aspect_ratio",
+      "bitrate_mode",
+      "codec",
+      "duration",
+      "end_image_url",
+      "end_user_id",
+      "generate_audio",
+      "image_url",
+      "prompt",
+      "resolution",
+      "return_last_frame"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "bytedance/seedance-2.0/reference-to-video",
@@ -1349,7 +1897,22 @@
     "typical_wall_time_s": [
       240,
       420
-    ]
+    ],
+    "accepted_inputs": [
+      "aspect_ratio",
+      "audio_urls",
+      "bitrate_mode",
+      "codec",
+      "duration",
+      "end_user_id",
+      "generate_audio",
+      "image_urls",
+      "prompt",
+      "resolution",
+      "return_last_frame",
+      "video_urls"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "bytedance/seedance-2.0/fast/text-to-video",
@@ -1421,7 +1984,19 @@
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "accepted_inputs": [
+      "aspect_ratio",
+      "bitrate_mode",
+      "codec",
+      "duration",
+      "end_user_id",
+      "generate_audio",
+      "prompt",
+      "resolution",
+      "return_last_frame"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "bytedance/seedance-2.0/fast/image-to-video",
@@ -1493,7 +2068,21 @@
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "accepted_inputs": [
+      "aspect_ratio",
+      "bitrate_mode",
+      "codec",
+      "duration",
+      "end_image_url",
+      "end_user_id",
+      "generate_audio",
+      "image_url",
+      "prompt",
+      "resolution",
+      "return_last_frame"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "bytedance/seedance-2.0/fast/reference-to-video",
@@ -1573,7 +2162,22 @@
         ],
         "default": true
       }
-    }
+    },
+    "accepted_inputs": [
+      "aspect_ratio",
+      "audio_urls",
+      "bitrate_mode",
+      "codec",
+      "duration",
+      "end_user_id",
+      "generate_audio",
+      "image_urls",
+      "prompt",
+      "resolution",
+      "return_last_frame",
+      "video_urls"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/text-to-video",
@@ -1643,7 +2247,18 @@
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "accepted_inputs": [
+      "aspect_ratio",
+      "camera_fixed",
+      "duration",
+      "enable_safety_checker",
+      "generate_audio",
+      "prompt",
+      "resolution",
+      "seed"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/bytedance/seedance/v1.5/pro/image-to-video",
@@ -1713,7 +2328,20 @@
         "default": true
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "accepted_inputs": [
+      "aspect_ratio",
+      "camera_fixed",
+      "duration",
+      "enable_safety_checker",
+      "end_image_url",
+      "generate_audio",
+      "image_url",
+      "prompt",
+      "resolution",
+      "seed"
+    ],
+    "size_param": "aspect_ratio"
   },
   {
     "id": "fal-ai/bytedance/seedream/v4.5/text-to-image",
@@ -1752,7 +2380,16 @@
         "max_pixels": 16777216
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "image_size",
+      "max_images",
+      "num_images",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/bytedance/seedream/v4.5/edit",
@@ -1791,7 +2428,17 @@
         "max_pixels": 16777216
       }
     },
-    "default_pick": false
+    "default_pick": false,
+    "accepted_inputs": [
+      "enable_safety_checker",
+      "image_size",
+      "image_urls",
+      "max_images",
+      "num_images",
+      "prompt",
+      "seed",
+      "sync_mode"
+    ]
   },
   {
     "id": "fal-ai/bytedance/seed-speech/tts/v2",
@@ -1811,7 +2458,18 @@
       "currency": "USD",
       "notes": "fal model page, read 2026-11-10: $0.03 per 1000 characters. Treat 'tokens' as character count.",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "language",
+      "output_format",
+      "pitch",
+      "sample_rate",
+      "speed",
+      "text",
+      "voice",
+      "voice_instruction",
+      "volume"
+    ]
   },
   {
     "id": "bytedance/seed-audio-1.0",
@@ -1830,6 +2488,20 @@
       "currency": "USD",
       "notes": "fal llms.txt, read 2026-11-10: $0.1875/min of audio. A news article and the fal page text of 2026-06 quote $0.075/min; verify before relying on it.",
       "source": "manual"
-    }
+    },
+    "accepted_inputs": [
+      "audio_urls",
+      "enable_safety_checker",
+      "image_url",
+      "multilingual",
+      "output_format",
+      "pitch",
+      "prompt",
+      "sample_rate",
+      "speed",
+      "voice",
+      "volume"
+    ],
+    "max_prompt_chars": 2048
   }
 ]

@@ -614,6 +614,8 @@ _NESTED_DATACLASSES = _nested_dataclasses()
 
 # --- constants ------------------------------------------------------------------
 
+from .operations._image_args import IMAGE_SIZE_ASPECT_RATIOS  # noqa: E402 (the size table the TS planner mirrors)
+
 
 def _constants() -> dict:
     return {
@@ -631,6 +633,7 @@ def _constants() -> dict:
         "default_video_resolution": DFLT_VIDEO_RESOLUTION,
         "video_resolution_short_side": dict(RESOLUTION_SHORT_SIDE),
         "default_video_aspect": DFLT_VIDEO_ASPECT,
+        "image_size_aspect_ratios": dict(IMAGE_SIZE_ASPECT_RATIOS),
         "output_kinds": list(get_args(OutputKind)),
         "cache_statuses": list(get_args(CacheStatus)),
         "event_kinds": list(get_args(EventKind)),

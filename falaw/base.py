@@ -147,7 +147,14 @@ class ModelRecord:
     """Whether the model's input schema has a ``negative_prompt`` (from fal's
     published OpenAPI schema). A planner sends a caller's negative prompt only to
     such a model and drops it otherwise, never folding it into ``prompt``, where
-    "glasses" would REQUEST glasses (reeleehq/reelee#859). ``False`` when unknown."""
+    "glasses" would REQUEST glasses (reeleehq/reelee#859). Derived from
+    :attr:`accepted_inputs` when that is known; ``False`` when unknown (see
+    :meth:`accepts_input` to tell the two apart)."""
+    accepted_inputs: Optional[frozenset[str]] = None
+    """The model's input property names, read from fal's published OpenAPI
+    schema by :func:`falaw.request_shape.refresh_request_shapes` (falaw#159).
+    ``None``: never fetched, which is not "accepts nothing". The request-shape
+    flags above are derived from the same schema."""
     param_specs: Mapping[str, Mapping[str, Any]] = field(
         default_factory=dict, hash=False
     )
@@ -155,3 +162,21 @@ class ModelRecord:
     ``{name: {"enum": [...], "default": ...}}`` — e.g. Recraft's ``style``,
     whose photoreal default silently overrides a woodcut prompt. See
     :func:`falaw.model_params`."""
+
+    def __post_init__(self) -> None:
+        if self.accepted_inputs is not None:
+            inputs = frozenset(self.accepted_inputs)
+            object.__setattr__(self, "accepted_inputs", inputs)
+            # one fact, not two: the flag follows the fetched schema
+            object.__setattr__(self, "accepts_negative_prompt", "negative_prompt" in inputs)
+
+    def accepts_input(self, name: str) -> Optional[bool]:
+        """Whether the model's input schema has ``name``; ``None`` when its
+        inputs were never fetched (:attr:`accepted_inputs`).
+
+        >>> ModelRecord(id="m", category="image", accepted_inputs=["prompt"]).accepts_input("seed")
+        False
+        >>> ModelRecord(id="m", category="image").accepts_input("seed") is None
+        True
+        """
+        return None if self.accepted_inputs is None else name in self.accepted_inputs

@@ -91,12 +91,36 @@ export interface GenerateImageInput {
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
 
+/**
+ * The prompt and size arguments for one text-to-image call
+ * (`falaw.operations._image_args.image_arguments`): a model whose `size_param` is
+ * `aspect_ratio` gets the ratio a named preset denotes (or a `W:H` given as is);
+ * a prompt over the model's `max_prompt_chars` is refused before any call.
+ */
+function imageSizeArgs(record: ModelRecord, prompt: string, imageSize: string): Record<string, unknown> {
+  const limit = record.max_prompt_chars;
+  const length = [...prompt].length; // code points, as Python's len()
+  if (limit != null && length > limit) {
+    throw new FalError(`${record.id} accepts prompts of at most ${limit} characters; this one is ${length}.`);
+  }
+  const sizeParam = record.size_param ?? 'image_size';
+  if (sizeParam === 'image_size') return { prompt, image_size: imageSize };
+  const ratios = CONSTANTS.image_size_aspect_ratios as Record<string, string>;
+  const ratio = ratios[imageSize] ?? (imageSize.includes(':') ? imageSize : undefined);
+  if (ratio === undefined) {
+    throw new FalError(
+      `${record.id} sizes images by ${sizeParam}, and '${imageSize}' is neither a named preset (${Object.keys(ratios).sort().join(', ')}) nor a 'W:H' ratio.`,
+    );
+  }
+  return { prompt, [sizeParam]: ratio };
+}
+
 /** Plan a text-to-image call (`falaw.plan_generate_image`). */
 export function planGenerateImage(input: GenerateImageInput): CallPlan {
   const record = resolveModel(input.modelId, 'image', input.quality ?? 'balanced');
   const negative = (input.negativePrompt ?? '').trim();
   const accepted = negative && record.accepts_negative_prompt ? { negative_prompt: negative } : {};
-  const args = { prompt: input.prompt, image_size: input.imageSize ?? 'landscape_4_3', ...accepted, ...(input.extra ?? {}) };
+  const args = { ...imageSizeArgs(record, input.prompt, input.imageSize ?? 'landscape_4_3'), ...accepted, ...(input.extra ?? {}) };
   checkCallArguments(record, args);
   // A constraint that never reached the picture is named, outside the plan hash.
   const dropped = negative && !('negative_prompt' in args) ? ['negative_prompt'] : [];
