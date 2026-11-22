@@ -64,3 +64,12 @@ def test_audio_tools_registered():
     names = {t.name for t in list_tools(tag="audio")}
     assert "text_to_speech" in names
     assert "voice_clone" in names
+
+
+def test_pick_model_refuses_an_unknown_tier_instead_of_taking_the_first_model():
+    import pytest
+
+    from falaw import pick_model
+
+    with pytest.raises(ValueError, match="draft"):
+        pick_model(category="image", quality_tier="draft")
