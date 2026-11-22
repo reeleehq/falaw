@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { type ModelRecord, modelRecordSchema } from './model-record';
 
 /** Digest of the committed catalogue bytes — what a CostBasis records as `table_version`. */
-export const MODELS_TABLE_VERSION = "5f06dc72cb90";
+export const MODELS_TABLE_VERSION = "271ef664264d";
 
 /** The fal model catalogue, in catalogue order (curated entries first). Parsed through the
  *  schema at import so every record carries its defaults, as the Python dataclass does. */
@@ -523,7 +523,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -825,7 +824,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1132,7 +1130,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "1080p",
       "4k"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1216,7 +1213,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "1080p",
       "4k"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1300,7 +1296,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "1080p",
       "4k"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1390,7 +1385,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "480p",
       "720p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1463,7 +1457,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "480p",
       "720p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1536,7 +1529,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "480p",
       "720p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1618,7 +1610,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
@@ -1689,7 +1680,6 @@ export const MODELS: readonly ModelRecord[] = z.array(modelRecordSchema).parse([
       "720p",
       "1080p"
     ],
-    "default_negative_prompt": "plastic skin, waxy over-smoothed face, low detail",
     "tokens_per_pixel_second": 0.0234375,
     "param_specs": {
       "resolution": {
