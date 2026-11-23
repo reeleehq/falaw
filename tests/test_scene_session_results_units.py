@@ -163,7 +163,7 @@ def test_download_all_names_files_after_application(tmp_path, fetch):
         application="fal-ai/flux/dev",
     )
     paths = r.download_all(to_dir=str(tmp_path / "o"))
-    assert [p.rsplit("/", 1)[1] for p in paths] == ["fal-ai_flux_dev_0.png", "fal-ai_flux_dev_1.png"]
+    assert [__import__("os").path.basename(p) for p in paths] == ["fal-ai_flux_dev_0.png", "fal-ai_flux_dev_1.png"]
     assert Result().first is None
 
 
