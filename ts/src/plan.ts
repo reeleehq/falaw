@@ -8,13 +8,13 @@
  */
 
 import { canonicalBlob, ensureCanonical, planIdentityPayload, sha256Hex } from './canonical';
-import { FalError, FalPromptTooLong } from './errors';
+import { FalError } from './errors';
 import { catalogueCostBasis, estimateCallCost, numericSeconds, videoDurationArg, videoPriceQuantities, type CostBasis } from './cost';
 import { CONSTANTS } from './generated/constants';
 import type { CallPlan } from './generated/call-plan';
 import type { ModelRecord } from './generated/model-record';
 import { getModel, pickModel } from './registry';
-import { checkCallArguments } from './validation';
+import { checkCallArguments, checkPromptLength } from './validation';
 
 export type { CallPlan };
 export type OutputKind = CallPlan['output_kind'];
@@ -103,17 +103,7 @@ function imageSizeArgs(
   imageSize: string,
   extra: Readonly<Record<string, unknown>> | undefined,
 ): Record<string, unknown> {
-  const limit = record.max_prompt_chars;
-  const length = [...prompt].length; // code points, as Python's len()
-  if (limit != null && length > limit) {
-    throw new FalPromptTooLong(
-      `${record.id} accepts prompts of at most ${limit} characters; this one is ${length} (${length - limit} over). ` +
-        'Shorten it (a long reusable style suffix is the usual culprit) or pick a model with a larger limit.',
-      record.id,
-      limit,
-      length,
-    );
-  }
+  checkPromptLength(record, prompt);
   const sizeParam = record.size_param ?? 'image_size';
   if (sizeParam === 'image_size') return { prompt, image_size: imageSize };
   if (extra && 'image_size' in extra) {

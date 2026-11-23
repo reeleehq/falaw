@@ -14,14 +14,35 @@ from collections.abc import Mapping
 from typing import Any
 
 from .base import ModelRecord
+from .errors import FalPromptTooLong
 
 
 def _is_int(value: Any) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
 
+def check_prompt_length(prompt: str, record: "ModelRecord | None") -> None:
+    """Raise :class:`FalPromptTooLong` when ``prompt`` exceeds the model's cap."""
+    limit = record.max_prompt_chars if record else None
+    if limit is not None and len(prompt) > limit:
+        raise FalPromptTooLong(
+            f"{record.id} accepts prompts of at most {limit} characters; this one "
+            f"is {len(prompt)} ({len(prompt) - limit} over). Shorten it (a long "
+            "reusable style suffix is the usual culprit) or pick a model with a "
+            "larger limit.",
+            model=record.id,
+            limit=limit,
+            length=len(prompt),
+        )
+
+
 def check_call_arguments(record: ModelRecord, arguments: Mapping[str, Any]) -> None:
-    """Raise ``ValueError`` if ``arguments`` break a limit ``record`` states."""
+    """Raise ``ValueError`` if ``arguments`` break a limit ``record`` states: list
+    sizes, pixel counts, and the prompt's ``max_prompt_chars`` for every operation
+    (not only text-to-image, falaw#170)."""
+    prompt = arguments.get("prompt")
+    if isinstance(prompt, str):
+        check_prompt_length(prompt, record)
     for name, spec in record.param_specs.items():
         if name not in arguments:
             continue

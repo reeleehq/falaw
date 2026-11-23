@@ -12,7 +12,7 @@ import os
 from typing import Any, Optional, Sequence
 
 from ..base import ModelRecord
-from ..errors import FalPromptTooLong
+from ..validation import check_prompt_length  # noqa: F401  (re-exported)
 from ..registry import get_model
 
 IMAGE_SIZE_ASPECT_RATIOS = {
@@ -34,19 +34,6 @@ def known_record(model: str) -> Optional[ModelRecord]:
         return None
 
 
-def check_prompt_length(prompt: str, record: Optional[ModelRecord]) -> None:
-    """Raise :class:`FalPromptTooLong` when ``prompt`` exceeds the model's cap."""
-    limit = record.max_prompt_chars if record else None
-    if limit is not None and len(prompt) > limit:
-        raise FalPromptTooLong(
-            f"{record.id} accepts prompts of at most {limit} characters; this one "
-            f"is {len(prompt)} ({len(prompt) - limit} over). Shorten it (a long "
-            "reusable style suffix is the usual culprit) or pick a model with a "
-            "larger limit.",
-            model=record.id,
-            limit=limit,
-            length=len(prompt),
-        )
 
 
 def negative_prompt_arguments(
