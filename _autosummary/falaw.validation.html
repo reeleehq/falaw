@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../_static/documentation_options.js?v=04553970"></script>
+    <script src="../_static/documentation_options.js?v=33adb31a"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.101" />
+  <meta name="docsearch:version" content="0.0.102" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -458,7 +458,10 @@ places every call passes through — <a class="reference internal" href="falaw.h
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#falaw.validation.check_call_arguments" title="falaw.validation.check_call_arguments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_call_arguments</span></code></a>(record, arguments)</p></td>
-<td><p>Raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if <code class="docutils literal notranslate"><span class="pre">arguments</span></code> break a limit <code class="docutils literal notranslate"><span class="pre">record</span></code> states.</p></td>
+<td><p>Raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if <code class="docutils literal notranslate"><span class="pre">arguments</span></code> break a limit <code class="docutils literal notranslate"><span class="pre">record</span></code> states: list sizes, pixel counts, and the prompt's <code class="docutils literal notranslate"><span class="pre">max_prompt_chars</span></code> for every operation (not only text-to-image, falaw#170).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#falaw.validation.check_prompt_length" title="falaw.validation.check_prompt_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_prompt_length</span></code></a>(prompt, record)</p></td>
+<td><p>Raise <code class="xref py py-class docutils literal notranslate"><span class="pre">FalPromptTooLong</span></code> when <code class="docutils literal notranslate"><span class="pre">prompt</span></code> exceeds the model's cap.</p></td>
 </tr>
 </tbody>
 </table>
@@ -466,7 +469,20 @@ places every call passes through — <a class="reference internal" href="falaw.h
 <dl class="py function">
 <dt class="sig sig-object py" id="falaw.validation.check_call_arguments">
 <span class="sig-prename descclassname"><span class="pre">falaw.validation.</span></span><span class="sig-name descname"><span class="pre">check_call_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/validation.html#check_call_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.validation.check_call_arguments" title="Link to this definition">#</a></dt>
-<dd><p>Raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if <code class="docutils literal notranslate"><span class="pre">arguments</span></code> break a limit <code class="docutils literal notranslate"><span class="pre">record</span></code> states.</p>
+<dd><p>Raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if <code class="docutils literal notranslate"><span class="pre">arguments</span></code> break a limit <code class="docutils literal notranslate"><span class="pre">record</span></code> states: list
+sizes, pixel counts, and the prompt’s <code class="docutils literal notranslate"><span class="pre">max_prompt_chars</span></code> for every operation
+(not only text-to-image, falaw#170).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="falaw.validation.check_prompt_length">
+<span class="sig-prename descclassname"><span class="pre">falaw.validation.</span></span><span class="sig-name descname"><span class="pre">check_prompt_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/falaw/validation.html#check_prompt_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#falaw.validation.check_prompt_length" title="Link to this definition">#</a></dt>
+<dd><p>Raise <code class="xref py py-class docutils literal notranslate"><span class="pre">FalPromptTooLong</span></code> when <code class="docutils literal notranslate"><span class="pre">prompt</span></code> exceeds the model’s cap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><span class="highlight sphinx_autodoc_typehints-value"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.15)"><code class="xref py py-obj docutils literal notranslate"><span class="kc"><span class="pre">None</span></span></code></a></span></span></p>
@@ -524,6 +540,7 @@ places every call passes through — <a class="reference internal" href="falaw.h
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.validation.check_call_arguments"><code class="docutils literal notranslate"><span class="pre">check_call_arguments()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#falaw.validation.check_prompt_length"><code class="docutils literal notranslate"><span class="pre">check_prompt_length()</span></code></a></li>
 </ul>
   </nav></div>
 

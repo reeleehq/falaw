@@ -11,12 +11,22 @@ places every call passes through — [`falaw.make_call_plan()`](falaw.html.md#fa
 
 ### Functions
 
-| [`check_call_arguments`](#falaw.validation.check_call_arguments)(record, arguments)   | Raise `ValueError` if `arguments` break a limit `record` states.   |
-|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| [`check_call_arguments`](#falaw.validation.check_call_arguments)(record, arguments)   | Raise `ValueError` if `arguments` break a limit `record` states: list sizes, pixel counts, and the prompt's `max_prompt_chars` for every operation (not only text-to-image, falaw#170).   |
+|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`check_prompt_length`](#falaw.validation.check_prompt_length)(prompt, record)       | Raise `FalPromptTooLong` when `prompt` exceeds the model's cap.                                                                                                                           |
 
 ### falaw.validation.check_call_arguments(record, arguments)
 
-Raise `ValueError` if `arguments` break a limit `record` states.
+Raise `ValueError` if `arguments` break a limit `record` states: list
+sizes, pixel counts, and the prompt’s `max_prompt_chars` for every operation
+(not only text-to-image, falaw#170).
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.validation.check_prompt_length(prompt, record)
+
+Raise `FalPromptTooLong` when `prompt` exceeds the model’s cap.
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)

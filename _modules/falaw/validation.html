@@ -41,7 +41,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="../../_static/documentation_options.js?v=04553970"></script>
+    <script src="../../_static/documentation_options.js?v=33adb31a"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -411,7 +411,7 @@ window.runMermaid = runMermaid;</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.101" />
+  <meta name="docsearch:version" content="0.0.102" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -728,16 +728,40 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModelRecord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">FalPromptTooLong</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_is_int</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span>
 
 
+<div class="viewcode-block" id="check_prompt_length">
+<a class="viewcode-back" href="../../_autosummary/falaw.validation.html#falaw.validation.check_prompt_length">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_prompt_length</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="s2">"ModelRecord | None"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Raise :class:`FalPromptTooLong` when ``prompt`` exceeds the model's cap."""</span>
+    <span class="n">limit</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">max_prompt_chars</span> <span class="k">if</span> <span class="n">record</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">limit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">limit</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FalPromptTooLong</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> accepts prompts of at most </span><span class="si">{</span><span class="n">limit</span><span class="si">}</span><span class="s2"> characters; this one "</span>
+            <span class="sa">f</span><span class="s2">"is </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">limit</span><span class="si">}</span><span class="s2"> over). Shorten it (a long "</span>
+            <span class="s2">"reusable style suffix is the usual culprit) or pick a model with a "</span>
+            <span class="s2">"larger limit."</span><span class="p">,</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="n">limit</span><span class="o">=</span><span class="n">limit</span><span class="p">,</span>
+            <span class="n">length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">prompt</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="check_call_arguments">
 <a class="viewcode-back" href="../../_autosummary/falaw.validation.html#falaw.validation.check_call_arguments">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">check_call_arguments</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">ModelRecord</span><span class="p">,</span> <span class="n">arguments</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Raise ``ValueError`` if ``arguments`` break a limit ``record`` states."""</span>
+<span class="w">    </span><span class="sd">"""Raise ``ValueError`` if ``arguments`` break a limit ``record`` states: list</span>
+<span class="sd">    sizes, pixel counts, and the prompt's ``max_prompt_chars`` for every operation</span>
+<span class="sd">    (not only text-to-image, falaw#170)."""</span>
+    <span class="n">prompt</span> <span class="o">=</span> <span class="n">arguments</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prompt"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">check_prompt_length</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">param_specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">arguments</span><span class="p">:</span>
             <span class="k">continue</span>

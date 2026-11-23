@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=75c7c72ae941e8b558d8" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=75c7c72ae941e8b558d8" />
 
-    <script src="_static/documentation_options.js?v=04553970"></script>
+    <script src="_static/documentation_options.js?v=33adb31a"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -57,7 +57,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.0.101" />
+  <meta name="docsearch:version" content="0.0.102" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -374,7 +374,7 @@
 <span class="k">await</span><span class="w"> </span><span class="nx">execute</span><span class="p">(</span><span class="nx">plan</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">transport</span><span class="o">:</span><span class="w"> </span><span class="kt">queueTransport</span><span class="p">({</span><span class="w"> </span><span class="nx">proxyUrl</span><span class="o">:</span><span class="w"> </span><span class="s1">'/api/fal/proxy'</span><span class="p">,</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">});</span>
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="#ts/README.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">ts/README.md</span></code></span></a>. After changing a dataclass, the catalogue, a cost rule, <code class="docutils literal notranslate"><span class="pre">parse_response</span></code> or the canonical byte-form, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">falaw</span> <span class="pre">export-schema</span></code>, then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">ts</span> <span class="pre">&amp;&amp;</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">codegen</span></code>, and commit both — <code class="docutils literal notranslate"><span class="pre">tests/test_schema_export.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ts/src/codegen.test.ts</span></code> fail until you do.</p>
+<p>See <a class="reference external" href="https://github.com/thorwhalen/falaw/blob/HEAD/ts/README.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">ts/README.md</span></code></span></a>. After changing a dataclass, the catalogue, a cost rule, <code class="docutils literal notranslate"><span class="pre">parse_response</span></code> or the canonical byte-form, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">falaw</span> <span class="pre">export-schema</span></code>, then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">ts</span> <span class="pre">&amp;&amp;</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">codegen</span></code>, and commit both — <code class="docutils literal notranslate"><span class="pre">tests/test_schema_export.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ts/src/codegen.test.ts</span></code> fail until you do.</p>
 </section>
 </section>
 <section id="core-surface">
@@ -618,7 +618,7 @@
 </section>
 <section id="roadmap">
 <h2>Roadmap<a class="headerlink" href="#roadmap" title="Link to this heading">#</a></h2>
-<p>See <a class="reference internal" href="#misc/docs/roadmap.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">misc/docs/roadmap.md</span></code></span></a> for the ordered work and the standing constraints. In short, four tracks:</p>
+<p>See <a class="reference external" href="https://github.com/thorwhalen/falaw/blob/HEAD/misc/docs/roadmap.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">misc/docs/roadmap.md</span></code></span></a> for the ordered work and the standing constraints. In short, four tracks:</p>
 <ol class="arabic simple">
 <li><p><strong>Content addressing</strong> — <em>landed</em> (falaw#14). <code class="docutils literal notranslate"><span class="pre">Artifact.asset_id</span></code> is the SHA-256 of the artifact’s bytes and the per-call cache key holds upstream <em>content</em> hashes, not fal CDN URLs. fal states that every upload gets a unique URL and that expired files are permanently deleted, so URL-keying meant a byte-identical regeneration missed the cache and a stored response decayed into a dead link. Bytes now route through <code class="docutils literal notranslate"><span class="pre">lacing.ArtifactStore.put_blob_stream</span></code>. Still open: the plan-time cache peek keys on <em>unresolved</em> arguments (D2), which lands with track 2.</p></li>
 <li><p><strong>Backend-parametric <code class="docutils literal notranslate"><span class="pre">Plan</span></code></strong> — <code class="docutils literal notranslate"><span class="pre">CallPlan.backend</span></code> + registry dispatch in <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>, so a second execution backend is still priced, cached and dry-runnable.</p></li>
@@ -631,7 +631,7 @@
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-23 02:30 UTC from <a href="https://github.com/reeleehq/falaw/commit/c298b3b4543042b45434bc8ade6fb48acad908d9">c298b3b</a> (main) · falaw 0.0.101 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-23 23:12 UTC from <a href="https://github.com/reeleehq/falaw/commit/454a308bf360fdcc0233eb7449a1f8b877dbed00">454a308</a> (main) · falaw 0.0.102 · <a href="about-this-build.html">about this build</a></p>
 
                 </article>
               

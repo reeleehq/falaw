@@ -1,4 +1,4 @@
-> built 2026-11-23 02:30 UTC from c298b3b (main) · falaw 0.0.101. Details: build_info.json
+> built 2026-11-23 23:12 UTC from 454a308 (main) · falaw 0.0.102. Details: build_info.json
 
 # index.html.md
 
@@ -12242,12 +12242,22 @@ places every call passes through — [`falaw.make_call_plan()`](_autosummary/fal
 
 ### Functions
 
-| [`check_call_arguments`](_autosummary/falaw.validation.html.md#falaw.validation.check_call_arguments)(record, arguments)   | Raise `ValueError` if `arguments` break a limit `record` states.   |
-|--------------------------------------------------------------------------------------------|--------------------------------------------------------------------|
+| [`check_call_arguments`](_autosummary/falaw.validation.html.md#falaw.validation.check_call_arguments)(record, arguments)   | Raise `ValueError` if `arguments` break a limit `record` states: list sizes, pixel counts, and the prompt's `max_prompt_chars` for every operation (not only text-to-image, falaw#170).   |
+|--------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`check_prompt_length`](_autosummary/falaw.validation.html.md#falaw.validation.check_prompt_length)(prompt, record)       | Raise `FalPromptTooLong` when `prompt` exceeds the model's cap.                                                                                                                           |
 
 ### falaw.validation.check_call_arguments(record, arguments)
 
-Raise `ValueError` if `arguments` break a limit `record` states.
+Raise `ValueError` if `arguments` break a limit `record` states: list
+sizes, pixel counts, and the prompt’s `max_prompt_chars` for every operation
+(not only text-to-image, falaw#170).
+
+* **Return type:**
+  [`None`](https://docs.python.org/3/builtins/constants.html#None)
+
+### falaw.validation.check_prompt_length(prompt, record)
+
+Raise `FalPromptTooLong` when `prompt` exceeds the model’s cap.
 
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
@@ -12259,18 +12269,16 @@ Raise `ValueError` if `arguments` break a limit `record` states.
 
 # About this build
 
-This documentation was built on **2026-11-23 02:30 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/c298b3b4543042b45434bc8ade6fb48acad908d9"><code>c298b3b</code></a> on branch <code>main</code>, for **falaw 0.0.101** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-11-23 23:12 UTC** from commit <a href="https://github.com/reeleehq/falaw/commit/454a308bf360fdcc0233eb7449a1f8b877dbed00"><code>454a308</code></a> on branch <code>main</code>, for **falaw 0.0.102** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.101) is behind the latest release on PyPI (0.0.102): `pip install falaw` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                       |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/reeleehq/falaw/commit/c298b3b4543042b45434bc8ade6fb48acad908d9"><code>c298b3b4543042b45434bc8ade6fb48acad908d9</code></a> |
+| Commit              | <a href="https://github.com/reeleehq/falaw/commit/454a308bf360fdcc0233eb7449a1f8b877dbed00"><code>454a308bf360fdcc0233eb7449a1f8b877dbed00</code></a> |
 | Branch              | <code>main</code>                                                                                                                                     |
 | Tags at this commit | none                                                                                                                                                  |
 | Working tree        | clean                                                                                                                                                 |
@@ -12281,15 +12289,15 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>reeleehq/falaw</code>                                                                |
-| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/45100383532">45100383532</a>       |
+| Run          | <a href="https://github.com/reeleehq/falaw/actions/runs/45286371092">45286371092</a>       |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>c298b3b4543042b45434bc8ade6fb48acad908d9</code> (in the history of the built commit) |
+| Event commit | <code>454a308bf360fdcc0233eb7449a1f8b877dbed00</code> (in the history of the built commit) |
 
 ## Tools
 
 |          |         |
 |----------|---------|
-| epythet  | 0.2.23  |
+| epythet  | 0.2.25  |
 | Sphinx   | 9.1.1   |
 | docutils | 0.22.4  |
 | Python   | 3.12.16 |
@@ -12308,14 +12316,14 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/falaw/0.0.102/">0.0.102</a>, newer than the documented version (0.0.101).
+Latest release: <a href="https://pypi.org/project/falaw/0.0.102/">0.0.102</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/reeleehq/falaw && cd falaw
-git checkout c298b3b4543042b45434bc8ade6fb48acad908d9
-pip install "epythet==0.2.23"
+git checkout 454a308bf360fdcc0233eb7449a1f8b877dbed00
+pip install "epythet==0.2.25"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
 
