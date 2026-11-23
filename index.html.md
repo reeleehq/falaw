@@ -16,10 +16,7 @@ journal.note("schnell at quality='fast' defaults to 1024x1024")
 
 ## Why
 
-`fal-client` already gives you 100+ models behind a uniform call. What
-agents (and humans) still struggle with is *which* model to use, *what*
-parameters it takes, and *what to do with* the URL it returns. `falaw`
-adds:
+`fal-client` already gives you 100+ models behind a uniform call. What agents (and humans) still struggle with is *which* model to use, *what* parameters it takes, and *what to do with* the URL it returns. `falaw` adds:
 
 - Task-level verbs (`generate_image`, `text_to_speech`, …) with smart model selection by quality tier.
 - A queryable model registry — no more grepping docs for IDs.
@@ -38,10 +35,7 @@ export FAL_KEY="your-fal-api-key"
 
 ### From the browser
 
-The planning half of this package ships to npm as **`falaw-client`** (the `ts/`
-directory): the catalogue with its prices, the cost rules, `CallPlan` and
-`plan_hash` are generated from and pinned to this package, and execution goes
-through a server relay because fal.ai forbids browser-held keys.
+The planning half of this package ships to npm as **`falaw-client`** (the `ts/` directory): the catalogue with its prices, the cost rules, `CallPlan` and `plan_hash` are generated from and pinned to this package, and execution goes through a server relay because fal.ai forbids browser-held keys.
 
 ```ts
 import { planGenerateImage, makePlan, totalCostUsd, execute, queueTransport } from 'falaw-client';
@@ -50,11 +44,7 @@ totalCostUsd(plan);  // before any network
 await execute(plan, { transport: queueTransport({ proxyUrl: '/api/fal/proxy', key }) });
 ```
 
-See [`ts/README.md`](). After changing a dataclass, the catalogue,
-a cost rule, `parse_response` or the canonical byte-form, run
-`python -m falaw export-schema`, then `cd ts && npm run codegen`, and commit
-both — `tests/test_schema_export.py` and `ts/src/codegen.test.ts` fail until
-you do.
+See [`ts/README.md`](). After changing a dataclass, the catalogue, a cost rule, `parse_response` or the canonical byte-form, run `python -m falaw export-schema`, then `cd ts && npm run codegen`, and commit both — `tests/test_schema_export.py` and `ts/src/codegen.test.ts` fail until you do.
 
 ## Core surface
 
@@ -77,19 +67,9 @@ you do.
 
 ### Structured progress events
 
-`call_fal` and `cached_call_fal` emit `ProgressEvent`s at every
-lifecycle transition (`queued`, `progress`, `log`, `done`, `error`,
-`cache_hit`, and `provider_queued` when fal reports the call waiting in its line).
-Subscribe per-call (`on_event=`), globally (`falaw.subscribe(...)`) or for one block
-and its threads (`with falaw.listening(callback): ...`); the legacy
-`on_log=print` is still honored for backward compatibility.
+`call_fal` and `cached_call_fal` emit `ProgressEvent`s at every lifecycle transition (`queued`, `progress`, `log`, `done`, `error`, `cache_hit`, and `provider_queued` when fal reports the call waiting in its line). Subscribe per-call (`on_event=`), globally (`falaw.subscribe(...)`) or for one block and its threads (`with falaw.listening(callback): ...`); the legacy `on_log=print` is still honored for backward compatibility.
 
-fal’s own word on where a call is rides the events as `provider_phase`
-(`"in_queue"` with `queue_position`, or `"in_progress"`); it is `None` when fal said
-nothing (a cache hit, a provider that reports no queue state), never a guess. The `done`
-event carries fal’s run `metrics` (e.g. `inference_time`) when it reported any, and the
-run’s last log lines, which fal sends with its final status, arrive as `log` events. The
-TypeScript client’s `onEvent` speaks the same kinds and phases (`providerPhase`).
+fal’s own word on where a call is rides the events as `provider_phase` (`"in_queue"` with `queue_position`, or `"in_progress"`); it is `None` when fal said nothing (a cache hit, a provider that reports no queue state), never a guess. The `done` event carries fal’s run `metrics` (e.g. `inference_time`) when it reported any, and the run’s last log lines, which fal sends with its final status, arrive as `log` events. The TypeScript client’s `onEvent` speaks the same kinds and phases (`providerPhase`).
 
 ```python
 from falaw import subscribe, generate_image
@@ -100,11 +80,7 @@ generate_image("a tiger eye", quality="fast")
 
 ### Cost estimation
 
-`ModelRecord.cost_estimate: CostEstimate | None` carries a structured
-`{kind, amount, currency}` price (kinds: `per_call | per_image | per_second | per_token | per_megapixel`). `estimate_scene_cost(scene)`
-sums per-call costs and returns a `CostRollup` with per-line
-breakdown. Models without a populated `cost_estimate` appear in the
-rollup’s `skipped` list so audits surface drift.
+`ModelRecord.cost_estimate: CostEstimate | None` carries a structured `{kind, amount, currency}` price (kinds: `per_call | per_image | per_second | per_token | per_megapixel`). `estimate_scene_cost(scene)` sums per-call costs and returns a `CostRollup` with per-line breakdown. Models without a populated `cost_estimate` appear in the rollup’s `skipped` list so audits surface drift.
 
 ### Pricing a direct Anthropic / OpenAI call
 
@@ -140,9 +116,7 @@ A basis is only re-quoted by a pricer reading the **same table** it names; a mis
 
 ### Fan-out: partial results, bounded concurrency, per-call isolation
 
-A `Plan` is a fan-out — 200 panels is 200 `CallPlan`s in one Plan — so
-`execute_plan`’s `list[Artifact]` has no room to say  *“call 7 failed, here are
-the other 199”*. `execute_plan_isolated` does:
+A `Plan` is a fan-out — 200 panels is 200 `CallPlan`s in one Plan — so `execute_plan`’s `list[Artifact]` has no room to say  *“call 7 failed, here are the other 199”*. `execute_plan_isolated` does:
 
 ```python
 from falaw import execute_plan_isolated
@@ -160,27 +134,13 @@ for outcome in report.outcomes:  # always one per call, in plan order
 report.estimated_spend_usd, report.has_unknown_costs, report.cache_hit_savings_usd
 ```
 
-Three states, not two. **Failed** means the call raised and can be retried as
-it is. **Blocked** means it never ran — a `"<from N>"` placeholder whose
-producer did not succeed — so it has to be re-planned, not retried. A caller
-that cannot tell them apart retries a call whose input does not exist.
+Three states, not two. **Failed** means the call raised and can be retried as it is. **Blocked** means it never ran — a `"<from N>"` placeholder whose producer did not succeed — so it has to be re-planned, not retried. A caller that cannot tell them apart retries a call whose input does not exist.
 
-`concurrency` bounds how many calls are in flight; independent calls run in
-parallel, and a call is never started beside the producer it consumes. It
-defaults to `1` (sequential) everywhere, here and in `render_scene`, because
-every call is a paid request: parallelism is opt-in. Weigh the vendor’s rate
-limit and memory — materializing a media result peaks at roughly twice the
-asset’s size, and `concurrency` multiplies that.
+`concurrency` bounds how many calls are in flight; independent calls run in parallel, and a call is never started beside the producer it consumes. It defaults to `1` (sequential) everywhere, here and in `render_scene`, because every call is a paid request: parallelism is opt-in. Weigh the vendor’s rate limit and memory — materializing a media result peaks at roughly twice the asset’s size, and `concurrency` multiplies that.
 
-`execute_plan` keeps the plain `list[Artifact]` contract and re-raises the
-first failure **unwrapped**, so falaw’s typed error hierarchy still reaches the
-caller. It is `execute_plan_isolated(...).artifacts_or_raise()` — one engine,
-two policies.
+`execute_plan` keeps the plain `list[Artifact]` contract and re-raises the first failure **unwrapped**, so falaw’s typed error hierarchy still reaches the caller. It is `execute_plan_isolated(...).artifacts_or_raise()` — one engine, two policies.
 
-`render_scene(..., concurrency=4)` runs shots and beats in parallel through the
-same kind of thread pool (fal calls are HTTP-bound). Use
-`iter_render_scene(...)` to yield `(kind, result)` pairs as each unit completes
-— handy for live UI updates.
+`render_scene(..., concurrency=4)` runs shots and beats in parallel through the same kind of thread pool (fal calls are HTTP-bound). Use `iter_render_scene(...)` to yield `(kind, result)` pairs as each unit completes — handy for live UI updates.
 
 ## Three cache modes, because a re-run is not a cache bypass
 
@@ -198,14 +158,9 @@ same kind of thread pool (fal calls are HTTP-bound). Use
 
 ## Testing code that uses falaw
 
-falaw content-addresses every media result, so `execute_plan` **reads the
-bytes** behind each result URL. A suite that stubs the fal *response* but not
-the *asset transport* is resolving its made-up URLs for real — and it passes
-while doing so, because a failed fetch degrades to a URL-only artifact with a
-`UserWarning` rather than raising.
+falaw content-addresses every media result, so `execute_plan` **reads the bytes** behind each result URL. A suite that stubs the fal *response* but not the *asset transport* is resolving its made-up URLs for real — and it passes while doing so, because a failed fetch degrades to a URL-only artifact with a `UserWarning` rather than raising.
 
-falaw ships the fake, so nobody has to write one. Three autouse fixtures, each
-re-exportable into a `conftest.py` in one line:
+falaw ships the fake, so nobody has to write one. Three autouse fixtures, each re-exportable into a `conftest.py` in one line:
 
 ```python
 # conftest.py
@@ -225,30 +180,16 @@ def test_two_urls_one_content_address(fake_assets):
     assert fake_assets.fetched == [...]  # assert on the record
 ```
 
-`fake_assets` installs itself through `falaw.content.using_url_fetcher`, the
-public transport seam, so it covers `execute_plan`, `execute_plan_isolated`,
-`materialize_asset` and `content_ref_for_url` at once — including calls your
-own public API makes, which have no `asset_fetcher=` argument to pass. An
-explicitly passed `fetcher=` still wins. `file://` URLs are *not* faked (they
-are not the network); pin one explicitly if you want it served from memory.
+`fake_assets` installs itself through `falaw.content.using_url_fetcher`, the public transport seam, so it covers `execute_plan`, `execute_plan_isolated`, `materialize_asset` and `content_ref_for_url` at once — including calls your own public API makes, which have no `asset_fetcher=` argument to pass. An explicitly passed `fetcher=` still wins. `file://` URLs are *not* faked (they are not the network); pin one explicitly if you want it served from memory.
 
-`using_url_fetcher` is not test-only: it is also how you give falaw an
-authenticated, retrying, or mirrored transport in production, in one place
-instead of at every call site.
+`using_url_fetcher` is not test-only: it is also how you give falaw an authenticated, retrying, or mirrored transport in production, in one place instead of at every call site.
 
 Two rules that are easy to get wrong:
 
-- **Don’t reach for `FALAW_FETCH_ARTIFACT_BYTES=0` to make a suite offline.**
-  It works by turning content addressing *off* — the suite goes hermetic and
-  stops testing the feature.
-- **Assert on the record, not on an exception.** falaw absorbs a failed fetch
-  by design, so a guard that only raises is invisible. That is why both the
-  fake and the network guard *record* every attempt, and why
-  `no_outbound_network` fails the test at **teardown**.
+- **Don’t reach for `FALAW_FETCH_ARTIFACT_BYTES=0` to make a suite offline.** It works by turning content addressing *off* — the suite goes hermetic and stops testing the feature.
+- **Assert on the record, not on an exception.** falaw absorbs a failed fetch by design, so a guard that only raises is invisible. That is why both the fake and the network guard *record* every attempt, and why `no_outbound_network` fails the test at **teardown**.
 
-Marker `live_api` opts a test back into the real transport and no network
-guard. A suite with different marker names builds its own fixtures from
-`make_fake_assets_fixture` / `make_no_outbound_network_fixture`.
+Marker `live_api` opts a test back into the real transport and no network guard. A suite with different marker names builds its own fixtures from `make_fake_assets_fixture` / `make_no_outbound_network_fixture`.
 
 ## Architecture
 
@@ -313,20 +254,11 @@ v0 — functional core, real Claude skill, stubs for MCP and HTTP service. The b
 
 ## Roadmap
 
-See [`misc/docs/roadmap.md`]() for the ordered work and the standing
-constraints. In short, four tracks:
+See [`misc/docs/roadmap.md`]() for the ordered work and the standing constraints. In short, four tracks:
 
-1. **Content addressing** — *landed* (falaw#14). `Artifact.asset_id` is the SHA-256 of the
-   artifact’s bytes and the per-call cache key holds upstream *content* hashes, not fal CDN URLs.
-   fal states that every upload gets a unique URL and that expired files are permanently deleted,
-   so URL-keying meant a byte-identical regeneration missed the cache and a stored response decayed
-   into a dead link. Bytes now route through `lacing.ArtifactStore.put_blob_stream`. Still open:
-   the plan-time cache peek keys on *unresolved* arguments (D2), which lands with track 2.
-2. **Backend-parametric `Plan`** — `CallPlan.backend` + registry dispatch in `execute_plan`, so
-   a second execution backend is still priced, cached and dry-runnable.
-3. **Licence-and-terms ledger** — per `(model, backend)`, queried at plan time, `unknown` means
-   refuse.
-4. **Cost data from the vendor** — read fal’s pricing API instead of hand-maintaining
-   `data/models.json` (19 of 40 records currently carry no structured price at all).
+1. **Content addressing** — *landed* (falaw#14). `Artifact.asset_id` is the SHA-256 of the artifact’s bytes and the per-call cache key holds upstream *content* hashes, not fal CDN URLs. fal states that every upload gets a unique URL and that expired files are permanently deleted, so URL-keying meant a byte-identical regeneration missed the cache and a stored response decayed into a dead link. Bytes now route through `lacing.ArtifactStore.put_blob_stream`. Still open: the plan-time cache peek keys on *unresolved* arguments (D2), which lands with track 2.
+2. **Backend-parametric `Plan`** — `CallPlan.backend` + registry dispatch in `execute_plan`, so a second execution backend is still priced, cached and dry-runnable.
+3. **Licence-and-terms ledger** — per `(model, backend)`, queried at plan time, `unknown` means refuse.
+4. **Cost data from the vendor** — read fal’s pricing API instead of hand-maintaining `data/models.json` (19 of 40 records currently carry no structured price at all).
 
 <p class="epythet-aggregates">This documentation as a single file: <a href="falaw.md">falaw.md</a> (Markdown, for agents).</p>

@@ -349,10 +349,7 @@
 </div>
 <section id="why">
 <h2>Why<a class="headerlink" href="#why" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">fal-client</span></code> already gives you 100+ models behind a uniform call. What
-agents (and humans) still struggle with is <em>which</em> model to use, <em>what</em>
-parameters it takes, and <em>what to do with</em> the URL it returns. <code class="docutils literal notranslate"><span class="pre">falaw</span></code>
-adds:</p>
+<p><code class="docutils literal notranslate"><span class="pre">fal-client</span></code> already gives you 100+ models behind a uniform call. What agents (and humans) still struggle with is <em>which</em> model to use, <em>what</em> parameters it takes, and <em>what to do with</em> the URL it returns. <code class="docutils literal notranslate"><span class="pre">falaw</span></code> adds:</p>
 <ul class="simple">
 <li><p>Task-level verbs (<code class="docutils literal notranslate"><span class="pre">generate_image</span></code>, <code class="docutils literal notranslate"><span class="pre">text_to_speech</span></code>, …) with smart model selection by quality tier.</p></li>
 <li><p>A queryable model registry — no more grepping docs for IDs.</p></li>
@@ -370,21 +367,14 @@ adds:</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">falaw</span></code> alone installs <strong>no fal.ai client</strong>. That is enough to build, price, hash, serialize and cache <code class="docutils literal notranslate"><span class="pre">Plan</span></code>s (and to read cache hits), which is all a caller needs if it never makes a paid call. The first real network call raises <code class="docutils literal notranslate"><span class="pre">falaw.FalClientNotInstalled</span></code> (an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code>) naming <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">'falaw[fal]'</span></code>. Anything that executes plans declares <code class="docutils literal notranslate"><span class="pre">falaw[fal]</span></code> as its requirement.</p>
 <section id="from-the-browser">
 <h3>From the browser<a class="headerlink" href="#from-the-browser" title="Link to this heading">#</a></h3>
-<p>The planning half of this package ships to npm as <strong><code class="docutils literal notranslate"><span class="pre">falaw-client</span></code></strong> (the <code class="docutils literal notranslate"><span class="pre">ts/</span></code>
-directory): the catalogue with its prices, the cost rules, <code class="docutils literal notranslate"><span class="pre">CallPlan</span></code> and
-<code class="docutils literal notranslate"><span class="pre">plan_hash</span></code> are generated from and pinned to this package, and execution goes
-through a server relay because fal.ai forbids browser-held keys.</p>
+<p>The planning half of this package ships to npm as <strong><code class="docutils literal notranslate"><span class="pre">falaw-client</span></code></strong> (the <code class="docutils literal notranslate"><span class="pre">ts/</span></code> directory): the catalogue with its prices, the cost rules, <code class="docutils literal notranslate"><span class="pre">CallPlan</span></code> and <code class="docutils literal notranslate"><span class="pre">plan_hash</span></code> are generated from and pinned to this package, and execution goes through a server relay because fal.ai forbids browser-held keys.</p>
 <div class="highlight-ts notranslate"><div class="highlight"><pre><span></span><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">planGenerateImage</span><span class="p">,</span><span class="w"> </span><span class="nx">makePlan</span><span class="p">,</span><span class="w"> </span><span class="nx">totalCostUsd</span><span class="p">,</span><span class="w"> </span><span class="nx">execute</span><span class="p">,</span><span class="w"> </span><span class="nx">queueTransport</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">'falaw-client'</span><span class="p">;</span>
 <span class="kd">const</span><span class="w"> </span><span class="nx">plan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">makePlan</span><span class="p">([</span><span class="nx">planGenerateImage</span><span class="p">({</span><span class="w"> </span><span class="nx">prompt</span><span class="o">:</span><span class="w"> </span><span class="s1">'a tiger eye'</span><span class="p">,</span><span class="w"> </span><span class="nx">quality</span><span class="o">:</span><span class="w"> </span><span class="s1">'fast'</span><span class="w"> </span><span class="p">})]);</span>
 <span class="nx">totalCostUsd</span><span class="p">(</span><span class="nx">plan</span><span class="p">);</span><span class="w">  </span><span class="c1">// before any network</span>
 <span class="k">await</span><span class="w"> </span><span class="nx">execute</span><span class="p">(</span><span class="nx">plan</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">transport</span><span class="o">:</span><span class="w"> </span><span class="kt">queueTransport</span><span class="p">({</span><span class="w"> </span><span class="nx">proxyUrl</span><span class="o">:</span><span class="w"> </span><span class="s1">'/api/fal/proxy'</span><span class="p">,</span><span class="w"> </span><span class="nx">key</span><span class="w"> </span><span class="p">})</span><span class="w"> </span><span class="p">});</span>
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="#ts/README.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">ts/README.md</span></code></span></a>. After changing a dataclass, the catalogue,
-a cost rule, <code class="docutils literal notranslate"><span class="pre">parse_response</span></code> or the canonical byte-form, run
-<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">falaw</span> <span class="pre">export-schema</span></code>, then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">ts</span> <span class="pre">&amp;&amp;</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">codegen</span></code>, and commit
-both — <code class="docutils literal notranslate"><span class="pre">tests/test_schema_export.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ts/src/codegen.test.ts</span></code> fail until
-you do.</p>
+<p>See <a class="reference internal" href="#ts/README.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">ts/README.md</span></code></span></a>. After changing a dataclass, the catalogue, a cost rule, <code class="docutils literal notranslate"><span class="pre">parse_response</span></code> or the canonical byte-form, run <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">falaw</span> <span class="pre">export-schema</span></code>, then <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">ts</span> <span class="pre">&amp;&amp;</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">codegen</span></code>, and commit both — <code class="docutils literal notranslate"><span class="pre">tests/test_schema_export.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ts/src/codegen.test.ts</span></code> fail until you do.</p>
 </section>
 </section>
 <section id="core-surface">
@@ -443,18 +433,8 @@ you do.</p>
 </div>
 <section id="structured-progress-events">
 <h3>Structured progress events<a class="headerlink" href="#structured-progress-events" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">call_fal</span></code> and <code class="docutils literal notranslate"><span class="pre">cached_call_fal</span></code> emit <code class="docutils literal notranslate"><span class="pre">ProgressEvent</span></code>s at every
-lifecycle transition (<code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, <code class="docutils literal notranslate"><span class="pre">log</span></code>, <code class="docutils literal notranslate"><span class="pre">done</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>,
-<code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> when fal reports the call waiting in its line).
-Subscribe per-call (<code class="docutils literal notranslate"><span class="pre">on_event=</span></code>), globally (<code class="docutils literal notranslate"><span class="pre">falaw.subscribe(...)</span></code>) or for one block
-and its threads (<code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">falaw.listening(callback):</span> <span class="pre">...</span></code>); the legacy
-<code class="docutils literal notranslate"><span class="pre">on_log=print</span></code> is still honored for backward compatibility.</p>
-<p>fal’s own word on where a call is rides the events as <code class="docutils literal notranslate"><span class="pre">provider_phase</span></code>
-(<code class="docutils literal notranslate"><span class="pre">&quot;in_queue&quot;</span></code> with <code class="docutils literal notranslate"><span class="pre">queue_position</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;in_progress&quot;</span></code>); it is <code class="docutils literal notranslate"><span class="pre">None</span></code> when fal said
-nothing (a cache hit, a provider that reports no queue state), never a guess. The <code class="docutils literal notranslate"><span class="pre">done</span></code>
-event carries fal’s run <code class="docutils literal notranslate"><span class="pre">metrics</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">inference_time</span></code>) when it reported any, and the
-run’s last log lines, which fal sends with its final status, arrive as <code class="docutils literal notranslate"><span class="pre">log</span></code> events. The
-TypeScript client’s <code class="docutils literal notranslate"><span class="pre">onEvent</span></code> speaks the same kinds and phases (<code class="docutils literal notranslate"><span class="pre">providerPhase</span></code>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">call_fal</span></code> and <code class="docutils literal notranslate"><span class="pre">cached_call_fal</span></code> emit <code class="docutils literal notranslate"><span class="pre">ProgressEvent</span></code>s at every lifecycle transition (<code class="docutils literal notranslate"><span class="pre">queued</span></code>, <code class="docutils literal notranslate"><span class="pre">progress</span></code>, <code class="docutils literal notranslate"><span class="pre">log</span></code>, <code class="docutils literal notranslate"><span class="pre">done</span></code>, <code class="docutils literal notranslate"><span class="pre">error</span></code>, <code class="docutils literal notranslate"><span class="pre">cache_hit</span></code>, and <code class="docutils literal notranslate"><span class="pre">provider_queued</span></code> when fal reports the call waiting in its line). Subscribe per-call (<code class="docutils literal notranslate"><span class="pre">on_event=</span></code>), globally (<code class="docutils literal notranslate"><span class="pre">falaw.subscribe(...)</span></code>) or for one block and its threads (<code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">falaw.listening(callback):</span> <span class="pre">...</span></code>); the legacy <code class="docutils literal notranslate"><span class="pre">on_log=print</span></code> is still honored for backward compatibility.</p>
+<p>fal’s own word on where a call is rides the events as <code class="docutils literal notranslate"><span class="pre">provider_phase</span></code> (<code class="docutils literal notranslate"><span class="pre">&quot;in_queue&quot;</span></code> with <code class="docutils literal notranslate"><span class="pre">queue_position</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;in_progress&quot;</span></code>); it is <code class="docutils literal notranslate"><span class="pre">None</span></code> when fal said nothing (a cache hit, a provider that reports no queue state), never a guess. The <code class="docutils literal notranslate"><span class="pre">done</span></code> event carries fal’s run <code class="docutils literal notranslate"><span class="pre">metrics</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">inference_time</span></code>) when it reported any, and the run’s last log lines, which fal sends with its final status, arrive as <code class="docutils literal notranslate"><span class="pre">log</span></code> events. The TypeScript client’s <code class="docutils literal notranslate"><span class="pre">onEvent</span></code> speaks the same kinds and phases (<code class="docutils literal notranslate"><span class="pre">providerPhase</span></code>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">falaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">subscribe</span><span class="p">,</span> <span class="n">generate_image</span>
 
 <span class="n">subscribe</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ev</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">kind</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">application</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">ev</span><span class="o">.</span><span class="n">elapsed_s</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s"</span><span class="p">))</span>
@@ -464,11 +444,7 @@ TypeScript client’s <code class="docutils literal notranslate"><span class="pr
 </section>
 <section id="cost-estimation">
 <h3>Cost estimation<a class="headerlink" href="#cost-estimation" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">ModelRecord.cost_estimate:</span> <span class="pre">CostEstimate</span> <span class="pre">|</span> <span class="pre">None</span></code> carries a structured
-<code class="docutils literal notranslate"><span class="pre">{kind,</span> <span class="pre">amount,</span> <span class="pre">currency}</span></code> price (kinds: <code class="docutils literal notranslate"><span class="pre">per_call</span> <span class="pre">|</span> <span class="pre">per_image</span> <span class="pre">|</span> <span class="pre">per_second</span> <span class="pre">|</span> <span class="pre">per_token</span> <span class="pre">|</span> <span class="pre">per_megapixel</span></code>). <code class="docutils literal notranslate"><span class="pre">estimate_scene_cost(scene)</span></code>
-sums per-call costs and returns a <code class="docutils literal notranslate"><span class="pre">CostRollup</span></code> with per-line
-breakdown. Models without a populated <code class="docutils literal notranslate"><span class="pre">cost_estimate</span></code> appear in the
-rollup’s <code class="docutils literal notranslate"><span class="pre">skipped</span></code> list so audits surface drift.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ModelRecord.cost_estimate:</span> <span class="pre">CostEstimate</span> <span class="pre">|</span> <span class="pre">None</span></code> carries a structured <code class="docutils literal notranslate"><span class="pre">{kind,</span> <span class="pre">amount,</span> <span class="pre">currency}</span></code> price (kinds: <code class="docutils literal notranslate"><span class="pre">per_call</span> <span class="pre">|</span> <span class="pre">per_image</span> <span class="pre">|</span> <span class="pre">per_second</span> <span class="pre">|</span> <span class="pre">per_token</span> <span class="pre">|</span> <span class="pre">per_megapixel</span></code>). <code class="docutils literal notranslate"><span class="pre">estimate_scene_cost(scene)</span></code> sums per-call costs and returns a <code class="docutils literal notranslate"><span class="pre">CostRollup</span></code> with per-line breakdown. Models without a populated <code class="docutils literal notranslate"><span class="pre">cost_estimate</span></code> appear in the rollup’s <code class="docutils literal notranslate"><span class="pre">skipped</span></code> list so audits surface drift.</p>
 </section>
 <section id="pricing-a-direct-anthropic-openai-call">
 <span id="pricing-a-direct-anthropic--openai-call"></span><h3>Pricing a direct Anthropic / OpenAI call<a class="headerlink" href="#pricing-a-direct-anthropic-openai-call" title="Link to this heading">#</a></h3>
@@ -498,9 +474,7 @@ rollup’s <code class="docutils literal notranslate"><span class="pre">skipped<
 </section>
 <section id="fan-out-partial-results-bounded-concurrency-per-call-isolation">
 <h3>Fan-out: partial results, bounded concurrency, per-call isolation<a class="headerlink" href="#fan-out-partial-results-bounded-concurrency-per-call-isolation" title="Link to this heading">#</a></h3>
-<p>A <code class="docutils literal notranslate"><span class="pre">Plan</span></code> is a fan-out — 200 panels is 200 <code class="docutils literal notranslate"><span class="pre">CallPlan</span></code>s in one Plan — so
-<code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>’s <code class="docutils literal notranslate"><span class="pre">list[Artifact]</span></code> has no room to say <em>“call 7 failed, here are
-the other 199”</em>. <code class="docutils literal notranslate"><span class="pre">execute_plan_isolated</span></code> does:</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Plan</span></code> is a fan-out — 200 panels is 200 <code class="docutils literal notranslate"><span class="pre">CallPlan</span></code>s in one Plan — so <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>’s <code class="docutils literal notranslate"><span class="pre">list[Artifact]</span></code> has no room to say <em>“call 7 failed, here are the other 199”</em>. <code class="docutils literal notranslate"><span class="pre">execute_plan_isolated</span></code> does:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">falaw</span><span class="w"> </span><span class="kn">import</span> <span class="n">execute_plan_isolated</span>
 
 <span class="n">report</span> <span class="o">=</span> <span class="n">execute_plan_isolated</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
@@ -516,24 +490,10 @@ the other 199”</em>. <code class="docutils literal notranslate"><span class="p
 <span class="n">report</span><span class="o">.</span><span class="n">estimated_spend_usd</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">has_unknown_costs</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">cache_hit_savings_usd</span>
 </pre></div>
 </div>
-<p>Three states, not two. <strong>Failed</strong> means the call raised and can be retried as
-it is. <strong>Blocked</strong> means it never ran — a <code class="docutils literal notranslate"><span class="pre">&quot;&lt;from</span> <span class="pre">N&gt;&quot;</span></code> placeholder whose
-producer did not succeed — so it has to be re-planned, not retried. A caller
-that cannot tell them apart retries a call whose input does not exist.</p>
-<p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code> bounds how many calls are in flight; independent calls run in
-parallel, and a call is never started beside the producer it consumes. It
-defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code> (sequential) everywhere, here and in <code class="docutils literal notranslate"><span class="pre">render_scene</span></code>, because
-every call is a paid request: parallelism is opt-in. Weigh the vendor’s rate
-limit and memory — materializing a media result peaks at roughly twice the
-asset’s size, and <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> multiplies that.</p>
-<p><code class="docutils literal notranslate"><span class="pre">execute_plan</span></code> keeps the plain <code class="docutils literal notranslate"><span class="pre">list[Artifact]</span></code> contract and re-raises the
-first failure <strong>unwrapped</strong>, so falaw’s typed error hierarchy still reaches the
-caller. It is <code class="docutils literal notranslate"><span class="pre">execute_plan_isolated(...).artifacts_or_raise()</span></code> — one engine,
-two policies.</p>
-<p><code class="docutils literal notranslate"><span class="pre">render_scene(...,</span> <span class="pre">concurrency=4)</span></code> runs shots and beats in parallel through the
-same kind of thread pool (fal calls are HTTP-bound). Use
-<code class="docutils literal notranslate"><span class="pre">iter_render_scene(...)</span></code> to yield <code class="docutils literal notranslate"><span class="pre">(kind,</span> <span class="pre">result)</span></code> pairs as each unit completes
-— handy for live UI updates.</p>
+<p>Three states, not two. <strong>Failed</strong> means the call raised and can be retried as it is. <strong>Blocked</strong> means it never ran — a <code class="docutils literal notranslate"><span class="pre">&quot;&lt;from</span> <span class="pre">N&gt;&quot;</span></code> placeholder whose producer did not succeed — so it has to be re-planned, not retried. A caller that cannot tell them apart retries a call whose input does not exist.</p>
+<p><code class="docutils literal notranslate"><span class="pre">concurrency</span></code> bounds how many calls are in flight; independent calls run in parallel, and a call is never started beside the producer it consumes. It defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code> (sequential) everywhere, here and in <code class="docutils literal notranslate"><span class="pre">render_scene</span></code>, because every call is a paid request: parallelism is opt-in. Weigh the vendor’s rate limit and memory — materializing a media result peaks at roughly twice the asset’s size, and <code class="docutils literal notranslate"><span class="pre">concurrency</span></code> multiplies that.</p>
+<p><code class="docutils literal notranslate"><span class="pre">execute_plan</span></code> keeps the plain <code class="docutils literal notranslate"><span class="pre">list[Artifact]</span></code> contract and re-raises the first failure <strong>unwrapped</strong>, so falaw’s typed error hierarchy still reaches the caller. It is <code class="docutils literal notranslate"><span class="pre">execute_plan_isolated(...).artifacts_or_raise()</span></code> — one engine, two policies.</p>
+<p><code class="docutils literal notranslate"><span class="pre">render_scene(...,</span> <span class="pre">concurrency=4)</span></code> runs shots and beats in parallel through the same kind of thread pool (fal calls are HTTP-bound). Use <code class="docutils literal notranslate"><span class="pre">iter_render_scene(...)</span></code> to yield <code class="docutils literal notranslate"><span class="pre">(kind,</span> <span class="pre">result)</span></code> pairs as each unit completes — handy for live UI updates.</p>
 </section>
 </section>
 <section id="three-cache-modes-because-a-re-run-is-not-a-cache-bypass">
@@ -571,13 +531,8 @@ same kind of thread pool (fal calls are HTTP-bound). Use
 </section>
 <section id="testing-code-that-uses-falaw">
 <h2>Testing code that uses falaw<a class="headerlink" href="#testing-code-that-uses-falaw" title="Link to this heading">#</a></h2>
-<p>falaw content-addresses every media result, so <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code> <strong>reads the
-bytes</strong> behind each result URL. A suite that stubs the fal <em>response</em> but not
-the <em>asset transport</em> is resolving its made-up URLs for real — and it passes
-while doing so, because a failed fetch degrades to a URL-only artifact with a
-<code class="docutils literal notranslate"><span class="pre">UserWarning</span></code> rather than raising.</p>
-<p>falaw ships the fake, so nobody has to write one. Three autouse fixtures, each
-re-exportable into a <code class="docutils literal notranslate"><span class="pre">conftest.py</span></code> in one line:</p>
+<p>falaw content-addresses every media result, so <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code> <strong>reads the bytes</strong> behind each result URL. A suite that stubs the fal <em>response</em> but not the <em>asset transport</em> is resolving its made-up URLs for real — and it passes while doing so, because a failed fetch degrades to a URL-only artifact with a <code class="docutils literal notranslate"><span class="pre">UserWarning</span></code> rather than raising.</p>
+<p>falaw ships the fake, so nobody has to write one. Three autouse fixtures, each re-exportable into a <code class="docutils literal notranslate"><span class="pre">conftest.py</span></code> in one line:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># conftest.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">falaw.testing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: F401</span>
     <span class="n">fake_assets</span><span class="p">,</span>  <span class="c1"># url -&gt; bytes, served from memory</span>
@@ -594,28 +549,14 @@ re-exportable into a <code class="docutils literal notranslate"><span class="pre
     <span class="k">assert</span> <span class="n">fake_assets</span><span class="o">.</span><span class="n">fetched</span> <span class="o">==</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>  <span class="c1"># assert on the record</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">fake_assets</span></code> installs itself through <code class="docutils literal notranslate"><span class="pre">falaw.content.using_url_fetcher</span></code>, the
-public transport seam, so it covers <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>, <code class="docutils literal notranslate"><span class="pre">execute_plan_isolated</span></code>,
-<code class="docutils literal notranslate"><span class="pre">materialize_asset</span></code> and <code class="docutils literal notranslate"><span class="pre">content_ref_for_url</span></code> at once — including calls your
-own public API makes, which have no <code class="docutils literal notranslate"><span class="pre">asset_fetcher=</span></code> argument to pass. An
-explicitly passed <code class="docutils literal notranslate"><span class="pre">fetcher=</span></code> still wins. <code class="docutils literal notranslate"><span class="pre">file://</span></code> URLs are <em>not</em> faked (they
-are not the network); pin one explicitly if you want it served from memory.</p>
-<p><code class="docutils literal notranslate"><span class="pre">using_url_fetcher</span></code> is not test-only: it is also how you give falaw an
-authenticated, retrying, or mirrored transport in production, in one place
-instead of at every call site.</p>
+<p><code class="docutils literal notranslate"><span class="pre">fake_assets</span></code> installs itself through <code class="docutils literal notranslate"><span class="pre">falaw.content.using_url_fetcher</span></code>, the public transport seam, so it covers <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>, <code class="docutils literal notranslate"><span class="pre">execute_plan_isolated</span></code>, <code class="docutils literal notranslate"><span class="pre">materialize_asset</span></code> and <code class="docutils literal notranslate"><span class="pre">content_ref_for_url</span></code> at once — including calls your own public API makes, which have no <code class="docutils literal notranslate"><span class="pre">asset_fetcher=</span></code> argument to pass. An explicitly passed <code class="docutils literal notranslate"><span class="pre">fetcher=</span></code> still wins. <code class="docutils literal notranslate"><span class="pre">file://</span></code> URLs are <em>not</em> faked (they are not the network); pin one explicitly if you want it served from memory.</p>
+<p><code class="docutils literal notranslate"><span class="pre">using_url_fetcher</span></code> is not test-only: it is also how you give falaw an authenticated, retrying, or mirrored transport in production, in one place instead of at every call site.</p>
 <p>Two rules that are easy to get wrong:</p>
 <ul class="simple">
-<li><p><strong>Don’t reach for <code class="docutils literal notranslate"><span class="pre">FALAW_FETCH_ARTIFACT_BYTES=0</span></code> to make a suite offline.</strong>
-It works by turning content addressing <em>off</em> — the suite goes hermetic and
-stops testing the feature.</p></li>
-<li><p><strong>Assert on the record, not on an exception.</strong> falaw absorbs a failed fetch
-by design, so a guard that only raises is invisible. That is why both the
-fake and the network guard <em>record</em> every attempt, and why
-<code class="docutils literal notranslate"><span class="pre">no_outbound_network</span></code> fails the test at <strong>teardown</strong>.</p></li>
+<li><p><strong>Don’t reach for <code class="docutils literal notranslate"><span class="pre">FALAW_FETCH_ARTIFACT_BYTES=0</span></code> to make a suite offline.</strong> It works by turning content addressing <em>off</em> — the suite goes hermetic and stops testing the feature.</p></li>
+<li><p><strong>Assert on the record, not on an exception.</strong> falaw absorbs a failed fetch by design, so a guard that only raises is invisible. That is why both the fake and the network guard <em>record</em> every attempt, and why <code class="docutils literal notranslate"><span class="pre">no_outbound_network</span></code> fails the test at <strong>teardown</strong>.</p></li>
 </ul>
-<p>Marker <code class="docutils literal notranslate"><span class="pre">live_api</span></code> opts a test back into the real transport and no network
-guard. A suite with different marker names builds its own fixtures from
-<code class="docutils literal notranslate"><span class="pre">make_fake_assets_fixture</span></code> / <code class="docutils literal notranslate"><span class="pre">make_no_outbound_network_fixture</span></code>.</p>
+<p>Marker <code class="docutils literal notranslate"><span class="pre">live_api</span></code> opts a test back into the real transport and no network guard. A suite with different marker names builds its own fixtures from <code class="docutils literal notranslate"><span class="pre">make_fake_assets_fixture</span></code> / <code class="docutils literal notranslate"><span class="pre">make_no_outbound_network_fixture</span></code>.</p>
 </section>
 <section id="architecture">
 <h2>Architecture<a class="headerlink" href="#architecture" title="Link to this heading">#</a></h2>
@@ -677,21 +618,12 @@ guard. A suite with different marker names builds its own fixtures from
 </section>
 <section id="roadmap">
 <h2>Roadmap<a class="headerlink" href="#roadmap" title="Link to this heading">#</a></h2>
-<p>See <a class="reference internal" href="#misc/docs/roadmap.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">misc/docs/roadmap.md</span></code></span></a> for the ordered work and the standing
-constraints. In short, four tracks:</p>
+<p>See <a class="reference internal" href="#misc/docs/roadmap.md"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">misc/docs/roadmap.md</span></code></span></a> for the ordered work and the standing constraints. In short, four tracks:</p>
 <ol class="arabic simple">
-<li><p><strong>Content addressing</strong> — <em>landed</em> (falaw#14). <code class="docutils literal notranslate"><span class="pre">Artifact.asset_id</span></code> is the SHA-256 of the
-artifact’s bytes and the per-call cache key holds upstream <em>content</em> hashes, not fal CDN URLs.
-fal states that every upload gets a unique URL and that expired files are permanently deleted,
-so URL-keying meant a byte-identical regeneration missed the cache and a stored response decayed
-into a dead link. Bytes now route through <code class="docutils literal notranslate"><span class="pre">lacing.ArtifactStore.put_blob_stream</span></code>. Still open:
-the plan-time cache peek keys on <em>unresolved</em> arguments (D2), which lands with track 2.</p></li>
-<li><p><strong>Backend-parametric <code class="docutils literal notranslate"><span class="pre">Plan</span></code></strong> — <code class="docutils literal notranslate"><span class="pre">CallPlan.backend</span></code> + registry dispatch in <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>, so
-a second execution backend is still priced, cached and dry-runnable.</p></li>
-<li><p><strong>Licence-and-terms ledger</strong> — per <code class="docutils literal notranslate"><span class="pre">(model,</span> <span class="pre">backend)</span></code>, queried at plan time, <code class="docutils literal notranslate"><span class="pre">unknown</span></code> means
-refuse.</p></li>
-<li><p><strong>Cost data from the vendor</strong> — read fal’s pricing API instead of hand-maintaining
-<code class="docutils literal notranslate"><span class="pre">data/models.json</span></code> (19 of 40 records currently carry no structured price at all).</p></li>
+<li><p><strong>Content addressing</strong> — <em>landed</em> (falaw#14). <code class="docutils literal notranslate"><span class="pre">Artifact.asset_id</span></code> is the SHA-256 of the artifact’s bytes and the per-call cache key holds upstream <em>content</em> hashes, not fal CDN URLs. fal states that every upload gets a unique URL and that expired files are permanently deleted, so URL-keying meant a byte-identical regeneration missed the cache and a stored response decayed into a dead link. Bytes now route through <code class="docutils literal notranslate"><span class="pre">lacing.ArtifactStore.put_blob_stream</span></code>. Still open: the plan-time cache peek keys on <em>unresolved</em> arguments (D2), which lands with track 2.</p></li>
+<li><p><strong>Backend-parametric <code class="docutils literal notranslate"><span class="pre">Plan</span></code></strong> — <code class="docutils literal notranslate"><span class="pre">CallPlan.backend</span></code> + registry dispatch in <code class="docutils literal notranslate"><span class="pre">execute_plan</span></code>, so a second execution backend is still priced, cached and dry-runnable.</p></li>
+<li><p><strong>Licence-and-terms ledger</strong> — per <code class="docutils literal notranslate"><span class="pre">(model,</span> <span class="pre">backend)</span></code>, queried at plan time, <code class="docutils literal notranslate"><span class="pre">unknown</span></code> means refuse.</p></li>
+<li><p><strong>Cost data from the vendor</strong> — read fal’s pricing API instead of hand-maintaining <code class="docutils literal notranslate"><span class="pre">data/models.json</span></code> (19 of 40 records currently carry no structured price at all).</p></li>
 </ol>
 <p class="epythet-aggregates">This documentation as a single file: <a href="falaw.md">falaw.md</a> (Markdown, for agents).</p>
 <div class="toctree-wrapper compound">
@@ -699,7 +631,7 @@ refuse.</p></li>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-22 23:46 UTC from <a href="https://github.com/reeleehq/falaw/commit/f2c7073caafc330829ab2a150edd7e75824007a7">f2c7073</a> (main) · falaw 0.0.101 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-11-23 02:30 UTC from <a href="https://github.com/reeleehq/falaw/commit/c298b3b4543042b45434bc8ade6fb48acad908d9">c298b3b</a> (main) · falaw 0.0.101 · <a href="about-this-build.html">about this build</a></p>
 
                 </article>
               
