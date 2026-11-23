@@ -38,8 +38,8 @@ def test_regen_skill_writes_both_skill_dirs(monkeypatch, capsys):
     monkeypatch.setattr(cli, "write_skill_files", lambda d: dirs.append(d) or [d])
     assert cli.main(["regen-skill"]) == 0
     assert len(dirs) == 2
-    assert dirs[0].endswith("data/skills/falaw")
-    assert dirs[1].endswith(".claude/skills/falaw")
+    assert str(dirs[0]).replace("\\", "/").endswith("data/skills/falaw")
+    assert str(dirs[1]).replace("\\", "/").endswith(".claude/skills/falaw")
     assert capsys.readouterr().out.count("wrote") == 2
 
 
