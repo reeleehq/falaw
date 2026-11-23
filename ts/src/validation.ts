@@ -4,14 +4,37 @@
  * `{width, height}` size. Throws where Python raises `ValueError`.
  */
 
+import { FalPromptTooLong } from './errors';
 import type { ModelRecord } from './generated/model-record';
+
+/** Refuse a prompt over the model's `max_prompt_chars` (`falaw.validation.check_prompt_length`),
+ *  for every operation, not only text-to-image (falaw#170). */
+export function checkPromptLength(
+  record: Pick<ModelRecord, 'id' | 'max_prompt_chars'>,
+  prompt: string,
+): void {
+  const limit = record.max_prompt_chars;
+  const length = [...prompt].length; // code points, as Python's len()
+  if (limit != null && length > limit) {
+    throw new FalPromptTooLong(
+      `${record.id} accepts prompts of at most ${limit} characters; this one is ${length} (${length - limit} over). ` +
+        'Shorten it (a long reusable style suffix is the usual culprit) or pick a model with a larger limit.',
+      record.id,
+      limit,
+      length,
+    );
+  }
+}
 
 const isInt = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v);
 
 export function checkCallArguments(
-  record: Pick<ModelRecord, 'id' | 'param_specs'>,
+  record: Pick<ModelRecord, 'id' | 'param_specs'> & Partial<Pick<ModelRecord, 'max_prompt_chars'>>,
   args: Readonly<Record<string, unknown>>,
 ): void {
+  if (typeof args.prompt === 'string') {
+    checkPromptLength({ id: record.id, max_prompt_chars: record.max_prompt_chars ?? null }, args.prompt);
+  }
   for (const [name, spec] of Object.entries(record.param_specs)) {
     if (!(name in args)) continue;
     const value = args[name];
