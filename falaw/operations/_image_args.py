@@ -34,8 +34,6 @@ def known_record(model: str) -> Optional[ModelRecord]:
         return None
 
 
-
-
 def negative_prompt_arguments(
     record: Optional[ModelRecord], negative_prompt: Optional[str]
 ) -> dict:
